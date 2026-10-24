@@ -1,0 +1,19 @@
+# command: wc -w README.md at f1fcd1738894e9dcd28c7ac4b2fed5bf7aa87b04 (main) and here; its sections
+# date: 2026-10-24 21:26:40 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 43e00fd050808c603a3f27508d9858c8590a8e4b
+
+words at f1fcd1738894e9dcd28c7ac4b2fed5bf7aa87b04: 1598
+words here: 838
+## sections here
+## Install
+## Quick start
+## What a session does
+## Deciding
+## Roles
+## Codex
+## While you're away
+## Commands
+## By hand
+## More
+## License

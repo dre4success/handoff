@@ -1,0 +1,27 @@
+# command: this commit's session_test.go, pickup_test.go and roles_test.go on ba519c17ae10e7a01d4d9a805fde3ec653f68541 (main), then here: -run 'TestH16|TestH11InitWithNoFlags|TestH11BriefCommandsRunForClaudeAndCodex|TestH12ACodexThreadKeepsItsRoleAlone'
+# date: 2026-10-24 20:32:32 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 500e00df48b1f56426682fd715682733bc8a94a7
+
+## at ba519c17ae10e7a01d4d9a805fde3ec653f68541 (main): expected six FAIL, one PASS
+--- FAIL: TestH11InitWithNoFlags (0.31s)
+--- FAIL: TestH16SettingsNeverPickARole (0.11s)
+--- PASS: TestH11BriefCommandsRunForClaudeAndCodex (0.33s)
+--- FAIL: TestH16RolesAddKeepsTheRecord (0.11s)
+--- FAIL: TestH16RolesAddRefuses (0.05s)
+--- FAIL: TestH12ACodexThreadKeepsItsRoleAlone (1.25s)
+--- FAIL: TestH16AStartTakesNoRole (0.08s)
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	2.751s
+FAIL
+
+## at 500e00df48b1f56426682fd715682733bc8a94a7: expected all PASS
+--- PASS: TestH11InitWithNoFlags (0.24s)
+--- PASS: TestH16SettingsNeverPickARole (0.09s)
+--- PASS: TestH11BriefCommandsRunForClaudeAndCodex (0.33s)
+--- PASS: TestH16RolesAddKeepsTheRecord (0.21s)
+--- PASS: TestH16RolesAddRefuses (0.16s)
+--- PASS: TestH12ACodexThreadKeepsItsRoleAlone (1.24s)
+--- PASS: TestH16AStartTakesNoRole (0.15s)
+ok  	github.com/dre4success/handoff/cmd/handoff	2.680s
+# go test exit: 0

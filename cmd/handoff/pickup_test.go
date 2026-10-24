@@ -12,9 +12,9 @@ import (
 )
 
 // H11: any project picks handoff up (proposal §17 row 72). init needs no
-// flags and keeps the record out of git by itself. The roles are named after
-// the agents, so either can implement or review, and settings and the brief
-// follow from that.
+// flags and keeps the record out of git by itself. Row 80 (H16) names the
+// default roles by job, not after the agents; roles named after the agents,
+// as --roles claude,codex makes, can each implement or review.
 
 // plainRepo makes a repository on branch with one commit, and no record.
 func plainRepo(t *testing.T, branch string) *repo {
@@ -41,18 +41,22 @@ func TestH11InitWithNoFlags(t *testing.T) {
 	r := plainRepo(t, "main")
 	out := r.ok(t, "", "init")
 	c := readConfig(t, r)
-	if want := []roleCfg{{"claude", true}, {"codex", true}}; !slices.Equal(c.Roles, want) || c.Main != "main" {
-		t.Fatalf("roles %+v, main %q; want claude and codex, both reviewing, on main", c.Roles, c.Main)
+	if want := []roleCfg{{"implementer", false}, {"reviewer", true}, {"reviewer-2", true}}; !slices.Equal(c.Roles, want) || c.Main != "main" {
+		t.Fatalf("roles %+v, main %q; want implementer, reviewer and reviewer-2, on main", c.Roles, c.Main)
 	}
-	for _, want := range []string{"Roles: claude and codex. Either can implement or review.", "Main branch: main.", " settings claude\n", " settings codex\n"} {
+	for _, want := range []string{"Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.", "Main branch: main.",
+		" settings claude\n", " settings codex\n", "Then give each session its role: tell it, such as \"you review\", and it runs ", "handoff role <role>.\n"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("init printed no %q:\n%s", want, out)
 		}
 	}
+	if strings.Contains(out, "--as") {
+		t.Errorf("init tells you to fix a CLI's role:\n%s", out)
+	}
 
 	// Git ignores the record, with something in it, and the project's own
 	// files are as they were.
-	r.ok(t, "codex", "post", "--item", "W1", "--to", "claude", "--commit", "HEAD", "--title", "W1 work", "--body", r.body(t, "please review"))
+	r.ok(t, "implementer", "post", "--item", "W1", "--to", "reviewer", "--commit", "HEAD", "--title", "W1 work", "--body", r.body(t, "please review"))
 	if st := mustGit(t, r.dir, "status", "--porcelain", "--untracked-files=all"); st != "" {
 		t.Fatalf("git status after init and a post:\n%s", st)
 	}
@@ -112,23 +116,24 @@ func TestH11InitReviewers(t *testing.T) {
 	}
 }
 
-// Row 73 changes row 72 (d): a session no longer has its CLI's role fixed;
-// it takes the role named after its CLI when it starts, if that is free.
-func TestH11SettingsTakeTheCLIsOwnRole(t *testing.T) {
+// Row 80 changes row 73: a session no longer takes the role named after its
+// CLI when it starts. Even where the roles are named after the agents, the
+// settings give no session a role; the operator does.
+func TestH16SettingsNeverPickARole(t *testing.T) {
 	r := plainRepo(t, "main")
-	r.ok(t, "", "init")
+	r.ok(t, "", "init", "--roles", "claude,codex")
 	out := r.ok(t, "", "settings", "claude")
-	if strings.Contains(out, "HANDOFF_ROLE") || strings.Count(out, `"--prefer",`+"\n"+`              "claude"`) != 3 || !strings.Contains(out, "One that starts with no role takes\nclaude") {
+	if strings.Contains(out, "HANDOFF_ROLE") || strings.Contains(out, "--prefer") || !strings.Contains(out, "takes the role you give it:\ntell it, and it runs handoff role <role>. Until then it has none.") {
 		t.Errorf("settings claude:\n%s", out)
 	}
 	out = r.ok(t, "", "settings", "codex")
-	for _, want := range []string{"hook listen --prefer codex", "hook brief --prefer codex"} {
-		if !strings.Contains(out, want) || strings.Contains(out, "HANDOFF_ROLE = ") {
-			t.Errorf("settings codex printed no %q, or a fixed role:\n%s", want, out)
+	for _, want := range []string{"handoff hook listen\"", "handoff hook brief\""} {
+		if !strings.Contains(out, want) || strings.Contains(out, "--prefer") || strings.Contains(out, "HANDOFF_ROLE = ") {
+			t.Errorf("settings codex printed no %q, or a role:\n%s", want, out)
 		}
 	}
 	// --as still fixes the role.
-	if out := r.ok(t, "", "settings", "claude", "--as", "codex"); !strings.Contains(out, `"HANDOFF_ROLE": "codex"`) || strings.Contains(out, "--prefer") {
+	if out := r.ok(t, "", "settings", "claude", "--as", "codex"); !strings.Contains(out, `"HANDOFF_ROLE": "codex"`) {
 		t.Errorf("settings claude --as codex:\n%s", out)
 	}
 }
@@ -137,7 +142,7 @@ func TestH11SettingsTakeTheCLIsOwnRole(t *testing.T) {
 // other for a review, and every command it gives runs as printed.
 func TestH11BriefCommandsRunForClaudeAndCodex(t *testing.T) {
 	r := plainRepo(t, "main")
-	r.ok(t, "", "init")
+	r.ok(t, "", "init", "--roles", "claude,codex")
 	mustGit(t, r.dir, "switch", "-q", "-c", "w1")
 	r.commitA = commit(t, r.dir, "A")
 	r.commitB = commit(t, r.dir, "B")

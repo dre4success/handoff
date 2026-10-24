@@ -1,0 +1,11 @@
+# command: git merge-tree --write-tree --name-only main 500e00df48b1f56426682fd715682733bc8a94a7, GIT_OBJECT_DIRECTORY in a temporary directory
+# date: 2026-10-24 20:32:38 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 500e00df48b1f56426682fd715682733bc8a94a7
+
+## main is 6908c2efcfd2ac933008e4f3118e4cfa56c6db12; since the base it changed: docs/CHANNEL.md 
+warning: garbage found: ~/handoff/.git/worktrees/h16-review/refs
+0b6064074d48f70b2c9710c113474eaa54c4363c
+# merge-tree exit: 0 (0: clean, no conflicts)
+warning: garbage found: ~/handoff/.git/worktrees/h16-review/refs
+## objects in the repository before 2413, after 2413; in the temporary directory: 2

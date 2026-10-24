@@ -1,0 +1,8 @@
+# command: go.mod requires; go vet ./...; gofmt -l cmd internal
+# date: 2026-10-24 21:26:40 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 43e00fd050808c603a3f27508d9858c8590a8e4b
+
+## go.mod require lines: 0
+## go vet: clean
+## gofmt -l cmd internal: []

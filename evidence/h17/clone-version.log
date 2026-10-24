@@ -1,0 +1,17 @@
+# command: git clone --no-local of this commit; then go build, handoff version and go test -run TestH17 with no tag, at a v0.1.0 tag, and one commit after it
+# date: 2026-10-24 21:26:41 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 43e00fd050808c603a3f27508d9858c8590a8e4b
+
+## no tag
+handoff v0.0.0-20261024211820-43e00fd05080
+--- PASS: TestH17VersionNamesTheBuild (0.21s)
+ok  	github.com/dre4success/handoff/cmd/handoff	0.734s
+## at v0.1.0
+handoff v0.1.0
+--- PASS: TestH17VersionNamesTheBuild (0.23s)
+ok  	github.com/dre4success/handoff/cmd/handoff	0.714s
+## one commit after v0.1.0
+handoff v0.1.1-0.20261024212645-38d1ce12e1c2
+--- PASS: TestH17VersionNamesTheBuild (0.22s)
+ok  	github.com/dre4success/handoff/cmd/handoff	0.647s

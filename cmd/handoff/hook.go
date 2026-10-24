@@ -33,8 +33,9 @@ import (
 //
 // The role is --as, or HANDOFF_ROLE, when the settings fix one; else the
 // role the operator gave the session (row 73), which can move, so a listener stops
-// when it does. --prefer names a role a session takes when it starts with
-// none, if no running session holds it.
+// when it does. A session the operator has given no role has none: settings
+// made before row 80 pass --prefer, a role to take at a start, and it is
+// ignored.
 //
 // A hook acts only for a session with a role, in a project with a record.
 // Otherwise it does nothing, quietly: hooks may be set for sessions that
@@ -68,12 +69,12 @@ func (a *app) cmdHook(args []string) (int, error) {
 // hookRole is the role the hook acts for. ok is false when the session is
 // not on duty here: no role, no record, or the operator. given says the role
 // is the one the operator gave the session, not fixed by its settings.
-func (a *app) hookRole(as, prefer string, in hookInput) (role string, given, ok bool, err error) {
+func (a *app) hookRole(as string, in hookInput) (role string, given, ok bool, err error) {
 	if err := a.open(); err != nil {
 		return "", false, false, nil
 	}
 	if os.Getenv("HANDOFF_ROLE") == "" && as == "" {
-		role, ok = a.sessionRole(hookSession(in), in, prefer)
+		role, ok = a.sessionRole(hookSession(in), in)
 		return role, ok, ok, nil
 	}
 	role, given, err = a.roleOf(as)
@@ -87,7 +88,7 @@ func (a *app) hookListen(args []string, in hookInput) (int, error) {
 	fs := flag.NewFlagSet("hook listen", flag.ContinueOnError)
 	timeout := fs.Duration("timeout", 23*time.Hour, "")
 	as := fs.String("as", "", "")
-	prefer := fs.String("prefer", "", "")
+	fs.String("prefer", "", "") // ignored; see above
 	pos, err := parse(fs, args)
 	if err == nil {
 		err = noArgs(pos)
@@ -105,7 +106,7 @@ func (a *app) hookListen(args []string, in hookInput) (int, error) {
 		return exitOK, nil
 	}
 	alive := func() bool { return os.Getppid() == parent }
-	role, given, ok, err := a.hookRole(*as, *prefer, in)
+	role, given, ok, err := a.hookRole(*as, in)
 	if err != nil || !ok {
 		return exitOK, nil // the brief reports a wrong role, once per session start
 	}
@@ -147,7 +148,7 @@ func (a *app) hookListen(args []string, in hookInput) (int, error) {
 func (a *app) hookBrief(args []string, in hookInput) (int, error) {
 	fs := flag.NewFlagSet("hook brief", flag.ContinueOnError)
 	as := fs.String("as", "", "")
-	prefer := fs.String("prefer", "", "")
+	fs.String("prefer", "", "") // ignored; see above
 	pos, err := parse(fs, args)
 	if err == nil {
 		err = noArgs(pos)
@@ -155,7 +156,7 @@ func (a *app) hookBrief(args []string, in hookInput) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	role, _, ok, err := a.hookRole(*as, *prefer, in)
+	role, _, ok, err := a.hookRole(*as, in)
 	if err != nil {
 		// What a SessionStart hook prints reaches the model, which can tell the operator.
 		fmt.Fprintf(a.stdout, "handoff: this session is not on duty: %v. Tell the operator.\n", err)
@@ -185,7 +186,7 @@ func (a *app) hookNotify(args []string, in hookInput) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	role, _, ok, _ := a.hookRole(*as, "", in)
+	role, _, ok, _ := a.hookRole(*as, in)
 	if !ok || in.Type != "permission_prompt" {
 		return exitOK, nil
 	}

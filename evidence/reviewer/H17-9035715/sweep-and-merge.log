@@ -1,0 +1,29 @@
+# command: H14's sweep over git archive of this commit, of main (f2c73e92f2e138203ec561c5bd790831b5325cb3), and of the tree git merge-tree makes of the two (objects in a temporary directory)
+# date: 2026-10-24 21:29:44 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 90357151cc9da1b6159f0b60d718df38379e5af8
+
+## main since the base changed: docs/CHANNEL.md evidence/reviewer/H17-cbb09c2/README.md evidence/reviewer/H17-cbb09c2/build-vet-deps.log evidence/reviewer/H17-cbb09c2/collect.sh evidence/reviewer/H17-cbb09c2/go-test-race.log evidence/reviewer/H17-cbb09c2/merge-dry-run.log evidence/reviewer/H17-cbb09c2/readme.log evidence/reviewer/H17-cbb09c2/scrub.log evidence/reviewer/H17-cbb09c2/sweep.log evidence/reviewer/H17-cbb09c2/version.log 
+## merge-tree exit 0 (0: clean); merged tree c6863bc5bb96d7f04491ff3406c2cb17bb12d903
+## objects in the repository before 2515, after 2515; in the temporary directory: 4
+## 90357151cc9da1b6159f0b60d718df38379e5af8
+521 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder, other than the test's made-up ones: 0 lines, 0 file names
+the other project's name: 0 lines, 0 file names
+the operator's email domains: 0 lines, 0 file names
+## f2c73e92f2e138203ec561c5bd790831b5325cb3
+521 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 4 lines, 0 file names
+a path under a home folder, other than the test's made-up ones: 4 lines, 0 file names
+the other project's name: 0 lines, 0 file names
+the operator's email domains: 0 lines, 0 file names
+## c6863bc5bb96d7f04491ff3406c2cb17bb12d903
+530 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder, other than the test's made-up ones: 0 lines, 0 file names
+the other project's name: 0 lines, 0 file names
+the operator's email domains: 0 lines, 0 file names

@@ -1,0 +1,21 @@
+# command: go build, handoff version and go test -run TestH17VersionNamesTheBuild, in this worktree and in a plain clone in each state; go install …@v0.1.0 via a file:// module proxy
+# date: 2026-10-24 21:29:21 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 90357151cc9da1b6159f0b60d718df38379e5af8
+
+## this checkout (a linked worktree): handoff (devel)
+ok  	github.com/dre4success/handoff/cmd/handoff	0.618s
+## a plain clone, no tag: handoff v0.0.0-20261024212700-90357151cc9d
+ok  	github.com/dre4success/handoff/cmd/handoff	0.717s
+## no tag, dirty tree: handoff v0.0.0-20261024212700-90357151cc9d+dirty
+ok  	github.com/dre4success/handoff/cmd/handoff	0.641s
+## v0.1.0 on this commit: handoff v0.1.0
+ok  	github.com/dre4success/handoff/cmd/handoff	0.676s
+## at the tag, dirty tree: handoff v0.1.0+dirty
+ok  	github.com/dre4success/handoff/cmd/handoff	0.692s
+## one commit after v0.1.0 (tag on 43e00fd050808c603a3f27508d9858c8590a8e4b): handoff v0.1.1-0.20261024212700-90357151cc9d
+ok  	github.com/dre4success/handoff/cmd/handoff	0.718s
+## go install …@v0.1.0 through a file:// proxy of the tag: handoff v0.1.0; --version: handoff v0.1.0
+	path	github.com/dre4success/handoff/cmd/handoff
+	mod	github.com/dre4success/handoff	v0.1.0	h1:EDjj7hBjh156vjiuPuHtOyEYNJsiIBFt23gqVUNlO/0=
+## from /, outside any project: handoff v0.1.0; exit 0

@@ -1,0 +1,118 @@
+# command: handoff init, settings, roles add and role, in scratch projects; sessions stood in for by their ids
+# date: 2026-10-24 20:02:03 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: dd077444b8345dd455a97e7b90bc9ecbef02f759
+
+## A new project: init with no flags
+
+$ handoff init
+Created <scratch>/new/.handoff. Git ignores it; nothing else in the project changed.
+Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.
+Main branch: main.
+
+To keep each CLI's sessions on duty here, run these and do what they say:
+  handoff settings claude
+  handoff settings codex
+Then give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+# exit: 0
+
+$ handoff settings codex
+Put these two files in this project's .codex/ folder, merged with any already
+there, and keep it out of git (add .codex/ to .git/info/exclude). Codex reads
+them only in a project it trusts. The next time Codex starts here, it asks you
+to review the new hooks: choose Trust all.
+
+Every Codex session in this project then takes the role you give it:
+tell it, and it runs handoff role <role>. Until then it has none. Without a role, handoff on its own never shows it your decisions.
+It gets the brief when its first turn starts and after a summary. When its turn
+would end, a hook listens for its work and continues it with what arrives. And
+handoff runs outside Codex's sandbox, so its notifications and pop-ups reach
+you; handoff decide is forbidden.
+
+.codex/hooks.json:
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "exec handoff hook brief",
+            "timeout": 30,
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "command": "exec handoff hook listen",
+            "timeout": 86400,
+            "type": "command"
+          }
+        ]
+      }
+    ]
+  }
+}
+
+.codex/rules/handoff.rules:
+# handoff writes only under .handoff/ and has no network code (proposal §9).
+prefix_rule(pattern=["handoff"], decision="allow", justification="handoff runs outside the sandbox so that it can notify the operator")
+prefix_rule(pattern=["handoff", "decide"], decision="forbidden", justification="The operator decides, not an agent")
+# exit: 0
+
+## A project made with roles named after the agents, as the operator's was, and settings from before H16 that pass --prefer
+$ handoff init --roles claude,codex
+
+# Claude Code on Opus starts; its hook passes --prefer claude:
+handoff: old hands work between agents through handoff, and this session has no role in it. When the operator gives you one, run `handoff role <role>` (the roles are claude, codex); it prints your brief. Until then, leave handoff alone.
+# Codex starts:
+handoff: old hands work between agents through handoff, and this session has no role in it. When the operator gives you one, run `handoff role <role>` (the roles are claude, codex); it prints your brief. Until then, leave handoff alone.
+# sessions with a role: []
+
+$ handoff roles add implementer reviewer,reviewer-2
+Added implementer, reviewer and reviewer-2.
+Roles: claude, codex, implementer, reviewer and reviewer-2; claude, codex, reviewer and reviewer-2 review.
+Give a session a role by telling it; it runs handoff role <role>.
+# exit: 0
+
+# The operator gives each session its role:
+# in Claude Code on Opus:
+$ handoff role implementer
+You are now implementer in old.
+# in Claude Code on Fable:
+$ handoff role reviewer
+You are now reviewer in old.
+# in Codex:
+$ handoff role reviewer-2
+You are now reviewer-2 in old.
+# sessions with a role: [s-fable.json s-opus.json t-codex.json ]
+
+# Work flows to the new roles:
+# in Claude Code on Opus:
+
+$ handoff post --item W1 --to reviewer-2 --commit HEAD --title W1 work --body <scratch>/req.md
+posted #1 request W1 implementer → reviewer-2: W1 work @ 0c12d5126a5c
+# exit: 0
+# in Codex:
+
+$ handoff inbox
+inbox for reviewer-2
+
+needs my review:
+  #1 request W1 implementer → reviewer-2: W1 work @ 0c12d5126a5c
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+# exit: 0

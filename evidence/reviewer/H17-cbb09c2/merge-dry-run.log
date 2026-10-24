@@ -1,0 +1,9 @@
+# command: git merge-tree --write-tree --name-only main cbb09c235ffb661bf0c73f8726800fda9ed309d3, GIT_OBJECT_DIRECTORY in a temporary directory
+# date: 2026-10-24 21:13:46 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: cbb09c235ffb661bf0c73f8726800fda9ed309d3
+
+## main is 1c7c7793107c21cdd8d23ab61212cbd0bb950c12; since the base it changed: docs/CHANNEL.md 
+66941b7c21a96d41a793495baa3a871b22a3f41f
+# merge-tree exit: 0 (0: clean, no conflicts)
+## objects in the repository before 2471, after 2471; in the temporary directory: 2

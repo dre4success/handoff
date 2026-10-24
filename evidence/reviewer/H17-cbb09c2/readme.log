@@ -1,0 +1,12 @@
+# command: wc -w README.md at f1fcd1738894e9dcd28c7ac4b2fed5bf7aa87b04 and here; handoff help; handoff settings claude|codex and init in a scratch project; grep
+# date: 2026-10-24 21:13:46 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: cbb09c235ffb661bf0c73f8726800fda9ed309d3
+
+## words at f1fcd1738894e9dcd28c7ac4b2fed5bf7aa87b04: 1598; here: 827
+## handoff help says: exit codes: 1; HANDOFF_ROLE: 1; --supersedes: 1; --main: 1; which commands need no role: 1
+## 'worktree' or 'one record' in: init output: 0; settings claude: 0; settings codex: 0; the brief: 0; help: 0
+## hooks in settings claude: "Notification" "SessionStart" "Stop" 
+## hooks in settings codex:  "SessionStart" "Stop" 
+## 'permission' in settings codex's text: 0; in settings claude's: 2
+# alerts sent to the scratch file during this collection: 0

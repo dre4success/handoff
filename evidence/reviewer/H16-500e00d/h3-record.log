@@ -1,0 +1,14 @@
+# command: go test -count=1 -race -v ./internal/record -run 'Torn|Tail|Killed|Repair|Key|Head|Retry'
+# date: 2026-10-24 20:32:30 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 500e00df48b1f56426682fd715682733bc8a94a7
+
+--- PASS: TestTornTailRefusesUntilRepair (0.05s)
+--- PASS: TestForgedAppendIsWithheldFromTheBreakWhenHeadVouches (0.03s)
+--- PASS: TestForgedAppendWithoutAVouchingHeadWithholdsTheLineBefore (0.03s)
+--- PASS: TestCutTailIsAnAdvisoryNotARefusal (0.06s)
+--- PASS: TestHeadBehindAfterCrashIsAnAdvisory (0.05s)
+--- PASS: TestAppendAfterACutThatStopsBeforeHeadIsNotAnEdit (0.05s)
+--- PASS: TestRepairWithNothingToRepair (0.02s)
+ok  	github.com/dre4success/handoff/internal/record	1.494s
+# go test exit: 0

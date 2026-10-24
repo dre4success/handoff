@@ -1,0 +1,25 @@
+# command: go build ./...; go vet ./...; gofmt -l cmd internal; go list -deps ./... | grep net; go.mod; git log/diff --stat
+# date: 2026-10-24 21:13:29 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: cbb09c235ffb661bf0c73f8726800fda9ed309d3
+
+## go build: ok
+## go vet: clean
+## gofmt -l cmd internal: []
+## go list -deps ./... matching net: []
+## go.mod: 0 require lines; go 1.25.3
+## commits on top of the base f1fcd1738894e9dcd28c7ac4b2fed5bf7aa87b04: 5
+cbb09c2 test: H17 evidence: version, the sweep, the README's length, all tests under -race
+9eae9b9 docs: §17 row 81: versions are tags; handoff version; a shorter README
+fdb70fd docs: README: half the length, in short plain sentences
+e16a9cf feat: handoff version says which release is installed
+d9dd08e refactor: name no person in the reviewer's H16 evidence
+## files changed after 9eae9b94e223a5657306adbf54a9b73a52769bf7, where the implementer's evidence was collected:
+ evidence/h17/README.md        |  13 ++++
+ evidence/h17/collect.sh       |  89 ++++++++++++++++++++++
+ evidence/h17/deps-vet-fmt.log |   8 ++
+ evidence/h17/go-test-race.log | 173 ++++++++++++++++++++++++++++++++++++++++++
+ evidence/h17/names.log        |  29 +++++++
+ evidence/h17/readme.log       |  19 +++++
+ evidence/h17/version.log      |   9 +++
+ 7 files changed, 340 insertions(+)

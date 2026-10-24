@@ -15,8 +15,8 @@ import (
 // this project (proposal §7, §17 rows 67, 73). It prints; it never edits a
 // settings file (§9). With --as, every session of the CLI here has that
 // role. Without it, each session takes the role the operator gives it (handoff role),
-// and one that starts with none takes the role named after the CLI, if the
-// project has one and no running session holds it.
+// and one the operator has given none has none: no session takes a role by
+// itself (row 80).
 func (a *app) cmdSettings(args []string) (int, error) {
 	fs := flag.NewFlagSet("settings", flag.ContinueOnError)
 	as := fs.String("as", "", "")
@@ -33,18 +33,14 @@ func (a *app) cmdSettings(args []string) (int, error) {
 	if _, ok := a.cfg.role(*as); *as != "" && (!ok || *as == status.Operator) {
 		return 0, fmt.Errorf("unknown role %q; the roles are %s", *as, a.roleNames())
 	}
-	prefer := ""
-	if _, ok := a.cfg.role(pos[0]); ok && *as == "" {
-		prefer = pos[0]
-	}
 	if pos[0] == "codex" {
-		return exitOK, a.printCodexSettings(selfCommand(), *as, prefer)
+		return exitOK, a.printCodexSettings(selfCommand(), *as)
 	}
 	record := a.dir
 	if real, err := filepath.EvalSymlinks(record); err == nil {
 		record = real
 	}
-	b, err := json.MarshalIndent(claudeSettings(selfCommand(), *as, prefer, record), "", "  ")
+	b, err := json.MarshalIndent(claudeSettings(selfCommand(), *as, record), "", "  ")
 	if err != nil {
 		return 0, err
 	}
@@ -55,20 +51,16 @@ work whenever its turn ends, and it runs handoff without asking, but never
 decide, nor edits .handoff/.
 
 %s
-`, whose("Claude Code", *as, prefer), b)
+`, whose("Claude Code", *as), b)
 	return exitOK, nil
 }
 
 // whose says where a CLI's sessions get their role.
-func whose(cli, role, prefer string) string {
+func whose(cli, role string) string {
 	if role != "" {
 		return fmt.Sprintf("Every %s session in this project is then %s.", cli, role)
 	}
-	s := fmt.Sprintf("Every %s session in this project then takes the role you give it:\ntell it, and it runs handoff role <role>.", cli)
-	if prefer != "" {
-		s += fmt.Sprintf(" One that starts with no role takes\n%s, if no other session has it.", prefer)
-	}
-	return s
+	return fmt.Sprintf("Every %s session in this project then takes the role you give it:\ntell it, and it runs handoff role <role>. Until then it has none.", cli)
 }
 
 // claudeSettings are Claude Code settings: the session's role when it is
@@ -78,13 +70,9 @@ func whose(cli, role, prefer string) string {
 // own settings, but every worktree shares the one record, so the rules name
 // it in full ("//" starts an absolute path in Claude Code's rules). The
 // Edit rule covers every tool that writes a file.
-func claudeSettings(h, role, prefer, record string) map[string]any {
+func claudeSettings(h, role, record string) map[string]any {
 	hook := func(name string) map[string]any {
-		args := []string{"hook", name}
-		if prefer != "" && name != "notify" {
-			args = append(args, "--prefer", prefer)
-		}
-		return map[string]any{"type": "command", "command": h, "args": args}
+		return map[string]any{"type": "command", "command": h, "args": []string{"hook", name}}
 	}
 	// listen waits up to 23 hours; the CLI's limit for it is a day.
 	listen := hook("listen")
@@ -116,13 +104,11 @@ func claudeSettings(h, role, prefer, record string) map[string]any {
 // shell, so each starts with exec: the hook's parent is then Codex itself,
 // and listen notices when Codex dies. Codex passes hooks its own
 // environment, which may have no HANDOFF_ROLE, so each names a fixed role.
-func (a *app) printCodexSettings(h, role, prefer string) error {
+func (a *app) printCodexSettings(h, role string) error {
 	cmd := func(hook string) string {
 		c := "exec " + shellQuote(h) + " hook " + hook
 		if role != "" {
 			c += " --as " + shellQuote(role)
-		} else if prefer != "" {
-			c += " --prefer " + shellQuote(prefer)
 		}
 		return c
 	}
@@ -163,6 +149,6 @@ you; handoff decide is forbidden.
 # handoff writes only under .handoff/ and has no network code (proposal §9).
 prefix_rule(pattern=[%s], decision="allow", justification="handoff runs outside the sandbox so that it can notify the operator")
 prefix_rule(pattern=[%s, "decide"], decision="forbidden", justification="The operator decides, not an agent")
-`, files, whose("Codex", role, prefer), fixed, config, b, q, q)
+`, files, whose("Codex", role), fixed, config, b, q, q)
 	return nil
 }

@@ -1,0 +1,33 @@
+# command: go build and handoff version in this worktree and in a plain clone (tagged, untagged, after a tag, dirty); go install …@v0.1.0 via a file:// module proxy; the version test in both
+# date: 2026-10-24 21:13:30 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: cbb09c235ffb661bf0c73f8726800fda9ed309d3
+
+## built in this checkout (a linked worktree):
+worktree               handoff (devel)  -> matches the test's regex
+	mod	github.com/dre4success/handoff	(devel)	
+## a plain clone, same commit, no tag:
+clone, untagged        handoff v0.0.0-20261024210540-cbb09c235ffb  -> DOES NOT MATCH the test's regex
+	mod	github.com/dre4success/handoff	v0.0.0-20261024210540-cbb09c235ffb	
+## the clone with v0.1.0 on this commit:
+clone, at the tag      handoff v0.1.0  -> matches the test's regex
+## the clone with v0.1.0 on this commit and a dirty tree:
+clone, tag, dirty      handoff v0.1.0+dirty  -> matches the test's regex
+## the clone one commit after the tag (v0.1.0 moved to 9eae9b94e223a5657306adbf54a9b73a52769bf7, built at this commit):
+clone, after the tag   handoff v0.1.1-0.20261024210540-cbb09c235ffb  -> DOES NOT MATCH the test's regex
+## go install github.com/dre4success/handoff/cmd/handoff@v0.1.0 through a file:// module proxy made from the tag (on this commit):
+go install @v0.1.0     handoff v0.1.0  -> matches the test's regex
+--version              handoff v0.1.0  -> matches the test's regex
+	path	github.com/dre4success/handoff/cmd/handoff
+	mod	github.com/dre4success/handoff	v0.1.0	h1:EDjj7hBjh156vjiuPuHtOyEYNJsiIBFt23gqVUNlO/0=
+## version from /, outside any project or repository: handoff v0.1.0; exit 0
+## TestH17VersionNamesTheBuild in the plain clone, no tag:
+--- FAIL: TestH17VersionNamesTheBuild (0.19s)
+    version_test.go:17: handoff version: <nil>, "handoff v0.0.0-20261024210540-cbb09c235ffb\n"
+    version_test.go:17: handoff --version: <nil>, "handoff v0.0.0-20261024210540-cbb09c235ffb\n"
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	0.727s
+FAIL
+# go test exit: 1
+## the same test in this worktree:
+ok  	github.com/dre4success/handoff/cmd/handoff	0.571s

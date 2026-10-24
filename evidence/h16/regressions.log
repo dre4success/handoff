@@ -1,0 +1,35 @@
+# command: this commit's session_test.go, pickup_test.go and roles_test.go, on ba519c17ae10e7a01d4d9a805fde3ec653f68541 (main), then here: -run 'TestH16|TestH11InitWithNoFlags|TestH11BriefCommandsRunForClaudeAndCodex|TestH12ACodexThreadKeepsItsRoleAlone'
+# date: 2026-10-24 20:01:57 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: dd077444b8345dd455a97e7b90bc9ecbef02f759
+
+## at ba519c17ae10e7a01d4d9a805fde3ec653f68541 (expected to fail: a session takes the role named after its CLI, settings pass --prefer, init makes claude and codex, and there is no roles command)
+    pickup_test.go:45: roles [{Name:claude Reviews:true} {Name:codex Reviews:true}], main "main"; want implementer, reviewer and reviewer-2, on main
+--- FAIL: TestH11InitWithNoFlags (0.33s)
+    pickup_test.go:127: settings claude:
+    pickup_test.go:132: settings codex printed no "handoff hook listen\"", or a role:
+    pickup_test.go:132: settings codex printed no "handoff hook brief\"", or a role:
+--- FAIL: TestH16SettingsNeverPickARole (0.11s)
+--- PASS: TestH11BriefCommandsRunForClaudeAndCodex (0.33s)
+    roles_test.go:25: handoff [roles add implementer reviewer,reviewer-2] as "": exit 2
+--- FAIL: TestH16RolesAddKeepsTheRecord (0.11s)
+    roles_test.go:58: handoff [roles add reviewer] as "": exit 2, stderr "handoff: unknown command \"roles\"\n\nusage: handoff [command] [flags]\n\n  (none)  in a project: what waits for the operator's decision; at a terminal, decide each\n  init    [--roles claude,codex] [--reviewers <roles>] [--ma
+--- FAIL: TestH16RolesAddRefuses (0.05s)
+    session_test.go:211: after the first thread's parent ended:
+--- FAIL: TestH12ACodexThreadKeepsItsRoleAlone (1.26s)
+    session_test.go:275: s-first's brief at its start:
+--- FAIL: TestH16AStartTakesNoRole (0.09s)
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	2.862s
+FAIL
+
+## at dd077444b8345dd455a97e7b90bc9ecbef02f759 (expected to pass)
+--- PASS: TestH11InitWithNoFlags (0.40s)
+--- PASS: TestH16SettingsNeverPickARole (0.10s)
+--- PASS: TestH11BriefCommandsRunForClaudeAndCodex (0.35s)
+--- PASS: TestH16RolesAddKeepsTheRecord (0.21s)
+--- PASS: TestH16RolesAddRefuses (0.16s)
+--- PASS: TestH12ACodexThreadKeepsItsRoleAlone (1.25s)
+--- PASS: TestH16AStartTakesNoRole (0.15s)
+ok  	github.com/dre4success/handoff/cmd/handoff	3.020s
+# go test exit: 0

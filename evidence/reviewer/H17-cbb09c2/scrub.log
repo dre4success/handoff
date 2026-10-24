@@ -1,0 +1,12 @@
+# command: python3 -I h14-scrub.py <worktree at f1fcd1738894e9dcd28c7ac4b2fed5bf7aa87b04>; git diff against d9dd08e; tree ids
+# date: 2026-10-24 21:13:37 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: cbb09c235ffb661bf0c73f8726800fda9ed309d3
+
+renamed 0 files; changed 2 files
+ evidence/reviewer/H16-500e00d/merge-dry-run.log | 4 ++--
+ evidence/reviewer/H16-500e00d/probes.log        | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+## the reproduced diff is identical to d9dd08e's
+## tree the script makes: fce83ed0d206aea0023afd1f685b30bed5ecdadb
+## tree of d9dd08e:         fce83ed0d206aea0023afd1f685b30bed5ecdadb

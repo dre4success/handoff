@@ -11,6 +11,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"time"
@@ -23,8 +24,9 @@ import (
 const usage = `usage: handoff [command] [flags]
 
   (none)  in a project: what waits for the operator's decision; at a terminal, decide each
-  init    [--roles claude,codex] [--reviewers <roles>] [--main <branch>]
+  init    [--roles implementer,reviewer,reviewer-2] [--reviewers <roles>] [--main <branch>]
           (every role reviews but implementer; main, else master)
+  roles   add <role>...         add roles to the record, such as a second reviewer
   post    --item W31 --to reviewer --commit <ref> --title T --body file
           [--base <ref>] [--on <branch>] [--parents a,b] [--supersedes <id>] [--key k]
   claim   <id>
@@ -40,6 +42,7 @@ const usage = `usage: handoff [command] [flags]
           without --as, each session takes the role the operator gives it
   hook    listen|brief|notify   run by a CLI's hooks, as settings prints
   repair
+  version                       the version of handoff installed
   help
 
 The caller's role comes from --as <role>, HANDOFF_ROLE, or the role the operator gave
@@ -81,6 +84,10 @@ func run(args []string, stdin *os.File, stdout, stderr io.Writer) int {
 		fmt.Fprint(stderr, usage)
 		return exitOK
 	}
+	if len(args) > 0 && (args[0] == "version" || args[0] == "--version") {
+		fmt.Fprintln(stdout, "handoff", version())
+		return exitOK
+	}
 	cwd, err := os.Getwd()
 	if err != nil {
 		fmt.Fprintln(stderr, "handoff:", err)
@@ -106,6 +113,7 @@ func run(args []string, stdin *os.File, stdout, stderr io.Writer) int {
 		"note": a.cmdNote, "decide": a.cmdDecide, "inbox": a.cmdInbox, "wait": a.cmdWait,
 		"show": a.cmdShow, "repair": a.cmdRepair, popupCmd: a.cmdPopup,
 		"brief": a.cmdBrief, "hook": a.cmdHook, "settings": a.cmdSettings, "role": a.cmdRole,
+		"roles": a.cmdRoles,
 	}
 	cmd, ok := cmds[args[0]]
 	if !ok {
@@ -122,6 +130,17 @@ func run(args []string, stdin *os.File, stdout, stderr io.Writer) int {
 		return exitRefused
 	}
 	return code
+}
+
+// version is the module version handoff was built from (row 81): the tag,
+// such as v0.1.0, when installed with go install …@v0.1.0 or @latest. Built
+// in a clone, it is the tag at a tag and a pseudo-version made from the
+// commit otherwise; built in a linked worktree, (devel).
+func version() string {
+	if bi, ok := debug.ReadBuildInfo(); ok && bi.Main.Version != "" {
+		return bi.Main.Version
+	}
+	return "(devel)"
 }
 
 // config is .handoff/config.json.

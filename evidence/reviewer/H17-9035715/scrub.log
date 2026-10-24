@@ -1,0 +1,10 @@
+# command: python3 -I h14-scrub.py <worktree at f1fcd1738894e9dcd28c7ac4b2fed5bf7aa87b04> against d9dd08e; python3 -I evidence/h14/stale-hashes.py d9dd08e^ d9dd08e d9dd08e^ 90357151cc9da1b6159f0b60d718df38379e5af8
+# date: 2026-10-24 21:29:32 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 90357151cc9da1b6159f0b60d718df38379e5af8
+
+renamed 0 files; changed 2 files
+## the reproduced diff is identical to d9dd08e's; tree fce83ed0d206aea0023afd1f685b30bed5ecdadb = fce83ed0d206aea0023afd1f685b30bed5ecdadb
+2 files changed; 10 hashes of the bytes that changed
+## at f1fcd17: 512 files searched, 0 quote one
+## at 9035715: 521 files searched, 0 quote one

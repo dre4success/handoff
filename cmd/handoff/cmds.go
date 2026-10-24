@@ -48,7 +48,9 @@ func noArgs(pos []string) error {
 
 func (a *app) cmdInit(args []string) (int, error) {
 	fs := flag.NewFlagSet("init", flag.ContinueOnError)
-	roles := fs.String("roles", "claude,codex", "")
+	// Roles are named by job, not by agent, so no one reads a role as a
+	// model (row 80).
+	roles := fs.String("roles", "implementer,reviewer,reviewer-2", "")
 	reviewers := fs.String("reviewers", "", "")
 	mainBranch := fs.String("main", "", "")
 	pos, err := parse(fs, args)
@@ -77,12 +79,10 @@ func (a *app) cmdInit(args []string) (int, error) {
 	}
 	for _, name := range strings.Split(*roles, ",") {
 		name = strings.TrimSpace(name)
-		switch {
-		case !roleName.MatchString(name):
-			return 0, fmt.Errorf("role %q: use lower-case letters, digits and '-'", name)
-		case name == status.Operator:
-			return 0, errors.New("operator is built in; do not list it")
-		case slices.ContainsFunc(cfg.Roles, func(r roleCfg) bool { return r.Name == name }):
+		if err := checkRoleName(name); err != nil {
+			return 0, err
+		}
+		if _, ok := cfg.role(name); ok {
 			return 0, fmt.Errorf("role %q is listed twice", name)
 		}
 		// With no --reviewers, every role reviews but one named implementer,
@@ -110,6 +110,30 @@ func (a *app) cmdInit(args []string) (int, error) {
 	if err := record.WriteFileAtomic(filepath.Join(dir, "config.json"), append(b, '\n')); err != nil {
 		return 0, err
 	}
+	fmt.Fprintf(a.stdout, "Created %s. Git ignores it; nothing else in the project changed.\n", dir)
+	writeRoles(a.stdout, &cfg)
+	fmt.Fprintf(a.stdout, "Main branch: %s.\n\nTo keep each CLI's sessions on duty here, run these and do what they say:\n", cfg.Main)
+	h := shellQuote(selfCommand())
+	for _, cli := range []string{"claude", "codex"} {
+		fmt.Fprintf(a.stdout, "  %s settings %s\n", h, cli)
+	}
+	fmt.Fprintf(a.stdout, "Then give each session its role: tell it, such as \"you review\", and it runs %s role <role>.\n", h)
+	return exitOK, nil
+}
+
+// checkRoleName checks the name of a role to be made.
+func checkRoleName(name string) error {
+	switch {
+	case !roleName.MatchString(name):
+		return fmt.Errorf("role %q: use lower-case letters, digits and '-'", name)
+	case name == status.Operator:
+		return errors.New("operator is built in; do not list it")
+	}
+	return nil
+}
+
+// writeRoles says what the roles are and which of them review.
+func writeRoles(w io.Writer, cfg *config) {
 	var names, revNames []string
 	for _, r := range cfg.Roles {
 		names = append(names, r.Name)
@@ -117,21 +141,66 @@ func (a *app) cmdInit(args []string) (int, error) {
 			revNames = append(revNames, r.Name)
 		}
 	}
-	fmt.Fprintf(a.stdout, "Created %s. Git ignores it; nothing else in the project changed.\n", dir)
 	if len(revNames) == len(names) {
-		fmt.Fprintf(a.stdout, "Roles: %s. %s can implement or review.\n", listOf(names, "and"), map[bool]string{true: "Either", false: "Each"}[len(names) == 2])
+		fmt.Fprintf(w, "Roles: %s. %s can implement or review.\n", listOf(names, "and"), map[bool]string{true: "Either", false: "Each"}[len(names) == 2])
 	} else {
-		fmt.Fprintf(a.stdout, "Roles: %s; %s %s.\n", listOf(names, "and"), listOf(revNames, "and"), map[bool]string{true: "reviews", false: "review"}[len(revNames) == 1])
+		fmt.Fprintf(w, "Roles: %s; %s %s.\n", listOf(names, "and"), listOf(revNames, "and"), map[bool]string{true: "reviews", false: "review"}[len(revNames) == 1])
 	}
-	fmt.Fprintf(a.stdout, "Main branch: %s.\n\nTo keep each CLI's sessions on duty here, run these and do what they say:\n", cfg.Main)
-	h := shellQuote(selfCommand())
-	for _, cli := range []string{"claude", "codex"} {
-		if _, ok := cfg.role(cli); ok {
-			fmt.Fprintf(a.stdout, "  %s settings %s\n", h, cli)
-		} else {
-			fmt.Fprintf(a.stdout, "  %s settings %s --as <role>\n", h, cli)
+}
+
+// cmdRoles adds roles to a record (row 80), such as a second reviewer, or
+// roles named by job in a record made with roles named after the agents.
+// Entries name roles, so a role is never renamed or removed, and adding one
+// changes no entry. A new role reviews unless it is named implementer, as at
+// init. Under the sessions' lock, two adds at once never lose one.
+func (a *app) cmdRoles(args []string) (int, error) {
+	if len(args) == 0 || args[0] != "add" {
+		return 0, errors.New("roles needs add: handoff roles add <role>...")
+	}
+	pos, err := parse(flag.NewFlagSet("roles add", flag.ContinueOnError), args[1:])
+	if err == nil && len(pos) == 0 {
+		err = errors.New("roles add needs a role, such as reviewer-2")
+	}
+	if err == nil {
+		err = a.open()
+	}
+	if err != nil {
+		return 0, err
+	}
+	unlock, err := a.lockSessions()
+	if err != nil {
+		return 0, err
+	}
+	defer unlock()
+	if err := a.open(); err != nil { // again, under the lock
+		return 0, err
+	}
+	cfg := *a.cfg
+	cfg.Roles = slices.Clone(cfg.Roles)
+	var added []string
+	for _, arg := range pos {
+		for _, name := range strings.Split(arg, ",") {
+			name = strings.TrimSpace(name)
+			if err := checkRoleName(name); err != nil {
+				return 0, err
+			}
+			if _, ok := cfg.role(name); ok {
+				if slices.Contains(added, name) {
+					return 0, fmt.Errorf("role %q is listed twice", name)
+				}
+				return 0, fmt.Errorf("%s is already a role; the roles are %s", name, a.roleNames())
+			}
+			cfg.Roles = append(cfg.Roles, roleCfg{Name: name, Reviews: name != "implementer"})
+			added = append(added, name)
 		}
 	}
+	b, _ := json.MarshalIndent(cfg, "", "  ")
+	if err := record.WriteFileAtomic(filepath.Join(a.dir, "config.json"), append(b, '\n')); err != nil {
+		return 0, err
+	}
+	fmt.Fprintf(a.stdout, "Added %s.\n", listOf(added, "and"))
+	writeRoles(a.stdout, &cfg)
+	fmt.Fprintf(a.stdout, "Give a session a role by telling it; it runs %s role <role>.\n", shellQuote(selfCommand()))
 	return exitOK, nil
 }
 

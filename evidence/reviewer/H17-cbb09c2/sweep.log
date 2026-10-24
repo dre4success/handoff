@@ -1,0 +1,23 @@
+# command: H14's sweep (the patterns file outside the repository) over git archive of f1fcd1738894e9dcd28c7ac4b2fed5bf7aa87b04 and of this commit; python3 -I evidence/h14/stale-hashes.py d9dd08e^ d9dd08e d9dd08e^ cbb09c235ffb661bf0c73f8726800fda9ed309d3
+# date: 2026-10-24 21:13:37 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: cbb09c235ffb661bf0c73f8726800fda9ed309d3
+
+## f1fcd1738894e9dcd28c7ac4b2fed5bf7aa87b04
+512 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 4 lines, 0 file names
+a path under a home folder, other than the test's made-up ones: 4 lines, 0 file names
+the other project's name: 0 lines, 0 file names
+the operator's email domains: 0 lines, 0 file names
+## cbb09c235ffb661bf0c73f8726800fda9ed309d3
+520 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder, other than the test's made-up ones: 0 lines, 0 file names
+the other project's name: 0 lines, 0 file names
+the operator's email domains: 0 lines, 0 file names
+## hashes
+2 files changed; 10 hashes of the bytes that changed
+## at f1fcd17: 512 files searched, 0 quote one
+## at cbb09c2: 520 files searched, 0 quote one

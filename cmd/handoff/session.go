@@ -214,17 +214,16 @@ func (a *app) lockSessions() (unlock func(), err error) {
 // bind gives s the role. It drops s's earlier binding (and, for Claude
 // Code, any other in the same process, whose conversation /clear ended),
 // the role's binding to another session (took says whether that one may
-// still run), and bindings whose session has ended. With ifFree, it binds
-// only when no session that may still run holds the role.
-func (a *app) bind(s session, role string, ifFree bool) (took, ok bool, err error) {
+// still run), and bindings whose session has ended.
+func (a *app) bind(s session, role string) (took bool, err error) {
 	unlock, err := a.lockSessions()
 	if err != nil {
-		return false, false, err
+		return false, err
 	}
 	defer unlock()
 	bs, err := a.bindings()
 	if err != nil {
-		return false, false, err
+		return false, err
 	}
 	var drop []binding
 	for _, b := range bs {
@@ -232,8 +231,6 @@ func (a *app) bind(s session, role string, ifFree bool) (took, ok bool, err erro
 		switch {
 		case mine:
 			drop = append(drop, b)
-		case b.Role == role && b.running() && ifFree:
-			return false, false, nil
 		case b.Role == role:
 			drop = append(drop, b)
 			took = took || b.running()
@@ -243,10 +240,10 @@ func (a *app) bind(s session, role string, ifFree bool) (took, ok bool, err erro
 	}
 	for _, b := range drop {
 		if err := os.Remove(a.bindingPath(b.Session)); err != nil && !errors.Is(err, fs.ErrNotExist) {
-			return false, false, err
+			return false, err
 		}
 	}
-	return took, true, a.writeBinding(binding{V: 1, Role: role, Session: s.ID, PID: s.PID, Host: s.Host, Since: time.Now().UTC().Format(time.RFC3339)})
+	return took, a.writeBinding(binding{V: 1, Role: role, Session: s.ID, PID: s.PID, Host: s.Host, Since: time.Now().UTC().Format(time.RFC3339)})
 }
 
 func (a *app) writeBinding(b binding) error {
@@ -257,34 +254,23 @@ func (a *app) writeBinding(b binding) error {
 // sessionRole is the role a hook's session holds, with its binding brought
 // up to date: a new process or host noted, as after a resume. At a start:
 // after Claude Code's /clear, the role of the one binding in the same
-// process moves to the new id; and a session with no role takes prefer if
-// no session that may still run holds it.
-func (a *app) sessionRole(s session, in hookInput, prefer string) (string, bool) {
+// process moves to the new id. A session with no role gets none (row 80).
+func (a *app) sessionRole(s session, in hookInput) (string, bool) {
 	if s.ID == "" {
 		return "", false
 	}
-	starting := in.Event == "SessionStart"
 	if b, ok := a.bound(s); ok {
 		if (b.PID != s.PID || b.Host != s.Host) && !a.update(s, b.Role) {
 			return "", false // the role moved meanwhile
 		}
 		return b.Role, true
 	}
-	if starting && in.Source == "clear" && s.PID > 0 {
+	if in.Event == "SessionStart" && in.Source == "clear" && s.PID > 0 {
 		if role, ok := a.moveCleared(s); ok {
 			return role, true
 		}
 	}
-	if !starting || prefer == "" {
-		return "", false
-	}
-	if _, ok := a.cfg.role(prefer); !ok {
-		return "", false
-	}
-	if _, ok, err := a.bind(s, prefer, true); err != nil || !ok {
-		return "", false
-	}
-	return prefer, true
+	return "", false
 }
 
 // update notes s's process and host in its binding, and says whether s
@@ -364,7 +350,7 @@ func (a *app) cmdRole(args []string) (int, error) {
 	if env := os.Getenv("HANDOFF_ROLE"); env != "" && env != name {
 		return 0, fmt.Errorf("this session's settings fix its role to %s (HANDOFF_ROLE); refused", env)
 	}
-	took, _, err := a.bind(s, name, false)
+	took, err := a.bind(s, name)
 	if err != nil {
 		return 0, err
 	}

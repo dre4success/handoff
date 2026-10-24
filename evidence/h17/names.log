@@ -1,0 +1,29 @@
+# command: H14's sweep at f1fcd1738894e9dcd28c7ac4b2fed5bf7aa87b04 (main) and here; git diff --numstat, --name-only and the words put in by d9dd08e; H14's hash sweep
+# date: 2026-10-24 21:26:29 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 43e00fd050808c603a3f27508d9858c8590a8e4b
+
+## the sweep at f1fcd1738894e9dcd28c7ac4b2fed5bf7aa87b04 (main)
+512 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 4 lines, 0 file names
+a path under a home folder, other than the test's made-up ones: 4 lines, 0 file names
+the other project's name: 0 lines, 0 file names
+the operator's email domains: 0 lines, 0 file names
+## the sweep here
+520 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder, other than the test's made-up ones: 0 lines, 0 file names
+the other project's name: 0 lines, 0 file names
+the operator's email domains: 0 lines, 0 file names
+## d9dd08e
+2 files; 4 lines in, 4 lines out
+evidence/reviewer/H16-500e00d/merge-dry-run.log
+evidence/reviewer/H16-500e00d/probes.log
+   2 ~/handoff/evidence/reviewer/H16-500e00d/probes.sh:
+   2 ~/handoff/.git/worktrees/h16-review/refs
+## hashes
+2 files changed; 10 hashes of the bytes that changed
+## at f1fcd17: 512 files searched, 0 quote one
+## at 43e00fd: 520 files searched, 0 quote one

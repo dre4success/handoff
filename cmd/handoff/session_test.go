@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -181,8 +182,7 @@ func TestH12ARoleOutlivesClearAndResume(t *testing.T) {
 // Codex's hooks may share a parent, a server for many threads (GPT-6's
 // probe, evidence/reviewer/H12-50a8c2d/shared-codex-parent.txt). So a thread
 // keeps its role by its id alone: another thread under the same parent, at
-// any kind of start, gets none, and cannot take it as its preferred role
-// while that parent runs.
+// any kind of start, gets none.
 func TestH12ACodexThreadKeepsItsRoleAlone(t *testing.T) {
 	r := newRepo(t)
 	r.as(t, codex("t-1"), "role", "implementer")
@@ -205,8 +205,9 @@ func TestH12ACodexThreadKeepsItsRoleAlone(t *testing.T) {
 		t.Fatalf("the first thread: %s", out)
 	}
 	r.refusedIn(t, codex("t-2"), "no role", "inbox")
-	// That parent has ended: a new thread may take the role it prefers.
-	if out := r.run(t, "", hookIn("t-4", "SessionStart"), codex("t-4"), "hook", "brief", "--prefer", "implementer").out; !strings.Contains(out, "you are implementer") {
+	// That parent has ended, and a new thread still gets none: --prefer, from
+	// settings made before row 80, is ignored.
+	if out := r.run(t, "", hookIn("t-4", "SessionStart"), codex("t-4"), "hook", "brief", "--prefer", "implementer").out; !strings.Contains(out, "this session has no role in it") {
 		t.Fatalf("after the first thread's parent ended:\n%s", out)
 	}
 }
@@ -258,33 +259,32 @@ func TestH12AWaitStopsWhenItsRoleMoves(t *testing.T) {
 	}
 }
 
-// A session that starts with no role takes the one named after its CLI if
-// no running session holds it; a second session gets none and is told how
-// to get one. A role is taken only at a start.
-func TestH12AStartTakesTheCLIsRoleIfFree(t *testing.T) {
+// Row 80: a session that starts with no role gets none, even where a role
+// is named after its CLI and settings made before row 80 still pass
+// --prefer. It is told how to get one, and has one once the operator gives it.
+func TestH16AStartTakesNoRole(t *testing.T) {
 	r := plainRepo(t, "main")
-	r.ok(t, "", "init")
-	firstPID, endFirst := cliEnds(t)
-	defer endFirst()
-	first, second := claude("s-first", firstPID), claude("s-second", cli(t))
-	if out := r.run(t, "", hookIn("s-first", "SessionStart"), first, "hook", "brief", "--prefer", "claude").out; !strings.Contains(out, "you are claude") {
-		t.Fatalf("the first session's brief:\n%s", out)
+	r.ok(t, "", "init", "--roles", "claude,codex")
+	first, second := claude("s-first", cli(t)), codex("t-second")
+	for _, s := range []struct {
+		id  string
+		env []string
+	}{{"s-first", first}, {"t-second", second}} {
+		out := r.run(t, "", hookIn(s.id, "SessionStart"), s.env, "hook", "brief", "--prefer", "claude").out
+		if !strings.Contains(out, "this session has no role in it") || !strings.Contains(out, " role <role>` (the roles are claude, codex)") {
+			t.Fatalf("%s's brief at its start:\n%s", s.id, out)
+		}
+		if res := r.run(t, "", hookIn(s.id, "Stop"), s.env, "hook", "listen", "--prefer", "claude", "--timeout", "1s"); res.code != 0 || res.err != "" {
+			t.Fatalf("%s: listen with no role: exit %d\n%s", s.id, res.code, res.err)
+		}
+		r.refusedIn(t, s.env, "no role", "inbox")
 	}
-	out := r.run(t, "", hookIn("s-second", "SessionStart"), second, "hook", "brief", "--prefer", "claude").out
-	if !strings.Contains(out, "this session has no role in it") || !strings.Contains(out, " role <role>` (the roles are claude, codex)") {
-		t.Fatalf("the second session's brief:\n%s", out)
+	if entries, _ := os.ReadDir(filepath.Join(r.dir, ".handoff", sessionsDir)); slices.ContainsFunc(entries, func(e os.DirEntry) bool { return !strings.HasPrefix(e.Name(), ".") }) {
+		t.Fatalf("a session was given a role: %v", entries)
 	}
-	r.as(t, second, "role", "codex") // a Claude Code session may hold codex
-	third := claude("s-third", cli(t))
-	if res := r.run(t, "", hookIn("s-third", "Stop"), third, "hook", "listen", "--prefer", "claude", "--timeout", "1s"); res.code != 0 {
-		t.Fatalf("listen at a Stop with no role: exit %d\n%s", res.code, res.err)
-	}
-	r.refusedIn(t, third, "no role", "inbox")
-	// Once the first session's process has ended, a new session takes claude.
-	endFirst()
-	fourth := claude("s-fourth", cli(t))
-	if out := r.run(t, "", hookIn("s-fourth", "SessionStart"), fourth, "hook", "brief", "--prefer", "claude").out; !strings.Contains(out, "you are claude") {
-		t.Fatalf("after the first session ended:\n%s", out)
+	r.as(t, first, "role", "codex") // the operator gives the Claude Code session codex
+	if out := r.run(t, "", hookIn("s-first", "SessionStart", "resume"), first, "hook", "brief", "--prefer", "claude").out; !strings.Contains(out, "you are codex") {
+		t.Fatalf("after the operator gave it codex:\n%s", out)
 	}
 }
 

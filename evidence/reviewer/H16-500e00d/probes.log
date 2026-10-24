@@ -1,0 +1,98 @@
+# command: bash probes.sh
+# date: 2026-10-24 20:32:38 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (go1.25.3, 2.55.0)
+# commit: 500e00df48b1f56426682fd715682733bc8a94a7
+
+## P1: hooks from settings made before H16 (--prefer) never fail and never bind, at every kind of start, at Stop, and at a notification
+# claude SessionStart source=startup, hook brief --prefer claude:
+handoff: p1 hands work between agents through handoff, and this session has no role in it. When the operator gives you one, run `handoff role <role>` (the roles are claude, codex); it prints your brief. Until then, leave handoff alone.
+# exit 0
+# claude SessionStart source=resume, hook brief --prefer claude:
+handoff: p1 hands work between agents through handoff, and this session has no role in it. When the operator gives you one, run `handoff role <role>` (the roles are claude, codex); it prints your brief. Until then, leave handoff alone.
+# exit 0
+# claude SessionStart source=clear, hook brief --prefer claude:
+handoff: p1 hands work between agents through handoff, and this session has no role in it. When the operator gives you one, run `handoff role <role>` (the roles are claude, codex); it prints your brief. Until then, leave handoff alone.
+# exit 0
+# claude SessionStart source=compact, hook brief --prefer claude:
+handoff: p1 hands work between agents through handoff, and this session has no role in it. When the operator gives you one, run `handoff role <role>` (the roles are claude, codex); it prints your brief. Until then, leave handoff alone.
+# exit 0
+# claude Stop, hook listen --prefer claude --timeout 1s:
+# exit 0
+# claude Notification permission_prompt, hook notify:
+# exit 0
+# codex SessionStart, hook brief --prefer codex:
+handoff: p1 hands work between agents through handoff, and this session has no role in it. When the operator gives you one, run `handoff role <role>` (the roles are claude, codex); it prints your brief. Until then, leave handoff alone.
+# exit 0
+# codex Stop, hook listen --prefer codex --timeout 1s:
+# exit 0
+# .handoff/sessions after all of that: [.lock ]
+# inbox from the Claude session (no role):
+handoff inbox: no role: when the operator gives this session one, run `handoff role <role>`; or give --for <role>
+# exit 2
+# alerts sent: 0
+
+## P2: ten roles add at once, then five adds of one name at once
+roles: ['implementer(no review)', 'reviewer', 'reviewer-2', 'r2', 'r1', 'r6', 'r7', 'r8', 'r5', 'r4', 'r10', 'r3', 'r9'] main: main quiet_after: 30m
+add same: exit 0 
+add same: exit 2 handoff roles: same is already a role; the roles are impleme
+add same: exit 2 handoff roles: same is already a role; the roles are impleme
+add same: exit 2 handoff roles: same is already a role; the roles are impleme
+add same: exit 2 handoff roles: same is already a role; the roles are impleme
+same appears 1 time(s); roles: 14
+
+## P3: roles add while a reviewer's wait runs; the new role is addressable at once and can hold, claim and reply
+# before add: post --to reviewer-2:
+handoff post: unknown role "reviewer-2"; the roles are implementer, reviewer
+# exit 2
+
+$ handoff roles add reviewer-2
+Added reviewer-2.
+Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.
+Give a session a role by telling it; it runs handoff role <role>.
+# exit: 0
+# after add: post --to reviewer-2:
+posted #1 request W1 implementer → reviewer-2: W1 @ d9e1486f1c30
+# exit 0
+# a Codex thread takes reviewer-2:
+You are now reviewer-2 in p3.
+needs my review:
+  #1 request W1 implementer → reviewer-2: W1 @ d9e1486f1c30
+posted #2 claim W1 reviewer-2 → -: claimed #1
+posted #3 reply W1 reviewer-2 → implementer: APPROVE on #1 @ d9e1486f1c30
+handoff: told the operator: W1: reviewer-2 approved #1. Your decision.
+# reply exit 0
+# the reviewer's wait still runs: yes
+# the reviewer's wait returned: exit 0
+#4 request W2 implementer → reviewer: W2 @ d9e1486f1c30
+roles: ['implementer(no review)', 'reviewer', 'reviewer-2'] main: main quiet_after: 30m
+
+## P4: handoff role <new> racing roles add <new>, 20 times: never a corrupt config, never a role that is not in it
+# role succeeded: 0, refused as unknown: 20, other: 0
+config parses; 23 roles
+
+## P5: roles add keeps quiet_after and main, and every byte of the record
+
+$ handoff roles add implementer reviewer
+Added implementer and reviewer.
+Roles: claude, codex, implementer and reviewer; claude, codex and reviewer review.
+Give a session a role by telling it; it runs handoff role <role>.
+# exit: 0
+.handoff/channel.jsonl: OK
+.handoff/head.json: OK
+roles: ['claude', 'codex', 'implementer(no review)', 'reviewer'] main: main quiet_after: 45m
+needs my review:
+  #1 request W1 claude → codex: W1 @ 5a21b9d5f37f
+
+## P6: refusals write nothing
+$ handoff roles add reviewer -> handoff roles: reviewer is already a role; the roles are implementer, reviewer, reviewer-2
+$ handoff roles add implementer,reviewer-9 -> handoff roles: implementer is already a role; the roles are implementer, reviewer, reviewer-2
+$ handoff roles add operator -> handoff roles: operator is built in; do not list it
+$ handoff roles add Bad -> handoff roles: role "Bad": use lower-case letters, digits and '-'
+$ handoff roles add a..b -> handoff roles: role "a..b": use lower-case letters, digits and '-'
+$ handoff roles remove reviewer -> handoff roles: roles needs add: handoff roles add <role>...
+$ handoff roles add -> handoff roles: roles add needs a role, such as reviewer-2
+# config.json unchanged
+
+# alerts across all probes: 1; awake holds: 2
+~/handoff/evidence/reviewer/H16-500e00d/probes.sh: line 109: 59049 Terminated: 15          sleep 300 > /dev/null 2>&1
+~/handoff/evidence/reviewer/H16-500e00d/probes.sh: line 109: 59165 Terminated: 15          sleep 300 > /dev/null 2>&1
