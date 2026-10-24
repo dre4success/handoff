@@ -1,0 +1,31 @@
+# command: the H10b tests on abe51939226d18e48058a40cd9cf7a62846e141b (H10a) with this commit's tests copied in, then here
+# date: 2026-10-18 22:36:40 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0, codex-cli 0.162.1)
+# commit: deafc7b62188c49df32f9fdfa15011ea42f99d5c
+
+## at abe51939226d18e48058a40cd9cf7a62846e141b (expected: the settings, brief and role tests fail, since settings codex and the brief's --as aren't there; the shellQuote test passes, since H10a has it)
+    codex_test.go:54: exit 2, stdout "", stderr "handoff settings: settings needs a CLI: claude\n"
+--- FAIL: TestH10bSettingsCodex (0.39s)
+    codex_test.go:96: exit 2, stdout "", stderr "handoff settings: settings needs a CLI: claude\n"
+--- FAIL: TestH10bCodexReadsTheRules (0.17s)
+    codex_test.go:130: missing "claim --as reviewer <id>" in
+--- FAIL: TestH10bBriefNamesTheRole (0.19s)
+--- PASS: TestH10bShellQuote (0.00s)
+    codex_test.go:157: exit 2, stdout "", stderr "handoff settings: settings needs a CLI: claude\n"
+--- FAIL: TestH10bTheRoleKeepsBareHandoffFromTheOperatorsQuestion (0.25s)
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	1.846s
+FAIL
+
+## at deafc7b62188c49df32f9fdfa15011ea42f99d5c (expected to pass)
+--- PASS: TestH10bSettingsCodex (0.45s)
+--- PASS: TestH10bCodexReadsTheRules (0.42s)
+--- PASS: TestH10bBriefNamesTheRole (0.20s)
+--- PASS: TestH10bShellQuote (0.00s)
+--- PASS: TestH10bTheRoleKeepsBareHandoffFromTheOperatorsQuestion (0.31s)
+--- PASS: TestH10Brief (0.30s)
+--- PASS: TestH10BriefCommandsRun (0.36s)
+--- PASS: TestH10SettingsClaude (0.21s)
+--- PASS: TestH10SettingsInALinkedWorktree (0.20s)
+ok  	github.com/dre4success/handoff/cmd/handoff	2.892s
+# go test exit: 0

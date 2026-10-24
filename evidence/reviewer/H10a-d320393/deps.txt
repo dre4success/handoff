@@ -1,0 +1,7 @@
+by: Codex, reviewer
+commit: d32039302bf41a7049b99a67882f269ca78ab4fc
+date: 2026-10-18T22:08:08.895962+00:00
+cwd: /private/tmp/handoff-review-H10a-d320393
+command: go list -m all
+github.com/dre4success/handoff
+exit: 0

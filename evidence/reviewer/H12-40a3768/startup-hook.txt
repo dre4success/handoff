@@ -1,0 +1,39 @@
+by: Codex, reviewer
+commit: 40a37680b9d51997c762bc602928b7afec2c977a
+date: 2026-10-21T04:40:20.266801+00:00
+cwd: /private/tmp/handoff-review-H12-40a3768
+command: python3 ~/handoff/evidence/reviewer/H12-40a3768/check-startup.py hook
+kind: hook scratch: /private/tmp/handoff-h12-startup-race-fhbgggp4 ; seeded 300 unrelated bindings through the CLI to widen the read/transfer overlap
+attempt 0 delay 0 old listener exit 0
+attempt 1 delay 0.0005 old listener exit 0
+attempt 2 delay 0.001 old listener exit 0
+attempt 3 delay 0.002 old listener exit 0
+attempt 4 delay 0.004 old listener exit 0
+attempt 5 delay 0.008 old listener exit 0
+attempt 6 delay 0 old listener exit 0
+attempt 7 delay 0.0005 old listener exit 0
+attempt 8 delay 0.001 old listener exit 0
+attempt 9 delay 0.002 old listener exit 0
+attempt 10 delay 0.004 old listener exit 0
+attempt 11 delay 0.008 old listener exit 0
+attempt 12 delay 0 old listener exit 0
+attempt 13 delay 0.0005 old listener exit 0
+attempt 14 delay 0.001 old listener exit 0
+attempt 15 delay 0.002 old listener exit 0
+attempt 16 delay 0.004 old listener exit 0
+attempt 17 delay 0.008 old listener exit 0
+attempt 18 delay 0 old listener exit 0
+attempt 19 delay 0.0005 old listener exit 0
+attempt 20 delay 0.001 old listener exit 0
+attempt 21 delay 0.002 old listener exit 0
+attempt 22 delay 0.004 old listener exit 0
+attempt 23 delay 0.008 old listener exit 0
+attempt 24 delay 0 old listener exit 0
+attempt 25 delay 0.0005 old listener exit 0
+attempt 26 delay 0.001 old listener exit 0
+attempt 27 delay 0.002 old listener exit 0
+attempt 28 delay 0.004 old listener exit 0
+attempt 29 delay 0.008 old listener exit 0
+found: False
+PASS: prior startup exploit not reproduced in 30 attempts.
+exit: 0

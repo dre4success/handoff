@@ -1,0 +1,107 @@
+# command: two throwaway interactive Claude Code sessions (claude --model haiku) in one scratch project, set up by `handoff settings claude` with no --as; each told its role in its first prompt; driven through pseudo-terminals, nobody typing after
+# date: 2026-10-21 04:37:53 UTC
+# by: Opus 5.5 (implementer), on the operator's Mac, 2.1.306 (Claude Code)
+# commit: e374bdf957b9ceebf916a466f261bb067f1d0a8f
+
+## the settings (no role fixed: no env, no --as)
+{
+  "hooks": {
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "args": [
+              "hook",
+              "notify"
+            ],
+            "command": "<scratch>/handoff",
+            "type": "command"
+          }
+        ],
+        "matcher": "permission_prompt"
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "args": [
+              "hook",
+              "brief"
+            ],
+            "command": "<scratch>/handoff",
+            "type": "command"
+          },
+          {
+            "args": [
+              "hook",
+              "listen"
+            ],
+            "asyncRewake": true,
+            "command": "<scratch>/handoff",
+            "timeout": 86400,
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "args": [
+              "hook",
+              "listen"
+            ],
+            "asyncRewake": true,
+            "command": "<scratch>/handoff",
+            "timeout": 86400,
+            "type": "command"
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(<scratch>/handoff *)"
+    ],
+    "deny": [
+      "Bash(<scratch>/handoff decide *)",
+      "Edit(/<scratch>/live-two/.handoff/**)"
+    ]
+  }
+}
+
+## what happened (driver log; times UTC)
+04:37:01Z opus-side: claude started, pid 66768
+04:37:03Z seen: opus-side: the trust dialog or the prompt
+04:37:03Z opus-side: trust dialog: choosing 'Yes, I trust this folder'
+04:37:09Z seen: opus-side: a binding for implementer
+04:37:10Z seen: opus-side: READY-A
+04:37:10Z fable-side: claude started, pid 67322
+04:37:15Z seen: fable-side: the trust dialog or the prompt
+04:37:16Z seen: fable-side: a binding for reviewer
+04:37:17Z seen: fable-side: READY-B
+04:37:22Z bindings: {"reviewer": {"session": "fd3e31d8\u2026", "pid is a claude process": true}, "implementer": {"session": "6dd138c7\u2026", "pid is a claude process": true}}
+04:37:22Z the two sessions differ: True
+04:37:22Z listening for implementer: {"v":1,"pid":67319,"since":"2026-10-21T04:37:10Z","how":"hook"}
+04:37:22Z listening for reviewer: {"v":1,"pid":67872,"since":"2026-10-21T04:37:16Z","how":"hook"}
+04:37:22Z a request to reviewer, posted from outside both sessions: exit 0; posted #1 request T1 implementer → reviewer: T1: add a.txt @ 4509e989105c
+04:37:29Z seen: the reviewer's session runs handoff show or claim
+04:37:29Z the reviewer woke and acted 7.2s after the post
+04:37:29Z the implementer's session ran handoff since the post: []
+04:37:41Z seen: a reply by reviewer in the record
+04:37:41Z replied 19s after the post
+04:37:47Z seen: the implementer's session runs handoff show for the reply
+04:37:47Z the implementer woke and read it 5.2s after the reply
+04:37:47Z the record: ["#1 request T1", "#2 claim T1", "#3 reply T1"]
+04:37:47Z implementer's session ran: ["<scratch>/handoff role implementer", "<scratch>/handoff show 3"]
+04:37:47Z implementer's session said: ["READY-A", "The reviewer approved item T1 (#1) at commit 4509e989105c. The commit adds only `a.txt` with \"hello\\n\" and has no stray files.\n\nPer the handoff brief, approval is not a merge. The operator decides whether to merge, so I'm waiting for that decision and have not merged anything."]
+04:37:47Z reviewer's session ran: ["<scratch>/handoff role reviewer", "<scratch>/handoff show 1", "<scratch>/handoff claim --as reviewer 1", "git show --stat 4509e989105c51787c8eb01c7666aad5bc2b16f6 && git show 4509e989105c51787c8eb01c7666aad5bc2b16f6 -- a.txt && git show 4509e989105c51787c8eb01c7666aad5bc2b16f6^:a.txt 2>&1; echo \"exit=$?\"", "WT=/private/tmp/claude-501/-private-var-folders-c3-j-s5gt-d1gx6w3lrjyr5j-rr0000gn-T-tmp-ILYeV7dEXR-live-two/fd3e31d8-76a6-4e94-bc06-643537116fc6/scratchpad/review-wt && git worktree add --detach \"$WT\" 4509e989105c51787c8eb01c7666aad5bc2b16f6 >/dev/null 2>&1 && (cd \"$WT\" && git status --short && ls -la a.txt && od -c a.txt && git log --oneline -2) ; git worktree remove --force \"$WT\" && git worktree list", "cat > /private/tmp/claude-501/-private-var-folders-c3-j-s5gt-d1gx6w3lrjyr5j-rr0000gn-T-tmp-ILYeV7dEXR-live-two/fd3e31d8-76a6-4e94-bc06-643537116fc6/scratchpad/review-1.md <<'EOF'\nReviewed 4509e989105c51787c8eb01c7666aad5bc2b16f6 in a temporary worktree (clean status).\n\n- Adds only a.txt (new file, 1 line, 6 bytes: \"hello\\n\"), so the diff matches the request.\n- Ends with a trailing newline; no stray files.\n- Parent 92c0983 does not contain a.txt, as expected for an \"add\" commit.\n\nNo issues found.\nEOF\n<scratch>/handoff reply --as reviewer 1 --verdict APPROVE --commit 4509e989105c51787c8eb01c7666aad5bc2b16f6 --body /private/tmp/claude-501/-private-var-folders-c3-j-s5gt-d1gx6w3lrjyr5j-rr0000gn-T-tmp-ILYeV7dEXR-live-two/fd3e31d8-76a6-4e94-bc06-643537116fc6/scratchpad/review-1.md"]
+04:37:47Z reviewer's session said: ["READY-B", "I reviewed request #1 (T1: add a.txt) and posted an APPROVE reply on commit 4509e98.\n\n- The commit adds only `a.txt`, a new file with one line, `hello\\n`.\n- I checked it in a clean temporary worktree, which I then removed.\n- The parent commit has no `a.txt`, as expected.\n\nThe operator has been told and the merge decision is theirs. I'm listening for reviewer again."]
+04:37:53Z hook processes left: (none)
+04:37:53Z done
+
+## notifications (sent to a file)
+live-two: T1: reviewer approved #1. Your decision.

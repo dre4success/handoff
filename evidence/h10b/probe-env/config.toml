@@ -1,0 +1,2 @@
+[shell_environment_policy]
+set = { HANDOFF_ROLE = "codex" }

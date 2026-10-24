@@ -1,0 +1,4 @@
+{"hooks": {
+  "SessionStart": [{"hooks": [{"type": "command", "command": "<probe>/start.sh", "timeout": 30}]}],
+  "Stop": [{"hooks": [{"type": "command", "command": "<probe>/stop.sh", "timeout": 120}]}]
+}}

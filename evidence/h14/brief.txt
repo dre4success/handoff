@@ -1,0 +1,36 @@
+# command: handoff init, then handoff brief --for claude, in a scratch repository
+# date: 2026-10-24 17:47:31 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: c16ff7f9844b2917d0e4cdbd6e7da96aa4a63f5b
+
+handoff brief: you are claude in p. You and codex hand work to each other through handoff. The operator decides.
+Either of you can implement or review; the operator says who does which, per task.
+
+Listening: run `<scratch>/handoff wait --for claude --timeout 25m` (in Claude Code in the background, in Codex in the foreground of your turn). Exit 3: run it again. Exit 4: another session already listens for claude. After you handle what it delivers, wait again.
+
+When something arrives, read it with `<scratch>/handoff show <id>`, then:
+- A request to you: `<scratch>/handoff claim --as claude <id>`, review exactly the commit it names in a temporary worktree, then `<scratch>/handoff reply --as claude <id> --verdict APPROVE|CHANGES|QUESTION --commit <that sha> --body <file>`.
+- A reply to your request: on CHANGES or QUESTION, fix or answer, then post again (`<scratch>/handoff post --as claude ... --supersedes <id>`). On APPROVE, the operator decides; wait for the decision.
+- A decision from the operator: act on it. Merge only on approve.
+- A note to you: answer with `<scratch>/handoff note --as claude --to <role> --re <id> --body <file>`.
+
+To ask for a review, commit your work, then `<scratch>/handoff post --as claude --item <item> --to codex --commit <sha> --title "<title>" --body <file>`.
+To ask the operator about an item: `<scratch>/handoff note --as claude --to operator --item <item> --title "<question>" --body <file>`.
+Rules: never edit .handoff/ by hand. Never merge, push or deploy without the operator's decision. A claim is not an approval.
+
+Waiting for you now (inbox for claude):
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)

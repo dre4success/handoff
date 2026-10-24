@@ -1,0 +1,345 @@
+# Handoff: a channel tool for two agents and one operator
+
+*Author: Claude (Fable 5.1), drafter. **Revision 2, 2026-10-09**, after three independent reviews in `docs/reviews/`: GPT-6 (`16b07db`), Opus 5.5 (`c4ca8f8`), Fable 5.1 (`1e68a29`). Status: **approved by the operator on 2026-10-09** (channel H4); roles assigned. Revision 2.1 adds row 51 from GPT-6's H3 self-assessment. Revision 1 is in git history (`2010fcf`).*
+
+*§17 lists every review point with its source and outcome. §15 lists what only the operator can decide. Review points are cited as G§n (GPT-6), O§n (Opus 5.5) and F§n (Fable 5.1), by the section of the review they appear in.*
+
+## 1. The heart of it
+
+The operator starts each agent by hand, in its own session, and gives it the project and the rules. After that, the implementer and the reviewer talk to each other, not through the operator: a request, a verdict, a fix, a re-review, round and round until the item is approved. The operator reads the record whenever they like and is called in only to decide. The two agents are different models on purpose, so their judgement stays independent. This has to work the same on any project, with any pair of agent CLIs, and the record has to stay readable by a person.
+
+The website project already does all of this except one thing: the operator carries every message, because neither session has a reliable way to wait. `handoff` removes that one thing. It does not think for the agents and it does not run them.
+
+## 2. Principles that do not change
+
+- The agents own their judgement and their loop. The tool never calls a model.
+- The record is a file in the project. It is append-only and a person can read it.
+- The operator is the gate. Nothing merges, pushes or deploys because of the tool.
+- A verdict comes only from a reviewing role, names the exact commit it reviewed, and a claim never counts as approval.
+- Every entry's commit is resolved and checked before it is written. No placeholders.
+- Evidence is labelled and copied where it will not vanish. **Run:** executed here, with the command and output kept. **Source:** a named document, file, or a tool's own description. **Live:** observed on a running installation that real people use, such as a live website. **Inferred:** reasoning not checked.
+- The tool promises detectable failure, not impossibility: a damaged record is reported and preserved, never silently extended.
+- The tool is vendor-neutral: Claude Code and Codex today, anything with a shell tomorrow.
+
+## 3. A working day
+
+| Step | Who | What happens |
+|---|---|---|
+| Start | The operator | Opens each session in the project with its role in the environment, for example `HANDOFF_ROLE=reviewer codex`. Pastes the brief that `handoff brief --for <role>` prints: the open threads and the duty prompt. |
+| Wait | Each session | Runs `handoff wait --for <role>` the way its CLI needs (§7): Claude Code in the background, Codex in the foreground of its open turn. It returns with every entry past the role's cursor, or after a wall-clock timeout, and the session runs it again. |
+| Work | Implementer | Builds and commits, posts a request naming the exact commit, goes back to waiting. |
+| Review | Reviewer | Wakes, reads the request, claims it, reviews that commit, replies with a verdict, goes back to waiting. |
+| Answer | Implementer | Answers a QUESTION with a note linked to it; answers CHANGES with a new commit and a request that supersedes the old one. |
+| Loop | Both | Until APPROVE. An APPROVE moves the item to the operator's list. |
+| Decide | The operator | Is notified for an entry addressed to the operator, and for a stall: a request unclaimed past `stall_minutes` whose addressee has no live `wait` and no recent activity. The stall check runs inside any live `wait`, for any role; if no `wait` is alive anywhere, nothing fires, and the operator finds out by looking or by the optional check job (§8). The operator restarts the dead session and pastes its brief. |
+
+## 4. What the tool is, and is not
+
+**It is:** one binary, `handoff`, that both sessions and the operator call. It validates and writes entries, computes each item's status from the record, renders the Markdown, answers "what is waiting for me", blocks until something is, keeps evidence, and notifies the operator.
+
+Computing status is a reducer over entries: open, claimed, answered, superseded, awaiting the operator, decided. It describes what happened. It never chooses the next piece of work.
+
+**It is not:** a daemon that spawns agents, a scheduler, a state machine that drives the work, a judge of code, a replacement for the operator's approval, a web service, a cross-machine system, or a guarantee that a notification arrives when no process of it is running.
+
+## 5. The record
+
+### Where it lives
+
+One record per repository, independent of branch and worktree. It lives in `.handoff/` at the root of the main worktree, is found from any worktree through `git rev-parse --git-common-dir`, and is gitignored: never on a branch, never in a commit. A tracked record would rewind on every `git checkout`, land in feature-branch commits, conflict on merge, break its hash chain, and split into one copy per worktree (O§10, F§5, G§3). `doctor` warns if it is tracked. `git clean -fdx` deletes ignored files, so `export` writes a dated archive outside the repository for backup (§10). The alternative, `.git/handoff/`, survives `clean` and is shared by every worktree automatically, but is harder for a person to find; that choice is the operator's (§15, D1).
+
+### Files
+
+| File | What |
+|---|---|
+| `channel.jsonl` | The source of truth: one JSON object per entry, bodies included, append-only, hash-chained. Only `handoff` writes it. Never split. |
+| `head.json` | Schema version, the hash of the last line and the line count, written in the same locked operation as every append. Detects a cut tail. |
+| `CHANNEL.md`, `board.md` | Rendered views, replaced atomically, each carrying the record position it reflects. Never hand-edited. `render` moves closed threads older than `archive_days` into `CHANNEL_archive_N.md`, verbatim. |
+| `cursors/<role>.json` | The last entry id delivered to that role by `wait`. |
+| `presence/<role>.json` | The role's `wait` PID and start time, last activity, last turn end. |
+| `notified.json` | Which stalls and operator entries have already been notified, so nothing repeats. |
+| `evidence/<item>/<sha256 prefix>-<name>` | Copied evidence, named by content, so adding a file never overwrites one an earlier entry cites. |
+| `prompts/<role>.md` | The duty prompt `brief` prints for that role. |
+| `config.json` | Roles, main branch, `stall_minutes`, `archive_days`, notification method. JSON, so the tool needs no dependency. |
+| `lock` | The lock every writer takes. |
+
+### An entry
+
+```json
+{"v":1,"id":42,"ts":"2026-10-12T09:14:03Z","kind":"request","item":"W31","from":"implementer","to":"reviewer","title":"W31 at 3f2a9c1: French labels on the WSF page","commit":"3f2a9c1e5b7d4e8a9c217d4e5f6a8b90c1d2e3f4","base":"9dd9a850144ed12292bcdb33b06257d30664c763","parents":null,"re":null,"supersedes":null,"verdict":null,"key":"w31-r1","body":"…the Markdown body, inline…","evidence":[{"path":"evidence/W31/3a9f1c2e-lint.log","sha256":"…","label":"Run","by":"implementer"}],"prev":"<sha256 of the previous line's bytes>"}
+```
+
+- `id` is a sequential integer, safe because every writer holds the lock, and short enough to type (O§5).
+- `kind` is one of `request`, `claim`, `reply`, `note`, `decision`, `repair`. Required fields per kind: a request has `item`, `to`, `commit`; a reply has `re`, `commit`, `verdict`; a claim and a note have `re` or `item`; a decision has `re`. Anything else is refused.
+- The body is inside the line, so one write covers everything and the hash chain covers the text (O§5, G§5). `show` and `CHANNEL.md` give people the readable form.
+- `prev` is the hash of the previous line's raw bytes; the first line's `prev` is the fixed string `genesis`.
+
+### Writing
+
+- One line, one write, one sync, under the lock. `head.json` is updated in the same operation. The two files cannot be written atomically together, so `head.json` is advisory: when it disagrees with a chain that verifies intact to the last line, `repair` rewrites `head.json` and posting continues. Only a chain that fails to verify refuses posts (row 51).
+- Before appending, the writer checks that the file ends with a newline. A torn tail from a killed writer is never joined to: ordinary posts are refused until `repair` runs. `repair` preserves the damaged bytes, closes them, and appends a `repair` entry whose `prev` is the hash of those bytes, so the chain continues through the damage (O§5, G§5).
+- A caller may give `--key`. Repeating a key with identical content returns the existing entry's receipt, so a retried command after a lost receipt creates nothing. Repeating it with different content is refused. Without a key, an entry identical in kind, item, from, to, commit, `re`, verdict and body hash to one in the same open thread is refused (G§5, O§5, F§5).
+- The append is durable before anything is rendered. If rendering fails, the receipt is still printed and the failure is reported; the next `render` catches up (G§5).
+
+### What the chain proves
+
+An edit to a line in the middle shows as a `prev` mismatch. A cut tail shows as a mismatch against `head.json`. Someone who can write both files can recompute everything, since both sessions run as the same user; the chain makes tampering deliberate and visible, not impossible (G§2, O§5).
+
+### Existing channels
+
+The website project's hand-written `IMPLEMENTATION_CHANNEL.md` and its archives stay exactly as they are, as history. Structured entries start with the next work item. The tool never guesses the meaning of old prose.
+
+## 6. Commands
+
+### Roles
+
+`config.json` lists the roles, for example `implementer`, `reviewer` and `reviewer-2`, each with `reviews: true` or `false`. `operator` is built in. A request names its addressee; `claim` and `reply` are accepted from the addressed role, not from "the reviewer" (O§6, F§1). The caller's role comes from `HANDOFF_ROLE`, set by the operator when launching the session, or from `--as <role>` on the command. A pasted prompt cannot set it: in Claude Code every shell call is a fresh shell (O§6, F§3). If both are given and differ, the command is refused; if neither, the command is refused. `--for` selects which inbox or cursor to read and never confers a role (G§8).
+
+### Version 1
+
+| Command | What it does | Refuses when |
+|---|---|---|
+| `init --roles implementer,reviewer --main main` | Writes `.handoff/` with `config.json` and the duty prompts, adds `.handoff/` to `.gitignore` if asked, and **prints** the lines for `CLAUDE.md` and `AGENTS.md` and the permission rules for each CLI (§7). Never edits those files | `.handoff/` exists |
+| `post --item W31 --to reviewer --commit <ref> --title … --body file.md [--base <ref>] [--on <branch>] [--parents a,b] [--supersedes <id>] [--key k] [--evidence file:Label …]` | Resolves every ref once with `git rev-parse --verify <ref>^{commit}`, stores full ids, defaults `--base` to `git merge-base <commit> <main>`, stamps the time, appends, renders | the commit does not exist; `--on` given and the commit is not on it; an open request on the same item from the same role exists and `--supersedes` does not name it |
+| `claim <id>` | "Seen, review started." Idempotent per role, so a restarted session can claim again | the caller is not the addressee; the entry is not a request |
+| `reply <id> --verdict APPROVE\|CHANGES\|QUESTION --commit <sha> --body file.md` | The verdict for exactly that commit. Several replies to one request are allowed and all are kept; the latest from the addressed role stands. A reply to a superseded request is recorded but changes nothing | the caller's role has `reviews: false`; the caller is not the addressee; `--commit` differs from the request's; the id is not a request |
+| `note --item W31 --to <role\|operator> [--re <id>] --body file.md` | Anything that is not a request or a verdict. With `--re`, it answers that entry: a note from the addressee of a QUESTION or CHANGES counts as the answer | |
+| `decide <id> --approve\|--deny --body file.md` | The operator's decision on an entry addressed to the operator. Requires a terminal on stdin and the id typed again | the role is not the operator; stdin is not a terminal |
+| `inbox [--for role] [--quiet]` | Four lists: needs my review, being reviewed by me, needs my response, awaiting the operator. Everything open, whatever the cursor says. `--quiet` prints nothing and exits 1 when something waits, 0 when nothing does, for hooks | |
+| `wait --for role [--timeout 25m] [--emit]` | Delivers every entry past the role's cursor, then blocks until a new one lands; the cursor moves only after printing. Exit 0 with entries, 3 on timeout. `--emit` streams one line per entry and exits 3 at the timeout | |
+| `show <id>`, `thread W31`, `board`, `brief --for role` | Read without re-reading everything. `brief` prints the open threads and the duty prompt | |
+| `render` | Regenerates `CHANNEL.md` and `board.md`, reporting a hand edit first | |
+
+### After the first trial
+
+`verify-merge <sha>` (parents in order, conflicts rejected, tree compared with `git merge-tree --write-tree` in a temporary object directory, git version recorded), `verify-commit <sha> [--on branch]`, `evidence add`, `presence`, `doctor`, `export`, and `mcp`, a stdio server exposing inbox, wait, claim, reply and show. `verify-merge` stays a separate command: a failed check is itself worth recording as a note, not swallowed as a refusal (F§6).
+
+### An item's states
+
+| State | Reached by |
+|---|---|
+| open | a request |
+| claimed | a claim from the addressee |
+| answered | a reply; QUESTION and CHANGES wait for the implementer's note or new request |
+| superseded | a later request with `--supersedes` |
+| awaiting operator | an APPROVE from the addressed reviewing role, or any entry `--to operator` |
+| decided | a decision |
+
+Whether APPROVE alone closes an item, or the operator's decision is always required, is D3.
+
+## 7. Waiting, per CLI
+
+Facts checked on the operator's machine on 2026-10-09 by the three reviewers (**Run** unless marked): Claude Code 2.1.295, Codex CLI 0.162.0, git 2.55.0.
+
+**Claude Code.** The session runs `handoff wait --for <role> --timeout 25m` **in the background** and runs it again each time it returns. A background command re-invokes the session when it exits; a 0.5-second poll woke a session 0.45 s after an append (O§3). A foreground call is capped at ten minutes and is moved to the background when it times out, so it must not be used (O§3, F§3). The Monitor tool also works, 9 ms latency, but lives at most 30 minutes and can miss an entry posted between two arms (O§3 reproduced this); the per-role cursor makes that harmless, and `--emit` with a Monitor stays available for a session that wants a stream. An MCP call longer than two minutes is backgrounded and behaves like the background shell call; the shim is a server to maintain for no gain, so it stays "later" (O§3).
+
+Three hooks keep a session on duty, all printed by `init` for the project's settings:
+- `Stop`: blocks the end of a turn only when this role has no live `wait` (a PID check on presence), with the reason "start `handoff wait` in the background". Not "when the inbox is non-empty", which would block every turn while the operator talks to the session (O§3, F§3). Claude Code ends the turn anyway after eight consecutive blocks.
+- `SessionStart` with the `compact`, `startup` and `resume` matchers: runs `handoff brief --for "$HANDOFF_ROLE"`, so a summarised session is re-primed without a paste (F§8, O§3).
+- `Notification` with the `permission_prompt` matcher: records presence `needs-operator`, which notifies the operator. Better, `init` prints `allow: ["Bash(handoff *)"]` and `deny: ["Bash(handoff decide *)", "Edit(/.handoff/**)"]`, so a session on duty never waits at a prompt and cannot casually decide or hand-edit the record (O§6, O§8).
+
+**Codex.** The session runs `handoff wait --for <role> --timeout 25m` in the foreground of its open turn, as its current listener already does, with yielding tool waits so the session stays responsive, and runs it again on timeout (G§3). Codex's documented hooks (`Stop`, which may request continuation, `SessionStart`, `SessionEnd`, `Interrupt`) and its `notify` program on turn end can report presence; `notify` must be set in the user's configuration, not the project's (G§3, **Source**). If the MCP shim is ever used, its tool timeout must be raised from Codex's 60-second default (G§3, **Source**). The trade-off stays as today: while Codex waits, its turn is open, so typing to it interrupts the wait.
+
+**Change detection.** `wait` polls `stat` on `channel.jsonl` once a second: size and modification time. No filesystem-event library: on macOS `fsnotify` uses kqueue, which watches a descriptor and reports spurious events, and a poll was needed as a fallback anyway (O§7). One `stat` a second meets check 8 and leaves the tool with no third-party dependency.
+
+**Sleep.** On macOS the monotonic clock stops while the machine sleeps, in Go (`mach_absolute_time`) and in Rust (`CLOCK_UPTIME_RAW`) alike (F§3, **Source**: the Go runtime, the Rust standard library, `clock_gettime(2)`). So `time.After` and `Instant` measure awake time. `wait` takes its deadline from the wall clock, compares on every tick, records a gap when a tick arrives late, and on wake delivers any entry past the cursor before treating an expired deadline as an empty timeout (G§3). Nothing posts during sleep, so nothing is lost during it; the edges are tested with an injected clock, and once for real with the operator present (check 9).
+
+## 8. Priming and presence
+
+- **Priming is the operator's, by design.** Each role's duty prompt lives in `prompts/<role>.md` and says: the role, the exact wait command for this CLI, what to do when it returns, how to reply, the verdict words, the evidence labels, and the rules (never edit `.handoff/` by hand; never merge, push or deploy; a claim is not an approval). `brief` prints it with the open threads. In Claude Code the `SessionStart` hook prints it after compaction; the paste is the fallback.
+- **Presence** is a last observation, never proof. `wait` writes its PID and start time; a reader treats "waiting" as true only if that PID is alive. Hooks that fire on tool use or turn end refresh "last activity". A role with no live `wait` and no activity for longer than `stall_minutes` reads as absent; a crash that ran no hook reads the same way (G§8, O§8).
+- **Notifications** have one owner each. The process that posts an entry `--to operator` notifies the operator. Any live `wait` checks for stalls on each tick and notifies once per stalled entry, recorded in `notified.json`. Overdue work found after a sleep is notified on resume. The default method is a macOS notification through `osascript` (F§8, **Run**). An optional read-only `handoff check` that the operator may run from launchd every few minutes covers the case where no `wait` is alive; it reads and notifies and nothing else (G§4, O§3; D2).
+
+## 9. Safety rules
+
+- No network: `go list -deps ./...` must show no `net` package (O§5).
+- Git never changes a ref, the index or a working tree, and never adds objects to the repository's store. `verify-merge` runs `git merge-tree --write-tree` with `GIT_OBJECT_DIRECTORY` pointing at a temporary directory and `GIT_ALTERNATE_OBJECT_DIRECTORIES` at the repository's objects, then deletes the directory (O§9, G§9; **Run**: object count unchanged).
+- Writes go only under the record directory and temporary directories the tool deletes. `init` prints; it never edits `CLAUDE.md`, `AGENTS.md` or settings (G§10, O§6).
+- The tool never starts, stops or messages an agent.
+- A verdict is accepted only from a role with `reviews: true`, for the exact commit the request named. A claim, a receipt or a check never manufactures an approval. A verdict on a superseded request changes no state.
+- `decide` requires a terminal. Roles are declared, not authenticated; the record names the caller, and a mismatch between `HANDOFF_ROLE` and `--as` is refused.
+- Generated files are detected by hash when hand-edited, reported, and re-rendered.
+
+## 10. Per-project setup
+
+1. `handoff init` in the main worktree. It writes `.handoff/`, offers to add it to `.gitignore`, and prints the lines for `CLAUDE.md` and `AGENTS.md` and the per-CLI permission rules and hooks.
+2. The operator starts each session with its role in the environment and pastes its brief.
+3. Backup: `handoff export` writes a dated archive of the record outside the repository; the operator keeps it wherever the project's other backups live. This replaces revision 1's "commit the record", which the reviews showed would break the record (§5).
+
+Two sessions in one shared checkout and two sessions in separate worktrees both work: the record is found through the common git directory either way. In a shared checkout, the reviewer reads commits with `git show` and `git worktree add` into a temporary directory rather than switching the implementer's branch (G§3).
+
+For the website project: the record starts with the first item after release 1; the existing channel stays as history; the hand-maintained status board is replaced by `board.md` at that point, as one deliberate switch.
+
+## 11. Lineage: Tripartite is the opposite approach, and nothing is ported
+
+Tripartite (February to March 2026, Go, 14,800 non-test lines, 83 runs, last commit 1 March) had the same goal and the opposite mechanism. It owned the loop and the memory: a cycle state machine called each model headless, one shot per state, with a template prompt that demanded fixed headings and a parser that read the answer back. Its commit log records the cost: parser drift, brainstorm hangs, stream pipe-close races, quorum cutoffs for slow providers. The models were used as functions inside someone else's loop, with context stripped on every call.
+
+The website channel inverted every one of those choices, and it works. `handoff` formalises what emerged rather than imposing a loop. No code is carried over: the adapters launch and parse CLIs, the store keeps run layouts, the worktree helpers isolate agent runs, the brokers are in-memory tickets, and each would pull Tripartite's types in with it. Ideas carry over: the operator's narrow role, artifacts on disk, and a later brainstorm command outside the loop. The Tripartite repository stays as the record of what not to rebuild. It is not forked.
+
+## 12. Language
+
+All three reviews recommend Go, and so does this proposal. Both toolchains are installed (**Run**: Go 1.25.3, Rust 1.97.1). With a `stat` poll and a JSON config, everything the tool does is in Go's standard library: files, `flock`, JSON, SHA-256, `os/exec` for git, time. No third-party dependency at all. Go compiles in seconds, which matters because the agents iterate hundreds of times. Rust fits too and would pull in `serde`, `serde_json` and `clap`; its strengths are not needed here, and the sleep-clock problem is identical in both. Rust is the right choice only if the operator wants the learning value; the cost is slower iteration, unmeasured. The operator decides (D11). The name stays `handoff`: it names the act, and `relay` names what the tool removes.
+
+## 13. Verification
+
+Every check is satisfied only by **Run** evidence saved under `evidence/` in this repository: the command, the date, who ran it. Checks marked *the operator* need the operator present.
+
+1. Two writers post at once: both land, in order, under the lock. Fifty processes posting twenty entries each give 1,000 lines, sequential ids, an unbroken chain.
+2. The same `post` command run twice gives one entry; a reused `--key` with different content is refused.
+3. A writer killed leaving no trailing newline: the next post refuses, `repair` preserves the bytes, no good line is damaged, the chain continues.
+4. A cut tail is detected against `head.json`; an edited middle line is detected by `prev`.
+5. `reply` is refused for a different commit, for a role with `reviews: false`, for a non-addressee, and recorded without effect against a superseded request.
+6. A second revision posted with `--supersedes`: both visible, the first shows as superseded, only the exact-commit verdict on the second changes state.
+7. `CHANNEL.md` hand-edited: detected, reported, re-rendered; `render` leaves `channel.jsonl` and the inbox unchanged.
+8. `wait` wakes within two seconds of a post, by polling.
+9. *The operator.* The machine sleeps during a `wait`: an entry posted just before sleep or just after wake is delivered exactly once; a deadline that fell during sleep returns on wake with the gap recorded. The arithmetic is also tested with an injected clock.
+10. In real sessions the operator started, Claude Code's background `wait` and Codex's foreground `wait` each pick up a post addressed to them.
+11. *The operator.* The two-session trial in this repository: a request, a claim, a verdict for the exact commit, a note answering a QUESTION, a superseding request, an APPROVE, with the operator carrying no message.
+12. `verify-merge` reproduces Codex's clean-merge finding on the website project's `9dd9a85` and leaves the object count unchanged.
+13. An entry posted while no `wait` runs is delivered by the next `wait` at once; an entry posted between two Monitor arms is delivered by the second.
+14. The implementer switches branch in a shared checkout while the reviewer waits: the record does not change; two worktrees of one repository resolve to the same record.
+15. A `wait` killed with SIGKILL shows as absent within one poll; a stall is notified once and not again.
+16. `decide` with no terminal on stdin is refused; `HANDOFF_ROLE` and `--as` differing is refused; no role at all is refused.
+17. A Claude Code session's `Stop` hook lets it stop while a `wait` is live and blocks when none is; a `SessionStart` hook on `compact` re-injects the brief.
+18. A retry after a lost receipt, with the same key, creates nothing and returns the original receipt.
+19. Interrupting `wait` leaves no orphan process and a consistent cursor.
+20. `go list -deps` shows no `net`; a before-and-after tree comparison shows no write outside the record directory and deleted temp dirs.
+21. *The operator.* The website-project trial, after release 1.
+
+## 14. Order of work and effort
+
+The riskiest assumption is that each CLI can wait for hours and be woken reliably, so the first step proves it end to end (O§14, G§14, F§14).
+
+| Step | What | Go |
+|---|---|---|
+| 1 | The record: lock, chain, `head.json`, torn-tail rule, keys; `post`, `claim`, `reply`, `note`, `inbox`, `show`; `wait` with its cursor and wall-clock deadline. Checks 1 to 8, 13, 16, 18, 19 | 1 day |
+| 2 | The same day: two of the three sessions the operator has open run it on this repository (checks 10 and 11). Then this project's own channel moves onto it (D7) | half a day |
+| 3 | `render`, `board`, `brief`, duty prompts, hooks, presence, notifications, `init`; checks 14, 15, 17 | 1 day |
+| 4 | `verify-*`, `export`, `doctor`, `evidence add`; checks 12, 20 | half a day |
+| 5 | *The operator.* Checks 9 and 21; `mcp` only if a session asks | later |
+
+Estimates are conditional on the decisions in §15. Steps 1 to 4 touch only this repository. The website trial waits until after release 1 on Saturday 10 October.
+
+## 15. Open decisions for the operator
+
+| # | Decision | Recommendation |
+|---|---|---|
+| D1 | Record location: `.handoff/` gitignored at the main worktree root, or `.git/handoff/` | `.handoff/`, gitignored; `doctor` warns if tracked |
+| D2 | May the operator run an optional read-only `handoff check` from launchd for stall notifications when no `wait` is alive | Yes, optional |
+| D3 | Does a reviewer's APPROVE close an item, or is the operator's decision always required | APPROVE moves it to "awaiting operator"; the operator's `decide` closes it; the board shows both |
+| D4 | Roles as a list from v1, so `reviewer-2` can be addressed at gates | Yes |
+| D5 | `decide` requires a terminal, and `init` prints a deny rule for it | Yes |
+| D6 | Role from the launch environment and `--as`, mismatch refused | Yes |
+| D7 | First trial here, between two of the three open sessions, before the website project; then this project's channel moves onto the tool | Yes |
+| D8 | Sequential integer ids | Yes |
+| D9 | Keep the Mac awake during `wait` | No; wall-clock deadline only |
+| D10 | Who commits `docs/CHANNEL.md` in this repository until roles are assigned | The drafter; afterwards the implementer |
+| D11 | Language | Go |
+| D12 | Roles: who implements, who reviews, who reviews at gates | The operator, from the three reviews |
+| D13 | APPROVE notifies the operator, or only entries addressed to the operator | Yes, since it moves the item to the operator's list |
+
+## 16. Risks
+
+| Risk | Mitigation |
+|---|---|
+| The record rewinds or splits with branches or worktrees | One gitignored record per repository, found through the common git directory |
+| Entries lost between waits | The per-role cursor; `inbox` shows everything open regardless |
+| A session declares the wrong role, or an agent decides | Roles declared, mismatch refused, `decide` needs a terminal, a printed deny rule; misuse is visible in the record |
+| Both sessions dead; nobody notices | Presence, the stall notification from any live `wait`, the optional check job |
+| False stall alarms while a reviewer is busy | Stalled only when the addressee has no live `wait` and no recent activity |
+| The deadline is measured on a clock that stops during sleep | Wall-clock deadline, injected-clock test, one real sleep with the operator |
+| A session forgets to wait again after compaction | `SessionStart` hook on `compact` prints the brief; `Stop` hook blocks when no `wait` is live |
+| A session sits at a permission prompt and presence says "working" | Printed allow rules; `Notification` hook marks "needs operator" |
+| Hand edits to generated files | Detected by hash and re-rendered |
+| The tool grows into Tripartite again | §4 is the boundary: it never calls a model and never drives the loop |
+
+## 17. Resolution log
+
+Sources: G = GPT-6 review, O = Opus 5.5 review, F = Fable 5.1 review, by review section. Outcome: **Accepted** (in this revision), **Declined** (with reason), or **the operator** (listed in §15).
+
+| # | Point | Source | Outcome |
+|---|---|---|---|
+| 1 | Do not commit `.handoff/`; one record per repository, independent of branch and worktree, found via the common git dir | O§10, F§5, G§3 | Accepted (§5); location choice is D1 |
+| 2 | Bodies inside the hashed line; one write per entry | O§5, G§5, F§5 | Accepted (§5) |
+| 3 | A unique id cannot detect a duplicate; define one, add a caller-supplied key | O§5, G§5, F§5 | Accepted (§5): `--key` plus content-equality rule |
+| 4 | Torn tail: check the trailing newline, refuse until `repair`, preserve bytes | O§5, G§5 | Accepted (§5) |
+| 5 | State what the chain proves; keep head hash and line count in a second file | G§2, O§5 | Accepted (§5) |
+| 6 | Sequential ids people can type | O§5 | Accepted; D8 |
+| 7 | Archives are views; the record is never split; no `archive` command in v1 | O§5, G§5 | Accepted (§5, §6) |
+| 8 | Evidence files named by content, never overwritten | G§5 | Accepted (§5) |
+| 9 | Schema version and required fields per kind | G§5 | Accepted (§5) |
+| 10 | Append durable first; receipt even if render fails; rendered files atomic, carrying their position; "cannot go stale" withdrawn | G§5 | Accepted (§5) |
+| 11 | `wait` needs a per-role cursor; deliver outstanding entries before blocking; rescan after wake | O§6, G§6 | Accepted (§6, §7) |
+| 12 | Write the request lifecycle; how QUESTION is answered; whether APPROVE closes | G§6, O§6 | Accepted (§6 table); closure is D3 |
+| 13 | Explicit supersede link between revisions | G§6, F§6 | Accepted: `--supersedes` required when an open request exists |
+| 14 | `reply` targets a request only; several replies kept; verdict on a superseded request changes nothing | G§6, O§6 | Accepted (§6) |
+| 15 | `HANDOFF_ROLE` cannot be set by a paste; launch environment or `--as`; refuse without a role | O§6, F§6, G§8 | Accepted (§6); D6 |
+| 16 | Mismatch between environment and flag: record as an anomaly rather than refuse | F§13 | Declined: refused, as O§6 proposes; a refusal is simpler and the attempt is visible in the session's own output |
+| 17 | `--for` selects the inbox, never the posting role | G§8 | Accepted (§6) |
+| 18 | `init` prints, never writes `CLAUDE.md` or `AGENTS.md` | G§10, O§6 | Accepted (§6, §9) |
+| 19 | `--on` in the synopsis; `--base` defaults to the merge base with the main branch | O§6, G§6 | Accepted (§6) |
+| 20 | Roles as a configured list; accept from the addressee; `reviewer-2` | O§6, F§1 | Accepted (§6); D4 |
+| 21 | Too many commands in v1; cut to twelve, evidence as a flag | O§6 | Accepted (§6) |
+| 22 | `decide` requires a terminal; `init` prints deny and allow rules | O§6, O§3 | Accepted (§6, §7); D5 |
+| 23 | Keep `verify-merge` separate from `post`; a failed check is a note | F§6 | Accepted (§6) |
+| 24 | `verify-merge`: ordered parents, reject conflicts, record git version | G§6 | Accepted (§6) |
+| 25 | `inbox --quiet` exit codes for hooks | F§6 | Accepted (§6) |
+| 26 | `--emit` also takes `--timeout` and exits with a code | F§6 | Accepted (§6) |
+| 27 | Claude Code: background `wait`, not foreground (10-minute cap, backgrounded on timeout); Monitor optional | O§3, F§3 | Accepted (§7) |
+| 28 | MCP backgrounding makes an MCP wait behave like a background shell call; the shim is a server for no gain | O§3 | Accepted (§7 wording) |
+| 29 | `Stop` hook blocks only when the role has no live `wait` | O§3, F§3 | Accepted (§7) |
+| 30 | `SessionStart` hook on `compact` re-injects `brief` | F§8, O§3 | Accepted (§7, §8) |
+| 31 | Session cron as a third net | F§3 | Declined for v1: a poll, not a wait (O§3); the two hooks suffice. May return if the trial shows a gap |
+| 32 | `Notification` hook for permission prompts; printed allow rules | O§3, O§16 | Accepted (§7) |
+| 33 | Codex: yielding tool waits; documented hooks; `notify` only in user config; MCP timeout default 60 s | G§3 | Accepted (§7) |
+| 34 | Drop `fsnotify`; one-second `stat` poll; zero dependencies | O§7 | Accepted (§7, §12). G§7 and F§3 wanted events as a latency hint; a one-second poll meets check 8, so events are not needed |
+| 35 | Monotonic clocks stop during sleep in Go and Rust on macOS; wall-clock deadline; deliver work before reporting an expired timeout | F§3, O§3, G§3 | Accepted (§7) |
+| 36 | Stall check needs a living process; runs in any live `wait`; if none, nothing fires; optional read-only check job | O§3, G§4, F§3 | Accepted (§3, §8); D2 |
+| 37 | False stall alarms: stalled only without a live `wait` and recent activity | O§3 | Accepted (§3, §8) |
+| 38 | Presence is a last observation; PID liveness; turn end is not death | O§8, G§8 | Accepted (§8) |
+| 39 | One owner per notification; overdue work notified after resume | O§8, G§8 | Accepted (§8) |
+| 40 | "Git is read only" is false for `merge-tree --write-tree`; use a temporary object directory | O§9, G§9, F§6 | Accepted (§9) |
+| 41 | Define or drop the "Live" label | O§2, F§2 | Accepted: defined (§2) |
+| 42 | Remove the instruction to commit Tripartite's uncommitted lines | G§11, O§11 | Accepted (§11) |
+| 43 | Remove the unsupported one-day Rust figure | G§12 | Accepted (§12) |
+| 44 | Check 9 rewritten; needs the operator present | O§13, F§13 | Accepted (§13) |
+| 45 | Added checks: lost receipt retry, body edits, no-newline tail, restart with a claim, old APPROVE after a new revision, worktree/branch switch, SIGKILL presence, `decide` without a terminal, object count, orphan processes, no `net` | G§13, O§13, F§13 | Accepted (§13) |
+| 46 | Step 1 is a thin vertical slice tried in real sessions the same day; this project's channel moves onto it | O§14, G§14, F§14 | Accepted (§14); D7 |
+| 47 | Shared checkout versus worktrees; both must work | G§3, O§10 | Accepted (§10): both work through the common git dir |
+| 48 | Keep the Mac awake during `wait` | F§6 | The operator; D9 |
+| 49 | Who commits `docs/CHANNEL.md` | F§6 | The operator; D10 |
+| 50 | Point §17 at `docs/reviews/` instead of appending reviews to this file | G§17, O§17 | Accepted (below) |
+| 51 | A crash between the record sync and the `head.json` write makes an intact tail look cut; define recovery | GPT-6 H3 (channel) | Accepted (§5): `head.json` is advisory and repairable when the chain verifies |
+| 52 | An edited last line was delivered. `head.json` counting the same lines but naming another last hash comes only from an edit, to the last line or to `head.json`, because a crash leaves `head.json` behind. Withhold the last line and refuse posts until the operator decides: the one case where `head.json` refuses posts, an exception to row 51 | Fable 5.1, gate reading of H5 (channel, 21:19), finding 1 | Accepted by the operator (chat, 2026-10-09; recorded by the implementer); built in H6 |
+| 53 | A forged append withheld a vouched-for line. When `head.json` counts exactly the lines before a break and names the last of them as it is, withhold from the break on, not from the line before | Fable 5.1, gate reading of H5, finding 2 | Accepted by the operator; built in H6 |
+| 54 | An interrupted `repair` leaves damage only a hand edit can fix. Add an operator-only `repair --tail`, at a terminal, that closes trailing damage with the existing repair entry | Fable 5.1, gate reading of H5, finding 3 | Deferred: a follow-up after this channel moves onto the tool |
+| 55 | The supersede rule is keyed on item, from and to, not on item and from as §6 says, so a gate request to `reviewer-2` does not supersede the reviewer's | Implementer choice 1 (`evidence/step1/README.md`); GPT-6, H5 | Accepted; this row supersedes §6's wording |
+| 56 | Check 7 needs `render`, which is step 3. Step 1 closed checks 1 to 6, 8, 13, 16, 18 and 19, and row 51 | GPT-6, H5 verdicts | Accepted: `render` stays in step 3; this row supersedes §14's step-1 list |
+| 57 | The spec should state, for a third party verifying a record: the repair-coverage rule (a damaged line is covered when the next line is a repair whose `prev` and `damage.sha256` are its hash and whose `damage.after` is the hash of the last good line before it); `head.json`'s `id` and `advisory` fields; and that readers ignore unknown fields and `v` changes only for an incompatible change | Fable 5.1, gate reading of H5, smaller points | Open for the drafter. The implementation already behaves this way |
+| 58 | Row 52's premise was incomplete. After a cut tail, a permitted post or `repair` that stops before `head.json` restores the old count with a newer entry: stale, not edited. Row 52 applies only when the last entry's id is one `head.json` has seen, at most its `id`. Otherwise the case is an advisory that names it, and retry and `repair` proceed by appending | GPT-6, H6 CHANGES (channel, 2026-10-10 09:13) | Accepted; built in H6 round 2 |
+| 59 | The operator may decide by clicking Approve or Deny in a Mac pop-up, not only at a terminal. Neither the click nor the terminal is authentication (§9); both stop an agent from deciding for the operator by accident or in passing. This row amends §6 (`decide`) and §9 ("`decide` requires a terminal") | H7 trial, finding 5 (`evidence/trial/README.md`); `docs/STEP3_PLAN.md` | Accepted by the operator (chat, 2026-10-14); to build in H9 |
+| 60 | By default, roles are named after the agents (for example `claude` and `codex`), both with `reviews: true`. Who implements is then per item: whoever posts the request implements, and its addressee reviews. A request to oneself is already refused | The operator's way of working: who implements changes per task, by model strength (chat, 2026-10-14) | Accepted by the operator (chat, 2026-10-14); to build in H11 |
+| 61 | How H8 builds §8's stall notices. (a) "Stalled" is read from the record and the clock alone: a live request whose next move (a verdict from its addressee, or a response from its requester) has been owed for `quiet_after`, default 30 minutes, counted from its last entry. No PID presence yet: during a review there is no `wait` to observe, so presence would not have caught the trial's stall. (b) "Once" is a marker file per alert under `.handoff/notified/`, created with `O_EXCL`, instead of `notified.json`, so two processes racing send once. (c) Besides every live `wait`, every write passes alerts on, so an APPROVE reaches the operator when no `wait` is running, as after the trial's APPROVE | Implementer, H8; H7 trial finding 1 | Proposed in H8, for the reviewer and the operator |
+| 62 | Corrections to row 61 from the H8 review. (a) "Once" means once per send that worked. `<key>.sending`, created with `O_EXCL`, claims an attempt, and `<key>` marks a send that worked. A failed send removes its claim and is retried, at once the first time and then after 1, 2, 4 and 8 minutes, then every 15. An attempt older than a minute was left by a process that died mid-send, and is cleared. (b) Only an entry restarts the quiet clock. `claim` stays idempotent per role (§6), so a session that resumes writes nothing until its next move, and may be reported quiet while it works. The record cannot tell a working session from a stuck one. (c) So this is not §8's presence: no PID check, check 15 stays open, and a long review can raise an alert. Presence and hooks are H10 | GPT-6, H8 CHANGES 1 and 2 (`handoff` #11) | Proposed in H8 round 2, for the reviewer and the operator |
+| 63 | Replaces row 62 (a)'s attempt marker. Whoever holds `notified/<key>.lock` (an exclusive `flock`) owns the alert from checking `<key>` to creating it, so stale-attempt cleanup no longer exists and cannot remove a newer owner's claim. The kernel drops the lock when its process exits, killed or not, and a sender suspended by sleep keeps it, so no file's age is trusted. Lock files are never removed. The rest of row 62 (a) stands: retries, backoff, and "told the operator" only after a send that worked | GPT-6, H8 round-2 CHANGES (`handoff` #15) | Proposed in H8 round 3, for the reviewer and the operator |
+| 64 | How H9 makes deciding one step, at a terminal. (a) `handoff` on its own, in a project, lists what waits for the operator's decision and what has gone quiet. At a terminal it asks approve, deny or skip for each, then an optional note, and writes each decision. Without a terminal it only lists. With `HANDOFF_ROLE` set to an agent's role, it is that role's inbox and never decides. (b) `decide` takes an item name (`H8`) as well as an entry id. An item with more than one entry awaiting the operator is refused, with the ids. A name of digits only is an id. (c) With no `HANDOFF_ROLE` and no `--as`, the caller of `decide` and of `handoff` on its own is the operator. An agent's role is still refused, and both still need a terminal to write. This amends check 16's "no role at all is refused" for these two commands only. (d) The note is optional: `--note text`, `--body file`, or none, which records "Approved." or "Denied.". (e) `decide` confirms with y/N, naming the item, instead of the id typed again. The terminal check is what keeps an agent out; naming the item catches a wrong target as retyping did. Amends §6 (`decide`) | The operator, on the decide commands: "it looks like it's something I will have to constantly remember" (chat, 2026-10-14); `docs/STEP3_PLAN.md`, H9 | Proposed in H9, for the reviewer and the operator. The pop-up of row 59 follows as H9b |
+| 65 | How H9b builds row 59's pop-up. (a) Who shows it: the process that sends a decide alert (an APPROVE awaiting the operator, or a note to the operator), on macOS. It starts `handoff _popup` in a session of its own and hands it the alert's lock (`notified/<key>.lock`, row 63) as descriptor 3. The helper keeps the lock while the dialog is up, so no other process asks the same thing, and marks the alert sent when the dialog goes. It refuses to run unless descriptor 3 is that lock file and it holds the lock. (b) What decides: only the operator's click. Approve writes `approve`. Deny opens a second dialog asking why (optional) and writes `deny` on a second Deny. Later, Cancel, or no click within 8 hours writes nothing, and `handoff` in the project still lists it. No button is the default, so a stray Return answers nothing. The body says the decision came from the pop-up. The click is checked again under the record lock: a decision made at a terminal meanwhile stands, and the operator is told the click was not recorded. (c) Nothing but a click answers. The helper's arguments name only the alert. `HANDOFF_TEST_POPUP`, for tests, sends the dialog to a file and always comes back unanswered. As with the terminal (row 64), this stops an agent deciding by accident or in passing; it is not authentication, since a process with macOS Accessibility rights could click. (d) A process in Codex's sandbox (`CODEX_SANDBOX` set) sends no alerts: osascript there can neither notify nor show a dialog (`evidence/h9b/codex-sandbox-probe.txt`; GPT-6, note #27). Its alerts stay unsent for a process outside it, such as the implementer's `wait`. If none runs, the operator is not alerted, and `handoff` still lists everything; presence (H10) is where that gap closes. (e) A failed notification reports osascript's own message | The operator's go-ahead on row 59 (chat, 2026-10-14); GPT-6, notes #25 and #27 on H9 | Proposed in H9b, for the reviewer and the operator |
+| 66 | Correction to row 65 (a) from the H9b review. The helper holds the alert's lock through descriptor 3 for as long as its dialog is up, Deny's reason box included. It keeps that file open until it returns, because Go's garbage collector closes a file nothing refers to, and closing it freed the lock while the question was still on screen: another process could then ask the same thing again (GPT-6's reproduction: `evidence/reviewer/H9b-6783e4a/`). No decision could be written twice; a decision is still checked under the record lock. The test dialog now runs garbage collection while it waits, and a test checks that the lock stays held | GPT-6, H9b CHANGES (`handoff` #31) | Proposed in H9b round 2, for the reviewer and the operator |
+| 67 | How H10a keeps a Claude Code session on duty. (a) Presence: a process that waits for a role holds `presence/<role>.lock` (an exclusive `flock`) while it waits, and names itself in `presence/<role>.json`. A second `wait` for that role exits 4 at once, so two never deliver the same entries. The kernel drops the lock with its process, as in row 63. (b) Listening replaces §7's `Stop` hook that blocked a turn's end when no `wait` was live. Claude Code 2.1.302 has `asyncRewake` hooks: a background hook whose exit 2 wakes an idle session and shows it the hook's stderr. `handoff hook listen` runs on `Stop` and `SessionStart`. It takes the role's lock, or exits 0 if another process holds it. It waits up to 23 hours and exits 2 with what arrived. At its deadline it exits 2 with "nothing new, end your turn", so listening never lapses. It stops when its session dies (its parent changes). The session never runs `wait`; an entry that lands while it works is delivered when its turn ends, by the cursor. (c) A hook never wakes a session to report its own failure, since each wake ends in a `Stop` and would loop. It tells the operator instead, once per distinct failure (alert kind `trouble`). (d) `SessionStart` runs `handoff hook brief`, so the brief (§8) reaches the model on startup, resume, clear and compact. `handoff brief` prints it for any session. Its text is built in for now, not `prompts/<role>.md`. (e) `Notification` with the `permission_prompt` matcher runs `handoff hook notify`, which tells the operator. (f) `handoff settings claude --as <role>` prints the settings: `env.HANDOFF_ROLE`, so every Claude Code session in the project takes that role; the three hooks, in exec form; `allow` for handoff; `deny` for `handoff decide` and for edits to `.handoff/`. It prints and never edits a settings file (§9). (g) A hook acts only for a session with a role, in a project with a record. Otherwise it exits 0 and prints nothing, so the settings are harmless in any session. (h) The tool still drives nothing (§4): `wait` ends when an entry lands, and the CLI's own hook wakes the session, as a background `wait` already did. Run evidence: a throwaway Claude Code session, set up by these settings, woke 3 s after a post and claimed, reviewed and replied with nobody typing (`evidence/h10/`) | The operator's go-ahead on H10, 2026-10-18 (settings in this project only; throwaway test sessions allowed); Claude Code's hooks documentation and 2.1.302's settings schema | Proposed in H10a, for the reviewer and the operator |
+| 68 | How H10b keeps a Codex session on duty, after H10a (row 67). (a) Codex 0.162.1 has hooks, but nothing like `asyncRewake`: a background hook cannot wake an idle session. A `Stop` hook can continue a turn instead. It exits 2 with a reason on stderr (or prints a block decision), and Codex continues in the same turn, with no cap on how often. So `handoff hook listen`, unchanged, runs as Codex's synchronous `Stop` hook, with a timeout of a day. It holds the turn open while it waits and exits 2 with what arrived, and Codex continues with it. (b) `SessionStart` runs `hook brief`. In Codex it fires when the first turn starts, not when the session opens, and again after a summary. (c) Codex runs a hook's command through a shell and passes it Codex's own environment, which may lack `HANDOFF_ROLE`. So `settings codex` prints commands that start with `exec`, making Codex the hook's parent, which `listen` watches, and that name the role with `--as`. The brief now names the role in every command it shows. (d) Hooks run outside Codex's sandbox. A rule, `.codex/rules/handoff.rules`, lets the session's own `handoff` commands run outside it too, without asking, so a reply or note from Codex notifies the operator and shows the pop-up. That closes row 65 (d)'s gap for Codex's own commands. `handoff decide` is forbidden there. The operator chose this on 2026-10-18. (e) Codex asks the operator to trust new or changed hooks once, when it starts; until then they don't run. (f) `.codex/` stays out of git (`.git/info/exclude`), as the operator chose for this project. (g) While the hook waits, Codex's turn stays open; what typing to it does then is not yet tried. Run evidence: `evidence/h10b/` | The operator's go-ahead on H10, 2026-10-18; Codex's hooks and rules documentation, and the 0.162.1 source and binary | Proposed in H10b, for the reviewer and the operator |
+| 69 | Corrections to row 67 from the H10a review. (a) A hook stopped while its session died, then resumed, delivered what had arrived to nobody, and moved the role's cursor past it, so the next listener never saw it: the hook asked whether its session lived only before sleeping, not after. `wait` now asks at the start of every tick, before it reads or delivers anything, so a hook like that exits with nothing delivered and the entries wait for the next listener. (b) The brief and the printed rules name handoff by its path, unquoted, so under a path with spaces the brief's commands did not run. Both now quote it for a POSIX shell, and the `allow` and `deny` rules match the quoted command the brief gives. (c) The printed `deny` rules named `.handoff/` relative to the settings' own project. A session in a linked worktree has its own settings but shares the main checkout's record, so the rules guarded a `.handoff/` that isn't there and left the record open to edits. They now name the record by its real, absolute path. (d) The live run's log no longer ends lines with spaces. Each of (a) to (c) has a test that fails on `ebc04f2` | GPT-6's evidence from the H10a review in progress, before its reply (`evidence/reviewer/H10a-ebc04f2/`: `orphan.txt`, `spaces.txt`, `worktree.txt`, `whitespace.txt`) | Proposed in H10a round 2, for the reviewer and the operator |
+| 70 | Correction to row 67 (d) from H10a round 2. The brief's command for asking the operator named no item, and `note` needs `--item` or `--re`, so a session that followed it got exit 2 and the operator got no question. It now reads `note --to operator --item <item> --title "<question>" --body <file>`. A test now runs every command the brief gives through a shell, with its placeholders filled in: `show`, `claim`, `reply`, a note back, and the question to the operator | GPT-6, H10a round 2 CHANGES (`handoff` #43; `evidence/reviewer/H10a-d320393/ask-operator.txt`) | Proposed in H10a round 3, for the reviewer and the operator |
+| 71 | Correction to row 68 from the H10b review. The rule lets a Codex session run handoff with any arguments, bare included, and Codex gave the session's commands no role. At a terminal, a bare handoff with no role asks the operator's question, and an answer there is written as the operator's decision, around the forbidden `decide`. `settings codex` now also prints `.codex/config.toml`, whose `shell_environment_policy.set` gives every command the session runs `HANDOFF_ROLE`, as Claude Code's `env` does (row 67 (f)). With a role, a bare handoff shows that role's inbox. Codex reads a project's config only in a project it trusts, as with its hooks and rules. Run: a throwaway `codex exec` with that file ran `env` and saw `HANDOFF_ROLE=codex` (`evidence/h10b/probe-env/`). Row 70's fix to the brief's question to the operator reaches H10b with the rebase | GPT-6, H10b CHANGES (`handoff` #45; `evidence/reviewer/H10b-418a0c4/bare.txt`, `ask-operator.txt`) | Proposed in H10b round 3, for the reviewer and the operator |
+| 72 | How H11 lets any project pick handoff up. (a) `init` with no flags makes two roles named after the agents, `claude` and `codex`. With no `--reviewers`, every role reviews but one named `implementer`, so `claude` and `codex` can each implement or review, and the operator says which, per task. `--roles implementer,reviewer` gives the old pair as before. (b) With no `--main`, `init` takes `main`, else `master`, else the branch the main worktree is on, read with `git rev-parse` and `git symbolic-ref`. With none of these it refuses and asks for `--main`. (c) §6's table and §10 step 1 have `init` add `.handoff/` to the project's `.gitignore`, if asked, while §9 says writes go only under the record directory. `init` now writes `.handoff/.gitignore` containing `*`: git ignores the whole record, nothing outside `.handoff/` changes, and there is nothing to ask. (d) `settings claude` and `settings codex` take the role named after the CLI when the project has one. Otherwise `--as` is required, as before. (e) The brief gives a role that implements the `post` command for asking for a review, addressed to the reviewing role. A role implements if it doesn't review, or if every role reviews. When every role reviews, the brief also says either agent can implement or review, and the operator says which. Run: the `TestH11` tests, and `briefCommands`, which runs every command a brief gives, as printed | `docs/STEP3_PLAN.md` H11 and decision 2, agreed by the operator (2026-10-14) | Proposed in H11, for the reviewer and the operator |
+| 73 | How H12 lets the operator give running sessions their roles, so two sessions of one CLI, on any models, can hold two roles in one project. Rows 67 (f), 71 and 72 (d) fixed one role per CLI per project. (a) A session runs `handoff role <role>` when the operator gives it one. The role goes in `.handoff/sessions/<id>.json` with the session's id, which each CLI gives every command (`CLAUDE_CODE_SESSION_ID`, `CODEX_THREAD_ID`) and every hook on stdin (`session_id`). Run: throwaway Claude Code (Haiku) and Codex (luna) sessions showed the same id in both, and the same Claude id after a resume. (b) A binding also keeps the CLI's process once known: `CLAUDE_PID`, or a Codex hook's parent, since its command starts with `exec`. At a session start, a binding whose process lives moves to the new id. So the role outlives `/clear` and a new Codex thread (same process, new id) and a resume (same id, new process). (c) A command's role is `--as`, `HANDOFF_ROLE` or the session's; those given must agree. A role belongs to one session: giving it to another takes it, and the first session's listener stops within a second. (d) `settings` fixes a role only with `--as`. Without it, the hooks carry `--prefer <cli>` when the project has a role named after the CLI, and a session that starts with no role takes it if no running session holds it. This replaces row 72 (d). (e) Row 71's guard, `HANDOFF_ROLE` in every Codex command, now covers only fixed roles. So bare `handoff` in any agent's session shows its inbox, or how to get a role, and never asks the operator's question, and `decide` refuses in one whatever role it claims. The pop-up is unchanged. (f) Claude Code warns that the printed `Write(…/.handoff/**)` deny rule is never matched; the `Edit` rule covers every tool that writes, so it goes. Run: the `TestH12` tests | The operator, 2026-10-21: "I should be able to implement with one model, like Opus, and review with another like Fable", "I would already have those sessions running, it's just handing that designations to them" | Proposed in H12, for the reviewer and the operator |
+| 74 | Corrections to row 73 from the H12 review. (a) Row 73 (b) moved a role to a new id by process, and for Codex took the process from a hook's parent. Codex can run one server for many threads, so separate sessions can share that parent, and a second thread's start took the first one's role. A session is now known by its id alone. The one exception is Claude Code: `CLAUDE_PID` is its own process, hosting one conversation at a time. A role moves to a new id in that process only at a `SessionStart` whose `source` is `clear`, and only from the one binding in it. Run: a throwaway interactive session (Haiku) showed `/clear` giving a new id, the same `CLAUDE_PID` and `source: "clear"` (`evidence/h12/probe-ids/clear.txt`). A new Codex thread starts with no role; the operator tells it, or it takes its CLI's role while that is free. A Codex hook's parent is kept only to tell that a session has surely ended, which frees its role for `--prefer`. (b) Only the hook stopped when its session lost the role, so a plain `wait` by a session without hooks kept the listener lock and took what came for the new holder. Such a wait now stops within a second, exits 2 saying why, and the new holder's `wait` retries for the lock meanwhile. Waits outside sessions, or with `--for` another role, are unchanged | GPT-6, H12 CHANGES (`handoff` #60; `evidence/reviewer/H12-50a8c2d/shared-codex-parent.txt`, `moved-wait.txt`) | Proposed in H12 round 2, for the reviewer and the operator |
+| 75 | Correction to row 74 (b) from the H12 review, round 2. A listener resolved its role from one reading of its session's binding, and built the check that the session still held it from another. A role that moved between the two left no check, so the displaced hook or `wait` listened on and took the new holder's work. Now one reading gives both the role and whether it came from the session's binding. A listener whose role did always checks the binding, from its first tick, so a role that moves at any moment stops it before it takes anything. A hook's update of a binding that has meanwhile moved no longer returns the old role. `HANDOFF_TEST_STARTUP_DELAY`, for tests only, widens the moment between reading the role and listening. Run: GPT-6's race script on round 2's commit and here, and the `TestH12ARoleMovedWhileAListenerStartsStopsIt` tests, which fail against round 2's two readings | GPT-6, H12 round-2 CHANGES (`handoff` #63; `evidence/reviewer/H12-589c1cd/startup-race.txt`, `startup-wait-race.txt`) | Proposed in H12 round 3, for the reviewer and the operator |
+| 76 | How H13 makes the small fixes of the step 3 plan. (a) Keeping the Mac awake. D9 and row 48 said no: a wall-clock deadline only. The step 3 plan, agreed by the operator, has `wait` keep the Mac from idle sleep, since in the H7 trial the Mac slept often while work waited (`evidence/trial/README.md`, finding 2). Since H10 a session listens whenever its turn ends, so a hold for every wait would keep the Mac awake as long as any session is open. So a wait, plain or hook, holds off idle sleep only while an agent owes a move on a request whose last entry is under two hours old: a verdict from its addressee, or a response from its requester. With nothing owed, only the operator's decision, or a move owed longer than that (the operator was told at `quiet_after`), the Mac may sleep. The hold is macOS's `caffeinate -i -w <pid>`, so it ends with the wait however the wait ends, and it never covers a closed lid. Its stdin, stdout and stderr are `/dev/null`, and Go opens its own files close-on-exec, so it holds neither a hook's pipes nor the wait's lock. If it ends some other way, the wait does not start it again. Where there is no `caffeinate`, nothing is held. `HANDOFF_TEST_AWAKE` names a file that gets the holds instead, as `HANDOFF_TEST_NOTIFY` does for alerts. This amends D9 and §7's sleep paragraph. (b) The sleep note. A wait printed a line for each late tick, and a sleeping Mac wakes for seconds every quarter hour, in one spell of the trial every half minute: 27 lines, five of them for gaps of 18 to 19 s. Late ticks less than two minutes apart are now one sleep, noted once with its start, end and length, when the machine has been awake two minutes or when the wait ends. A pause under a minute is not noted. A hook's wait passes its notes to the session with what woke it, so this also keeps the session's context short. A sleep that ends with a delivery is now noted too: before, a delivery returned before the late tick was seen. (c) The README: `go install`, a current Status, and how sleep is handled. Run: `TestOwedFollowsTheMoveAndItsAge`, `TestAwakeWhileAnAgentOwesAMove`, `TestOneSleepWithBriefWakesIsReportedOnce`, `TestAPauseUnderAMinuteIsNotReported`, the `internal/awake` tests against the real `caffeinate`, `TestH13ListenersHoldOffSleepWhileAMoveIsOwed`, and `evidence/h13/` | `docs/STEP3_PLAN.md` (there H12), agreed by the operator (2026-10-14); `evidence/trial/` | Proposed in H13, for the reviewer and the operator |
+| 77 | How H14 readies the repository to be published. The operator asked (2026-10-23) that it name no person, and that it be published on GitHub under the MIT license with a fresh history: one first commit of the cleaned tree, the local history kept. So every mention of the operator by name became "the operator": in what the tool prints (the brief, errors, usage, and the justification of the Codex rule that forbids `decide`), in comments and test names, and in every document and evidence file, this log included. That is the one exception to never editing earlier text: names only, and no claim, result or decision changed. Paths under the operator's home became `~`, and the other project of §1 and of the planned trial became "the website project". Agents now read "The operator decides." in their brief. Run: every test under the race detector, and a sweep of every tracked file that finds none of the names, home paths or the project's name (`evidence/h14/`) | The operator, in chat, 2026-10-23 | Proposed in H14, for the reviewer and the operator |
+| 78 | Correction to row 77 from the H14 review. Row 77 said no result changed. One did: the name was in two entries of the H7 trial's saved record (`evidence/trial/record/channel.jsonl`, lines 1 and 7). Each entry holds the hash of the line before it, so the copy's chain no longer verifies, and the tool withholds every entry. The copy is now labelled a redacted transcript, and its saved chain check (`evidence/trial/checks.txt`) a result from the original record, which isn't published. A sweep of every hash quoted in the tree, against the bytes the renaming changed, finds no other. The README also says the commit ids in `docs/` and `evidence/` belong to the unpublished history. Run: the trial check on the copy and on the original, the tool on the copy, and the hash sweep (`evidence/h14/trial-record.log`, `stale-hashes.log`) | GPT-6, H14 CHANGES (`handoff` #73; `evidence/reviewer/H14-48eb3b5/audit.txt`, `archive-loader.txt`) | Proposed in H14 round 2, for the reviewer and the operator |
+| 79 | How H15 finishes, before the repository is published, what H14 began. The reviewer's own evidence for H13 and H14 (`evidence/reviewer/H13-178b7ca`, `H14-48eb3b5`, `H14-82d98a7`) was collected after H14's renaming, and still named the operator and paths under their home. The same script, run on main after H14, changes only those: seven files, names and paths only, under row 77's exception. No hash in the tree is of the bytes it changed. The merge of H14 resolved the board in `docs/CHANNEL.md` the same way: main's board, renamed by that script; it differs from H14's only in the H13 and H14 rows. The public repository is then this tree as one commit: `git archive` of main into a new repository, authored with the account's GitHub noreply address. The local history is kept and never pushed. Run: the sweep before and after, the word diff, the hash sweep, and a dry run of the export that pushes nothing (`evidence/h15/`) | The operator, 2026-10-23 (row 77); GPT-6, H14 (`handoff` #73, #77) | Proposed in H15, for the reviewer and the operator |
+
+---
+
+## Reviews
+
+Reviews live in `docs/reviews/`, one file per model and round, written independently and never edited after the fact. Round 1: `gpt-6_review_r1.md`, `opus-5.5_review_r1.md`, `fable-5.1_review_r1.md`. Disagreements stay open until the operator resolves them.

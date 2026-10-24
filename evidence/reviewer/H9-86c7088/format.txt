@@ -1,0 +1,6 @@
+by: Codex, reviewer
+commit: 86c70888be0557fff943187c3a714f4a78668240
+date: 2026-10-15T19:41:38.318520+00:00
+cwd: /private/tmp/handoff-review-H9-86c7088
+command: gofmt -l cmd internal
+exit: 0

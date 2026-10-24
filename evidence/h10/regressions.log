@@ -1,0 +1,38 @@
+# command: the H10a tests on e918d55e3903298f6369d5ae843c79c3f7f20d31 (main) with this commit's tests copied in, then here; then two waits for one role through each binary
+# date: 2026-10-18 22:27:24 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 854c4c64de40a7bb4eb3abbf230e544638f5ef51
+
+## the tests at e918d55e3903298f6369d5ae843c79c3f7f20d31 (expected not to build: presence, brief and the hooks aren't there)
+cmd/handoff/hook_test.go:66:18: undefined: wait.ReadPresence
+cmd/handoff/hook_test.go:101:18: undefined: wait.ReadPresence
+cmd/handoff/hook_test.go:216:7: undefined: shellQuote
+FAIL	github.com/dre4success/handoff/cmd/handoff [build failed]
+FAIL
+
+## the tests at 854c4c64de40a7bb4eb3abbf230e544638f5ef51 (expected to pass)
+--- PASS: TestH10SecondWaitForARoleExits (2.76s)
+--- PASS: TestH10HookListenWakesTheSession (2.22s)
+--- PASS: TestH10HookListenLeavesItToTheListener (0.48s)
+--- PASS: TestH10HookListenStopsWithItsSession (2.25s)
+--- PASS: TestH10HooksOffDuty (0.22s)
+--- PASS: TestH10Brief (0.24s)
+--- PASS: TestH10BriefCommandsRun (0.29s)
+--- PASS: TestH10HookNotify (0.16s)
+--- PASS: TestH10ListenTroubleIsToldOnce (0.18s)
+--- PASS: TestH10SettingsClaude (0.17s)
+--- PASS: TestH10ResumedOrphanLeavesTheEntry (1.19s)
+--- PASS: TestH10APathWithSpaces (0.35s)
+--- PASS: TestH10SettingsInALinkedWorktree (0.17s)
+ok  	github.com/dre4success/handoff/cmd/handoff	11.152s
+# go test exit: 0
+
+## two waits for claude, then codex posts to claude, through main's binary: both deliver it
+posted #1 request T1 codex → claude: T1 @ 8d834a781c89
+first wait printed:  #1 request T1 codex → claude: T1 @ 8d834a781c89
+second wait printed: #1 request T1 codex → claude: T1 @ 8d834a781c89
+
+## the same through this commit's binary: the second exits 4 at once; the first delivers
+posted #1 request T1 codex → claude: T1 @ 2c6215e558c2
+first wait printed:  #1 request T1 codex → claude: T1 @ 2c6215e558c2
+second wait printed: handoff wait: already listening: wait for claude, pid 80411, since 2026-10-18T22:27:39Z; this one exits

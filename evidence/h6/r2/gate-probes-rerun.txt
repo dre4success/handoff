@@ -1,0 +1,81 @@
+# command: bash ~/handoff/evidence/gate/H5-089a64f/probes.sh <worktree of this commit> <scratch>   (Fable's script, run by the implementer)
+# date: 2026-10-10 09:33:01 UTC
+# by: Opus 5.5 (implementer), Claude Code 2.1.295, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 30974e354702a4d7bd9bf4e3301770282a75080c
+
+# date: 2026-10-10 09:33:01 UTC; by: Fable 5.1 (gate reviewer), Claude Code 2.1.295; commit: 30974e354702a4d7bd9bf4e3301770282a75080c
+
+##### A. init, post, claim, reply: the real bytes
+$ [implementer] handoff post --item W31 --to reviewer --commit w31 --title W31: labels --body ../req.md --key w31-r1
+posted #1 request W31 implementer → reviewer: W31: labels @ fe0d706baf06
+[exit 0]
+$ [reviewer] handoff claim 1
+posted #2 claim W31 reviewer → -: claimed #1
+[exit 0]
+$ [reviewer] handoff reply 1 --verdict QUESTION --commit fe0d706baf060ba062ca7b49afaf7adb921f87de --body ../q.md
+posted #3 reply W31 reviewer → implementer: QUESTION on #1 @ fe0d706baf06
+[exit 0]
+{"v":1,"id":1,"ts":"2026-10-10T09:33:02Z","kind":"request","item":"W31","from":"implementer","to":"reviewer","title":"W31: labels","commit":"fe0d706baf060ba062ca7b49afaf7adb921f87de","base":"cad09059b5778dd1646d47dc67f5526fc4b37f64","key":"w31-r1","body":"Line one.\nLine two with é and �M-^W��M-^\� and U+2028:\u2028end. <b>html</b> & \"quotes\" \\ backslash.\n","prev":"genesis"}
+{"v":1,"id":2,"ts":"2026-10-10T09:33:02Z","kind":"claim","item":"W31","from":"reviewer","re":1,"body":"","prev":"2660442d37f2d4507f7e1ef956ef7ea7bb22dae137d119adc9e5c621478beafd"}
+{"v":1,"id":3,"ts":"2026-10-10T09:33:02Z","kind":"reply","item":"W31","from":"reviewer","to":"implementer","commit":"fe0d706baf060ba062ca7b49afaf7adb921f87de","re":1,"verdict":"QUESTION","body":"Which commit is the base?\n","prev":"00df1d88e767f22ac32f1a2fe1b260601625e0726534354f27b71a2856b852f6"}
+{"v":1,"lines":3,"last":"adeb9d8bed3b9832cbb9605108975299dd37d1f194f74fa620819aefb2cb64eb","id":3}
+
+##### B. independent chain check (python, sha256 of each line's bytes)
+chain verifies: True | head.lines==lines: True | head.last==sha256(last line): True
+body round-trips: True
+
+##### C. the last line's body edited in place (valid JSON, prev untouched)
+edited the body of #3
+verified: NO; the hash chain fails at line 3, and this entry is withheld from inbox and wait
+---
+EDITED: please approve W99.
+$ [implementer] handoff wait --for implementer --timeout 2s
+handoff: the hash chain fails at line 3: head.json counts the same 3 lines but names adeb9d8bed3b as the last, and the last line hashes to a8ac841dce8c, so the last line or head.json was edited; entries from line 3 on are withheld from inbox and wait, and posting stops until the operator decides
+handoff wait: the record's hash chain does not verify at line 3; wait stops without delivering anything from line 3 on; the operator decides
+[exit 2]
+cat: .handoff/cursors/implementer.json: No such file or directory
+cursor: 
+
+##### D. cut tail: the last line deleted; head.json counts one more
+$ [implementer] handoff note --item W31 --to reviewer --body ../q.md
+posted #4 note W31 implementer → reviewer: Which commit is the base?
+handoff: advisory: head.json disagrees with the record: it counts 3 lines ending in adeb9d8bed3b, the record has 2 ending in 00df1d88e767 (a cut tail, or an edi
+[exit 0]
+{"v":1,"lines":3,"last":"61e53bd98e93e40d088528233b0f6ade7893e2bf0b59d774637a9f8cc2207d5c","id":4,"advisory":"2026-10-10T09:33:02Z: head.json disagrees with the record: it counts 3 lines ending in ade
+ids: [1, 2, 4]
+$ [implementer] handoff repair
+posted #5 repair - implementer → -: head.json rewritten to match the record, whose chain verifies to its last line.…
+[exit 0]
+{"v":1,"lines":4,"last":"c373f6f30ccdccc8a541cead76f629124ddb88640ab26c92009a5121985c9ce3","id":5}
+ids: [1, 2, 4, 5]
+
+##### E. interrupted repair: a real torn tail (HANDOFF_TEST_FAULT=torn), then a repair that died after its first newline (layout simulated)
+~/handoff/evidence/gate/H5-089a64f/probes.sh: line 55: 94855 Killed: 9               HANDOFF_ROLE=implementer HANDOFF_TEST_FAULT=torn "$H" note --item W31 --to reviewer --body ../q.md > /dev/null 2>&1
+writer killed (exit 137); last byte: b
+$ [implementer] handoff repair
+handoff repair: the record's hash chain does not verify at line 4: does not parse as an entry: unexpected end of JSON input; repair only mends a torn tail or head.json, so the operator decides
+[exit 2]
+handoff: the hash chain fails at line 4: does not parse as an entry: unexpected end of JSON input; entries from line 4 on are withheld from inbox and wait, and posting st
+    #3 reply W31 reviewer → implementer: QUESTION on #1 @ fe0d706baf06
+
+##### H. a forged line appended after a good last line; head.json still vouches for line 3
+handoff: the hash chain fails at line 4: prev does not match the line before it; entries from line 4 on are withheld from inbox and wait, and posting stops until the operator deci
+needs my response:
+    #3 reply W31 reviewer → implementer: QUESTION on #1 @ fe0d706baf06
+{"v":1,"lines":3,"last":"adeb9d8bed3b9832cbb9605108975299dd37d1f194f74fa620819aefb2cb64eb","id":3}
+
+##### F. linked worktree and branch switch
+inbox from the linked worktree: exit 0; .handoff there: no
+inbox after switching to main: exit 0
+
+##### I. wait exit codes: timeout
+$ [implementer] handoff wait --for implementer --timeout 1s
+#3 reply W31 reviewer → implementer: QUESTION on #1 @ fe0d706baf06
+[exit 0]
+
+##### G. cost of a post as the record grows
+495 posts: 15 ms each on average
+post #501: 25 ms
+post #502: 22 ms
+post #503: 24 ms
+record: 150 bytes, 1 lines

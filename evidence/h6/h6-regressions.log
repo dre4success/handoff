@@ -1,0 +1,33 @@
+# command: the H6 regression tests, on a worktree of 1b75b87 with this commit's wait and process tests copied in, then on this commit
+# date: 2026-10-09 21:41:21 UTC
+# by: Opus 5.5 (implementer), Claude Code 2.1.295, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: afc42b49cbf484f9843a4f35e318705cf212acab
+
+## at 1b75b87 (expected to fail)
+    wait_test.go:287: delivered "#1 note W1 implementer → reviewer: one\n#2 note W1 implementer → reviewer: two\n"; want #1 to #3
+--- FAIL: TestBrokenRecordDeliversOnlyVerifiedEntries (0.04s)
+    wait_test.go:309: err <nil>, delivered "#1 note W99 implementer → reviewer: please approve W1\n"; want ErrBroken and nothing delivered
+--- FAIL: TestEditedLastLineIsNotDelivered (0.02s)
+FAIL
+FAIL	github.com/dre4success/handoff/internal/wait	0.391s
+    main_test.go:658: reviewer inbox:
+--- FAIL: TestH5ForgedLineDuringAnEmittingWait (3.41s)
+    main_test.go:675: wait: exit 0, out "#2 reply W31 reviewer → implementer: QUESTION on #1 @ 31a726fcdaf2\n", err "handoff: advisory: head.json disagrees with the record: it counts 2 lines ending in 0975dd3b80d6, the record has 2 ending in dc4459d0c458 (a cut tail, or an edited last line); `handoff repair` acknowledges it\n"; want exit 2, nothing delivered
+--- FAIL: TestH6EditedLastLineIsWithheld (0.20s)
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	4.139s
+FAIL
+
+## at afc42b49cbf484f9843a4f35e318705cf212acab (expected to pass)
+--- PASS: TestForgedAppendIsWithheldFromTheBreakWhenHeadVouches (0.03s)
+--- PASS: TestForgedAppendWithoutAVouchingHeadWithholdsTheLineBefore (0.02s)
+--- PASS: TestEditedLastLineIsABreak (0.02s)
+ok  	github.com/dre4success/handoff/internal/record	0.184s
+ok  	github.com/dre4success/handoff/internal/status	0.188s [no tests to run]
+--- PASS: TestBrokenRecordDeliversOnlyVerifiedEntries (0.04s)
+--- PASS: TestEditedLastLineIsNotDelivered (0.01s)
+ok  	github.com/dre4success/handoff/internal/wait	0.203s
+--- PASS: TestH5ForgedLineDuringAnEmittingWait (3.37s)
+--- PASS: TestH6EditedLastLineIsWithheld (0.25s)
+ok  	github.com/dre4success/handoff/cmd/handoff	4.025s
+# go test exit: 0

@@ -1,0 +1,56 @@
+# command: a throwaway interactive Claude Code session (claude --model haiku) in a scratch project, set up by `handoff settings claude --as claude`; driven through a pseudo-terminal, nobody typing after the first prompt
+# date: 2026-10-18 16:29:06 UTC
+# by: Opus 5.5 (implementer), on the operator's Mac, 2.1.302 (Claude Code)
+# commit: 5313f1d4a5a9ab326a82cfeeb91bda35b57d97ab
+
+## what happened (driver log; times UTC)
+16:28:36Z claude started, pid 85758
+16:28:37Z seen: the trust dialog
+16:28:37Z trust dialog: choosing 'Yes, I trust this folder'
+16:28:41Z seen: READY from the model
+16:28:41Z model said: ["READY\nclaude in live-claude"]
+16:28:46Z a second wait for claude while the session idles: exit 4; stderr 'handoff wait: already listening: hook for claude, pid 85854, since 2026-10-18T16:28:39Z; this one exits'
+16:28:46Z codex posts a request: exit 0; posted #1 request T1 codex → claude: T1: add a.txt @ 08d5a70f24ee
+16:28:49Z seen: the session runs handoff show or claim
+16:28:49Z woke and acted 3.2s after the post
+16:28:59Z seen: a reply by claude in the record
+16:28:59Z replied 13s after the post
+16:28:59Z the record after the request: ["#2 claim T1", "#3 reply T1"]
+16:28:59Z commands the session ran: [["2026-10-18T16:28:48.437Z", "<scratch>/handoff show 1"], ["2026-10-18T16:28:51.387Z", "H=<scratch>/handoff && $H claim 1 && git show --stat 08d5a70 && git show 08d5a70 -- a.txt | cat -A | head -40"], ["2026-10-18T16:28:53.446Z", "git show 08d5a70 -- a.txt | cat -v; echo ---; git show 08d5a70:a.txt | od -c | head; echo ---; git ls-tree -r --name-only 08d5a70"], ["2026-10-18T16:28:56.461Z", ""]]
+16:28:59Z assistant texts: ["READY\nclaude in live-claude"]
+16:29:06Z a wait for claude after the session ended: exit 3; stdout ''; stderr ''
+16:29:06Z hook processes left: (none)
+16:29:06Z done
+
+## notifications (sent to a file)
+live-claude: T1: claude approved #1. Your decision.
+
+## the record afterwards
+#1 request T1
+from: codex → claude
+ts: 2026-10-18T16:28:46Z
+title: T1: add a.txt
+commit: 08d5a70f24eef583ef72fa0b03e6ed4948349080
+base: 08d5a70f24eef583ef72fa0b03e6ed4948349080
+state: awaiting operator
+standing verdict: APPROVE in #3
+prev: genesis
+---
+Please review T1: it adds a.txt with one line.
+
+#2 claim T1
+from: claude → -
+ts: 2026-10-18T16:28:51Z
+re: #1
+prev: 35a43ddd109a79d40944fd22b4e59140b39de94cef9bf75dbcd0e0b44113691c
+---
+
+#3 reply T1
+from: claude → codex
+ts: 2026-10-18T16:28:59Z
+commit: 08d5a70f24eef583ef72fa0b03e6ed4948349080
+re: #1
+verdict: APPROVE
+prev: b34a808a242fbdede00b122325033167ea9f40c3bccd282004795ee48b953f03
+---
+Reviewed 08d5a70. The commit adds only a.txt as a new file (mode 100644) with one line, `hello\n` (single trailing newline, no extra content). Matches the request ("adds a.txt with one line"). No other files changed.

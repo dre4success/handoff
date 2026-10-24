@@ -1,0 +1,13 @@
+by: Codex, reviewer
+commit: 6783e4a8badcf847086db14ed5e9fd7238d983e3
+date: 2026-10-17T21:54:11.815673+00:00
+cwd: /private/tmp/handoff-review-H9b-6783e4a
+command: go list -deps -f '{{if not .Standard}}{{.ImportPath}}{{end}}' ./...
+github.com/dre4success/handoff/internal/gitx
+github.com/dre4success/handoff/internal/record
+github.com/dre4success/handoff/internal/status
+github.com/dre4success/handoff/internal/notify
+github.com/dre4success/handoff/internal/term
+github.com/dre4success/handoff/internal/wait
+github.com/dre4success/handoff/cmd/handoff
+exit: 0

@@ -1,0 +1,8 @@
+by: Codex, reviewer
+commit: da8e4980e0d958342b77eaaec985052feaa9872d
+date: 2026-10-14T22:47:04.375775+00:00
+cwd: ~/handoff
+command: go list ./...
+go: writing stat cache: open ~/go/pkg/mod/cache/download/github.com/dre4success/handoff/@v/v0.0.0-20261014222102-da8e4980e0d9.info172451275.tmp: operation not permitted
+found packages main (claim-probe_test.go) and notify (notify-probes_test.go) in ~/handoff/evidence/reviewer/H8-8b0735d
+exit: 1

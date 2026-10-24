@@ -1,0 +1,265 @@
+# command: go test -count=1 -race -v ./...
+# date: 2026-10-18 22:21:51 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 854c4c64de40a7bb4eb3abbf230e544638f5ef51
+
+=== RUN   TestH8InitSetsQuietAfter
+--- PASS: TestH8InitSetsQuietAfter (1.55s)
+=== RUN   TestH8QuietAfterSetting
+--- PASS: TestH8QuietAfterSetting (2.24s)
+=== RUN   TestH8QuietClaimTellsTheOperatorOnce
+--- PASS: TestH8QuietClaimTellsTheOperatorOnce (9.38s)
+=== RUN   TestH8ApproveTellsTheOperatorAtOnce
+--- PASS: TestH8ApproveTellsTheOperatorAtOnce (4.40s)
+=== RUN   TestH8InboxShowsWhatWentQuiet
+--- PASS: TestH8InboxShowsWhatWentQuiet (4.81s)
+=== RUN   TestH8ClaimingAgainWritesNothingAndTellsOnce
+--- PASS: TestH8ClaimingAgainWritesNothingAndTellsOnce (6.87s)
+=== RUN   TestH9DecideByItemWithNoRole
+--- PASS: TestH9DecideByItemWithNoRole (4.36s)
+=== RUN   TestH9DenyWithANote
+--- PASS: TestH9DenyWithANote (4.39s)
+=== RUN   TestH9NotConfirmedWritesNothing
+--- PASS: TestH9NotConfirmedWritesNothing (3.34s)
+=== RUN   TestH9ItemWithTwoEntriesNeedsTheId
+--- PASS: TestH9ItemWithTwoEntriesNeedsTheId (6.44s)
+=== RUN   TestH9HandoffOnItsOwnAsksAboutEach
+--- PASS: TestH9HandoffOnItsOwnAsksAboutEach (7.51s)
+=== RUN   TestH9HandoffOnItsOwnWithoutATerminal
+--- PASS: TestH9HandoffOnItsOwnWithoutATerminal (4.31s)
+=== RUN   TestH9HandoffOnItsOwnInAnAgentSession
+--- PASS: TestH9HandoffOnItsOwnInAnAgentSession (3.28s)
+=== RUN   TestH9HandoffOnItsOwnOutsideAProject
+--- PASS: TestH9HandoffOnItsOwnOutsideAProject (0.02s)
+=== RUN   TestH9DecideRefusals
+--- PASS: TestH9DecideRefusals (3.41s)
+=== RUN   TestH10SecondWaitForARoleExits
+--- PASS: TestH10SecondWaitForARoleExits (3.63s)
+=== RUN   TestH10HookListenWakesTheSession
+--- PASS: TestH10HookListenWakesTheSession (3.33s)
+=== RUN   TestH10HookListenLeavesItToTheListener
+--- PASS: TestH10HookListenLeavesItToTheListener (2.52s)
+=== RUN   TestH10HookListenStopsWithItsSession
+--- PASS: TestH10HookListenStopsWithItsSession (4.32s)
+=== RUN   TestH10HooksOffDuty
+--- PASS: TestH10HooksOffDuty (10.42s)
+=== RUN   TestH10Brief
+--- PASS: TestH10Brief (5.40s)
+=== RUN   TestH10BriefCommandsRun
+--- PASS: TestH10BriefCommandsRun (8.52s)
+=== RUN   TestH10HookNotify
+--- PASS: TestH10HookNotify (4.26s)
+=== RUN   TestH10ListenTroubleIsToldOnce
+--- PASS: TestH10ListenTroubleIsToldOnce (4.31s)
+=== RUN   TestH10SettingsClaude
+--- PASS: TestH10SettingsClaude (2.26s)
+=== RUN   TestH10ResumedOrphanLeavesTheEntry
+--- PASS: TestH10ResumedOrphanLeavesTheEntry (4.36s)
+=== RUN   TestH10APathWithSpaces
+--- PASS: TestH10APathWithSpaces (5.55s)
+=== RUN   TestH10SettingsInALinkedWorktree
+--- PASS: TestH10SettingsInALinkedWorktree (2.25s)
+=== RUN   TestInitRefusesASecondTime
+--- PASS: TestInitRefusesASecondTime (1.20s)
+=== RUN   TestCheck1FiftyProcessesTwentyPostsEach
+    main_test.go:251: 50 processes x 20 posts: 1000 entries, ids 1..1000, chain intact
+--- PASS: TestCheck1FiftyProcessesTwentyPostsEach (36.50s)
+=== RUN   TestCheck2SamePostTwice
+--- PASS: TestCheck2SamePostTwice (4.52s)
+=== RUN   TestCheck18RetryAfterLostReceipt
+--- PASS: TestCheck18RetryAfterLostReceipt (4.42s)
+=== RUN   TestCheck3KilledWriterLeavesATornTail
+--- PASS: TestCheck3KilledWriterLeavesATornTail (5.41s)
+=== RUN   TestRow51KilledAfterSyncIsAnAdvisory
+--- PASS: TestRow51KilledAfterSyncIsAnAdvisory (4.33s)
+=== RUN   TestCheck4EditedMiddleLineStopsPosting
+--- PASS: TestCheck4EditedMiddleLineStopsPosting (5.40s)
+=== RUN   TestCheck5ReplyRefusals
+--- PASS: TestCheck5ReplyRefusals (7.66s)
+=== RUN   TestCheck6SecondRevision
+--- PASS: TestCheck6SecondRevision (8.64s)
+=== RUN   TestPostChecksCommitsBranchAndParents
+--- PASS: TestPostChecksCommitsBranchAndParents (3.49s)
+=== RUN   TestQuestionAnsweredByANote
+--- PASS: TestQuestionAnsweredByANote (14.87s)
+=== RUN   TestCheck16Roles
+--- PASS: TestCheck16Roles (4.47s)
+=== RUN   TestDecideWithATerminal
+--- PASS: TestDecideWithATerminal (6.43s)
+=== RUN   TestCheck8WaitWakesWithinTwoSeconds
+    main_test.go:527: wait woke 1.54s after the post returned
+--- PASS: TestCheck8WaitWakesWithinTwoSeconds (4.25s)
+=== RUN   TestCheck13NextWaitDeliversAtOnce
+--- PASS: TestCheck13NextWaitDeliversAtOnce (5.36s)
+=== RUN   TestCheck19InterruptedWait
+--- PASS: TestCheck19InterruptedWait (4.88s)
+=== RUN   TestLinkedWorktreeUsesTheSameRecord
+--- PASS: TestLinkedWorktreeUsesTheSameRecord (2.25s)
+=== RUN   TestH5ForgedLineDuringAnEmittingWait
+--- PASS: TestH5ForgedLineDuringAnEmittingWait (6.33s)
+=== RUN   TestH6EditedLastLineIsWithheld
+--- PASS: TestH6EditedLastLineIsWithheld (5.47s)
+=== RUN   TestH5LinkedEscalationIsNotAnAnswer
+--- PASS: TestH5LinkedEscalationIsNotAnAnswer (11.71s)
+=== RUN   TestH6CutThenPostKilledAfterSyncIsRecoverable
+--- PASS: TestH6CutThenPostKilledAfterSyncIsRecoverable (5.44s)
+=== RUN   TestH6CutThenRepairKilledAfterSyncIsRecoverable
+--- PASS: TestH6CutThenRepairKilledAfterSyncIsRecoverable (5.42s)
+=== RUN   TestH9bApproveClickDecides
+--- PASS: TestH9bApproveClickDecides (3.35s)
+=== RUN   TestH9bDenyAsksWhy
+--- PASS: TestH9bDenyAsksWhy (3.35s)
+=== RUN   TestH9bDenyThenCancelWritesNothing
+--- PASS: TestH9bDenyThenCancelWritesNothing (6.68s)
+=== RUN   TestH9bLaterAndGivingUpWriteNothing
+--- PASS: TestH9bLaterAndGivingUpWriteNothing (8.77s)
+=== RUN   TestH9bDialogFailureLeavesTheAlert
+--- PASS: TestH9bDialogFailureLeavesTheAlert (3.34s)
+=== RUN   TestH9bDecidedMeanwhileIsNotAsked
+--- PASS: TestH9bDecidedMeanwhileIsNotAsked (3.36s)
+=== RUN   TestH9bClickAfterATerminalDecisionIsRefused
+--- PASS: TestH9bClickAfterATerminalDecisionIsRefused (3.35s)
+=== RUN   TestH9bNoteToTheOperator
+--- PASS: TestH9bNoteToTheOperator (2.24s)
+=== RUN   TestH9bHelperNeedsTheLock
+--- PASS: TestH9bHelperNeedsTheLock (3.34s)
+=== RUN   TestH9bPopupAcrossProcesses
+--- PASS: TestH9bPopupAcrossProcesses (6.55s)
+=== RUN   TestH9bDialogScriptsCompile
+--- PASS: TestH9bDialogScriptsCompile (0.12s)
+PASS
+ok  	github.com/dre4success/handoff/cmd/handoff	331.886s
+?   	github.com/dre4success/handoff/internal/gitx	[no test files]
+=== RUN   TestEachAlertIsSentOnce
+--- PASS: TestEachAlertIsSentOnce (0.00s)
+=== RUN   TestTwoProcessesRacingSendOnce
+--- PASS: TestTwoProcessesRacingSendOnce (0.00s)
+=== RUN   TestANewKeyIsANewAlert
+--- PASS: TestANewKeyIsANewAlert (0.00s)
+=== RUN   TestMarkersStayInsideTheRecord
+--- PASS: TestMarkersStayInsideTheRecord (0.00s)
+=== RUN   TestUnsafeKeyIsNotSent
+--- PASS: TestUnsafeKeyIsNotSent (0.00s)
+=== RUN   TestFailedSendIsRetriedByTheNextProcess
+--- PASS: TestFailedSendIsRetriedByTheNextProcess (0.01s)
+=== RUN   TestMarkerFailureRecoversInTheSameProcess
+--- PASS: TestMarkerFailureRecoversInTheSameProcess (0.00s)
+=== RUN   TestLastingFailureBacksOff
+--- PASS: TestLastingFailureBacksOff (0.01s)
+=== RUN   TestALockedAlertIsLeftToItsHolder
+--- PASS: TestALockedAlertIsLeftToItsHolder (0.01s)
+=== RUN   TestSenderPausedBeforeMarkingIsNotDuplicated
+--- PASS: TestSenderPausedBeforeMarkingIsNotDuplicated (0.01s)
+=== RUN   TestKilledSendersLockIsReleased
+--- PASS: TestKilledSendersLockIsReleased (0.02s)
+=== RUN   TestHelperHoldLock
+    notify_test.go:294: a helper process for TestKilledSendersLockIsReleased
+--- SKIP: TestHelperHoldLock (0.00s)
+=== RUN   TestSandboxedProcessLeavesAlertsToOthers
+--- PASS: TestSandboxedProcessLeavesAlertsToOthers (0.00s)
+=== RUN   TestDecideAlertIsHandedToAsk
+--- PASS: TestDecideAlertIsHandedToAsk (0.01s)
+PASS
+ok  	github.com/dre4success/handoff/internal/notify	1.292s
+=== RUN   TestAppendBuildsSequentialChain
+--- PASS: TestAppendBuildsSequentialChain (0.05s)
+=== RUN   TestBodyIsInsideTheLine
+--- PASS: TestBodyIsInsideTheLine (0.01s)
+=== RUN   TestConcurrentAppendsStaySequential
+--- PASS: TestConcurrentAppendsStaySequential (2.05s)
+=== RUN   TestBuildCanReturnExistingReceipt
+--- PASS: TestBuildCanReturnExistingReceipt (0.01s)
+=== RUN   TestBuildErrorWritesNothing
+--- PASS: TestBuildErrorWritesNothing (0.01s)
+=== RUN   TestTornTailRefusesUntilRepair
+--- PASS: TestTornTailRefusesUntilRepair (0.04s)
+=== RUN   TestEditedMiddleLineBreaksChain
+--- PASS: TestEditedMiddleLineBreaksChain (0.04s)
+=== RUN   TestForgedAppendIsWithheldFromTheBreakWhenHeadVouches
+--- PASS: TestForgedAppendIsWithheldFromTheBreakWhenHeadVouches (0.02s)
+=== RUN   TestForgedAppendWithoutAVouchingHeadWithholdsTheLineBefore
+--- PASS: TestForgedAppendWithoutAVouchingHeadWithholdsTheLineBefore (0.02s)
+=== RUN   TestCutTailIsAnAdvisoryNotARefusal
+--- PASS: TestCutTailIsAnAdvisoryNotARefusal (0.05s)
+=== RUN   TestHeadBehindAfterCrashIsAnAdvisory
+--- PASS: TestHeadBehindAfterCrashIsAnAdvisory (0.04s)
+=== RUN   TestEditedLastLineIsABreak
+--- PASS: TestEditedLastLineIsABreak (0.03s)
+=== RUN   TestAppendAfterACutThatStopsBeforeHeadIsNotAnEdit
+--- PASS: TestAppendAfterACutThatStopsBeforeHeadIsNotAnEdit (0.04s)
+=== RUN   TestRepairWithNothingToRepair
+--- PASS: TestRepairWithNothingToRepair (0.01s)
+=== RUN   TestCreateRefusesAnExistingRecord
+--- PASS: TestCreateRefusesAnExistingRecord (0.01s)
+PASS
+ok  	github.com/dre4success/handoff/internal/record	3.659s
+=== RUN   TestQuietAlertFollowsWhoOwesTheNextMove
+--- PASS: TestQuietAlertFollowsWhoOwesTheNextMove (0.00s)
+=== RUN   TestLongSilenceIsGivenInHours
+--- PASS: TestLongSilenceIsGivenInHours (0.00s)
+=== RUN   TestAnotherRolesClaimDoesNotRestartTheClock
+--- PASS: TestAnotherRolesClaimDoesNotRestartTheClock (0.00s)
+=== RUN   TestApproveAlertsTheOperatorAtOnceUntilDecided
+--- PASS: TestApproveAlertsTheOperatorAtOnceUntilDecided (0.00s)
+=== RUN   TestNoteToTheOperatorSendsAnAlert
+--- PASS: TestNoteToTheOperatorSendsAnAlert (0.00s)
+=== RUN   TestSupersededRequestIsNotQuiet
+--- PASS: TestSupersededRequestIsNotQuiet (0.00s)
+=== RUN   TestUnreadableTimestampIsSkipped
+--- PASS: TestUnreadableTimestampIsSkipped (0.00s)
+=== RUN   TestClaimDoesNotRestartTheRequestersClock
+--- PASS: TestClaimDoesNotRestartTheRequestersClock (0.00s)
+=== RUN   TestRequestLifecycle
+--- PASS: TestRequestLifecycle (0.00s)
+=== RUN   TestOnlyANoteToTheReviewerAnswers
+--- PASS: TestOnlyANoteToTheReviewerAnswers (0.00s)
+=== RUN   TestNoteAnsweringAnOlderReplyChangesNothing
+--- PASS: TestNoteAnsweringAnOlderReplyChangesNothing (0.00s)
+=== RUN   TestSupersededRequestIgnoresLaterReplies
+--- PASS: TestSupersededRequestIgnoresLaterReplies (0.00s)
+=== RUN   TestLiveRequest
+--- PASS: TestLiveRequest (0.00s)
+=== RUN   TestInboxLists
+--- PASS: TestInboxLists (0.00s)
+=== RUN   TestDecisionOnOperatorNote
+--- PASS: TestDecisionOnOperatorNote (0.00s)
+=== RUN   TestDecidable
+--- PASS: TestDecidable (0.00s)
+PASS
+ok  	github.com/dre4success/handoff/internal/status	1.417s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+=== RUN   TestDeliversPendingEntriesAtOnce
+--- PASS: TestDeliversPendingEntriesAtOnce (0.06s)
+=== RUN   TestCursorMovesOnlyAfterPrinting
+--- PASS: TestCursorMovesOnlyAfterPrinting (0.02s)
+=== RUN   TestWakesWhenAnEntryLands
+--- PASS: TestWakesWhenAnEntryLands (0.03s)
+=== RUN   TestTimeoutCountsAwakeTicks
+--- PASS: TestTimeoutCountsAwakeTicks (0.01s)
+=== RUN   TestDeadlineIsWallClockAndGapIsReported
+--- PASS: TestDeadlineIsWallClockAndGapIsReported (0.01s)
+=== RUN   TestEntryIsDeliveredBeforeAnExpiredDeadline
+--- PASS: TestEntryIsDeliveredBeforeAnExpiredDeadline (0.03s)
+=== RUN   TestEmitStreamsUntilTheDeadline
+--- PASS: TestEmitStreamsUntilTheDeadline (0.05s)
+=== RUN   TestEntryBetweenTwoArmsIsDelivered
+--- PASS: TestEntryBetweenTwoArmsIsDelivered (0.02s)
+=== RUN   TestWarnsAboutADamagedRecord
+--- PASS: TestWarnsAboutADamagedRecord (0.03s)
+=== RUN   TestDamageArrivingDuringAWaitStopsIt
+--- PASS: TestDamageArrivingDuringAWaitStopsIt (0.02s)
+=== RUN   TestBrokenRecordDeliversOnlyVerifiedEntries
+--- PASS: TestBrokenRecordDeliversOnlyVerifiedEntries (0.06s)
+=== RUN   TestEditedLastLineIsNotDelivered
+--- PASS: TestEditedLastLineIsNotDelivered (0.02s)
+=== RUN   TestNewAdvisoryDuringAWaitIsPrinted
+--- PASS: TestNewAdvisoryDuringAWaitIsPrinted (0.03s)
+=== RUN   TestWaitPassesOnASilenceThatComesDue
+--- PASS: TestWaitPassesOnASilenceThatComesDue (0.02s)
+=== RUN   TestWaitWithoutNotifyStillWorks
+--- PASS: TestWaitWithoutNotifyStillWorks (0.03s)
+=== RUN   TestWaitThatDeliversAtOncePassesAlertsOn
+--- PASS: TestWaitThatDeliversAtOncePassesAlertsOn (0.04s)
+PASS
+ok  	github.com/dre4success/handoff/internal/wait	1.890s
+# go test exit: 0

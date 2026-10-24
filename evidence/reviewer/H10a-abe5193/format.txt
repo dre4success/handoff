@@ -1,0 +1,6 @@
+by: Codex, reviewer
+commit: abe51939226d18e48058a40cd9cf7a62846e141b
+date: 2026-10-18T22:29:48.853781+00:00
+cwd: /private/tmp/handoff-review-H10a-abe5193
+command: gofmt -l cmd internal
+exit: 0

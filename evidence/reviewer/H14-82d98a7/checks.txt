@@ -1,0 +1,17 @@
+by: Codex, reviewer
+commit: 82d98a7c634d57e12725a8f2a0165894e8937fb8
+date: 2026-10-24T17:57:10.249718+00:00
+cwd: /private/tmp/handoff-review-H14-82d98a7
+command: python3 ~/handoff/evidence/reviewer/H14-82d98a7/checks.py
+PASS: production source, tests, module, license and archived record bytes identical to round 1.
+PASS: changed source/docs whitespace.
+Privacy scan: 451 tracked files and their paths
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 paths
+the operator's account name, other than in the module path: 0 lines, 0 paths
+a path under a home folder, other than the test's made-up ones: 0 lines, 0 paths
+the other project's name: 0 lines, 0 paths
+the operator's email domains: 0 lines, 0 paths
+Archive differs from original only at lines: [1, 7]
+Redacted archive link mismatches: [2, 8] ; head matches the last line and line count.
+PASS: observed redaction and verification limits match the corrected documentation; no record was re-chained.
+exit: 0

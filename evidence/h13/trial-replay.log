@@ -1,0 +1,57 @@
+# command: trial-replay_test.go.txt in internal/wait, on ae65b6ce30b5c5eb6a03d81f99d8cffdc25581b4 (main), then here; TRIAL_LOG=evidence/trial/implementer-wait.log
+# date: 2026-10-21 17:30:38 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 297919b0d7307a7fec5f0f1103641a9414a96fe2
+
+## at ae65b6ce30b5c5eb6a03d81f99d8cffdc25581b4 (main)
+27 gaps in the trial's log
+the wait noted 27 lines:
+  handoff: wait: 8m6s passed between two polls (2026-10-12T21:53:55Z to 2026-10-12T22:02:01Z); the machine may have slept
+  handoff: wait: 16m29s passed between two polls (2026-10-12T22:02:23Z to 2026-10-12T22:18:52Z); the machine may have slept
+  handoff: wait: 15m19s passed between two polls (2026-10-12T22:19:25Z to 2026-10-12T22:34:44Z); the machine may have slept
+  handoff: wait: 16m24s passed between two polls (2026-10-12T22:34:55Z to 2026-10-12T22:51:19Z); the machine may have slept
+  handoff: wait: 1m52s passed between two polls (2026-10-13T20:32:20Z to 2026-10-13T20:34:12Z); the machine may have slept
+  handoff: wait: 7m50s passed between two polls (2026-10-13T20:34:23Z to 2026-10-13T20:42:13Z); the machine may have slept
+  handoff: wait: 15m0s passed between two polls (2026-10-13T20:42:35Z to 2026-10-13T20:57:35Z); the machine may have slept
+  handoff: wait: 10m17s passed between two polls (2026-10-13T20:57:46Z to 2026-10-13T21:08:03Z); the machine may have slept
+  handoff: wait: 15m6s passed between two polls (2026-10-13T21:08:40Z to 2026-10-13T21:23:46Z); the machine may have slept
+  handoff: wait: 13m17s passed between two polls (2026-10-13T22:23:51Z to 2026-10-13T22:37:08Z); the machine may have slept
+  handoff: wait: 16m23s passed between two polls (2026-10-14T01:04:59Z to 2026-10-14T01:21:22Z); the machine may have slept
+  handoff: wait: 16m8s passed between two polls (2026-10-14T02:25:41Z to 2026-10-14T02:41:49Z); the machine may have slept
+  handoff: wait: 2m26s passed between two polls (2026-10-14T03:57:28Z to 2026-10-14T03:59:54Z); the machine may have slept
+  handoff: wait: 15m0s passed between two polls (2026-10-14T04:00:16Z to 2026-10-14T04:15:16Z); the machine may have slept
+  handoff: wait: 17m12s passed between two polls (2026-10-14T05:18:23Z to 2026-10-14T05:35:35Z); the machine may have slept
+  handoff: wait: 14m56s passed between two polls (2026-10-14T06:45:57Z to 2026-10-14T07:00:53Z); the machine may have slept
+  handoff: wait: 18s passed between two polls (2026-10-14T07:16:25Z to 2026-10-14T07:16:43Z); the machine may have slept
+  handoff: wait: 19s passed between two polls (2026-10-14T07:16:54Z to 2026-10-14T07:17:13Z); the machine may have slept
+  handoff: wait: 19s passed between two polls (2026-10-14T07:17:55Z to 2026-10-14T07:18:14Z); the machine may have slept
+  handoff: wait: 19s passed between two polls (2026-10-14T07:18:25Z to 2026-10-14T07:18:44Z); the machine may have slept
+  handoff: wait: 19s passed between two polls (2026-10-14T07:19:26Z to 2026-10-14T07:19:45Z); the machine may have slept
+  handoff: wait: 15m20s passed between two polls (2026-10-14T07:19:56Z to 2026-10-14T07:35:16Z); the machine may have slept
+  handoff: wait: 16m4s passed between two polls (2026-10-14T07:45:15Z to 2026-10-14T08:01:19Z); the machine may have slept
+  handoff: wait: 13m56s passed between two polls (2026-10-14T09:02:03Z to 2026-10-14T09:15:59Z); the machine may have slept
+  handoff: wait: 9m55s passed between two polls (2026-10-14T10:06:35Z to 2026-10-14T10:16:30Z); the machine may have slept
+  handoff: wait: 15m2s passed between two polls (2026-10-14T10:40:34Z to 2026-10-14T10:55:36Z); the machine may have slept
+  handoff: wait: 10m50s passed between two polls (2026-10-14T10:55:40Z to 2026-10-14T11:06:30Z); the machine may have slept
+--- PASS: TestTrialReplay (0.43s)
+ok  	github.com/dre4success/handoff/internal/wait	0.646s
+
+## at 297919b0d7307a7fec5f0f1103641a9414a96fe2
+27 gaps in the trial's log
+the wait noted 13 lines:
+  handoff: wait: the machine may have slept from 2026-10-12T21:53:55Z to 2026-10-12T22:51:19Z (57m24s, waking briefly 3 times)
+  handoff: wait: the machine may have slept from 2026-10-13T20:32:20Z to 2026-10-13T21:23:46Z (51m26s, waking briefly 4 times)
+  handoff: wait: the machine may have slept from 2026-10-13T22:23:51Z to 2026-10-13T22:37:08Z (13m17s)
+  handoff: wait: the machine may have slept from 2026-10-14T01:04:59Z to 2026-10-14T01:21:22Z (16m23s)
+  handoff: wait: the machine may have slept from 2026-10-14T02:25:41Z to 2026-10-14T02:41:49Z (16m8s)
+  handoff: wait: the machine may have slept from 2026-10-14T03:57:28Z to 2026-10-14T04:15:16Z (17m48s, waking once briefly)
+  handoff: wait: the machine may have slept from 2026-10-14T05:18:23Z to 2026-10-14T05:35:35Z (17m12s)
+  handoff: wait: the machine may have slept from 2026-10-14T06:45:57Z to 2026-10-14T07:00:53Z (14m56s)
+  handoff: wait: the machine may have slept from 2026-10-14T07:16:25Z to 2026-10-14T07:35:16Z (18m51s, waking briefly 5 times)
+  handoff: wait: the machine may have slept from 2026-10-14T07:45:15Z to 2026-10-14T08:01:19Z (16m4s)
+  handoff: wait: the machine may have slept from 2026-10-14T09:02:03Z to 2026-10-14T09:15:59Z (13m56s)
+  handoff: wait: the machine may have slept from 2026-10-14T10:06:35Z to 2026-10-14T10:16:30Z (9m55s)
+  handoff: wait: the machine may have slept from 2026-10-14T10:40:34Z to 2026-10-14T11:06:30Z (25m56s, waking once briefly)
+--- PASS: TestTrialReplay (0.42s)
+ok  	github.com/dre4success/handoff/internal/wait	0.636s
+

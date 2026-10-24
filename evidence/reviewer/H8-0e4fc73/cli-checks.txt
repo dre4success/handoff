@@ -1,0 +1,7 @@
+by: Codex, reviewer
+commit: 0e4fc73c864fa5c8f735deb8ce0bc50a15ed7a4f
+date: 2026-10-14T22:32:13.942176+00:00
+cwd: /private/tmp/handoff-review-H8-0e4fc73
+command: go test -race -count=1 -run '^TestH8' ./cmd/handoff
+ok  	github.com/dre4success/handoff/cmd/handoff	30.174s
+exit: 0

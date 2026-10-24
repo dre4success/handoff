@@ -1,0 +1,36 @@
+# command: throwaway Claude Code sessions (claude -p --model haiku) with the rules `handoff settings claude --as claude` prints, at this commit and at ebc04f2 (round 1)
+# date: 2026-10-18 16:31:21 UTC
+# by: Opus 5.5 (implementer), on the operator's Mac, 2.1.302 (Claude Code)
+# commit: 5313f1d4a5a9ab326a82cfeeb91bda35b57d97ab
+
+## 1, now (5313f1d4a5a9ab326a82cfeeb91bda35b57d97ab): from a linked worktree, Write into the shared record, permission checks bypassed
+rules: {'allow': ['Bash(<scratch>/now/handoff *)'], 'deny': ['Bash(<scratch>/now/handoff decide *)', 'Edit(/<scratch>/wt-now/.handoff/**)', 'Write(/<scratch>/wt-now/.handoff/**)']}
+  tool result: <tool_use_error>File is in a directory that is denied by your permission settings.</tool_use_error>
+  last message: DENIED. The Write call failed with "File is in a directory that is denied by your permission settings." The `.handoff/` directory is blocked by the current permissions, so `probe.txt` was not created. I tried once and used no other tool, as you asked.
+  result: the record has no probe.txt
+
+## 1, round1 (ebc04f2): from a linked worktree, Write into the shared record, permission checks bypassed
+rules: {'allow': ['Bash(<scratch>/round1/handoff *)'], 'deny': ['Bash(<scratch>/round1/handoff decide *)', 'Edit(/.handoff/**)', 'Write(/.handoff/**)']}
+  tool result: File created successfully at: <scratch>/wt-round1/.handoff/probe.txt (file state is current in your context — no need to Read it back)
+  last message: WRITTEN
+  result: the record has probe.txt (the edit got through)
+
+## 2, now (5313f1d4a5a9ab326a82cfeeb91bda35b57d97ab): handoff under a path with spaces; Bash runs the brief's show command, default permissions
+allow: ["Bash('<scratch>/now-install/with spaces/handoff' *)"]
+the brief's command: '<scratch>/now-install/with spaces/handoff' show 1
+  tool result: #1 request T1 from: codex → claude ts: 2026-10-18T16:31:32Z title: T1 commit: 095ff648a82b0e8bbbdf45c1a246d84bb163c9e2 base: 095ff648a82b0e8bbbdf45c1a246d84bb163c9e2 state: open prev: genesis --- Please review.
+  last message: The first line it printed was: `#1 request T1`
+
+## 2, round1 (ebc04f2): handoff under a path with spaces; Bash runs the brief's show command, default permissions
+allow: ['Bash(<scratch>/round1-install/with spaces/handoff *)']
+the brief's command: <scratch>/round1-install/with spaces/handoff show 1
+  tool result: Exit code 127 (eval):1: no such file or directory: <scratch>/round1-install/with
+  last message: The command failed before `handoff` ran. The first line of output was: `(eval):1: no such file or directory: <scratch>/round1-install/with` The path contains a space, and the command as written did not quote it, so the shell split it at t
+
+## 3, control: 2, now, again, with the allow rule taken out
+rules: {'deny': ["Bash('<scratch>/now-install/with spaces/handoff' decide *)", 'Edit(/<scratch>/sp-now/.handoff/**)', 'Write(/<scratch>/sp-now/.handoff/**)']}
+  tool result: This command requires approval
+  last message: DENIED. The Bash call was rejected with "This command requires approval," so the command did not run and printed no output. I did not retry it or try another route, since you asked for exactly one run of this command. To run it, you'd need to approve the command or change the permission mode.
+
+## notifications (sent to a file)
+(none)

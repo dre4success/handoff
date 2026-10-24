@@ -1,0 +1,33 @@
+by: Codex, reviewer
+commit: 1aed04339f18c6f9b55b3d6daa5a35e00ea5c66c
+date: 2026-10-18T23:02:31.403441+00:00
+cwd: /private/tmp/handoff-review-H10b-1aed043
+command: python3 ~/handoff/evidence/reviewer/H10b-1aed043/probes.py /private/tmp/handoff-review-H10b-r3-bin bare
+Policy on bare command: {"matchedRules":[{"prefixRuleMatch":{"matchedPrefix":["/private/tmp/handoff-review-H10b-r3-bin"],"decision":"allow","justification":"handoff runs outside the sandbox so that it can notify the operator"}}],"decision":"allow"}
+Parsed generated config: {'HANDOFF_ROLE': 'reviewer'}
+generated role:
+inbox for reviewer
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  #1 note D1 reviewer → operator: Disposable reviewer fixture.
+
+gone quiet:
+  (none)
+
+The operator control, no role:
+
+#1 note D1 reviewer → operator: Disposable reviewer fixture.
+  | Disposable reviewer fixture.
+Approve, deny or skip? [a/d/s] s
+
+PASS: the role parsed from printed config keeps the agent in its inbox; the operator's no-role terminal still prompts. Only Skip was entered.
+exit: 0

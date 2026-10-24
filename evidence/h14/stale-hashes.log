@@ -1,0 +1,13 @@
+# command: python3 -I evidence/h14/stale-hashes.py 9dbdf5f^ 9dbdf5f 9dbdf5f^ c16ff7f9844b2917d0e4cdbd6e7da96aa4a63f5b
+# date: 2026-10-24 17:55:03 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: c16ff7f9844b2917d0e4cdbd6e7da96aa4a63f5b
+
+266 files changed; 2246 hashes of the bytes that changed
+## at 178b7ca: 440 files searched, 2 quote one
+evidence/trial/record/channel.jsonl quotes the sha256 of evidence/trial/record/channel.jsonl line 1 (efbaf25f39b8)
+evidence/trial/record/channel.jsonl quotes the sha256 of evidence/trial/record/channel.jsonl line 7 (47dc2bbd768e)
+## at c16ff7f: 448 files searched, 2 quote one
+evidence/trial/record/channel.jsonl quotes the sha256 of evidence/trial/record/channel.jsonl line 1 (efbaf25f39b8)
+evidence/trial/record/channel.jsonl quotes the sha256 of evidence/trial/record/channel.jsonl line 7 (47dc2bbd768e)
+# exit: 0

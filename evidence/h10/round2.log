@@ -1,0 +1,25 @@
+# command: the round-2 tests on ebc04f2 (round 1) with round 2's tests (d320393) copied in, then here
+# date: 2026-10-18 22:27:42 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 854c4c64de40a7bb4eb3abbf230e544638f5ef51
+
+## at ebc04f2 (expected to fail: the orphan delivers, the path isn't quoted, the rules name .handoff/ relatively)
+    hook_test.go:303: settings:
+--- FAIL: TestH10SettingsClaude (0.39s)
+    hook_test.go:342: the next listener: exit 3, stdout "", stderr ""; the orphan took the entry
+--- FAIL: TestH10ResumedOrphanLeavesTheEntry (3.27s)
+    hook_test.go:383: brief:
+--- FAIL: TestH10APathWithSpaces (0.31s)
+    hook_test.go:417: exit 0; want "Edit(//private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/TestH10SettingsInALinkedWorktree1575052001/001/.handoff/**)" in
+--- FAIL: TestH10SettingsInALinkedWorktree (0.17s)
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	4.604s
+FAIL
+
+## at 854c4c64de40a7bb4eb3abbf230e544638f5ef51 (expected to pass)
+--- PASS: TestH10SettingsClaude (0.28s)
+--- PASS: TestH10ResumedOrphanLeavesTheEntry (1.20s)
+--- PASS: TestH10APathWithSpaces (0.35s)
+--- PASS: TestH10SettingsInALinkedWorktree (0.17s)
+ok  	github.com/dre4success/handoff/cmd/handoff	2.255s
+# go test exit: 0

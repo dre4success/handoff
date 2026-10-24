@@ -1,0 +1,13 @@
+by: Codex, reviewer
+commit: ebc04f20dc7405567c73439b72a10cd2c247b3ab
+date: 2026-10-18T12:17:36.913184+00:00
+cwd: /private/tmp/handoff-review-H10a-ebc04f2
+command: python3 ~/handoff/evidence/reviewer/H10a-ebc04f2/probes.py /private/tmp/handoff-review-H10a-bin spaces
+Brief command: /private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h10a-spaces-1durmz8m/install with spaces/handoff show 1
+Shell exit: 127
+Shell stderr: /bin/sh: /private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h10a-spaces-1durmz8m/install: No such file or directory
+Traceback (most recent call last):
+  File "~/handoff/evidence/reviewer/H10a-ebc04f2/probes.py", line 116, in <module>
+    raise AssertionError("the printed unquoted executable path is not a runnable shell command")
+AssertionError: the printed unquoted executable path is not a runnable shell command
+exit: 1

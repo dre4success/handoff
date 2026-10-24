@@ -1,0 +1,21 @@
+by: Codex, reviewer
+commit: 86c70888be0557fff943187c3a714f4a78668240
+date: 2026-10-15T19:41:19.097353+00:00
+cwd: /private/tmp/handoff-review-H9-86c7088
+command: python3 ~/handoff/evidence/reviewer/H9-86c7088/probes.py /private/tmp/handoff-review-H9-86c7088/bin/handoff
+
+#1 request W1 implementer → reviewer: W1 initial @ 5bf8adf8c49d
+  #2 reply W1 reviewer → implementer: APPROVE on #1 @ 5bf8adf8c49d
+Approve W1 (#1)? [y/N] y
+handoff decide: request #1 is superseded, not awaiting the operator
+
+PASS: decide by item does not retarget a confirmation to a superseding commit.
+
+#1 request W1 implementer → reviewer: W1 initial @ 5bf8adf8c49d
+  #2 reply W1 reviewer → implementer: APPROVE on #1 @ 5bf8adf8c49d
+Approve, deny or skip? [a/d/s] a
+
+Note (optional): handoff: request #1 is answered, not awaiting the operator
+
+PASS: bare handoff refuses to write after the standing approval is retracted.
+exit: 0

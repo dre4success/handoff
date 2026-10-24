@@ -1,0 +1,41 @@
+Reading additional input from stdin...
+OpenAI Codex v0.162.1
+--------
+workdir: <probe>
+model: gpt-6-luna
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: low
+reasoning summaries: none
+session id: 01a1511a-4908-7ed2-abd6-b33e9cae0467
+--------
+user
+Run exactly this shell command once: env | grep -E '^(HANDOFF|CODEX|CLAUDE)' | sort ; then print its output verbatim and nothing else.
+exec
+/bin/zsh -lc "env | grep -E '"'^(HANDOFF|CODEX|CLAUDE)'"' | sort" in <probe>
+ succeeded in 0ms:
+CODEX_APPLY_PATCH_PRESERVE_LINE_ENDINGS=1
+CODEX_CI=1
+CODEX_MANAGED_BY_NPM=1
+CODEX_MANAGED_PACKAGE_ROOT=~/.nvm/versions/node/v24.11.1/lib/node_modules/@openai/codex
+CODEX_SANDBOX=seatbelt
+CODEX_SANDBOX_NETWORK_DISABLED=1
+CODEX_SESSION_ID=01a1511a-4908-7ed2-abd6-b33e9cae0467
+CODEX_THREAD_ID=01a1511a-4908-7ed2-abd6-b33e9cae0467
+CODEX_VERSION=0.162.1
+HANDOFF_ROLE=codex
+
+codex
+CODEX_APPLY_PATCH_PRESERVE_LINE_ENDINGS=1
+CODEX_CI=1
+CODEX_MANAGED_BY_NPM=1
+CODEX_MANAGED_PACKAGE_ROOT=~/.nvm/versions/node/v24.11.1/lib/node_modules/@openai/codex
+CODEX_SANDBOX=seatbelt
+CODEX_SANDBOX_NETWORK_DISABLED=1
+CODEX_SESSION_ID=01a1511a-4908-7ed2-abd6-b33e9cae0467
+CODEX_THREAD_ID=01a1511a-4908-7ed2-abd6-b33e9cae0467
+CODEX_VERSION=0.162.1
+HANDOFF_ROLE=codex
+tokens used
+8,096

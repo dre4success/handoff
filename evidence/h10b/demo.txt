@@ -1,0 +1,94 @@
+# command: settings codex, Codex's rule check, and the brief a Codex session gets
+# date: 2026-10-18 22:36:49 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0, codex-cli 0.162.1)
+# commit: deafc7b62188c49df32f9fdfa15011ea42f99d5c
+
+$ handoff settings codex --as codex
+Put these three files in this project's .codex/ folder, merged with any already
+there, and keep it out of git (add .codex/ to .git/info/exclude). Codex reads
+them only in a project it trusts. The next time Codex starts here, it asks you
+to review the new hooks: choose Trust all.
+
+Every Codex session in this project is then codex. Every command it runs has
+HANDOFF_ROLE=codex, so handoff on its own shows its inbox, never your decisions.
+It gets the brief when its first turn starts and after a summary. When its turn
+would end, a hook listens for its work and continues it with what arrives. And
+handoff runs outside Codex's sandbox, so its notifications and pop-ups reach
+you; handoff decide is forbidden.
+
+.codex/config.toml:
+[shell_environment_policy]
+set = { HANDOFF_ROLE = "codex" }
+
+.codex/hooks.json:
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "exec <scratch>/handoff hook brief --as codex",
+            "timeout": 30,
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "command": "exec <scratch>/handoff hook listen --as codex",
+            "timeout": 86400,
+            "type": "command"
+          }
+        ]
+      }
+    ]
+  }
+}
+
+.codex/rules/handoff.rules:
+# handoff writes only under .handoff/ and has no network code (proposal §9).
+prefix_rule(pattern=["<scratch>/handoff"], decision="allow", justification="handoff runs outside the sandbox so that it can notify the operator")
+prefix_rule(pattern=["<scratch>/handoff", "decide"], decision="forbidden", justification="The operator decides, not an agent")
+
+$ codex execpolicy check --rules handoff.rules -- handoff show 1
+  "decision": "allow"
+$ codex execpolicy check --rules handoff.rules -- handoff claim --as codex 1
+  "decision": "allow"
+$ codex execpolicy check --rules handoff.rules -- handoff reply --as codex 1 --verdict APPROVE --commit HEAD --body r.md
+  "decision": "allow"
+$ codex execpolicy check --rules handoff.rules -- handoff decide T1 --approve
+  "decision": "forbidden"
+
+$ handoff hook brief --as codex   (what SessionStart gives the model)
+handoff brief: you are codex in demo. You and claude hand work to each other through handoff. The operator decides.
+
+Listening: you don't run `<scratch>/handoff wait`. When your turn ends, a hook listens for codex and brings you what arrives.
+
+When something arrives, read it with `<scratch>/handoff show <id>`, then:
+- A request to you: `<scratch>/handoff claim --as codex <id>`, review exactly the commit it names in a temporary worktree, then `<scratch>/handoff reply --as codex <id> --verdict APPROVE|CHANGES|QUESTION --commit <that sha> --body <file>`.
+- A reply to your request: on CHANGES or QUESTION, fix or answer, then post again (`<scratch>/handoff post --as codex ... --supersedes <id>`). On APPROVE, the operator decides; wait for the decision.
+- A decision from the operator: act on it. Merge only on approve.
+- A note to you: answer with `<scratch>/handoff note --as codex --to <role> --re <id> --body <file>`.
+
+To ask the operator about an item: `<scratch>/handoff note --as codex --to operator --item <item> --title "<question>" --body <file>`.
+Rules: never edit .handoff/ by hand. Never merge, push or deploy without the operator's decision. A claim is not an approval.
+
+Waiting for you now (inbox for codex):
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)

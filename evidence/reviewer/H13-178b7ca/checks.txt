@@ -1,0 +1,21 @@
+by: Codex, reviewer
+commit: 178b7ca4e29637bd95e7d9010dbf78d2d26bc723
+date: 2026-10-24T17:30:58.399522+00:00
+cwd: /private/tmp/handoff-review-H13-178b7ca
+command: python3 ~/handoff/evidence/reviewer/H13-178b7ca/checks.py
+$ gofmt -l cmd internal
+$ git diff --check ae65b6ce30b5c5eb6a03d81f99d8cffdc25581b4 HEAD
+evidence/h13/live-awake.txt:9: trailing whitespace.
++  pmset: pid 42266(caffeinate): 00:00:00 PreventUserIdleSystemSleep named: "caffeinate command-line tool"  
+evidence/h13/live-awake.txt:15: trailing whitespace.
++  pmset: pid 42289(caffeinate): 00:00:00 PreventUserIdleSystemSleep named: "caffeinate command-line tool"  
+evidence/h13/live-awake.txt:33: trailing whitespace.
++  pmset: pid 42342(caffeinate): 00:00:00 PreventUserIdleSystemSleep named: "caffeinate command-line tool"  
+evidence/h13/trial-replay.log:57: new blank line at EOF.
+Traceback (most recent call last):
+  File "~/handoff/evidence/reviewer/H13-178b7ca/checks.py", line 11, in <module>
+    run(['git', 'diff', '--check', 'ae65b6ce30b5c5eb6a03d81f99d8cffdc25581b4', 'HEAD'])
+  File "~/handoff/evidence/reviewer/H13-178b7ca/checks.py", line 7, in run
+    assert p.returncode == 0, p.returncode
+AssertionError: 2
+exit: 1

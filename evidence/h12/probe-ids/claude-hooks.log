@@ -1,0 +1,14 @@
+03:55:34 start ppid=79176 {"session_id":"442ab10c-dd6c-437d-914b-4a839dbbac6d","cwd":"<scratch>/rt-claude","hook_event_name":"SessionStart","source":"startup"}
+
+  env: CLAUDE_PID=79176
+  env: CLAUDE_CODE_SESSION_ID=442ab10c-dd6c-437d-914b-4a839dbbac6d
+03:55:40 stop ppid=79176 {"session_id":"442ab10c-dd6c-437d-914b-4a839dbbac6d","cwd":"<scratch>/rt-claude","prompt_id":"aaf3d214-36c8-4ee7-8265-d1fe06251100","permission_mode":"default","effort":{"level":"medium"},"hook_event_name":"Stop","stop_hook_active":false,"last_assistant_message":"4
+  env: CLAUDE_PID=79176
+  env: CLAUDE_CODE_SESSION_ID=442ab10c-dd6c-437d-914b-4a839dbbac6d
+03:55:58 start ppid=79885 {"session_id":"442ab10c-dd6c-437d-914b-4a839dbbac6d","cwd":"<scratch>/rt-claude","hook_event_name":"SessionStart","source":"resume","seconds_since_last_response":18,"context_tokens":10688,"prompt_cache_likely_expired":false,"estimated_cache_write_usd":0.0021}
+
+  env: CLAUDE_PID=79885
+  env: CLAUDE_CODE_SESSION_ID=442ab10c-dd6c-437d-914b-4a839dbbac6d
+03:56:03 stop ppid=79885 {"session_id":"442ab10c-dd6c-437d-914b-4a839dbbac6d","cwd":"<scratch>/rt-claude","prompt_id":"138e2e68-97d3-4bfd-bd3d-1f5fa14ea9db","permission_mode":"default","effort":{"level":"medium"},"hook_event_name":"Stop","stop_hook_active":false,"last_assistant_message":"4
+  env: CLAUDE_PID=79885
+  env: CLAUDE_CODE_SESSION_ID=442ab10c-dd6c-437d-914b-4a839dbbac6d

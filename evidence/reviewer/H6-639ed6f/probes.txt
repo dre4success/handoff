@@ -1,0 +1,328 @@
+Run by GPT-6, primary reviewer; snapshot 639ed6fea63aa566ee693da1bc3996c8d70b7da8
+2026-10-10T09:12:01.580769+00:00
+
+CASE 1: real post-sync SIGKILL followed by same-key retry and repair
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin init --roles implementer,reviewer,reviewer-2 --reviewers reviewer,reviewer-2
+exit=0
+stdout: created /private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-crash-p6di9egi/.handoff
+The record is never committed: add .handoff/ to .gitignore (proposal §5).
+stderr: 
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin post --as implementer --item BASE --to reviewer --commit 03e7202499e6a5613ab673748c64363f9920f381 --base 03e7202499e6a5613ab673748c64363f9920f381 --title BASE --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-crash-p6di9egi/body.md --key baseline
+exit=0
+stdout: posted #1 request BASE implementer → reviewer: BASE @ 03e7202499e6
+stderr: 
+$ HANDOFF_TEST_FAULT=after-sync /tmp/handoff-review-H6.bDzgGr/handoff-review-bin post --as implementer --item W1 --to reviewer --commit 03e7202499e6a5613ab673748c64363f9920f381 --base 03e7202499e6a5613ab673748c64363f9920f381 --title W1 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-crash-p6di9egi/body.md --key crash-retry
+exit=-9
+stdout: 
+stderr: 
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin post --as implementer --item W1 --to reviewer --commit 03e7202499e6a5613ab673748c64363f9920f381 --base 03e7202499e6a5613ab673748c64363f9920f381 --title W1 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-crash-p6di9egi/body.md --key crash-retry
+exit=0
+stdout: exists #2 request W1 implementer → reviewer: W1 @ 03e7202499e6
+stderr: handoff: advisory: head.json is behind the record: it counts 1 lines, the record has 2 that chain on from them (a writer stopped between the record and head.json); `handoff repair` acknowledges it
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin repair --as reviewer
+exit=0
+stdout: posted #3 repair - reviewer → -: head.json rewritten to match the record, whose chain verifies to its last line.…
+stderr: 
+PASS: one request after retry; repair only appended; original bytes unchanged; head catches up; SHA256 before repair=2f818221c72deadd3c9669376f051ee2cb7eb07d833c7c0369d2bf0c6b7fcca5
+
+CASE 2: cut tail followed by a permitted post killed after sync, before head update
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin init --roles implementer,reviewer,reviewer-2 --reviewers reviewer,reviewer-2
+exit=0
+stdout: created /private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-cut-crash-y6c329_0/.handoff
+The record is never committed: add .handoff/ to .gitignore (proposal §5).
+stderr: 
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin post --as implementer --item BASE --to reviewer --commit 03e7202499e6a5613ab673748c64363f9920f381 --base 03e7202499e6a5613ab673748c64363f9920f381 --title BASE --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-cut-crash-y6c329_0/body.md --key baseline
+exit=0
+stdout: posted #1 request BASE implementer → reviewer: BASE @ 03e7202499e6
+stderr: 
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin post --as implementer --item W1 --to reviewer --commit 03e7202499e6a5613ab673748c64363f9920f381 --base 03e7202499e6a5613ab673748c64363f9920f381 --title W1 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-cut-crash-y6c329_0/body.md --key lost-tail
+exit=0
+stdout: posted #2 request W1 implementer → reviewer: W1 @ 03e7202499e6
+stderr: 
+$ HANDOFF_TEST_FAULT=after-sync /tmp/handoff-review-H6.bDzgGr/handoff-review-bin post --as implementer --item W2 --to reviewer --commit 03e7202499e6a5613ab673748c64363f9920f381 --base 03e7202499e6a5613ab673748c64363f9920f381 --title W2 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-cut-crash-y6c329_0/body.md --key cut-crash-retry
+exit=-9
+stdout: 
+stderr: 
+The new line links correctly to #1; head has its pre-cut count and hash; no last-line body was edited.
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin post --as implementer --item W2 --to reviewer --commit 03e7202499e6a5613ab673748c64363f9920f381 --base 03e7202499e6a5613ab673748c64363f9920f381 --title W2 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-cut-crash-y6c329_0/body.md --key cut-crash-retry
+exit=2
+stdout: 
+stderr: handoff post: the record's hash chain does not verify at line 2: head.json counts the same 2 lines but names 1a159b2fd6ee as the last, and the last line hashes to 4a337652c55d, so the last line or head.json was edited; posting stops until the operator decides
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin repair --as reviewer
+exit=2
+stdout: 
+stderr: handoff repair: the record's hash chain does not verify at line 2: head.json counts the same 2 lines but names 1a159b2fd6ee as the last, and the last line hashes to 4a337652c55d, so the last line or head.json was edited; repair only mends a torn tail or head.json, so the operator decides
+record bytes unchanged by both refusals=True
+BUG: a supported cut-tail/post-sync-crash sequence is classified as an edit; same-key retry and repair both refuse a genuine synced entry
+
+CASE 3: actual last-line edit is withheld, including a forged APPROVE
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin init --roles implementer,reviewer,reviewer-2 --reviewers reviewer,reviewer-2
+exit=0
+stdout: created /private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-last-edit-wtzch0a8/.handoff
+The record is never committed: add .handoff/ to .gitignore (proposal §5).
+stderr: 
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin post --as implementer --item W1 --to reviewer --commit 3b3f5ea96da0776f99bf9b29deb3625fd7664420 --base 3b3f5ea96da0776f99bf9b29deb3625fd7664420 --title W1 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-last-edit-wtzch0a8/body.md --key request
+exit=0
+stdout: posted #1 request W1 implementer → reviewer: W1 @ 3b3f5ea96da0
+stderr: 
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin reply 1 --as reviewer --verdict QUESTION --commit 3b3f5ea96da0776f99bf9b29deb3625fd7664420 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-last-edit-wtzch0a8/body.md
+exit=0
+stdout: posted #2 reply W1 reviewer → implementer: QUESTION on #1 @ 3b3f5ea96da0
+stderr: 
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin wait --for implementer --timeout 3s
+exit=2
+stdout: 
+stderr: handoff: the hash chain fails at line 2: head.json counts the same 2 lines but names 928cb2a8c108 as the last, and the last line hashes to 196ba91cbb3b, so the last line or head.json was edited; entries from line 2 on are withheld from inbox and wait, and posting stops until the operator decides
+handoff wait: the record's hash chain does not verify at line 2; wait stops without delivering anything from line 2 on; the operator decides
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin show 2
+exit=0
+stdout: #2 reply W1
+from: reviewer → implementer
+ts: 2026-10-10T09:12:02Z
+verified: NO; the hash chain fails at line 2, and this entry is withheld from inbox and wait
+commit: 3b3f5ea96da0776f99bf9b29deb3625fd7664420
+re: #1
+verdict: APPROVE
+prev: 6904f8cc20dc2b5580600d5bb2a269aac1a78dae91a42de5931af30d7da23362
+---
+Edited approval, must not be acted on.
+stderr: handoff: the hash chain fails at line 2: head.json counts the same 2 lines but names 928cb2a8c108 as the last, and the last line hashes to 196ba91cbb3b, so the last line or head.json was edited; entries from line 2 on are withheld from inbox and wait, and posting stops until the operator decides
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin show 1
+exit=0
+stdout: #1 request W1
+from: implementer → reviewer
+ts: 2026-10-10T09:12:02Z
+title: W1
+commit: 3b3f5ea96da0776f99bf9b29deb3625fd7664420
+base: 3b3f5ea96da0776f99bf9b29deb3625fd7664420
+key: request
+state: open
+prev: genesis
+---
+Review fixture body.
+stderr: handoff: the hash chain fails at line 2: head.json counts the same 2 lines but names 928cb2a8c108 as the last, and the last line hashes to 196ba91cbb3b, so the last line or head.json was edited; entries from line 2 on are withheld from inbox and wait, and posting stops until the operator decides
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin inbox --for operator --quiet
+exit=0
+stdout: 
+stderr: handoff: the hash chain fails at line 2: head.json counts the same 2 lines but names 928cb2a8c108 as the last, and the last line hashes to 196ba91cbb3b, so the last line or head.json was edited; entries from line 2 on are withheld from inbox and wait, and posting stops until the operator decides
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin post --as implementer --item W2 --to reviewer --commit 3b3f5ea96da0776f99bf9b29deb3625fd7664420 --base 3b3f5ea96da0776f99bf9b29deb3625fd7664420 --title W2 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-last-edit-wtzch0a8/body.md --key new
+exit=2
+stdout: 
+stderr: handoff post: the record's hash chain does not verify at line 2: head.json counts the same 2 lines but names 928cb2a8c108 as the last, and the last line hashes to 196ba91cbb3b, so the last line or head.json was edited; posting stops until the operator decides
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin repair --as reviewer
+exit=2
+stdout: 
+stderr: handoff repair: the record's hash chain does not verify at line 2: head.json counts the same 2 lines but names 928cb2a8c108 as the last, and the last line hashes to 196ba91cbb3b, so the last line or head.json was edited; repair only mends a torn tail or head.json, so the operator decides
+PASS: a real edited last verdict is withheld; no delivery, cursor or manufactured operator approval; writes refuse without changing bytes
+
+CASE 4: head witness preserves the genuine response before a forged append
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin init --roles implementer,reviewer,reviewer-2 --reviewers reviewer,reviewer-2
+exit=0
+stdout: created /private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-witness-p_u4whud/.handoff
+The record is never committed: add .handoff/ to .gitignore (proposal §5).
+stderr: 
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin post --as implementer --item W1 --to reviewer --commit 3b3f5ea96da0776f99bf9b29deb3625fd7664420 --base 3b3f5ea96da0776f99bf9b29deb3625fd7664420 --title W1 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-witness-p_u4whud/body.md --key request
+exit=0
+stdout: posted #1 request W1 implementer → reviewer: W1 @ 3b3f5ea96da0
+stderr: 
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin reply 1 --as reviewer --verdict QUESTION --commit 3b3f5ea96da0776f99bf9b29deb3625fd7664420 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-witness-p_u4whud/body.md
+exit=0
+stdout: posted #2 reply W1 reviewer → implementer: QUESTION on #1 @ 3b3f5ea96da0
+stderr: 
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin show 2
+exit=0
+stdout: #2 reply W1
+from: reviewer → implementer
+ts: 2026-10-10T09:12:02Z
+commit: 3b3f5ea96da0776f99bf9b29deb3625fd7664420
+re: #1
+verdict: QUESTION
+prev: 6904f8cc20dc2b5580600d5bb2a269aac1a78dae91a42de5931af30d7da23362
+---
+Review fixture body.
+stderr: handoff: the hash chain fails at line 3: prev does not match the line before it; entries from line 3 on are withheld from inbox and wait, and posting stops until the operator decides
+handoff: advisory: head.json disagrees with the record: it counts 2 lines ending in 928cb2a8c108, the record has 3 ending in 1bc816d8e73a (a cut tail, or an edited last line); `handoff repair` acknowledges it
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin wait --for implementer --timeout 3s
+exit=2
+stdout: #2 reply W1 reviewer → implementer: QUESTION on #1 @ 3b3f5ea96da0
+stderr: handoff: the hash chain fails at line 3: prev does not match the line before it; entries from line 3 on are withheld from inbox and wait, and posting stops until the operator decides
+handoff: advisory: head.json disagrees with the record: it counts 2 lines ending in 928cb2a8c108, the record has 3 ending in 1bc816d8e73a (a cut tail, or an edited last line); `handoff repair` acknowledges it
+handoff wait: the record's hash chain does not verify at line 3; wait stops without delivering anything from line 3 on; the operator decides
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin inbox --for implementer --quiet
+exit=1
+stdout: 
+stderr: handoff: the hash chain fails at line 3: prev does not match the line before it; entries from line 3 on are withheld from inbox and wait, and posting stops until the operator decides
+handoff: advisory: head.json disagrees with the record: it counts 2 lines ending in 928cb2a8c108, the record has 3 ending in 1bc816d8e73a (a cut tail, or an edited last line); `handoff repair` acknowledges it
+PASS: vouching head uses the specified partition and never delivers the forgery
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin init --roles implementer,reviewer,reviewer-2 --reviewers reviewer,reviewer-2
+exit=0
+stdout: created /private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-witness-0yxi_so_/.handoff
+The record is never committed: add .handoff/ to .gitignore (proposal §5).
+stderr: 
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin post --as implementer --item W1 --to reviewer --commit 3b3f5ea96da0776f99bf9b29deb3625fd7664420 --base 3b3f5ea96da0776f99bf9b29deb3625fd7664420 --title W1 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-witness-0yxi_so_/body.md --key request
+exit=0
+stdout: posted #1 request W1 implementer → reviewer: W1 @ 3b3f5ea96da0
+stderr: 
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin reply 1 --as reviewer --verdict QUESTION --commit 3b3f5ea96da0776f99bf9b29deb3625fd7664420 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-witness-0yxi_so_/body.md
+exit=0
+stdout: posted #2 reply W1 reviewer → implementer: QUESTION on #1 @ 3b3f5ea96da0
+stderr: 
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin show 2
+exit=0
+stdout: #2 reply W1
+from: reviewer → implementer
+ts: 2026-10-10T09:12:02Z
+verified: NO; the hash chain fails at line 3, and this entry is withheld from inbox and wait
+commit: 3b3f5ea96da0776f99bf9b29deb3625fd7664420
+re: #1
+verdict: QUESTION
+prev: 6904f8cc20dc2b5580600d5bb2a269aac1a78dae91a42de5931af30d7da23362
+---
+Review fixture body.
+stderr: handoff: the hash chain fails at line 3: prev does not match the line before it; entries from line 2 on are withheld from inbox and wait, and posting stops until the operator decides
+handoff: advisory: head.json is unreadable (open /private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-witness-0yxi_so_/.handoff/head.json: no such file or directory); the record has 3 lines; `handoff repair` acknowledges it
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin wait --for implementer --timeout 3s
+exit=2
+stdout: 
+stderr: handoff: the hash chain fails at line 3: prev does not match the line before it; entries from line 2 on are withheld from inbox and wait, and posting stops until the operator decides
+handoff: advisory: head.json is unreadable (open /private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-witness-0yxi_so_/.handoff/head.json: no such file or directory); the record has 3 lines; `handoff repair` acknowledges it
+handoff wait: the record's hash chain does not verify at line 3; wait stops without delivering anything from line 2 on; the operator decides
+PASS: missing head uses the specified partition and never delivers the forgery
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin init --roles implementer,reviewer,reviewer-2 --reviewers reviewer,reviewer-2
+exit=0
+stdout: created /private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-witness-3ip7n8nu/.handoff
+The record is never committed: add .handoff/ to .gitignore (proposal §5).
+stderr: 
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin post --as implementer --item W1 --to reviewer --commit 3b3f5ea96da0776f99bf9b29deb3625fd7664420 --base 3b3f5ea96da0776f99bf9b29deb3625fd7664420 --title W1 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-witness-3ip7n8nu/body.md --key request
+exit=0
+stdout: posted #1 request W1 implementer → reviewer: W1 @ 3b3f5ea96da0
+stderr: 
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin reply 1 --as reviewer --verdict QUESTION --commit 3b3f5ea96da0776f99bf9b29deb3625fd7664420 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-witness-3ip7n8nu/body.md
+exit=0
+stdout: posted #2 reply W1 reviewer → implementer: QUESTION on #1 @ 3b3f5ea96da0
+stderr: 
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin show 2
+exit=0
+stdout: #2 reply W1
+from: reviewer → implementer
+ts: 2026-10-10T09:12:02Z
+verified: NO; the hash chain fails at line 3, and this entry is withheld from inbox and wait
+commit: 3b3f5ea96da0776f99bf9b29deb3625fd7664420
+re: #1
+verdict: QUESTION
+prev: 6904f8cc20dc2b5580600d5bb2a269aac1a78dae91a42de5931af30d7da23362
+---
+Review fixture body.
+stderr: handoff: the hash chain fails at line 3: prev does not match the line before it; entries from line 2 on are withheld from inbox and wait, and posting stops until the operator decides
+handoff: advisory: head.json is unreadable (unexpected end of JSON input); the record has 3 lines; `handoff repair` acknowledges it
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin wait --for implementer --timeout 3s
+exit=2
+stdout: 
+stderr: handoff: the hash chain fails at line 3: prev does not match the line before it; entries from line 2 on are withheld from inbox and wait, and posting stops until the operator decides
+handoff: advisory: head.json is unreadable (unexpected end of JSON input); the record has 3 lines; `handoff repair` acknowledges it
+handoff wait: the record's hash chain does not verify at line 3; wait stops without delivering anything from line 2 on; the operator decides
+PASS: unreadable head uses the specified partition and never delivers the forgery
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin init --roles implementer,reviewer,reviewer-2 --reviewers reviewer,reviewer-2
+exit=0
+stdout: created /private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-witness-o_0_fo24/.handoff
+The record is never committed: add .handoff/ to .gitignore (proposal §5).
+stderr: 
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin post --as implementer --item W1 --to reviewer --commit 3b3f5ea96da0776f99bf9b29deb3625fd7664420 --base 3b3f5ea96da0776f99bf9b29deb3625fd7664420 --title W1 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-witness-o_0_fo24/body.md --key request
+exit=0
+stdout: posted #1 request W1 implementer → reviewer: W1 @ 3b3f5ea96da0
+stderr: 
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin reply 1 --as reviewer --verdict QUESTION --commit 3b3f5ea96da0776f99bf9b29deb3625fd7664420 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-witness-o_0_fo24/body.md
+exit=0
+stdout: posted #2 reply W1 reviewer → implementer: QUESTION on #1 @ 3b3f5ea96da0
+stderr: 
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin show 2
+exit=0
+stdout: #2 reply W1
+from: reviewer → implementer
+ts: 2026-10-10T09:12:02Z
+verified: NO; the hash chain fails at line 3, and this entry is withheld from inbox and wait
+commit: 3b3f5ea96da0776f99bf9b29deb3625fd7664420
+re: #1
+verdict: QUESTION
+prev: 6904f8cc20dc2b5580600d5bb2a269aac1a78dae91a42de5931af30d7da23362
+---
+Review fixture body.
+stderr: handoff: the hash chain fails at line 3: prev does not match the line before it; entries from line 2 on are withheld from inbox and wait, and posting stops until the operator decides
+handoff: advisory: head.json disagrees with the record: it counts 1 lines ending in 6904f8cc20dc, the record has 3 ending in 1bc816d8e73a (a cut tail, or an edited last line); `handoff repair` acknowledges it
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin wait --for implementer --timeout 3s
+exit=2
+stdout: 
+stderr: handoff: the hash chain fails at line 3: prev does not match the line before it; entries from line 2 on are withheld from inbox and wait, and posting stops until the operator decides
+handoff: advisory: head.json disagrees with the record: it counts 1 lines ending in 6904f8cc20dc, the record has 3 ending in 1bc816d8e73a (a cut tail, or an edited last line); `handoff repair` acknowledges it
+handoff wait: the record's hash chain does not verify at line 3; wait stops without delivering anything from line 2 on; the operator decides
+PASS: behind head uses the specified partition and never delivers the forgery
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin init --roles implementer,reviewer,reviewer-2 --reviewers reviewer,reviewer-2
+exit=0
+stdout: created /private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-witness-z6sc0dje/.handoff
+The record is never committed: add .handoff/ to .gitignore (proposal §5).
+stderr: 
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin post --as implementer --item W1 --to reviewer --commit 3b3f5ea96da0776f99bf9b29deb3625fd7664420 --base 3b3f5ea96da0776f99bf9b29deb3625fd7664420 --title W1 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-witness-z6sc0dje/body.md --key request
+exit=0
+stdout: posted #1 request W1 implementer → reviewer: W1 @ 3b3f5ea96da0
+stderr: 
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin reply 1 --as reviewer --verdict QUESTION --commit 3b3f5ea96da0776f99bf9b29deb3625fd7664420 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-witness-z6sc0dje/body.md
+exit=0
+stdout: posted #2 reply W1 reviewer → implementer: QUESTION on #1 @ 3b3f5ea96da0
+stderr: 
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin show 2
+exit=0
+stdout: #2 reply W1
+from: reviewer → implementer
+ts: 2026-10-10T09:12:02Z
+verified: NO; the hash chain fails at line 3, and this entry is withheld from inbox and wait
+commit: 3b3f5ea96da0776f99bf9b29deb3625fd7664420
+re: #1
+verdict: QUESTION
+prev: 6904f8cc20dc2b5580600d5bb2a269aac1a78dae91a42de5931af30d7da23362
+---
+Review fixture body.
+stderr: handoff: the hash chain fails at line 3: prev does not match the line before it; entries from line 2 on are withheld from inbox and wait, and posting stops until the operator decides
+handoff: advisory: head.json disagrees with the record: it counts 10 lines ending in 928cb2a8c108, the record has 3 ending in 1bc816d8e73a (a cut tail, or an edited last line); `handoff repair` acknowledges it
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin wait --for implementer --timeout 3s
+exit=2
+stdout: 
+stderr: handoff: the hash chain fails at line 3: prev does not match the line before it; entries from line 2 on are withheld from inbox and wait, and posting stops until the operator decides
+handoff: advisory: head.json disagrees with the record: it counts 10 lines ending in 928cb2a8c108, the record has 3 ending in 1bc816d8e73a (a cut tail, or an edited last line); `handoff repair` acknowledges it
+handoff wait: the record's hash chain does not verify at line 3; wait stops without delivering anything from line 2 on; the operator decides
+PASS: ahead head uses the specified partition and never delivers the forgery
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin init --roles implementer,reviewer,reviewer-2 --reviewers reviewer,reviewer-2
+exit=0
+stdout: created /private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-witness-1mlrrhq7/.handoff
+The record is never committed: add .handoff/ to .gitignore (proposal §5).
+stderr: 
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin post --as implementer --item W1 --to reviewer --commit f6812a5f25e057dd673b184221805050578126ae --base f6812a5f25e057dd673b184221805050578126ae --title W1 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-witness-1mlrrhq7/body.md --key request
+exit=0
+stdout: posted #1 request W1 implementer → reviewer: W1 @ f6812a5f25e0
+stderr: 
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin reply 1 --as reviewer --verdict QUESTION --commit f6812a5f25e057dd673b184221805050578126ae --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-witness-1mlrrhq7/body.md
+exit=0
+stdout: posted #2 reply W1 reviewer → implementer: QUESTION on #1 @ f6812a5f25e0
+stderr: 
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin show 2
+exit=0
+stdout: #2 reply W1
+from: reviewer → implementer
+ts: 2026-10-10T09:12:03Z
+verified: NO; the hash chain fails at line 3, and this entry is withheld from inbox and wait
+commit: f6812a5f25e057dd673b184221805050578126ae
+re: #1
+verdict: QUESTION
+prev: e2c7a0f3e360e840637d0071b3a8421de70c303757b57cb23a6a05d391c7e560
+---
+Review fixture body.
+stderr: handoff: the hash chain fails at line 3: prev does not match the line before it; entries from line 2 on are withheld from inbox and wait, and posting stops until the operator decides
+handoff: advisory: head.json disagrees with the record: it counts 2 lines ending in not-the-curr, the record has 3 ending in 04945730ead9 (a cut tail, or an edited last line); `handoff repair` acknowledges it
+$ /tmp/handoff-review-H6.bDzgGr/handoff-review-bin wait --for implementer --timeout 3s
+exit=2
+stdout: 
+stderr: handoff: the hash chain fails at line 3: prev does not match the line before it; entries from line 2 on are withheld from inbox and wait, and posting stops until the operator decides
+handoff: advisory: head.json disagrees with the record: it counts 2 lines ending in not-the-curr, the record has 3 ending in 04945730ead9 (a cut tail, or an edited last line); `handoff repair` acknowledges it
+handoff wait: the record's hash chain does not verify at line 3; wait stops without delivering anything from line 2 on; the operator decides
+PASS: wrong_hash head uses the specified partition and never delivers the forgery
+
+All intended H6 damage checks passed; CASE 2 reproduces the crash-recovery regression.

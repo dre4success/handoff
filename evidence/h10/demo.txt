@@ -1,0 +1,130 @@
+# command: settings claude, brief, hook listen and the hooks off duty, in a scratch project
+# date: 2026-10-18 22:27:52 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 854c4c64de40a7bb4eb3abbf230e544638f5ef51
+
+$ handoff settings claude --as claude
+Put this in .claude/settings.local.json in this project, merged with anything
+already there. That file stays out of git. Then start Claude Code here again.
+Every Claude Code session in this project is then claude: it gets the brief when it
+starts or is summarised, a hook listens for its work whenever its turn ends,
+and it runs handoff without asking, but never decide, nor edits .handoff/.
+
+{
+  "env": {
+    "HANDOFF_ROLE": "claude"
+  },
+  "hooks": {
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "args": [
+              "hook",
+              "notify"
+            ],
+            "command": "<scratch>/handoff",
+            "type": "command"
+          }
+        ],
+        "matcher": "permission_prompt"
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "args": [
+              "hook",
+              "brief"
+            ],
+            "command": "<scratch>/handoff",
+            "type": "command"
+          },
+          {
+            "args": [
+              "hook",
+              "listen"
+            ],
+            "asyncRewake": true,
+            "command": "<scratch>/handoff",
+            "timeout": 86400,
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "args": [
+              "hook",
+              "listen"
+            ],
+            "asyncRewake": true,
+            "command": "<scratch>/handoff",
+            "timeout": 86400,
+            "type": "command"
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(<scratch>/handoff *)"
+    ],
+    "deny": [
+      "Bash(<scratch>/handoff decide *)",
+      "Edit(/<scratch>/demo/.handoff/**)",
+      "Write(/<scratch>/demo/.handoff/**)"
+    ]
+  }
+}
+
+$ HANDOFF_ROLE=claude handoff hook brief   (what SessionStart shows the model)
+handoff brief: you are claude in demo. You and codex hand work to each other through handoff. The operator decides.
+
+Listening: you don't run `<scratch>/handoff wait`. When your turn ends, a hook listens for claude and wakes you with what arrived.
+
+When something arrives, read it with `<scratch>/handoff show <id>`, then:
+- A request to you: `<scratch>/handoff claim <id>`, review exactly the commit it names in a temporary worktree, then `<scratch>/handoff reply <id> --verdict APPROVE|CHANGES|QUESTION --commit <that sha> --body <file>`.
+- A reply to your request: on CHANGES or QUESTION, fix or answer, then post again with `--supersedes <id>`. On APPROVE, the operator decides; wait for the decision.
+- A decision from the operator: act on it. Merge only on approve.
+- A note to you: answer with `<scratch>/handoff note --to <role> --re <id> --body <file>`.
+
+To ask the operator about an item: `<scratch>/handoff note --to operator --item <item> --title "<question>" --body <file>`.
+Rules: never edit .handoff/ by hand. Never merge, push or deploy without the operator's decision. A claim is not an approval.
+
+Waiting for you now (inbox for claude):
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+
+$ HANDOFF_ROLE=claude handoff hook listen &   ;  handoff post --as codex --to claude ...
+presence: {"v":1,"pid":<pid>,"since":"2026-10-18T22:27:52Z","how":"hook"}
+posted #1 request T1 codex → claude: T1: please review @ ced4ddc75789
+# hook listen exit: 2 (2 wakes the session; what follows is what the session is shown)
+handoff: new for claude:
+#1 request T1 codex → claude: T1: please review @ ced4ddc75789
+Read each with `<scratch>/handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+
+$ hooks with no role, and outside a project   (each: exit 0, nothing printed)
+listen: exit 0
+brief: exit 0
+notify: exit 0
+listen outside a project: exit 0
+brief outside a project: exit 0

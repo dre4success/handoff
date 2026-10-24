@@ -1,0 +1,13 @@
+# command: python3 -I clear-probe.py <scratch project>   (an interactive throwaway Claude Code session, claude --model haiku, through a pseudo-terminal: a prompt, /clear, a prompt; the project's SessionStart hook is hook-dump.sh)
+# date: 2026-10-21 (two runs; times below are the Mac's clock)
+# by: Opus 5.5 (implementer), on the operator's Mac, 2.1.306 (Claude Code)
+
+## the SessionStart hooks of the second run (session_id, source; ppid is the hook's parent)
+04:44:30 ppid 20180 {"hook_event_name": "SessionStart", "session_id": "a0dec8ad-230d-458b-bb39-32604a727b5b", "source": "startup"}
+  env: CLAUDE_PID=20180
+  env: CLAUDE_CODE_SESSION_ID=a0dec8ad-230d-458b-bb39-32604a727b5b
+04:44:52 ppid 20180 {"hook_event_name": "SessionStart", "session_id": "e605fe04-a68c-4dca-9a02-bc5cb370371e", "source": "clear"}
+  env: CLAUDE_PID=20180
+  env: CLAUDE_CODE_SESSION_ID=e605fe04-a68c-4dca-9a02-bc5cb370371e
+
+The first run showed the same: a new session_id after /clear, and CLAUDE_PID unchanged.

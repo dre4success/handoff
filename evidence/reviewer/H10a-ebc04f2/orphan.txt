@@ -1,0 +1,17 @@
+by: Codex, reviewer
+commit: ebc04f20dc7405567c73439b72a10cd2c247b3ab
+date: 2026-10-18T12:17:36.912949+00:00
+cwd: /private/tmp/handoff-review-H10a-ebc04f2
+command: python3 ~/handoff/evidence/reviewer/H10a-ebc04f2/probes.py /private/tmp/handoff-review-H10a-bin orphan
+Original session parent exited while its hook was stopped.
+posted #1 note W1 implementer → reviewer: Disposable reviewer fixture.
+Orphan stderr: handoff: new for reviewer:
+#1 note W1 implementer → reviewer: Disposable reviewer fixture.
+Read each with `/private/tmp/handoff-review-H10a-bin show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+Replacement wait exit: 3
+Replacement stdout: ''
+Traceback (most recent call last):
+  File "~/handoff/evidence/reviewer/H10a-ebc04f2/probes.py", line 85, in <module>
+    raise AssertionError("orphan consumed the entry; the replacement listener never received it")
+AssertionError: orphan consumed the entry; the replacement listener never received it
+exit: 1

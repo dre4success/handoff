@@ -1,0 +1,42 @@
+# command: the H5 regression tests, on a worktree of 7c1d0a2 with this commit's tests copied in, then on this commit
+# date: 2026-10-09 20:49:11 UTC
+# by: Opus 5.5 (implementer), Claude Code 2.1.295, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: bd728051ade739c92724f75efaf21bc4b060b342
+
+## at 7c1d0a2 (expected to fail)
+    wait_test.go:259: err = <nil>, want ErrBroken
+--- FAIL: TestDamageArrivingDuringAWaitStopsIt (0.02s)
+    wait_test.go:282: err = <nil>, want ErrBroken
+--- FAIL: TestBrokenRecordDeliversOnlyVerifiedEntries (0.04s)
+    wait_test.go:305: code 3, stderr ""; want the advisory printed and the wait to go on
+--- FAIL: TestNewAdvisoryDuringAWaitIsPrinted (0.03s)
+FAIL
+FAIL	github.com/dre4success/handoff/internal/wait	0.291s
+    main_test.go:640: the wait did not stop after the forged line
+--- FAIL: TestH5ForgedLineDuringAnEmittingWait (7.45s)
+    main_test.go:670: after a linked note to operator the answer must still be owed by the implementer
+--- FAIL: TestH5LinkedEscalationIsNotAnAnswer (0.25s)
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	8.270s
+FAIL
+## at 7c1d0a2, status (expected to fail to compile or fail: the test is new)
+    status_test.go:93: after a linked note to operator: state = claimed, want answered
+--- FAIL: TestOnlyANoteToTheReviewerAnswers (0.00s)
+FAIL
+FAIL	github.com/dre4success/handoff/internal/status	0.215s
+FAIL
+
+## at bd728051ade739c92724f75efaf21bc4b060b342 (expected to pass)
+--- PASS: TestEditedMiddleLineBreaksChain (0.04s)
+--- PASS: TestAppendedLineWithAWrongPrevIsNotVerified (0.02s)
+ok  	github.com/dre4success/handoff/internal/record	0.267s
+--- PASS: TestOnlyANoteToTheReviewerAnswers (0.00s)
+ok  	github.com/dre4success/handoff/internal/status	0.192s
+--- PASS: TestDamageArrivingDuringAWaitStopsIt (0.02s)
+--- PASS: TestBrokenRecordDeliversOnlyVerifiedEntries (0.02s)
+--- PASS: TestNewAdvisoryDuringAWaitIsPrinted (0.02s)
+ok  	github.com/dre4success/handoff/internal/wait	0.329s
+--- PASS: TestH5ForgedLineDuringAnEmittingWait (3.30s)
+--- PASS: TestH5LinkedEscalationIsNotAnAnswer (0.32s)
+ok  	github.com/dre4success/handoff/cmd/handoff	4.008s
+# go test exit: 0

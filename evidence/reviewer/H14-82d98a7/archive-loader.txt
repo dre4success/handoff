@@ -1,0 +1,10 @@
+by: Codex, reviewer
+commit: 82d98a7c634d57e12725a8f2a0165894e8937fb8
+date: 2026-10-24T17:57:10.249740+00:00
+cwd: /private/tmp/handoff-review-H14-82d98a7
+command: go run ./reviewer_archive /private/tmp/handoff-review-H13-178b7ca/evidence/trial/record /private/tmp/handoff-review-H14-82d98a7/evidence/trial/record
+H13: verified=8 unverified=0 broken=<nil>
+H14: verified=0 unverified=8 broken=&{Line:2 Withheld:1 ByHead:false Detail:prev does not match the line before it}
+the hash chain fails at line 2: prev does not match the line before it; entries from line 1 on are withheld from inbox and wait, and posting stops until the operator decides
+PASS: reproduced archive regression through the requested revision's production loader. Load takes a lock but does not modify record content.
+exit: 0

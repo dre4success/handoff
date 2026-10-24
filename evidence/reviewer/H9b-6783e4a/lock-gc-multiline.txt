@@ -1,0 +1,17 @@
+by: Codex, reviewer
+commit: 6783e4a8badcf847086db14ed5e9fd7238d983e3
+date: 2026-10-17T21:54:11.815681+00:00
+cwd: /private/tmp/handoff-review-H9b-6783e4a
+command: python3 ~/handoff/evidence/reviewer/H9b-6783e4a/lock-gc.py /private/tmp/handoff-review-H9b-bin 100
+Scratch project: /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h9b-lock-gc-7t9jkv7c
+GOGC: 100
+posted #1 note W1 implementer → operator: Scratch question
+handoff: asking the operator in a pop-up: W1: implementer asks you: Scratch question
+FAIL: helper's lock is free while its fake dialog remains unanswered.
+CONFIRMED: second helper displayed the same undecided question.
+No decision written. Record writes used the CLI only.
+Traceback (most recent call last):
+  File "~/handoff/evidence/reviewer/H9b-6783e4a/lock-gc.py", line 66, in <module>
+    raise AssertionError("two pop-ups for the same note while first remains open")
+AssertionError: two pop-ups for the same note while first remains open
+exit: 1

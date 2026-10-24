@@ -1,0 +1,86 @@
+# command: the H9b tests on 9b2dfec4d9a511bf2bbaef0dc1afe73db9082fd9 (main) with this commit's tests copied in, then here; then the same steps through each binary
+# date: 2026-10-17 22:04:15 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 8bebbdbf9da26b2cd7301804b01853b82c635487
+
+## the tests at 9b2dfec4d9a511bf2bbaef0dc1afe73db9082fd9 (expected not to build: the pop-up isn't there)
+internal/notify/notify_test.go:309:4: n.getenv undefined (type *Notifier has no field or method getenv)
+internal/notify/notify_test.go:337:4: n.Ask undefined (type *Notifier has no field or method Ask)
+internal/notify/notify_test.go:338:8: a.Target undefined (type status.Alert has no field or method Target)
+internal/notify/notify_test.go:339:43: a.Target undefined (type status.Alert has no field or method Target)
+internal/notify/notify_test.go:357:8: other.Ask undefined (type *Notifier has no field or method Ask)
+internal/notify/notify_test.go:362:12: undefined: MarkSent
+cmd/handoff/popup_test.go:30:62: undefined: dialog
+cmd/handoff/popup_test.go:45:18: undefined: popupCmd
+cmd/handoff/popup_test.go:80:21: r.app(t).popup undefined (type *app has no field or method popup)
+cmd/handoff/popup_test.go:80:38: al.Target undefined (type status.Alert has no field or method Target)
+cmd/handoff/popup_test.go:100:18: r.app(t).popup undefined (type *app has no field or method popup)
+cmd/handoff/popup_test.go:100:35: al.Target undefined (type status.Alert has no field or method Target)
+
+## the tests at 8bebbdbf9da26b2cd7301804b01853b82c635487 (expected to pass)
+--- PASS: TestH9bApproveClickDecides (1.00s)
+--- PASS: TestH9bDenyAsksWhy (0.85s)
+--- PASS: TestH9bDenyThenCancelWritesNothing (1.36s)
+--- PASS: TestH9bLaterAndGivingUpWriteNothing (1.75s)
+--- PASS: TestH9bDialogFailureLeavesTheAlert (0.69s)
+--- PASS: TestH9bDecidedMeanwhileIsNotAsked (0.88s)
+--- PASS: TestH9bClickAfterATerminalDecisionIsRefused (0.76s)
+--- PASS: TestH9bNoteToTheOperator (0.54s)
+--- PASS: TestH9bHelperNeedsTheLock (0.80s)
+--- PASS: TestH9bPopupAcrossProcesses (2.84s)
+--- PASS: TestH9bDialogScriptsCompile (0.28s)
+ok  	github.com/dre4success/handoff/cmd/handoff	12.716s
+--- PASS: TestSandboxedProcessLeavesAlertsToOthers (0.00s)
+--- PASS: TestDecideAlertIsHandedToAsk (0.01s)
+ok  	github.com/dre4success/handoff/internal/notify	0.317s
+# go test exit: 0
+
+## the steps through main's binary (9b2dfec4d9a511bf2bbaef0dc1afe73db9082fd9): a notification, and no pop-up
+$ handoff post ... ; handoff reply 1 --verdict APPROVE ... ; handoff note --to operator ...
+posted #1 request H1 claude → codex: H1: the login page @ fbdaf7f1579b
+posted #2 reply H1 codex → claude: APPROVE on #1 @ fbdaf7f1579b
+handoff: told the operator: H1: codex approved #1. Your decision.
+posted #3 note H2 claude → operator: May I deploy H2?
+handoff: told the operator: H2: claude asks you: May I deploy H2?
+$ cat alerts.txt   (notifications)
+demo: H1: codex approved #1. Your decision.
+demo: H2: claude asks you: May I deploy H2?
+$ cat popups.txt   (pop-ups: Approve, Deny or Later)
+(none)
+$ ls .handoff/notified   (alerts marked sent)
+decide-1-2
+decide-note-3
+$ handoff   (both still wait: nothing was decided)
+
+#1 request H1 claude → codex: H1: the login page @ fbdaf7f1579b
+  #2 reply H1 codex → claude: APPROVE on #1 @ fbdaf7f1579b
+
+#3 note H2 claude → operator: May I deploy H2?
+  | Only to staging, tonight.
+
+Run handoff in a terminal to decide.
+
+## the same steps through this commit's binary: each decision goes to a pop-up
+$ handoff post ... ; handoff reply 1 --verdict APPROVE ... ; handoff note --to operator ...
+posted #1 request H1 claude → codex: H1: the login page @ 404084cf4c1f
+posted #2 reply H1 codex → claude: APPROVE on #1 @ 404084cf4c1f
+handoff: asking the operator in a pop-up: H1: codex approved #1. Your decision.
+posted #3 note H2 claude → operator: May I deploy H2?
+handoff: asking the operator in a pop-up: H2: claude asks you: May I deploy H2?
+$ cat alerts.txt   (notifications)
+(none)
+$ cat popups.txt   (pop-ups: Approve, Deny or Later)
+handoff: demo | H1: codex approved #1. /  / H1: the login page /  / Later keeps it waiting: run handoff in the project to decide there. | Later,Deny,Approve
+handoff: demo | H2: claude asks you: May I deploy H2? /  / Only to staging, tonight. | Later,Deny,Approve
+$ ls .handoff/notified   (alerts marked sent)
+decide-1-2
+decide-note-3
+$ handoff   (both still wait: nothing was decided)
+
+#1 request H1 claude → codex: H1: the login page @ 404084cf4c1f
+  #2 reply H1 codex → claude: APPROVE on #1 @ 404084cf4c1f
+
+#3 note H2 claude → operator: May I deploy H2?
+  | Only to staging, tonight.
+
+Run handoff in a terminal to decide.

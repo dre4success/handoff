@@ -1,0 +1,20 @@
+by: Codex, reviewer
+commit: 6783e4a8badcf847086db14ed5e9fd7238d983e3
+date: 2026-10-17T21:52:46.509694+00:00
+cwd: /private/tmp/handoff-review-H9b-6783e4a
+command: python3 ~/handoff/evidence/reviewer/H9b-6783e4a/lock-gc.py /private/tmp/handoff-review-H9b-bin
+Scratch project: /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h9b-lock-gc-_em6xwlm
+posted #1 note W1 implementer → operator: Scratch question
+handoff: asking the operator in a pop-up: W1: implementer asks you: Scratch question
+FAIL: helper's lock is free while its fake dialog remains unanswered.
+No decision written. Record writes used the CLI only.
+Traceback (most recent call last):
+  File "~/handoff/evidence/reviewer/H9b-6783e4a/lock-gc.py", line 59, in <module>
+    command(directory, binary, "note", "--as", "implementer", "--to", "reviewer",
+  File "~/handoff/evidence/reviewer/H9b-6783e4a/lock-gc.py", line 22, in command
+    raise RuntimeError(f"{arguments}: {result.returncode}\n{result.stdout}\n{result.stderr}")
+RuntimeError: ('/private/tmp/handoff-review-H9b-bin', 'note', '--as', 'implementer', '--to', 'reviewer', '--title', 'Unrelated fixture', '--body', '/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h9b-lock-gc-_em6xwlm/body.md'): 2
+
+handoff note: --item or --re is required
+
+exit: 1

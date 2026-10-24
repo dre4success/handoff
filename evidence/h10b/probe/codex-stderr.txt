@@ -1,0 +1,46 @@
+Reading additional input from stdin...
+OpenAI Codex v0.162.1
+--------
+workdir: <probe>
+model: gpt-6-luna
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: low
+reasoning summaries: none
+session id: 01a14eef-6161-7033-9773-5f6a768b7716
+--------
+user
+Run <probe>/probe-cmd.sh and show its output verbatim. Then tell me your codeword if you were given one. Then say DONE.
+warning: `--dangerously-bypass-hook-trust` is enabled. Enabled hooks may run without review for this invocation.
+warning: `--dangerously-bypass-hook-trust` is enabled. Enabled hooks may run without review for this invocation.
+hook: SessionStart
+hook: SessionStart Completed
+codex
+I’ll run the script and return its output exactly as printed.
+exec
+/bin/zsh -lc <probe>/probe-cmd.sh in /private/tmp/claude-501/-Users-me-handoff/ff228636-f8c4-4d14-9f11-003d4d3e532da7/<probe>
+ exited -1 in 0ms:
+Failed to create unified exec process: No such file or directory (os error 2)
+2026-10-18T12:14:38.997262Z ERROR codex_core::tools::router: error=exec_command failed: CreateProcess { message: "Rejected(\"Failed to create unified exec process: No such file or directory (os error 2)\")" }
+exec
+/bin/zsh -lc <probe>/probe-cmd.sh in <probe>
+ succeeded in 113ms:
+CODEX_SANDBOX=unset
+write outside the workspace: allowed
+
+codex
+CODEX_SANDBOX=unset
+write outside the workspace: allowed
+
+KIWI-startup
+
+DONE
+hook: Stop
+hook: Stop Blocked
+codex
+PONG
+hook: Stop
+hook: Stop Completed
+tokens used
+5,370

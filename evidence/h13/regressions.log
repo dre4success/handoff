@@ -1,0 +1,25 @@
+# command: the sleep note tests of dc048ef on ae65b6ce30b5c5eb6a03d81f99d8cffdc25581b4 (main), then here
+# date: 2026-10-21 17:30:38 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 297919b0d7307a7fec5f0f1103641a9414a96fe2
+
+## at ae65b6ce30b5c5eb6a03d81f99d8cffdc25581b4 (expected to fail: a line for each late tick, a 50 s pause noted, a sleep that ends with a delivery not noted)
+    wait_test.go:162: stderr "handoff: wait: 2h0m1s passed between two polls (2026-10-09T20:00:01Z to 2026-10-09T22:00:02Z); the machine may have slept\n", want "handoff: wait: the machine may have slept from 2026-10-09T20:00:01Z to 2026-10-09T22:00:02Z (2h0m1s)\n"
+--- FAIL: TestDeadlineIsWallClockAndGapIsReported (0.01s)
+    wait_test.go:197: after two minutes awake, stderr "handoff: wait: 15m1s passed between two polls (2026-10-09T20:00:04Z to 2026-10-09T20:15:05Z); the machine may have slept\nhandoff: wait: 19s passed between two polls (2026-10-09T20:15:15Z to 2026-10-09T20:15:34Z); the machine may have slept\nhandoff: wait: 20s passed between two polls (2026-10-09T20:15:44Z to 2026-10-09T20:16:04Z); the machine
+--- FAIL: TestOneSleepWithBriefWakesIsReportedOnce (0.01s)
+    wait_test.go:215: stderr "handoff: wait: 51s passed between two polls (2026-10-09T20:00:02Z to 2026-10-09T20:00:53Z); the machine may have slept\n", want nothing
+--- FAIL: TestAPauseUnderAMinuteIsNotReported (0.01s)
+    wait_test.go:235: stderr "" does not report the sleep that ended with a delivery
+--- FAIL: TestEntryIsDeliveredBeforeAnExpiredDeadline (0.02s)
+FAIL
+FAIL	github.com/dre4success/handoff/internal/wait	0.282s
+FAIL
+
+## at 297919b0d7307a7fec5f0f1103641a9414a96fe2 (expected to pass)
+--- PASS: TestDeadlineIsWallClockAndGapIsReported (0.01s)
+--- PASS: TestOneSleepWithBriefWakesIsReportedOnce (0.00s)
+--- PASS: TestAPauseUnderAMinuteIsNotReported (0.00s)
+--- PASS: TestEntryIsDeliveredBeforeAnExpiredDeadline (0.01s)
+ok  	github.com/dre4success/handoff/internal/wait	0.125s
+# go test exit: 0

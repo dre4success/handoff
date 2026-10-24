@@ -1,0 +1,127 @@
+by: Codex, reviewer
+commit: 178b7ca4e29637bd95e7d9010dbf78d2d26bc723
+date: 2026-10-24T17:31:07.806333+00:00
+cwd: /private/tmp/handoff-review-H13-178b7ca
+command: python3 ~/handoff/evidence/reviewer/H13-178b7ca/checks.py
+$ gofmt -l cmd internal
+$ git diff --check ae65b6ce30b5c5eb6a03d81f99d8cffdc25581b4 HEAD -- . :(exclude)evidence
+$ go list -deps -f {{if not .Standard}}{{.ImportPath}}{{end}} ./...
+github.com/dre4success/handoff/internal/awake
+github.com/dre4success/handoff/internal/gitx
+github.com/dre4success/handoff/internal/record
+github.com/dre4success/handoff/internal/status
+github.com/dre4success/handoff/internal/notify
+github.com/dre4success/handoff/internal/term
+github.com/dre4success/handoff/internal/wait
+github.com/dre4success/handoff/cmd/handoff
+$ go list -deps ./...
+internal/goarch
+unsafe
+internal/abi
+internal/unsafeheader
+internal/cpu
+internal/bytealg
+internal/byteorder
+internal/chacha8rand
+internal/coverage/rtcov
+internal/godebugs
+internal/goexperiment
+internal/goos
+internal/profilerecord
+internal/runtime/atomic
+internal/runtime/exithook
+internal/runtime/gc
+internal/asan
+internal/msan
+internal/race
+internal/runtime/math
+internal/runtime/sys
+internal/runtime/maps
+internal/runtime/strconv
+internal/stringslite
+internal/trace/tracev2
+runtime
+internal/reflectlite
+errors
+sync/atomic
+internal/sync
+internal/synctest
+sync
+io
+iter
+math/bits
+unicode
+unicode/utf8
+bytes
+strings
+bufio
+hash
+math
+strconv
+crypto
+internal/bisect
+internal/godebug
+crypto/internal/fips140deps/godebug
+crypto/internal/fips140
+crypto/internal/fips140/alias
+crypto/internal/fips140deps/byteorder
+crypto/internal/fips140deps/cpu
+crypto/internal/impl
+crypto/internal/fips140/sha256
+crypto/internal/fips140/subtle
+crypto/internal/fips140/sha3
+crypto/internal/fips140/sha512
+crypto/internal/fips140/hmac
+crypto/internal/fips140/check
+crypto/internal/fips140/aes
+internal/itoa
+internal/oserror
+syscall
+internal/syscall/unix
+path
+cmp
+slices
+time
+io/fs
+internal/filepathlite
+internal/poll
+internal/syscall/execenv
+internal/testlog
+os
+crypto/internal/sysrand
+crypto/internal/entropy
+math/rand/v2
+crypto/internal/randutil
+crypto/internal/fips140/drbg
+crypto/internal/fips140/aes/gcm
+crypto/internal/fips140only
+crypto/subtle
+crypto/cipher
+crypto/internal/boring/sig
+crypto/internal/boring
+crypto/sha256
+reflect
+internal/fmtsort
+fmt
+encoding/hex
+encoding
+encoding/base64
+unicode/utf16
+encoding/json
+flag
+context
+path/filepath
+os/exec
+github.com/dre4success/handoff/internal/awake
+github.com/dre4success/handoff/internal/gitx
+github.com/dre4success/handoff/internal/record
+github.com/dre4success/handoff/internal/status
+sort
+regexp/syntax
+regexp
+github.com/dre4success/handoff/internal/notify
+github.com/dre4success/handoff/internal/term
+github.com/dre4success/handoff/internal/wait
+github.com/dre4success/handoff/cmd/handoff
+PASS: Go formatting, source/docs whitespace, module/standard-library dependencies only, no network package. Raw evidence whitespace is recorded separately in checks.txt.
+exit: 0

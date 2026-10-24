@@ -1,0 +1,17 @@
+by: Codex, reviewer
+commit: 2daf1b7f50c2692bc197d33ee83bfd4060097bf0
+date: 2026-10-14T22:46:49.577178+00:00
+cwd: /private/tmp/handoff-review-H8-2daf1b7
+command: go test -race -count=1 -v -run '^TestReview' ./internal/notify
+=== RUN   TestReviewConcurrentStaleRecoverySendsOnce
+    review_h8_r2_test.go:69: delivered: ["B: H8: codex claimed #1 and has been quiet for 31 min"]
+--- PASS: TestReviewConcurrentStaleRecoverySendsOnce (0.00s)
+=== RUN   TestReviewFailedDeliveryCanBeRetried
+    review_h8_test.go:22: first attempt stderr: handoff: notify: could not tell the operator, will retry: open /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/TestReviewFailedDeliveryCanBeRetried2414976232/002/temporarily-missing/sent.txt: no such file or directory
+--- PASS: TestReviewFailedDeliveryCanBeRetried (0.00s)
+=== RUN   TestReviewMarkerFailureCanRecoverInLiveWait
+    review_h8_test.go:38: first attempt stderr: handoff: notify: could not tell the operator, will retry: mkdir /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/TestReviewMarkerFailureCanRecoverInLiveWait2670418561/002/notified: not a directory
+--- PASS: TestReviewMarkerFailureCanRecoverInLiveWait (0.00s)
+PASS
+ok  	github.com/dre4success/handoff/internal/notify	1.282s
+exit: 0

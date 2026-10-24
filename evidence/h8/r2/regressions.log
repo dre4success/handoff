@@ -1,0 +1,31 @@
+# command: the H8 CLI tests, on a worktree of 56da56631c434a3c985c1e3650c6886dd7a94582 (main) with this commit's tests copied in, then on this commit
+# date: 2026-10-14 22:28:58 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 17deeb8869d45e41c2e9493705d4d4dce94be91a
+
+## at 56da56631c434a3c985c1e3650c6886dd7a94582 (expected to fail)
+    alert_test.go:66: config.json = {
+--- FAIL: TestH8InitSetsQuietAfter (0.34s)
+    alert_test.go:77: handoff [inbox --for operator] as "": exit 0, stderr ""; want exit 2 mentioning "quiet_after"
+--- FAIL: TestH8QuietAfterSetting (0.15s)
+    alert_test.go:97: sent []; want one alert about the claim, titled "001"
+--- FAIL: TestH8QuietClaimTellsTheOperatorOnce (4.22s)
+    alert_test.go:121: sent []; want one decide alert
+--- FAIL: TestH8ApproveTellsTheOperatorAtOnce (0.20s)
+    alert_test.go:140: inbox:
+--- FAIL: TestH8InboxShowsWhatWentQuiet (1.69s)
+    alert_test.go:165: sent []; want one alert about the silence since the claim
+--- FAIL: TestH8ClaimingAgainWritesNothingAndTellsOnce (1.72s)
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	8.767s
+FAIL
+
+## at 17deeb8869d45e41c2e9493705d4d4dce94be91a (expected to pass)
+--- PASS: TestH8InitSetsQuietAfter (0.32s)
+--- PASS: TestH8QuietAfterSetting (0.16s)
+--- PASS: TestH8QuietClaimTellsTheOperatorOnce (6.23s)
+--- PASS: TestH8ApproveTellsTheOperatorAtOnce (0.22s)
+--- PASS: TestH8InboxShowsWhatWentQuiet (1.69s)
+--- PASS: TestH8ClaimingAgainWritesNothingAndTellsOnce (1.72s)
+ok  	github.com/dre4success/handoff/cmd/handoff	10.663s
+# go test exit: 0

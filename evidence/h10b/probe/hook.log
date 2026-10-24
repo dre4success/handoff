@@ -1,0 +1,14 @@
+12:14:36 session start source=startup
+12:14:41 stop: {"session_id":"01a14eef-6161-7033-9773-5f6a768b7716","turn_id":"01a14eef-640b-7242-abd4-8f90ad985228","transcript_path":"~/.codex/sessions/2026/10/18/rollout-2026-10-18T13-14-33-01a14eef-6161-7033-9773-5f6a768b7716.jsonl","cwd":"<probe>","hook_event_name":"Stop","model":"gpt-6-luna","permission_mode":"bypassPermissions","stop_hook_active":false,"last_assistant_message":"CODEX_SANDBOX=unset
+write outside the workspace: allowed
+
+KIWI-startup
+
+DONE"}
+  hook env: CODEX_MANAGED_PACKAGE_ROOT=~/.nvm/versions/node/v24.11.1/lib/node_modules/@openai/codex
+  hook env: CODEX_MANAGED_BY_NPM=1
+12:14:45 first stop: waking with exit 2
+12:14:46 stop: {"session_id":"01a14eef-6161-7033-9773-5f6a768b7716","turn_id":"01a14eef-640b-7242-abd4-8f90ad985228","transcript_path":"~/.codex/sessions/2026/10/18/rollout-2026-10-18T13-14-33-01a14eef-6161-7033-9773-5f6a768b7716.jsonl","cwd":"<probe>","hook_event_name":"Stop","model":"gpt-6-luna","permission_mode":"bypassPermissions","stop_hook_active":true,"last_assistant_message":"PONG"}
+  hook env: CODEX_MANAGED_PACKAGE_ROOT=~/.nvm/versions/node/v24.11.1/lib/node_modules/@openai/codex
+  hook env: CODEX_MANAGED_BY_NPM=1
+12:14:46 second stop: let it end

@@ -1,0 +1,55 @@
+# command: Fable's chain check on evidence/trial/record before (9dbdf5f^) and after (c16ff7f9844b2917d0e4cdbd6e7da96aa4a63f5b); handoff inbox and show in a project holding the copy
+# date: 2026-10-24 17:55:03 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: c16ff7f9844b2917d0e4cdbd6e7da96aa4a63f5b
+
+## at 178b7ca
+line 1: prev matches
+line 2: prev matches
+line 3: prev matches
+line 4: prev matches
+line 5: prev matches
+line 6: prev matches
+line 7: prev matches
+line 8: prev matches
+chain verifies: True | head.lines==lines: True | head.last==sha256(last line): True
+## at c16ff7f
+line 1: prev matches
+line 2: prev MISMATCH
+line 3: prev matches
+line 4: prev matches
+line 5: prev matches
+line 6: prev matches
+line 7: prev matches
+line 8: prev MISMATCH
+chain verifies: False | head.lines==lines: True | head.last==sha256(last line): True
+## lines that differ, by number
+lines: 8 and 8 | differ: [1, 7]
+## head.json at 178b7ca: the same as here
+## head.json at c16ff7f: the same as here
+## config.json: unchanged
+## the tool, in a scratch project whose .handoff/ holds the copy
+handoff: the hash chain fails at line 2: prev does not match the line before it; entries from line 1 on are withheld from inbox and wait, and posting stops until the operator decides
+inbox for operator
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+# inbox exit: 0
+handoff: the hash chain fails at line 2: prev does not match the line before it; entries from line 1 on are withheld from inbox and wait, and posting stops until the operator decides
+#5 request H7
+from: implementer → reviewer
+ts: 2026-10-12T21:38:49Z
+verified: NO; the hash chain fails at line 2, and this entry is withheld from inbox and wait
+title: H7: README after step 1, revised

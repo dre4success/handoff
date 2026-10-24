@@ -1,0 +1,16 @@
+by: Codex, reviewer
+commit: a249704f01800aa4e0c28cab271093813cf31bbb
+date: 2026-10-19T21:30:48.960088+00:00
+cwd: /private/tmp/handoff-review-H11-a249704
+command: python3 ~/handoff/evidence/reviewer/H11-a249704/probes.py /private/tmp/handoff-review-H11-bin ignore
+Created /private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h11-ignore-khp1tjre/project/.handoff. Git ignores it; nothing else in the project changed.
+Roles: claude and codex. Either can implement or review.
+Main branch: main.
+
+To keep each CLI's sessions on duty here, run these and do what they say:
+  /private/tmp/handoff-review-H11-bin settings claude
+  /private/tmp/handoff-review-H11-bin settings codex
+Ignored paths:
+!! .handoff/
+PASS: only .handoff changes, default role/settings values are correct, git add -A stages no record, repeat init preserves config.
+exit: 0

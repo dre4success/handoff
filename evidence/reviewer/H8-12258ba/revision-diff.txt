@@ -1,0 +1,38 @@
+by: Codex, reviewer
+commit: 2daf1b7f50c2692bc197d33ee83bfd4060097bf0
+date: 2026-10-15T18:56:42.185907+00:00
+cwd: /private/tmp/handoff-review-H8-2daf1b7
+command: git diff 2daf1b7f50c2692bc197d33ee83bfd4060097bf0 12258baf57c0ff29b7888f06a21d0b6decffa149
+diff --git a/evidence/h8/r2/collect.sh b/evidence/h8/r2/collect.sh
+index d778278..f15ce01 100644
+--- a/evidence/h8/r2/collect.sh
++++ b/evidence/h8/r2/collect.sh
+@@ -13,8 +13,8 @@ SCRATCH=$(mktemp -d)
+ trap 'rm -rf "$SCRATCH"' EXIT
+ probe() { # $1 = commit, $2 = worktree
+   git worktree add -q --detach "$2" "$1"
+-  cp "$P/notify-probes_test.go" "$2/internal/notify/review_h8_test.go"
+-  cp "$P/claim-probe_test.go" "$2/cmd/handoff/review_h8_test.go"
++  cp "$P/testdata/notify-probes_test.go" "$2/internal/notify/review_h8_test.go"
++  cp "$P/testdata/claim-probe_test.go" "$2/cmd/handoff/review_h8_test.go"
+   (cd "$2" && go test -count=1 -v -run TestReview ./internal/notify ./cmd/handoff 2>&1 | grep -E '^(--- |ok|FAIL)|review_h8_test.go:')
+   git worktree remove --force "$2"
+ }
+diff --git a/evidence/h8/r3/collect.sh b/evidence/h8/r3/collect.sh
+index 3585c1c..1783c40 100644
+--- a/evidence/h8/r3/collect.sh
++++ b/evidence/h8/r3/collect.sh
+@@ -16,9 +16,9 @@ SCRATCH=$(mktemp -d)
+ trap 'rm -rf "$SCRATCH"' EXIT
+ probe() { # $1 = commit, $2 = worktree, $3 = "r2" to add the round-2 probe
+   git worktree add -q --detach "$2" "$1"
+-  cp "$P/notify-probes_test.go" "$2/internal/notify/review_h8_test.go"
+-  cp "$P/claim-probe_test.go" "$2/cmd/handoff/review_h8_test.go"
+-  [ "${3:-}" = r2 ] && cp "$P2/stale-recovery-probe_test.go" "$2/internal/notify/review_h8_r2_test.go"
++  cp "$P/testdata/notify-probes_test.go" "$2/internal/notify/review_h8_test.go"
++  cp "$P/testdata/claim-probe_test.go" "$2/cmd/handoff/review_h8_test.go"
++  [ "${3:-}" = r2 ] && cp "$P2/testdata/stale-recovery-probe_test.go" "$2/internal/notify/review_h8_r2_test.go"
+   (cd "$2" && go test -count=1 -v -run TestReview ./internal/notify ./cmd/handoff 2>&1 | grep -E '^(--- |ok|FAIL)|review_h8(_r2)?_test.go:')
+   git worktree remove --force "$2"
+ }
+exit: 0

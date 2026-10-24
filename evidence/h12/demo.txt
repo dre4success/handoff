@@ -1,0 +1,161 @@
+# command: settings claude and codex with no --as; two Claude Code sessions (stood in for by their variables) take roles and work a round; a session with no role
+# date: 2026-10-21 04:36:42 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 6714cbfbeb0a3d00b8ef12d4b14fdd810cdff5f2
+
+$ handoff settings claude
+Put this in .claude/settings.local.json in this project, merged with anything
+already there. That file stays out of git. Then start Claude Code here again.
+Every Claude Code session in this project then takes the role you give it:
+tell it, and it runs handoff role <role>. It gets the brief when it starts or is summarised, a hook listens for its
+work whenever its turn ends, and it runs handoff without asking, but never
+decide, nor edits .handoff/.
+
+{
+  "hooks": {
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "args": [
+              "hook",
+              "notify"
+            ],
+            "command": "<scratch>/handoff",
+            "type": "command"
+          }
+        ],
+        "matcher": "permission_prompt"
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "args": [
+              "hook",
+              "brief"
+            ],
+            "command": "<scratch>/handoff",
+            "type": "command"
+          },
+          {
+            "args": [
+              "hook",
+              "listen"
+            ],
+            "asyncRewake": true,
+            "command": "<scratch>/handoff",
+            "timeout": 86400,
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "args": [
+              "hook",
+              "listen"
+            ],
+            "asyncRewake": true,
+            "command": "<scratch>/handoff",
+            "timeout": 86400,
+            "type": "command"
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(<scratch>/handoff *)"
+    ],
+    "deny": [
+      "Bash(<scratch>/handoff decide *)",
+      "Edit(/<scratch>/demo/.handoff/**)"
+    ]
+  }
+}
+
+$ handoff settings codex
+Put these two files in this project's .codex/ folder, merged with any already
+there, and keep it out of git (add .codex/ to .git/info/exclude). Codex reads
+them only in a project it trusts. The next time Codex starts here, it asks you
+to review the new hooks: choose Trust all.
+
+Every Codex session in this project then takes the role you give it:
+tell it, and it runs handoff role <role>. Without a role, handoff on its own never shows it your decisions.
+It gets the brief when its first turn starts and after a summary. When its turn
+would end, a hook listens for its work and continues it with what arrives. And
+handoff runs outside Codex's sandbox, so its notifications and pop-ups reach
+you; handoff decide is forbidden.
+
+.codex/hooks.json:
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "exec <scratch>/handoff hook brief",
+            "timeout": 30,
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "command": "exec <scratch>/handoff hook listen",
+            "timeout": 86400,
+            "type": "command"
+          }
+        ]
+      }
+    ]
+  }
+}
+
+.codex/rules/handoff.rules:
+# handoff writes only under .handoff/ and has no network code (proposal §9).
+prefix_rule(pattern=["<scratch>/handoff"], decision="allow", justification="handoff runs outside the sandbox so that it can notify the operator")
+prefix_rule(pattern=["<scratch>/handoff", "decide"], decision="forbidden", justification="The operator decides, not an agent")
+
+# session s-opus, told "you implement":
+$ handoff role implementer
+You are now implementer in demo.
+
+handoff brief: you are implementer in demo. You and reviewer hand work to each other through handoff. The operator decides.
+
+# session s-fable, told "you review":
+$ handoff role reviewer
+You are now reviewer in demo.
+
+$ cat .handoff/sessions/*.json
+{"v":1,"role":"reviewer","session":"s-fable","pid":<the stand-in process>,"since":"2026-10-21T04:36:42Z"}
+{"v":1,"role":"implementer","session":"s-opus","pid":<the stand-in process>,"since":"2026-10-21T04:36:42Z"}
+
+# s-opus, with no --as:
+$ handoff post --item T1 --to reviewer --commit HEAD --title "T1: add a.txt" --body req.md
+posted #1 request T1 implementer → reviewer: T1: add a.txt @ 8a10b82f903d
+
+# s-fable's Stop hook:
+$ handoff hook listen --timeout 5s   (stdin: {"session_id":"s-fable","hook_event_name":"Stop"})
+handoff: new for reviewer:
+#1 request T1 implementer → reviewer: T1: add a.txt @ 8a10b82f903d
+Read each with `<scratch>/handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit: 2
+
+# s-fable tries the other role:
+$ handoff claim --as implementer 1
+handoff claim: --as implementer, but this session's role is reviewer (handoff role); refused
+# exit: 2
+
+# a third session starts with no role:
+$ handoff hook brief   (stdin: {"session_id":"s-new","hook_event_name":"SessionStart"})
+handoff: demo hands work between agents through handoff, and this session has no role in it. When the operator gives you one, run `<scratch>/handoff role <role>` (the roles are implementer, reviewer); it prints your brief. Until then, leave handoff alone.

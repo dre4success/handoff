@@ -1,0 +1,24 @@
+# command: the round-2 tests on 50a8c2d (round 1) with this commit's tests copied in, then here
+# date: 2026-10-21 04:34:27 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 6714cbfbeb0a3d00b8ef12d4b14fdd810cdff5f2
+
+## at 50a8c2d (expected to fail: a second Codex thread under the same parent, and a startup in the same Claude process, take the first one's role; a plain wait keeps waiting after its role moves)
+    session_test.go:154: a startup in the same process:
+--- FAIL: TestH12ARoleOutlivesClearAndResume (0.38s)
+    session_test.go:202: other threads under the same parent: <nil>
+        handoff brief: you are implementer in 001. You and reviewer, reviewer-2 hand work to each other through handoff. The operator decides.
+        handoff brief: you are implementer in 001. You and reviewer, reviewer-2 hand work to each other through handoff. The operator decides.
+--- FAIL: TestH12ACodexThreadKeepsItsRoleAlone (1.23s)
+    session_test.go:249: the old wait still waits after its role moved
+--- FAIL: TestH12AWaitStopsWhenItsRoleMoves (5.30s)
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	7.397s
+FAIL
+
+## at 6714cbfbeb0a3d00b8ef12d4b14fdd810cdff5f2 (expected to pass)
+--- PASS: TestH12ARoleOutlivesClearAndResume (0.34s)
+--- PASS: TestH12ACodexThreadKeepsItsRoleAlone (1.27s)
+--- PASS: TestH12AWaitStopsWhenItsRoleMoves (2.33s)
+ok  	github.com/dre4success/handoff/cmd/handoff	4.205s
+# go test exit: 0

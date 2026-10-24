@@ -1,0 +1,12 @@
+by: Codex, reviewer
+commit: f232ee35ecda4a778f22313cf5b9e11595406845
+date: 2026-10-17T22:07:00.440948+00:00
+cwd: /private/tmp/handoff-review-H9b-f232ee3
+command: python3 ~/handoff/evidence/reviewer/H9b-f232ee3/lock-gc.py /private/tmp/handoff-review-H9b-r2-bin 100
+Scratch project: /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h9b-lock-gc-f6miw0vz
+GOGC: 100
+posted #1 note W1 implementer → operator: Scratch question
+handoff: asking the operator in a pop-up: W1: implementer asks you: Scratch question
+PASS: lock remained held throughout the observation window.
+No decision written. Record writes used the CLI only.
+exit: 0

@@ -1,0 +1,55 @@
+package wait
+
+// Replays the H7 trial's sleeps through one wait on a fake clock: each gap as
+// evidence/trial/implementer-wait.log logged it, and a tick a second between
+// them. It prints what the wait notes. collect.sh copies it into
+// internal/wait, on main and here; it is not part of the build.
+
+import (
+	"bufio"
+	"bytes"
+	"io"
+	"os"
+	"regexp"
+	"testing"
+	"time"
+)
+
+func TestTrialReplay(t *testing.T) {
+	f, err := os.Open(os.Getenv("TRIAL_LOG"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+	re := regexp.MustCompile(`\((\S+) to (\S+)\); the machine may have slept`)
+	var gaps [][2]time.Time
+	for sc := bufio.NewScanner(f); sc.Scan(); {
+		if m := re.FindStringSubmatch(sc.Text()); m != nil {
+			from, _ := time.Parse(time.RFC3339, m[1])
+			to, _ := time.Parse(time.RFC3339, m[2])
+			gaps = append(gaps, [2]time.Time{from, to})
+		}
+	}
+	t.Logf("%d gaps in the trial's log", len(gaps))
+	next := 0
+	clock := &fakeClock{now: gaps[0][0].Add(-3 * time.Second)}
+	clock.hook = func(c *fakeClock) {
+		if next < len(gaps) && c.now.Equal(gaps[next][0].Add(time.Second)) {
+			c.now = gaps[next][1]
+			next++
+		}
+	}
+	var errOut bytes.Buffer
+	end := gaps[len(gaps)-1][1].Add(3 * time.Minute)
+	if _, err := Run(newStore(t), Options{Role: "implementer", Timeout: end.Sub(clock.now), Interval: time.Second, Clock: clock, Out: io.Discard, Err: &errOut}); err != nil {
+		t.Fatal(err)
+	}
+	if next != len(gaps) {
+		t.Fatalf("replayed %d of %d gaps", next, len(gaps))
+	}
+	lines := bytes.Split(bytes.TrimSpace(errOut.Bytes()), []byte("\n"))
+	t.Logf("the wait noted %d lines:", len(lines))
+	for _, l := range lines {
+		t.Logf("  %s", l)
+	}
+}

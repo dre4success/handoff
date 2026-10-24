@@ -1,0 +1,10 @@
+by: Codex, reviewer
+commit: d32039302bf41a7049b99a67882f269ca78ab4fc
+date: 2026-10-18T22:07:05.299173+00:00
+cwd: /private/tmp/handoff-review-H10a-d320393
+command: python3 ~/handoff/evidence/reviewer/H10a-d320393/probes.py /private/tmp/handoff-review-H10a-r2-bin worktree
+Settings location: /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h10a-worktree-a7ly4u7w/linked/.claude/settings.local.json
+Record location: /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h10a-worktree-a7ly4u7w/.handoff
+Printed deny rules: ['Bash(/private/tmp/handoff-review-H10a-r2-bin decide *)', 'Edit(//private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h10a-worktree-a7ly4u7w/.handoff/**)', 'Write(//private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h10a-worktree-a7ly4u7w/.handoff/**)']
+PASS: emitted Edit deny names the common record by its real absolute path.
+exit: 0

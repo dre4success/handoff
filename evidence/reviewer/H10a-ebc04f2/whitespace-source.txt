@@ -1,0 +1,6 @@
+by: Codex, reviewer
+commit: ebc04f20dc7405567c73439b72a10cd2c247b3ab
+date: 2026-10-18T22:04:07.037891+00:00
+cwd: /private/tmp/handoff-review-H10a-ebc04f2
+command: git diff --check e918d55e3903298f6369d5ae843c79c3f7f20d31 HEAD -- cmd internal README.md docs
+exit: 0

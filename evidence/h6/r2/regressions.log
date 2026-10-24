@@ -1,0 +1,34 @@
+# command: the H6 round-2 regressions, on a worktree of 639ed6f with this commit's tests copied in, then on this commit
+# date: 2026-10-10 09:32:51 UTC
+# by: Opus 5.5 (implementer), Claude Code 2.1.295, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 30974e354702a4d7bd9bf4e3301770282a75080c
+
+## at 639ed6f (expected to fail)
+    record_test.go:468: a stale head.json after a cut was taken for an edit: {Line:2 Withheld:2 ByHead:true Detail:head.json counts the same 2 lines but names 7286c3332c53 as the last, and the last line hashes to 3be8e844a022, so the last line or head.json was edited}
+--- FAIL: TestAppendAfterACutThatStopsBeforeHeadIsNotAnEdit (0.02s)
+FAIL
+FAIL	github.com/dre4success/handoff/internal/record	0.679s
+    main_test.go:739: retry after the crash: exit 2, out "", err "handoff post: the record's hash chain does not verify at line 2: head.json counts the same 2 lines but names b9acbff40f70 as the last, and the last line hashes to 06b87011d3f6, so the last line or head.json was edited; posting stops until the operator decides\n"; want the original receipt #3
+--- FAIL: TestH6CutThenPostKilledAfterSyncIsRecoverable (0.57s)
+    main_test.go:767: the faulted writer exited 0, want killed by a signal; stderr ""
+--- FAIL: TestH6CutThenRepairKilledAfterSyncIsRecoverable (0.22s)
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	1.501s
+FAIL
+
+## at 30974e354702a4d7bd9bf4e3301770282a75080c (expected to pass), with the H6 round-1 regressions
+--- PASS: TestForgedAppendIsWithheldFromTheBreakWhenHeadVouches (0.04s)
+--- PASS: TestForgedAppendWithoutAVouchingHeadWithholdsTheLineBefore (0.04s)
+--- PASS: TestEditedLastLineIsABreak (0.03s)
+--- PASS: TestAppendAfterACutThatStopsBeforeHeadIsNotAnEdit (0.05s)
+ok  	github.com/dre4success/handoff/internal/record	0.372s
+ok  	github.com/dre4success/handoff/internal/status	0.440s [no tests to run]
+--- PASS: TestBrokenRecordDeliversOnlyVerifiedEntries (0.06s)
+--- PASS: TestEditedLastLineIsNotDelivered (0.02s)
+ok  	github.com/dre4success/handoff/internal/wait	0.285s
+--- PASS: TestH5ForgedLineDuringAnEmittingWait (3.43s)
+--- PASS: TestH6EditedLastLineIsWithheld (0.31s)
+--- PASS: TestH6CutThenPostKilledAfterSyncIsRecoverable (0.33s)
+--- PASS: TestH6CutThenRepairKilledAfterSyncIsRecoverable (0.24s)
+ok  	github.com/dre4success/handoff/cmd/handoff	4.958s
+# go test exit: 0

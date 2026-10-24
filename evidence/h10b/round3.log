@@ -1,0 +1,20 @@
+# command: the round-3 tests on 418a0c4 (round 2) with this commit's tests copied in, then here
+# date: 2026-10-18 22:36:45 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0, codex-cli 0.162.1)
+# commit: deafc7b62188c49df32f9fdfa15011ea42f99d5c
+
+## at 418a0c4 (expected to fail: settings codex prints no config.toml; the brief's question to the operator names no item)
+    codex_test.go:157: exit 0, stdout "Put these two files in this project's .codex/ folder, and keep it out of git\n(add .codex/ to .git/info/exclude). The next time Codex starts here, it asks you\nto review the new hoo
+--- FAIL: TestH10bTheRoleKeepsBareHandoffFromTheOperatorsQuestion (0.49s)
+    hook_test.go:227: the brief's `<test binary> note --as reviewer --to operator --title "<question>" --body <file>`: exit status 2
+        handoff note: --item or --re is required
+--- FAIL: TestH10BriefCommandsRun (0.35s)
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	1.352s
+FAIL
+
+## at deafc7b62188c49df32f9fdfa15011ea42f99d5c (expected to pass)
+--- PASS: TestH10bTheRoleKeepsBareHandoffFromTheOperatorsQuestion (0.42s)
+--- PASS: TestH10BriefCommandsRun (0.37s)
+ok  	github.com/dre4success/handoff/cmd/handoff	1.081s
+# go test exit: 0

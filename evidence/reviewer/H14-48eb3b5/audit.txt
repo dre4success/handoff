@@ -1,0 +1,33 @@
+by: Codex, reviewer
+commit: 48eb3b5661c2d0a930ec5344d0e15b329518bdb7
+date: 2026-10-24T17:34:12.323247+00:00
+cwd: /private/tmp/handoff-review-H14-48eb3b5
+command: python3 ~/handoff/evidence/reviewer/H14-48eb3b5/audit.py
+Tracked files scanned: 448
+the operator's name, as a word, in a file name or inside an identifier: 0 content lines; 0 paths
+the operator's account name, other than in the module path: 0 content lines; 0 paths
+a path under a home folder, other than the test's made-up ones: 0 content lines; 0 paths
+the other project's name: 0 content lines; 0 paths
+the operator's email domains: 0 content lines; 0 paths
+Email-shaped values (review fixtures versus actual identities):
+  review@test.invalid 22 lines; first: ('evidence/reviewer/H10a-abe5193/probes.py', 17)
+  reviewer@example.invalid 8 lines; first: ('evidence/reviewer/H12-40a3768/startup-race.py', 17)
+URL hosts: code.claude.com, developer.apple.com, git-scm.com, github.com, learn.chatgpt.com
+private key: 0 lines; []
+common credential prefix: 0 lines; []
+user home path: 2 lines; [('cmd/handoff/codex_test.go', 144), ('cmd/handoff/codex_test.go', 145)]
+host identifying a local machine: 22 lines; [('README.md', 75), ('cmd/handoff/settings.go', 51), ('evidence/h10/demo.txt', 7), ('evidence/h10/live-claude.py', 6), ('evidence/h10/live-claude.sh', 20), ('evidence/h10/live-rules.sh', 37), ('evidence/h10/live-rules.sh', 40), ('evidence/h10/live-rules.sh', 70), ('evidence/h10/live-rules.sh', 85), ('evidence/h10/live-rules.sh', 92), ('evidence/h10/live-rules.sh', 93), ('evidence/h12/demo.txt', 7)]
+NUL-containing tracked files: []
+
+Reproduce supplied scrub on a separate archive of H13:
+
+
+renamed 4 files; changed 266 files
+Reproduction directory: /private/tmp/handoff-h14-scrub-ira_28xj
+Content/mode mismatches: []
+PASS: supplied script exactly reproduces scrub tree, paths, bytes and file modes.
+
+Read-only archived trial chain check, same byte hashing as trial/collect.sh:
+178b7ca4e29637bd95e7d9010dbf78d2d26bc723 mismatched prev at lines: [] head line count matches: True head last matches: True
+HEAD mismatched prev at lines: [2, 8] head line count matches: True head last matches: True
+exit: 0

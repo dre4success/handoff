@@ -1,0 +1,20 @@
+by: Codex, reviewer
+commit: 418a0c42ea6e6fdbc2688834ba04277032000084
+date: 2026-10-18T22:16:45.433478+00:00
+cwd: /private/tmp/handoff-review-H10b-418a0c4
+command: python3 ~/handoff/evidence/reviewer/H10b-418a0c4/probes.py /private/tmp/handoff-review-H10b-bin bare
+Policy on bare command: {"matchedRules":[{"prefixRuleMatch":{"matchedPrefix":["/private/tmp/handoff-review-H10b-bin"],"decision":"allow","justification":"handoff runs outside the sandbox so that it can notify the operator"}}],"decision":"allow"}
+No HANDOFF_ROLE. Bare command reached: 
+#1 note D1 reviewer → operator: Disposable reviewer fixture.
+  | Disposable reviewer fixture.
+Approve, deny or skip? [a/d/s] 
+Only Skip was entered; note remains:
+#1 note D1
+from: reviewer → operator
+ts: 2026-10-18T22:16:45Z
+prev: genesis
+---
+Disposable reviewer fixture.
+
+REPRODUCED: an allowed model command reaches the operator's decision UI without operator approval.
+exit: 0

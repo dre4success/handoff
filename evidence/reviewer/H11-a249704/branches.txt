@@ -1,0 +1,7 @@
+by: Codex, reviewer
+commit: a249704f01800aa4e0c28cab271093813cf31bbb
+date: 2026-10-19T21:30:48.966282+00:00
+cwd: /private/tmp/handoff-review-H11-a249704
+command: python3 ~/handoff/evidence/reviewer/H11-a249704/probes.py /private/tmp/handoff-review-H11-bin branches
+PASS: main/master precedence, trunk fallback, unborn branch, detached refusal and explicit override, and linked-worktree common branch selection.
+exit: 0

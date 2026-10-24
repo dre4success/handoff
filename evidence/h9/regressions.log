@@ -1,0 +1,35 @@
+# command: the H9 tests, on a worktree of 36882430e60ba5a0ed731ba0ab58e8baefbff5a7 (main) with this commit's tests copied in, then on this commit
+# date: 2026-10-15 19:34:59 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 3d8b24cd8b77ec68b8aa4b26fd34b48deffa6bae
+
+## at 36882430e60ba5a0ed731ba0ab58e8baefbff5a7 (expected to fail; TestCheck16 to pass)
+--- FAIL: TestH9DecideByItemWithNoRole (0.46s)
+--- FAIL: TestH9DenyWithANote (0.19s)
+--- FAIL: TestH9NotConfirmedWritesNothing (0.19s)
+--- FAIL: TestH9ItemWithTwoEntriesNeedsTheId (0.20s)
+--- FAIL: TestH9HandoffOnItsOwnAsksAboutEach (0.21s)
+--- FAIL: TestH9HandoffOnItsOwnWithoutATerminal (0.18s)
+--- FAIL: TestH9HandoffOnItsOwnInAnAgentSession (0.17s)
+--- PASS: TestH9HandoffOnItsOwnOutsideAProject (0.00s)
+--- FAIL: TestH9DecideRefusals (0.21s)
+--- PASS: TestCheck16Roles (0.24s)
+--- FAIL: TestDecideWithATerminal (20.21s)
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	22.772s
+FAIL
+
+## at 3d8b24cd8b77ec68b8aa4b26fd34b48deffa6bae (expected to pass)
+--- PASS: TestH9DecideByItemWithNoRole (0.48s)
+--- PASS: TestH9DenyWithANote (0.20s)
+--- PASS: TestH9NotConfirmedWritesNothing (0.20s)
+--- PASS: TestH9ItemWithTwoEntriesNeedsTheId (0.25s)
+--- PASS: TestH9HandoffOnItsOwnAsksAboutEach (0.26s)
+--- PASS: TestH9HandoffOnItsOwnWithoutATerminal (0.20s)
+--- PASS: TestH9HandoffOnItsOwnInAnAgentSession (0.18s)
+--- PASS: TestH9HandoffOnItsOwnOutsideAProject (0.01s)
+--- PASS: TestH9DecideRefusals (0.25s)
+--- PASS: TestCheck16Roles (0.24s)
+--- PASS: TestDecideWithATerminal (0.22s)
+ok  	github.com/dre4success/handoff/cmd/handoff	2.871s
+# go test exit: 0

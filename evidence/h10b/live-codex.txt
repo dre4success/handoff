@@ -1,0 +1,143 @@
+# command: a throwaway Codex session (codex exec -m gpt-6-luna, low effort) in a scratch project, set up by `handoff settings codex --as codex`; idle 660 s, then a request from claude; nobody typing
+# date: 2026-10-18 23:00:16 UTC
+# by: Opus 5.5 (implementer), on the operator's Mac, codex-cli 0.162.1
+# commit: deafc7b62188c49df32f9fdfa15011ea42f99d5c
+
+## what happened (times UTC)
+22:48:52Z codex exec starts in <scratch>/live-codex; .codex/config.toml sets: set = { HANDOFF_ROLE = "codex" }
+22:48:55Z presence: {"v":1,"pid":867,"since":"2026-10-18T22:48:56Z","how":"hook"}
+22:48:56Z a second wait for codex: exit 4 handoff wait: already listening: hook for codex, pid 867, since 2026-10-18T22:48:56Z; this one exits
+22:48:56Z idle for 660 s
+22:59:56Z after 660 s, a wait for codex: exit 4 handoff wait: already listening: hook for codex, pid 867, since 2026-10-18T22:48:56Z; this one exits
+22:59:56Z claude posts: posted #1 request T1 claude → codex: T1: add a.txt @ b41908c47eb0
+23:00:00Z entry 2: #2 claim T1
+23:00:10Z entry 3: #3 reply T1
+23:00:11Z listening again after the reply: {"v":1,"pid":3559,"since":"2026-10-18T23:00:10Z","how":"hook"}
+23:00:11Z codex exec still running; stopping it
+23:00:16Z after codex was stopped, a wait for codex: exit 3
+23:00:16Z hook processes left: (none)
+
+## notifications (sent to a file)
+live-codex: T1: codex approved #1. Your decision.
+
+## the record afterwards
+#1 request T1
+from: claude → codex
+ts: 2026-10-18T22:59:56Z
+title: T1: add a.txt
+commit: b41908c47eb06da9708f182705224d54fc764b22
+base: b41908c47eb06da9708f182705224d54fc764b22
+state: awaiting operator
+standing verdict: APPROVE in #3
+prev: genesis
+---
+Please review T1: it adds a.txt with one line.
+
+#2 claim T1
+from: codex → -
+ts: 2026-10-18T23:00:00Z
+re: #1
+prev: 59aaa0650e8b514b20a399edee641384e837827d5cea6ae5f8283bfd8a6103cd
+---
+
+#3 reply T1
+from: codex → claude
+ts: 2026-10-18T23:00:09Z
+commit: b41908c47eb06da9708f182705224d54fc764b22
+re: #1
+verdict: APPROVE
+prev: 4e0fd3ddc30f7cccfbf3a8d3cb7f4089746aea381196a0260ebaf6e8ce612157
+---
+Reviewed commit b41908c47eb06da9708f182705224d54fc764b22 in a detached temporary worktree. It adds a.txt with exactly one line, “hello”, matching the request. No issues found.
+
+## codex exec's own log (stderr, whole), and how it ended
+Reading additional input from stdin...
+OpenAI Codex v0.162.1
+--------
+workdir: <scratch>/live-codex
+model: gpt-6-luna
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: low
+reasoning summaries: none
+session id: 01a15134-1f72-7053-8393-89a304ba53ba
+--------
+user
+Say READY and the role your handoff brief gives you. Then run this command once, exactly as written, with no arguments: <scratch>/handoff
+Give the first line it printed. Nothing else.
+warning: Codex is ignoring 1 unrecognized configuration setting. Check for typos or deprecated settings.
+  session-flags: `projects."<scratch>/live-codex"` is ignored.
+warning: `--dangerously-bypass-hook-trust` is enabled. Enabled hooks may run without review for this invocation.
+warning: Codex is ignoring 1 unrecognized configuration setting. Check for typos or deprecated settings.
+  session-flags: `projects."<scratch>/live-codex"` is ignored.
+warning: `--dangerously-bypass-hook-trust` is enabled. Enabled hooks may run without review for this invocation.
+hook: SessionStart
+hook: SessionStart Completed
+codex
+READY — Codex.
+hook: Stop
+hook: Stop Blocked
+codex
+I’ll inspect the handoff request, claim it, and review the named commit in a temporary worktree.
+exec
+/bin/zsh -lc '<scratch>/handoff show 1' in <scratch>/live-codex
+ succeeded in 0ms:
+#1 request T1
+from: claude → codex
+ts: 2026-10-18T22:59:56Z
+title: T1: add a.txt
+commit: b41908c47eb06da9708f182705224d54fc764b22
+base: b41908c47eb06da9708f182705224d54fc764b22
+state: open
+prev: genesis
+---
+Please review T1: it adds a.txt with one line.
+
+exec
+/bin/zsh -lc '<scratch>/handoff claim --as codex 1' in <scratch>/live-codex
+ succeeded in 0ms:
+posted #2 claim T1 codex → -: claimed #1
+
+codex
+The repository’s `.git` metadata is read-only here, so the initial worktree attempt could not register there. I’ll create a temporary shared clone under `/private/tmp` and review the exact commit from that clone.
+exec
+/bin/zsh -lc 'git clone --shared --no-hardlinks <scratch>/live-codex /private/tmp/codex-review-t1-clone && git -C /private/tmp/codex-review-t1-clone worktree add --detach /private/tmp/codex-review-t1 b41908c47eb06da9708f182705224d54fc764b22 && git -C /private/tmp/codex-review-t1 status --short && gi
+ succeeded in 0ms:
+Cloning into '/private/tmp/codex-review-t1-clone'...
+done.
+Preparing worktree (detached HEAD b41908c)
+HEAD is now at b41908c T1: add a.txt
+b41908c T1: add a.txt
+ a.txt | 1 +
+ 1 file changed, 1 insertion(+)
+commit b41908c47eb06da9708f182705224d54fc764b22
+Author:     t <t@t>
+AuthorDate: Sun Oct 18 23:48:52 2026 +0100
+Commit:     t <t@t>
+CommitDate: Sun Oct 18 23:48:52 2026 +0100
+
+    T1: add a.txt
+
+diff --git a/a.txt b/a.txt
+new file mode 100644
+index 0000000..ce01362
+--- /dev/null
++++ b/a.txt
+@@ -0,0 +1 @@
++hello
+
+exec
+/bin/zsh -lc "cat > /private/tmp/codex-review-t1-reply.txt <<'EOF'
+Reviewed commit b41908c47eb06da9708f182705224d54fc764b22 in a detached temporary worktree. It adds a.txt with exactly one line, “hello”, matching the request. No issues found.
+EOF
+<scratch>/handoff reply --as codex 1 --verdict APPROVE --commit b41908c47eb06da9708f182705224d54fc764b22 --body /private/tmp/codex-review-t1-reply.txt" in <scratch>/live-codex
+ succeeded in 0ms:
+posted #3 reply T1 codex → claude: APPROVE on #1 @ b41908c47eb0
+handoff: told the operator: T1: codex approved #1. Your decision.
+
+codex
+Reviewed the exact commit in a detached temporary worktree and approved it. `a.txt` contains one line: `hello`.
+hook: Stop
+## codex exec's stdout (its last message)
+# codex exec exit: 0

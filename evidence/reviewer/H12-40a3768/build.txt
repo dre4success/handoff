@@ -1,0 +1,6 @@
+by: Codex, reviewer
+commit: 40a37680b9d51997c762bc602928b7afec2c977a
+date: 2026-10-21T04:39:45.033301+00:00
+cwd: /private/tmp/handoff-review-H12-40a3768
+command: go build -o /private/tmp/handoff-review-H12-r3-bin ./cmd/handoff
+exit: 0

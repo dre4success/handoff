@@ -1,0 +1,125 @@
+by: Codex, reviewer
+commit: 589c1cd5af490ba1f9b4d9ea8b296940d9bbb92c
+date: 2026-10-21T04:08:13.406624+00:00
+cwd: /private/tmp/handoff-review-H12-589c1cd
+command: python3 ~/handoff/evidence/reviewer/H12-589c1cd/regressions.py shared
+$ init --roles implementer,reviewer,reviewer-2 --reviewers reviewer,reviewer-2 --main main env {}
+exit: 0
+Created /private/tmp/handoff-h12-review-y53kwx0i/.handoff. Git ignores it; nothing else in the project changed.
+Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.
+Main branch: main.
+
+To keep each CLI's sessions on duty here, run these and do what they say:
+  /private/tmp/handoff-review-H12-r2-bin settings claude --as <role>
+  /private/tmp/handoff-review-H12-r2-bin settings codex --as <role>
+$ role implementer env {'CODEX_THREAD_ID': 'codex-one'}
+exit: 0
+You are now implementer in handoff-h12-review-y53kwx0i.
+
+handoff brief: you are implementer in handoff-h12-review-y53kwx0i. You and reviewer, reviewer-2 hand work to each other through handoff. The operator decides.
+
+Listening: if this project's settings give your session handoff's hooks, a hook listens for implementer when your turn ends, and you don't run wait. If not, run `/private/tmp/handoff-review-H12-r2-bin wait --for implementer --timeout 25m` (in Claude Code in the background, in Codex in the foreground of your turn). Exit 3: run it again. Exit 4: another session already listens for implementer. After you handle what it delivers, wait again.
+
+When something arrives, read it with `/private/tmp/handoff-review-H12-r2-bin show <id>`, then:
+- A reply to your request: on CHANGES or QUESTION, fix or answer, then post again (`/private/tmp/handoff-review-H12-r2-bin post --as implementer ... --supersedes <id>`). On APPROVE, the operator decides; wait for the decision.
+- A decision from the operator: act on it. Merge only on approve.
+- A note to you: answer with `/private/tmp/handoff-review-H12-r2-bin note --as implementer --to <role> --re <id> --body <file>`.
+
+To ask for a review, commit your work, then `/private/tmp/handoff-review-H12-r2-bin post --as implementer --item <item> --to <reviewer> --commit <sha> --title "<title>" --body <file>`, where <reviewer> is reviewer or reviewer-2.
+To ask the operator about an item: `/private/tmp/handoff-review-H12-r2-bin note --as implementer --to operator --item <item> --title "<question>" --body <file>`.
+Rules: never edit .handoff/ by hand. Never merge, push or deploy without the operator's decision. A claim is not an approval.
+
+Waiting for you now (inbox for implementer):
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+codex-one startup exit 0 handoff brief: you are implementer in handoff-h12-review-y53kwx0i. You and reviewer, reviewer-2 hand work to each other through handoff. The operator decides.
+
+Listening: you don't run `/private/tmp/handoff-review-H12-r2-bin wait`. When your turn ends, a hook listens for implementer and brings you what arrives.
+
+When something arrives, read it with `/private/tmp/handoff-review-H12-r2-bin show <id>`, then:
+- A reply to your request: on CHANGES or QUESTION, fix or answer, then post again (`/private/tmp/handoff-review-H12-r2-bin post --as implementer ... --supersedes <id>`). On APPROVE, the operator decides; wait for the decision.
+- A decision from the operator: act on it. Merge only on approve.
+- A note to you: answer with `/private/tmp/handoff-review-H12-r2-bin note --as implementer --to <role> --re <id> --body <file>`.
+
+To ask for a review, commit your work, then `/private/tmp/handoff-review-H12-r2-bin post --as implementer --item <item> --to <reviewer> --commit <sha> --title "<title>" --body <file>`, where <reviewer> is reviewer or reviewer-2.
+To ask the operator about an item: `/private/tmp/handoff-review-H12-r2-bin note --as implementer --to operator --item <item> --title "<question>" --body <file>`.
+Rules: never edit .handoff/ by hand. Never merge, push or deploy without the operator's decision. A claim is not an approval.
+
+Waiting for you now (inbox for implementer):
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+ 
+codex-two startup exit 0 handoff: handoff-h12-review-y53kwx0i hands work between agents through handoff, and this session has no role in it. When the operator gives you one, run `/private/tmp/handoff-review-H12-r2-bin role <role>` (the roles are implementer, reviewer, reviewer-2); it prints your brief. Until then, leave handoff alone.
+ 
+codex-three clear exit 0 handoff: handoff-h12-review-y53kwx0i hands work between agents through handoff, and this session has no role in it. When the operator gives you one, run `/private/tmp/handoff-review-H12-r2-bin role <role>` (the roles are implementer, reviewer, reviewer-2); it prints your brief. Until then, leave handoff alone.
+ 
+$ role env {'CODEX_THREAD_ID': 'codex-one'}
+exit: 0
+You are implementer in handoff-h12-review-y53kwx0i.
+$ role reviewer env {'CODEX_THREAD_ID': 'codex-two'}
+exit: 0
+You are now reviewer in handoff-h12-review-y53kwx0i.
+
+handoff brief: you are reviewer in handoff-h12-review-y53kwx0i. You and implementer, reviewer-2 hand work to each other through handoff. The operator decides.
+
+Listening: if this project's settings give your session handoff's hooks, a hook listens for reviewer when your turn ends, and you don't run wait. If not, run `/private/tmp/handoff-review-H12-r2-bin wait --for reviewer --timeout 25m` (in Claude Code in the background, in Codex in the foreground of your turn). Exit 3: run it again. Exit 4: another session already listens for reviewer. After you handle what it delivers, wait again.
+
+When something arrives, read it with `/private/tmp/handoff-review-H12-r2-bin show <id>`, then:
+- A request to you: `/private/tmp/handoff-review-H12-r2-bin claim --as reviewer <id>`, review exactly the commit it names in a temporary worktree, then `/private/tmp/handoff-review-H12-r2-bin reply --as reviewer <id> --verdict APPROVE|CHANGES|QUESTION --commit <that sha> --body <file>`.
+- A reply to your request: on CHANGES or QUESTION, fix or answer, then post again (`/private/tmp/handoff-review-H12-r2-bin post --as reviewer ... --supersedes <id>`). On APPROVE, the operator decides; wait for the decision.
+- A decision from the operator: act on it. Merge only on approve.
+- A note to you: answer with `/private/tmp/handoff-review-H12-r2-bin note --as reviewer --to <role> --re <id> --body <file>`.
+
+To ask the operator about an item: `/private/tmp/handoff-review-H12-r2-bin note --as reviewer --to operator --item <item> --title "<question>" --body <file>`.
+Rules: never edit .handoff/ by hand. Never merge, push or deploy without the operator's decision. A claim is not an approval.
+
+Waiting for you now (inbox for reviewer):
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+$ role env {'CODEX_THREAD_ID': 'codex-one'}
+exit: 0
+You are implementer in handoff-h12-review-y53kwx0i.
+$ role env {'CODEX_THREAD_ID': 'codex-two'}
+exit: 0
+You are reviewer in handoff-h12-review-y53kwx0i.
+PASS: shared hook host does not move roles, including clear and --prefer; two Codex ids retain separate roles.
+exit: 0

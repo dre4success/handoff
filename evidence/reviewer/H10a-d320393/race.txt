@@ -1,0 +1,13 @@
+by: Codex, reviewer
+commit: d32039302bf41a7049b99a67882f269ca78ab4fc
+date: 2026-10-18T22:06:25.048006+00:00
+cwd: /private/tmp/handoff-review-H10a-d320393
+command: go test -race -count=1 ./...
+ok  	github.com/dre4success/handoff/cmd/handoff	325.883s
+?   	github.com/dre4success/handoff/internal/gitx	[no test files]
+ok  	github.com/dre4success/handoff/internal/notify	1.428s
+ok  	github.com/dre4success/handoff/internal/record	3.757s
+ok  	github.com/dre4success/handoff/internal/status	1.307s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	1.816s
+exit: 0

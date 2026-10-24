@@ -1,0 +1,55 @@
+# command: go test -count=5 -v -run 'TestCheck3|TestCheck8|TestCheck13|TestCheck19|TestRow51|TestH5' ./cmd/handoff ; go test -count=3 -v -run TestCheck1Fifty ./cmd/handoff
+# date: 2026-10-09 20:47:51 UTC
+# by: Opus 5.5 (implementer), Claude Code 2.1.295, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: bd728051ade739c92724f75efaf21bc4b060b342
+
+--- PASS: TestCheck3KilledWriterLeavesATornTail (0.49s)
+--- PASS: TestRow51KilledAfterSyncIsAnAdvisory (0.22s)
+    main_test.go:548: wait woke 519ms after the post returned
+--- PASS: TestCheck8WaitWakesWithinTwoSeconds (2.20s)
+--- PASS: TestCheck13NextWaitDeliversAtOnce (2.22s)
+--- PASS: TestCheck19InterruptedWait (1.75s)
+--- PASS: TestH5ForgedLineDuringAnEmittingWait (3.22s)
+--- PASS: TestH5LinkedEscalationIsNotAnAnswer (0.36s)
+--- PASS: TestCheck3KilledWriterLeavesATornTail (0.22s)
+--- PASS: TestRow51KilledAfterSyncIsAnAdvisory (0.21s)
+    main_test.go:548: wait woke 519ms after the post returned
+--- PASS: TestCheck8WaitWakesWithinTwoSeconds (2.16s)
+--- PASS: TestCheck13NextWaitDeliversAtOnce (2.24s)
+--- PASS: TestCheck19InterruptedWait (1.79s)
+--- PASS: TestH5ForgedLineDuringAnEmittingWait (3.21s)
+--- PASS: TestH5LinkedEscalationIsNotAnAnswer (0.41s)
+--- PASS: TestCheck3KilledWriterLeavesATornTail (0.24s)
+--- PASS: TestRow51KilledAfterSyncIsAnAdvisory (0.18s)
+    main_test.go:548: wait woke 520ms after the post returned
+--- PASS: TestCheck8WaitWakesWithinTwoSeconds (2.17s)
+--- PASS: TestCheck13NextWaitDeliversAtOnce (2.30s)
+--- PASS: TestCheck19InterruptedWait (1.76s)
+--- PASS: TestH5ForgedLineDuringAnEmittingWait (3.28s)
+--- PASS: TestH5LinkedEscalationIsNotAnAnswer (0.41s)
+--- PASS: TestCheck3KilledWriterLeavesATornTail (0.25s)
+--- PASS: TestRow51KilledAfterSyncIsAnAdvisory (0.24s)
+    main_test.go:548: wait woke 518ms after the post returned
+--- PASS: TestCheck8WaitWakesWithinTwoSeconds (2.19s)
+--- PASS: TestCheck13NextWaitDeliversAtOnce (2.24s)
+--- PASS: TestCheck19InterruptedWait (1.75s)
+--- PASS: TestH5ForgedLineDuringAnEmittingWait (3.20s)
+--- PASS: TestH5LinkedEscalationIsNotAnAnswer (0.35s)
+--- PASS: TestCheck3KilledWriterLeavesATornTail (0.25s)
+--- PASS: TestRow51KilledAfterSyncIsAnAdvisory (0.24s)
+    main_test.go:548: wait woke 516ms after the post returned
+--- PASS: TestCheck8WaitWakesWithinTwoSeconds (2.19s)
+--- PASS: TestCheck13NextWaitDeliversAtOnce (2.22s)
+--- PASS: TestCheck19InterruptedWait (1.84s)
+--- PASS: TestH5ForgedLineDuringAnEmittingWait (3.35s)
+--- PASS: TestH5LinkedEscalationIsNotAnAnswer (0.32s)
+ok  	github.com/dre4success/handoff/cmd/handoff	52.341s
+# go test exit: 0
+    main_test.go:246: 50 processes x 20 posts: 1000 entries, ids 1..1000, chain intact
+--- PASS: TestCheck1FiftyProcessesTwentyPostsEach (8.48s)
+    main_test.go:246: 50 processes x 20 posts: 1000 entries, ids 1..1000, chain intact
+--- PASS: TestCheck1FiftyProcessesTwentyPostsEach (8.11s)
+    main_test.go:246: 50 processes x 20 posts: 1000 entries, ids 1..1000, chain intact
+--- PASS: TestCheck1FiftyProcessesTwentyPostsEach (8.25s)
+ok  	github.com/dre4success/handoff/cmd/handoff	25.285s
+# go test exit: 0

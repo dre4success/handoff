@@ -1,0 +1,136 @@
+# command: bash evidence/step1/demo.sh
+# date: 2026-10-09 20:17:37 UTC
+# by: Opus 5.5 (implementer), Claude Code 2.1.295, on the operator's Mac
+# commit: b023ed5d32b9ae809586ff6522143238dedd4733
+
+$ HANDOFF_ROLE= handoff init --roles implementer,reviewer --main main
+created /private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/tmp.WqJjwfOmn8/repo/.handoff
+The record is never committed: add .handoff/ to .gitignore (proposal §5).
+[exit 0]
+
+# The reviewer waits in the background before anything is posted.
+$ HANDOFF_ROLE=reviewer handoff wait --for reviewer --timeout 30s   (background)
+$ HANDOFF_ROLE=implementer handoff post --item W31 --to reviewer --commit w31~1 --title W31: French labels --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/tmp.WqJjwfOmn8/req.md --key w31-r1
+posted #1 request W31 implementer → reviewer: W31: French labels @ be622766cd80
+[exit 0]
+
+background wait exited 0, 0.49s after the post began; it printed:
+#1 request W31 implementer → reviewer: W31: French labels @ be622766cd80
+
+# The same post, retried with the same key, returns the first receipt.
+$ HANDOFF_ROLE=implementer handoff post --item W31 --to reviewer --commit w31~1 --title W31: French labels --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/tmp.WqJjwfOmn8/req.md --key w31-r1
+exists #1 request W31 implementer → reviewer: W31: French labels @ be622766cd80
+[exit 0]
+
+$ HANDOFF_ROLE=reviewer handoff claim 1
+posted #2 claim W31 reviewer → -: claimed #1
+[exit 0]
+
+# The first reply names a different commit from the request's and is refused; the second is accepted.
+$ HANDOFF_ROLE=reviewer handoff reply 1 --verdict CHANGES --commit 6198b12b4dc5a8d93e2a5f795b82fe612a225ea0 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/tmp.WqJjwfOmn8/changes.md
+handoff reply: --commit 6198b12b4dc5 differs from the request's be622766cd80; a verdict names the exact commit it reviewed
+[exit 2]
+
+$ HANDOFF_ROLE=reviewer handoff reply 1 --verdict CHANGES --commit be622766cd809cc7cb921b886f82ebe146972be8 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/tmp.WqJjwfOmn8/changes.md
+posted #3 reply W31 reviewer → implementer: CHANGES on #1 @ be622766cd80
+[exit 0]
+
+$ HANDOFF_ROLE=implementer handoff inbox
+inbox for implementer
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  #1 request W31 implementer → reviewer: W31: French labels @ be622766cd80
+    #3 reply W31 reviewer → implementer: CHANGES on #1 @ be622766cd80
+
+awaiting the operator:
+  (none)
+[exit 0]
+
+# A new revision without --supersedes is refused; with it, accepted.
+$ HANDOFF_ROLE=implementer handoff post --item W31 --to reviewer --commit 6198b12b4dc5a8d93e2a5f795b82fe612a225ea0 --title W31: French labels, r2 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/tmp.WqJjwfOmn8/r2.md
+handoff post: request #1 on W31 to reviewer is still open (answered); to replace it, pass --supersedes 1
+[exit 2]
+
+$ HANDOFF_ROLE=implementer handoff post --item W31 --to reviewer --commit 6198b12b4dc5a8d93e2a5f795b82fe612a225ea0 --title W31: French labels, r2 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/tmp.WqJjwfOmn8/r2.md --supersedes 1
+posted #4 request W31 implementer → reviewer: W31: French labels, r2 @ 6198b12b4dc5 (supersedes #1)
+[exit 0]
+
+$ HANDOFF_ROLE=reviewer handoff wait --for reviewer --timeout 5s
+#4 request W31 implementer → reviewer: W31: French labels, r2 @ 6198b12b4dc5 (supersedes #1)
+[exit 0]
+
+$ HANDOFF_ROLE=reviewer handoff reply 4 --verdict APPROVE --commit 6198b12b4dc5a8d93e2a5f795b82fe612a225ea0 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/tmp.WqJjwfOmn8/ok.md
+posted #5 reply W31 reviewer → implementer: APPROVE on #4 @ 6198b12b4dc5
+[exit 0]
+
+# The implementer's role does not review, so its verdict is refused.
+$ HANDOFF_ROLE=implementer handoff reply 4 --verdict APPROVE --commit 6198b12b4dc5a8d93e2a5f795b82fe612a225ea0 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/tmp.WqJjwfOmn8/ok.md
+handoff reply: implementer does not review (reviews is false in config.json), so it cannot give a verdict
+[exit 2]
+
+$ HANDOFF_ROLE=operator handoff inbox
+inbox for operator
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  #4 request W31 implementer → reviewer: W31: French labels, r2 @ 6198b12b4dc5 (supersedes #1)
+    #5 reply W31 reviewer → implementer: APPROVE on #4 @ 6198b12b4dc5
+[exit 0]
+
+$ HANDOFF_ROLE= handoff show 1
+#1 request W31
+from: implementer → reviewer
+ts: 2026-10-09T20:17:39Z
+title: W31: French labels
+commit: be622766cd809cc7cb921b886f82ebe146972be8
+base: 4cddfab84b5795a96d3d42b65298b0c83e94332e
+key: w31-r1
+state: superseded by #4
+standing verdict: CHANGES in #3
+prev: genesis
+---
+Please review the French labels.
+[exit 0]
+
+$ HANDOFF_ROLE= handoff show 4
+#4 request W31
+from: implementer → reviewer
+ts: 2026-10-09T20:17:40Z
+title: W31: French labels, r2
+commit: 6198b12b4dc5a8d93e2a5f795b82fe612a225ea0
+base: 4cddfab84b5795a96d3d42b65298b0c83e94332e
+supersedes: #1
+state: awaiting operator
+standing verdict: APPROVE in #5
+prev: e7b7da47ce70795b840e8c50dee3d7a71cc6f35226d88f95c4be5b88b338c8f6
+---
+Accents fixed in 6198b12b4dc5a8d93e2a5f795b82fe612a225ea0.
+[exit 0]
+
+# This script's stdin is not a terminal, so decide refuses, as it must for an agent's shell.
+$ HANDOFF_ROLE=operator handoff decide 4 --approve --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/tmp.WqJjwfOmn8/ok.md
+handoff decide: decide needs a terminal on stdin: the operator types it, an agent's shell cannot
+[exit 2]
+
+$ head -c 600 .handoff/channel.jsonl; cat .handoff/head.json
+{"v":1,"id":1,"ts":"2026-10-09T20:17:39Z","kind":"request","item":"W31","from":"implementer","to":"reviewer","title":"W31: French labels","commit":"be622766cd809cc7cb921b886f82ebe146972be8","base":"4cddfab84b5795a96d3d42b65298b0c83e94332e","key":"w31-r1","body":"Please review the French labels.\n","prev":"genesis"}
+{"v":1,"id":2,"ts":"2026-10-09T20:17:40Z","kind":"claim","item":"W31","from":"reviewer","re":1,"body":"","prev":"9da410a2935ab122ca0976d55ebf083cd706a5679839872b77305f3ab61f9f14"}
+{"v":1,"id":3,"ts":"2026-10-09T20:17:40Z","kind":"reply","item":"W31","from":"reviewer","to":"implement …
+{"v":1,"lines":5,"last":"720e6de839211f1eceb72b80eaf72c53535c20cd09ca95ff1f17d419b024260d","id":5}
+
+$ git status --short   (the record is inside the repository and untracked)
+?? .handoff/

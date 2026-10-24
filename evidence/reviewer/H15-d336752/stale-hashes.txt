@@ -1,0 +1,8 @@
+by: Codex, reviewer
+commit: d3367527c5132a1edfacd688c1deca73d5459d9b
+date: 2026-10-24T18:07:04.440804+00:00
+cwd: /private/tmp/handoff-review-H15-d336752
+command: python3 -I evidence/h14/stale-hashes.py e1a1e5021e885208669aba807fbbe1ad1b05ac3a c8b0163 HEAD
+7 files changed; 36 hashes of the bytes that changed
+## at d336752: 488 files searched, 0 quote one
+exit: 0

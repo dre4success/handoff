@@ -1,0 +1,6 @@
+by: Codex, reviewer
+commit: 178b7ca4e29637bd95e7d9010dbf78d2d26bc723
+date: 2026-10-24T17:28:37.792941+00:00
+cwd: /private/tmp/handoff-review-H13-178b7ca
+command: go vet ./...
+exit: 0

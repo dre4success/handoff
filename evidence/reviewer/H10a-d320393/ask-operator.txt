@@ -1,0 +1,15 @@
+by: Codex, reviewer
+commit: d32039302bf41a7049b99a67882f269ca78ab4fc
+date: 2026-10-18T22:07:25.543374+00:00
+cwd: /private/tmp/handoff-review-H10a-d320393
+command: python3 ~/handoff/evidence/reviewer/H10a-d320393/probes.py /private/tmp/handoff-review-H10a-r2-bin ask-operator
+Brief command: /private/tmp/handoff-review-H10a-r2-bin note --to operator --title "Fixture question" --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h10a-ask-operator-1q56ugjw/body.md
+Shell exit: 2
+Shell stderr: handoff note: --item or --re is required
+Control with --item W1 exit: 0
+Control stdout: posted #1 note W1 reviewer → operator: Fixture question
+Traceback (most recent call last):
+  File "~/handoff/evidence/reviewer/H10a-d320393/probes.py", line 152, in <module>
+    assert result.returncode == 0, "following the brief's ask-the-operator command must post an operator note"
+AssertionError: following the brief's ask-the-operator command must post an operator note
+exit: 1

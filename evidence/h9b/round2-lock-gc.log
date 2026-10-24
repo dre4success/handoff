@@ -1,0 +1,50 @@
+# command: TestH9bPopupAcrossProcesses, 5 runs, with fix 2e8de3a taken out in a scratch worktree, then here
+# date: 2026-10-17 22:04:31 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 8bebbdbf9da26b2cd7301804b01853b82c635487
+
+## the fix, taken out:
+diff --git a/cmd/handoff/popup.go b/cmd/handoff/popup.go
+index 1871b1e..15fad0b 100644
+--- a/cmd/handoff/popup.go
++++ b/cmd/handoff/popup.go
+@@ -77,14 +77,9 @@ func (a *app) cmdPopup(args []string) (int, error) {
+ 	if err := a.open(); err != nil {
+ 		return 0, err
+ 	}
+-	lock := os.NewFile(3, "lock")
+-	if err := holdsLock(lock, a.dir, key); err != nil {
++	if err := holdsLock(os.NewFile(3, "lock"), a.dir, key); err != nil {
+ 		return 0, err
+ 	}
+-	// The lock lasts as long as this file is open. A file nothing refers to
+-	// is closed by the garbage collector, which would free the lock while
+-	// the dialog is still up (GPT-6, H9b review #31).
+-	defer lock.Close()
+ 	show := osaDialog
+ 	if path := os.Getenv(testPopupEnv); path != "" {
+ 		show = testDialog(path)
+
+## without the fix (expected to fail, 5 of 5)
+    popup_test.go:329: the alert's lock was free while its dialog was up
+--- FAIL: TestH9bPopupAcrossProcesses (1.02s)
+    popup_test.go:329: the alert's lock was free while its dialog was up
+--- FAIL: TestH9bPopupAcrossProcesses (0.72s)
+    popup_test.go:329: the alert's lock was free while its dialog was up
+--- FAIL: TestH9bPopupAcrossProcesses (0.80s)
+    popup_test.go:329: the alert's lock was free while its dialog was up
+--- FAIL: TestH9bPopupAcrossProcesses (0.78s)
+    popup_test.go:329: the alert's lock was free while its dialog was up
+--- FAIL: TestH9bPopupAcrossProcesses (0.89s)
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	5.284s
+FAIL
+
+## here (expected to pass, 5 of 5)
+--- PASS: TestH9bPopupAcrossProcesses (3.20s)
+--- PASS: TestH9bPopupAcrossProcesses (2.95s)
+--- PASS: TestH9bPopupAcrossProcesses (2.94s)
+--- PASS: TestH9bPopupAcrossProcesses (2.89s)
+--- PASS: TestH9bPopupAcrossProcesses (2.95s)
+ok  	github.com/dre4success/handoff/cmd/handoff	15.671s
+# go test exit: 0

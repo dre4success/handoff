@@ -1,0 +1,9 @@
+by: Codex, reviewer
+commit: ebc04f20dc7405567c73439b72a10cd2c247b3ab
+date: 2026-10-18T12:18:45.747322+00:00
+cwd: /private/tmp/handoff-review-H10a-ebc04f2
+command: git diff --check e918d55e3903298f6369d5ae843c79c3f7f20d31 HEAD
+evidence/h10/live-claude.txt:13: trailing whitespace.
++12:12:28Z codex posts a request: exit 0; posted #1 request T1 codex → claude: T1: add a.txt @ 89ae95bdaf06 
+evidence/h10/live-claude.txt:62: new blank line at EOF.
+exit: 2

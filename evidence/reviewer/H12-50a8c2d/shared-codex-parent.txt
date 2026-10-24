@@ -1,0 +1,115 @@
+by: Codex, reviewer
+commit: 50a8c2d9aa372f47308c40b7d2cb78699102a6fe
+date: 2026-10-21T03:39:38.500729+00:00
+cwd: /private/tmp/handoff-review-H12-50a8c2d
+command: python3 ~/handoff/evidence/reviewer/H12-50a8c2d/probes.py shared-codex-parent
+$ init --roles implementer,reviewer,reviewer-2 --reviewers reviewer,reviewer-2 --main main env {}
+exit: 0
+Created /private/tmp/handoff-h12-review-hfmcur_i/.handoff. Git ignores it; nothing else in the project changed.
+Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.
+Main branch: main.
+
+To keep each CLI's sessions on duty here, run these and do what they say:
+  /private/tmp/handoff-review-H12-bin settings claude --as <role>
+  /private/tmp/handoff-review-H12-bin settings codex --as <role>
+$ role implementer env {'CODEX_THREAD_ID': 'codex-thread-one'}
+exit: 0
+You are now implementer in handoff-h12-review-hfmcur_i.
+
+handoff brief: you are implementer in handoff-h12-review-hfmcur_i. You and reviewer, reviewer-2 hand work to each other through handoff. The operator decides.
+
+Listening: if this project's settings give your session handoff's hooks, a hook listens for implementer when your turn ends, and you don't run wait. If not, run `/private/tmp/handoff-review-H12-bin wait --for implementer --timeout 25m` (in Claude Code in the background, in Codex in the foreground of your turn). Exit 3: run it again. Exit 4: another session already listens for implementer. After you handle what it delivers, wait again.
+
+When something arrives, read it with `/private/tmp/handoff-review-H12-bin show <id>`, then:
+- A reply to your request: on CHANGES or QUESTION, fix or answer, then post again (`/private/tmp/handoff-review-H12-bin post --as implementer ... --supersedes <id>`). On APPROVE, the operator decides; wait for the decision.
+- A decision from the operator: act on it. Merge only on approve.
+- A note to you: answer with `/private/tmp/handoff-review-H12-bin note --as implementer --to <role> --re <id> --body <file>`.
+
+To ask for a review, commit your work, then `/private/tmp/handoff-review-H12-bin post --as implementer --item <item> --to <reviewer> --commit <sha> --title "<title>" --body <file>`, where <reviewer> is reviewer or reviewer-2.
+To ask the operator about an item: `/private/tmp/handoff-review-H12-bin note --as implementer --to operator --item <item> --title "<question>" --body <file>`.
+Rules: never edit .handoff/ by hand. Never merge, push or deploy without the operator's decision. A claim is not an approval.
+
+Waiting for you now (inbox for implementer):
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+SessionStart codex-thread-one hook parent: 18051 exit: 0
+handoff brief: you are implementer in handoff-h12-review-hfmcur_i. You and reviewer, reviewer-2 hand work to each other through handoff. The operator decides.
+
+Listening: you don't run `/private/tmp/handoff-review-H12-bin wait`. When your turn ends, a hook listens for implementer and brings you what arrives.
+
+When something arrives, read it with `/private/tmp/handoff-review-H12-bin show <id>`, then:
+- A reply to your request: on CHANGES or QUESTION, fix or answer, then post again (`/private/tmp/handoff-review-H12-bin post --as implementer ... --supersedes <id>`). On APPROVE, the operator decides; wait for the decision.
+- A decision from the operator: act on it. Merge only on approve.
+- A note to you: answer with `/private/tmp/handoff-review-H12-bin note --as implementer --to <role> --re <id> --body <file>`.
+
+To ask for a review, commit your work, then `/private/tmp/handoff-review-H12-bin post --as implementer --item <item> --to <reviewer> --commit <sha> --title "<title>" --body <file>`, where <reviewer> is reviewer or reviewer-2.
+To ask the operator about an item: `/private/tmp/handoff-review-H12-bin note --as implementer --to operator --item <item> --title "<question>" --body <file>`.
+Rules: never edit .handoff/ by hand. Never merge, push or deploy without the operator's decision. A claim is not an approval.
+
+Waiting for you now (inbox for implementer):
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+SessionStart codex-thread-two hook parent: 18051 exit: 0
+handoff brief: you are implementer in handoff-h12-review-hfmcur_i. You and reviewer, reviewer-2 hand work to each other through handoff. The operator decides.
+
+Listening: you don't run `/private/tmp/handoff-review-H12-bin wait`. When your turn ends, a hook listens for implementer and brings you what arrives.
+
+When something arrives, read it with `/private/tmp/handoff-review-H12-bin show <id>`, then:
+- A reply to your request: on CHANGES or QUESTION, fix or answer, then post again (`/private/tmp/handoff-review-H12-bin post --as implementer ... --supersedes <id>`). On APPROVE, the operator decides; wait for the decision.
+- A decision from the operator: act on it. Merge only on approve.
+- A note to you: answer with `/private/tmp/handoff-review-H12-bin note --as implementer --to <role> --re <id> --body <file>`.
+
+To ask for a review, commit your work, then `/private/tmp/handoff-review-H12-bin post --as implementer --item <item> --to <reviewer> --commit <sha> --title "<title>" --body <file>`, where <reviewer> is reviewer or reviewer-2.
+To ask the operator about an item: `/private/tmp/handoff-review-H12-bin note --as implementer --to operator --item <item> --title "<question>" --body <file>`.
+Rules: never edit .handoff/ by hand. Never merge, push or deploy without the operator's decision. A claim is not an approval.
+
+Waiting for you now (inbox for implementer):
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+bindings after second independent thread starts: [{'v': 1, 'role': 'implementer', 'session': 'codex-thread-two', 'pid': 18051, 'since': '2026-10-21T03:39:38Z'}]
+$ inbox env {'CODEX_THREAD_ID': 'codex-thread-one'}
+exit: 2
+handoff inbox: no role: when the operator gives this session one, run `handoff role <role>`; or give --for <role>
+REPRODUCED: another thread with the same hook parent silently took the first thread's role.
+Stand-in parent only; no live Codex sessions launched. Shared-parent applicability is Source/Inferred from the installed CLI and OpenAI maintainer's runtime description.
+scratch fixture: /private/tmp/handoff-h12-review-hfmcur_i
+exit: 0

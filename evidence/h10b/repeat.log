@@ -1,0 +1,32 @@
+# command: go test -count=5 -v -run 'TestH10b' ./cmd/handoff
+# date: 2026-10-18 22:36:49 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0, codex-cli 0.162.1)
+# commit: deafc7b62188c49df32f9fdfa15011ea42f99d5c
+
+--- PASS: TestH10bSettingsCodex (0.30s)
+--- PASS: TestH10bCodexReadsTheRules (0.36s)
+--- PASS: TestH10bBriefNamesTheRole (0.19s)
+--- PASS: TestH10bShellQuote (0.00s)
+--- PASS: TestH10bTheRoleKeepsBareHandoffFromTheOperatorsQuestion (0.31s)
+--- PASS: TestH10bSettingsCodex (0.20s)
+--- PASS: TestH10bCodexReadsTheRules (0.35s)
+--- PASS: TestH10bBriefNamesTheRole (0.20s)
+--- PASS: TestH10bShellQuote (0.00s)
+--- PASS: TestH10bTheRoleKeepsBareHandoffFromTheOperatorsQuestion (0.32s)
+--- PASS: TestH10bSettingsCodex (0.20s)
+--- PASS: TestH10bCodexReadsTheRules (0.36s)
+--- PASS: TestH10bBriefNamesTheRole (0.19s)
+--- PASS: TestH10bShellQuote (0.00s)
+--- PASS: TestH10bTheRoleKeepsBareHandoffFromTheOperatorsQuestion (0.32s)
+--- PASS: TestH10bSettingsCodex (0.20s)
+--- PASS: TestH10bCodexReadsTheRules (0.36s)
+--- PASS: TestH10bBriefNamesTheRole (0.19s)
+--- PASS: TestH10bShellQuote (0.00s)
+--- PASS: TestH10bTheRoleKeepsBareHandoffFromTheOperatorsQuestion (0.31s)
+--- PASS: TestH10bSettingsCodex (0.20s)
+--- PASS: TestH10bCodexReadsTheRules (0.37s)
+--- PASS: TestH10bBriefNamesTheRole (0.20s)
+--- PASS: TestH10bShellQuote (0.00s)
+--- PASS: TestH10bTheRoleKeepsBareHandoffFromTheOperatorsQuestion (0.31s)
+ok  	github.com/dre4success/handoff/cmd/handoff	5.721s
+# go test exit: 0

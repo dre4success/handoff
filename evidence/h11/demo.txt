@@ -1,0 +1,93 @@
+# command: init with no flags, git status, settings claude and codex, the brief for claude, init elsewhere
+# date: 2026-10-19 21:28:09 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 1fd4af5f55a8c4d205f67fb3a96e420fc886b2e0
+
+$ handoff init
+Created <scratch>/demo/.handoff. Git ignores it; nothing else in the project changed.
+Roles: claude and codex. Either can implement or review.
+Main branch: main.
+
+To keep each CLI's sessions on duty here, run these and do what they say:
+  <scratch>/handoff settings claude
+  <scratch>/handoff settings codex
+
+$ cat .handoff/config.json
+{
+  "v": 1,
+  "roles": [
+    {
+      "name": "claude",
+      "reviews": true
+    },
+    {
+      "name": "codex",
+      "reviews": true
+    }
+  ],
+  "main": "main",
+  "quiet_after": "30m"
+}
+
+$ cat .handoff/.gitignore
+# handoff's record is never committed.
+*
+
+$ git status --porcelain --untracked-files=all   (no output = nothing to commit)
+$ git status --porcelain --ignored
+!! .handoff/
+
+$ handoff settings claude | grep -E "HANDOFF_ROLE|is then"
+Every Claude Code session in this project is then claude: it gets the brief when it
+    "HANDOFF_ROLE": "claude"
+$ handoff settings codex | grep -E "HANDOFF_ROLE|--as|is then"
+Every Codex session in this project is then codex. Every command it runs has
+HANDOFF_ROLE=codex, so handoff on its own shows its inbox, never your decisions.
+set = { HANDOFF_ROLE = "codex" }
+            "command": "exec <scratch>/handoff hook brief --as codex",
+            "command": "exec <scratch>/handoff hook listen --as codex",
+
+$ handoff hook brief --as claude   (what SessionStart gives the model)
+handoff brief: you are claude in demo. You and codex hand work to each other through handoff. The operator decides.
+Either of you can implement or review; the operator says who does which, per task.
+
+Listening: you don't run `<scratch>/handoff wait`. When your turn ends, a hook listens for claude and brings you what arrives.
+
+When something arrives, read it with `<scratch>/handoff show <id>`, then:
+- A request to you: `<scratch>/handoff claim --as claude <id>`, review exactly the commit it names in a temporary worktree, then `<scratch>/handoff reply --as claude <id> --verdict APPROVE|CHANGES|QUESTION --commit <that sha> --body <file>`.
+- A reply to your request: on CHANGES or QUESTION, fix or answer, then post again (`<scratch>/handoff post --as claude ... --supersedes <id>`). On APPROVE, the operator decides; wait for the decision.
+- A decision from the operator: act on it. Merge only on approve.
+- A note to you: answer with `<scratch>/handoff note --as claude --to <role> --re <id> --body <file>`.
+
+To ask for a review, commit your work, then `<scratch>/handoff post --as claude --item <item> --to codex --commit <sha> --title "<title>" --body <file>`.
+To ask the operator about an item: `<scratch>/handoff note --as claude --to operator --item <item> --title "<question>" --body <file>`.
+Rules: never edit .handoff/ by hand. Never merge, push or deploy without the operator's decision. A claim is not an approval.
+
+Waiting for you now (inbox for claude):
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+
+$ handoff init --roles implementer,reviewer   (in a repository whose branch is master)
+Created <scratch>/master/.handoff. Git ignores it; nothing else in the project changed.
+Roles: implementer and reviewer; reviewer reviews.
+Main branch: master.
+
+To keep each CLI's sessions on duty here, run these and do what they say:
+  <scratch>/handoff settings claude --as <role>
+  <scratch>/handoff settings codex --as <role>
+$ handoff settings claude
+handoff settings: --as <role> is required: the role this project's Claude Code sessions take; the roles are implementer, reviewer
+# exit: 2

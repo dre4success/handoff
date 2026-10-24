@@ -1,0 +1,12 @@
+by: Codex, reviewer
+commit: da8e4980e0d958342b77eaaec985052feaa9872d
+date: 2026-10-15T18:54:26.007127+00:00
+cwd: ~/handoff
+command: go list ./...
+github.com/dre4success/handoff/cmd/handoff
+github.com/dre4success/handoff/internal/gitx
+github.com/dre4success/handoff/internal/record
+github.com/dre4success/handoff/internal/status
+github.com/dre4success/handoff/internal/term
+github.com/dre4success/handoff/internal/wait
+exit: 0

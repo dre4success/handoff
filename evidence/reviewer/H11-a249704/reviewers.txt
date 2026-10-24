@@ -1,0 +1,9 @@
+by: Codex, reviewer
+commit: a249704f01800aa4e0c28cab271093813cf31bbb
+date: 2026-10-19T21:30:48.960475+00:00
+cwd: /private/tmp/handoff-review-H11-a249704
+command: python3 ~/handoff/evidence/reviewer/H11-a249704/probes.py /private/tmp/handoff-review-H11-bin reviewers
+default: [{'name': 'implementer', 'reviews': False}, {'name': 'reviewer', 'reviews': True}, {'name': 'reviewer-2', 'reviews': True}]
+override: [{'name': 'implementer', 'reviews': False}, {'name': 'reviewer', 'reviews': False}, {'name': 'reviewer-2', 'reviews': True}]
+PASS: custom defaults and explicit reviewer override; custom role names still require an explicit settings role.
+exit: 0

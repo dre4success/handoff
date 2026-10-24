@@ -1,0 +1,12 @@
+by: Codex, reviewer
+commit: d32039302bf41a7049b99a67882f269ca78ab4fc
+date: 2026-10-18T22:07:05.299120+00:00
+cwd: /private/tmp/handoff-review-H10a-d320393
+command: python3 ~/handoff/evidence/reviewer/H10a-d320393/probes.py /private/tmp/handoff-review-H10a-r2-bin orphan
+Original session parent exited while its hook was stopped.
+posted #1 note W1 implementer → reviewer: Disposable reviewer fixture.
+Orphan stderr: 
+Replacement wait exit: 0
+Replacement stdout: '#1 note W1 implementer → reviewer: Disposable reviewer fixture.\n'
+PASS: replacement receives the entry.
+exit: 0

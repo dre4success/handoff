@@ -1,0 +1,36 @@
+# command: replay of evidence/trial/record/channel.jsonl, entries #1 to #6, through this commit's binary
+# date: 2026-10-14 22:43:42 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 98dcc8631be44b8483b19c4d17a28c04a96850f8
+
+replay record: 6 entries; the last is #6 claim at 2026-10-12T21:38:56Z
+
+$ handoff inbox --for operator
+inbox for operator
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  H7: reviewer claimed #5 and has been quiet for 49 h
+
+$ HANDOFF_TEST_NOTIFY=sent.txt handoff wait --for implementer --timeout 3s
+  (a fresh cursor, so #3 is delivered at once; the alert is passed on before it returns)
+#3 reply H7 reviewer → implementer: QUESTION on #1 @ 4e4ffad7cf6e
+handoff: told the operator: H7: reviewer claimed #5 and has been quiet for 49 h
+# wait exit: 0
+$ cat sent.txt   (what the operator would have been shown)
+replay: H7: reviewer claimed #5 and has been quiet for 49 h
+$ HANDOFF_TEST_NOTIFY=sent.txt handoff wait --for implementer --timeout 3s   (a second wait, as during the stall: nothing new)
+# wait exit: 3
+$ wc -l sent.txt   (1 = told once)
+       1

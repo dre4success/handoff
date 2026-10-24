@@ -1,0 +1,21 @@
+package main
+
+import (
+    "fmt"
+    "os"
+
+    "github.com/dre4success/handoff/internal/record"
+)
+
+func main() {
+    if len(os.Args) != 3 { panic("need before and after archive directories") }
+    for i, dir := range os.Args[1:] {
+        snap, err := record.New(dir).Load()
+        if err != nil { panic(err) }
+        fmt.Printf("%s: verified=%d unverified=%d broken=%+v\n", []string{"H13", "H14"}[i], len(snap.Entries), len(snap.Unverified), snap.Broken)
+        for _, warning := range snap.Warnings() { fmt.Println(warning) }
+        if i == 0 && (snap.Broken != nil || len(snap.Entries) != 8) { panic("baseline not valid") }
+        if i == 1 && (snap.Broken == nil || len(snap.Entries) != 0) { panic("archive regression not reproduced") }
+    }
+    fmt.Println("PASS: reproduced archive regression through the requested revision's production loader. Load takes a lock but does not modify record content.")
+}

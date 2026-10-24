@@ -1,0 +1,16 @@
+by: Codex, reviewer
+commit: 418a0c42ea6e6fdbc2688834ba04277032000084
+date: 2026-10-18T22:14:08.179054+00:00
+cwd: /private/tmp/handoff-review-H10b-418a0c4
+command: python3 ~/handoff/evidence/reviewer/H10b-418a0c4/probes.py /private/tmp/handoff-review-H10b-bin listen
+Generated Stop command: exec /private/tmp/handoff-review-H10b-bin hook listen --as reviewer
+Second wait exit: 4
+Stop 1 exit: 2 stderr: handoff: new for reviewer:
+#1 note W1 implementer → reviewer: Disposable reviewer fixture.
+Read each with `/private/tmp/handoff-review-H10b-bin show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+Second wait exit: 4
+Stop 2 exit: 2 stderr: handoff: new for reviewer:
+#2 note W2 implementer → reviewer: Disposable reviewer fixture.
+Read each with `/private/tmp/handoff-review-H10b-bin show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+PASS: generated Stop receives both notes across two turns and holds one listener per role.
+exit: 0

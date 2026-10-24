@@ -1,0 +1,168 @@
+# command: git diff --numstat and --word-diff=porcelain 9dbdf5f^ 9dbdf5f
+# date: 2026-10-24 17:47:30 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: c16ff7f9844b2917d0e4cdbd6e7da96aa4a63f5b
+
+268 files; 1266 lines in, 1266 lines out
+renamed: evidence/reviewer/H10a-abe5193/ask-operator.txt
+renamed: evidence/reviewer/H10b-1aed043/ask-operator.txt
+## each word or phrase put in, with how often:
+ 488 the operator
+ 227 the operator's
+  70 the operator:
+  64 The operator
+  44 the operator,
+  38 TestH8QuietClaimTellsTheOperatorOnce
+  38 TestH8ApproveTellsTheOperatorAtOnce
+  33 website
+  32 the operator.
+  32 TestNoteToTheOperatorSendsAnAlert
+  32 TestApproveAlertsTheOperatorAtOnceUntilDecided
+  14 TestH10bTheRoleKeepsBareHandoffFromTheOperatorsQuestion
+  11 the operator")
+  11 The operator's
+   9 cwd=~/handoff command=~/handoff/bin/handoff
+   7 the operator.**
+   7 "~/handoff/evidence/reviewer/H9b-6783e4a/lock-gc.py",
+   6 the operator"
+   6 the operator'"'"'s
+   6 justification="The operator
+   6 ~/handoff/evidence/reviewer/H9b-6783e4a/lock-gc.py
+   6 ~/handoff/evidence/reviewer/H10b-418a0c4/probes.py
+   5 website-project
+   5 CODEX_MANAGED_PACKAGE_ROOT=~/.nvm/versions/node/v24.11.1/lib/node_modules/@openai/codex
+   5 ask-the-operator
+   4 the operator's.
+   4 The operator,
+   4 TestH12TwoClaudeSessionsTakeTheRolesTheOperatorGives
+   4 TestH12AnAgentSessionNeverAnswersForTheOperator
+   4 tempfile.TemporaryDirectory(prefix="handoff-h10a-ask-operator-")
+   4 ask-operator.txt:
+   4 ~/handoff/evidence/reviewer/H11-a249704/probes.py
+   4 ~/handoff/bin/handoff
+   4 *The operator.*
+   4 "The operator
+   4 "ask-operator":
+   3 the operator:**
+   3 the operator;
+   3 MAIN=${MAIN:-~/handoff}
+   3 ~/website
+   3 ~/handoff/evidence/reviewer/H12-50a8c2d/probes.py
+   3 ~/handoff/evidence/reviewer/H12-50a8c2d/checks.py
+   3 ~/handoff/evidence/reviewer/H10a-ebc04f2/probes.py
+   3 ~/handoff/evidence/reviewer/H10a-d320393/probes.py
+   3 ~/handoff
+   3 (the operator
+   2 Traceback (most recent call last):
+   2 the operator"}}],"decision":"allow"}
+   2 the operator"))
+   2 the operator's,
+   2 the operator.\n",
+   2 the operator:"))
+   2 The operator;
+   2 Shell stderr: handoff note: --item or --re is required
+   2 Shell exit: 2
+   2 exit: 1
+   2 Control with --item W1 exit: 0
+   2 Control stdout: posted #1 note W1 reviewer → operator: Fixture question
+   2 by: Codex, reviewer
+   2 AssertionError: following the brief's ask-the-operator command must post an operator note
+   2 ask-operator
+   2 ~/handoff/evidence/reviewer/H12-589c1cd/startup-race.py
+   2 ~/handoff/evidence/reviewer/H12-589c1cd/regressions.py
+   2 ~/handoff/evidence/reviewer/H12-40a3768/regressions.py
+   2 ~/handoff/evidence/reviewer/H12-40a3768/check-startup.py
+   2 ~/handoff/evidence/reviewer/H10b-1aed043/probes.py
+   2 `H=~/handoff/bin/handoff`
+   2 **The operator
+   2 (the operator's
+   2 (the operator,
+   2 (The operator
+   2 "the operator
+   2 "~/handoff/evidence/reviewer/H10a-ebc04f2/probes.py",
+   2 "(the operator
+   2     assert result.returncode == 0, "following the brief's ask-the-operator command must post an operator note"
+   1 website.
+   1 website project.
+   1 website project;
+   1 Website
+   1 toOperator)
+   1 toOperator
+   1 the person who decides",
+   1 the person who decides;
+   1 the operator>:
+   1 the operator)
+   1 the operator"})
+   1 the operator")`,
+   1 the operator'"'"'s\n#
+   1 the operator. "The operator
+   1 the operator?
+   1 The operator:
+   1 the operator,**
+   1 TestNoteToTheOperatorSendsAnAlert(t
+   1 TestH8QuietClaimTellsTheOperatorOnce(t
+   1 TestH8ApproveTellsTheOperatorAtOnce(t
+   1 TestH12TwoClaudeSessionsTakeTheRolesTheOperatorGives(t
+   1 TestH12AnAgentSessionNeverAnswersForTheOperator(t
+   1 TestH10bTheRoleKeepsBareHandoffFromTheOperatorsQuestion(t
+   1 TestApproveAlertsTheOperatorAtOnceUntilDecided(t
+   1 tellOperator(text
+   1 tellOperator
+   1 t.Fatalf("The operator's
+   1 t.Fatalf("The operator
+   1 RUN3='TestH10bTheRoleKeepsBareHandoffFromTheOperatorsQuestion|TestH10BriefCommandsRun'
+   1 H=~/handoff/bin/handoff
+   1 expected.\n\nThe operator
+   1 evidence/reviewer/H10b-418a0c4/ask-operator.txt.
+   1 evidence/reviewer/H10a-d320393/ask-operator.txt).
+   1 evidence/reviewer/H10a-d320393/ask-operator.txt
+   1 date: 2026-10-18T22:14:41.874986+00:00
+   1 date: 2026-10-18T22:07:25.543374+00:00
+   1 cwd: /private/tmp/handoff-review-H10b-418a0c4
+   1 cwd: /private/tmp/handoff-review-H10a-d320393
+   1 commit: d32039302bf41a7049b99a67882f269ca78ab4fc
+   1 commit: 418a0c42ea6e6fdbc2688834ba04277032000084
+   1 command: python3 ~/handoff/evidence/reviewer/H10b-418a0c4/brief_probe.py /private/tmp/handoff-review-H10b-bin ask-operator
+   1 command: python3 ~/handoff/evidence/reviewer/H10a-d320393/probes.py /private/tmp/handoff-review-H10a-r2-bin ask-operator
+   1 Brief command: /private/tmp/handoff-review-H10b-bin note --as reviewer --to operator --title "Fixture question" --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h10a-ask-operator-m8vqwtn0/body.md
+   1 Brief command: /private/tmp/handoff-review-H10a-r2-bin note --to operator --title "Fixture question" --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h10a-ask-operator-1q56ugjw/body.md
+   1 a.tellOperator(fmt.Sprintf("%s
+   1 a
+   1 ~/handoff/evidence/reviewer/H9b-f232ee3/lock-gc.py
+   1 ~/handoff/evidence/reviewer/H9-86c7088/probes.py
+   1 ~/handoff/evidence/reviewer/H8-8b0735d
+   1 ~/handoff/evidence/reviewer/H6-639ed6f/probes.py
+   1 ~/handoff/evidence/reviewer/H12-589c1cd/reply.md
+   1 ~/handoff/evidence/reviewer/H12-50a8c2d/reply.md
+   1 ~/handoff/evidence/reviewer/H12-40a3768/reply.md
+   1 ~/handoff/evidence/reviewer/H12-40a3768/controls.py
+   1 ~/handoff/evidence/reviewer/H10b-1aed043/brief_probe.py
+   1 ~/handoff/evidence/reviewer/H10a-abe5193/probes.py
+   1 ~/handoff/evidence/gate/H5-089a64f/probes.sh:
+   1 ~/handoff/evidence/gate/H5-089a64f/probes.sh
+   1 ~/handoff/bin/handoff.
+   1 ~/go/pkg/mod/cache/download/github.com/dre4success/handoff/@v/v0.0.0-20261014222102-da8e4980e0d9.info172451275.tmp:
+   1 `tripartite`, an earlier experiment,
+   1 `evidence/reviewer/H10a-d320393/ask-operator.txt`)
+   1 `ask-operator.txt`)
+   1 `~/tripartite`;
+   1 `~/handoff`:
+   1 `~/handoff`,
+   1 `~/.nvm/versions/node/v24.11.1/bin/codex`
+   1 /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h10a-ask-operator-rluk0hma/body.md
+   1 /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h10a-ask-operator-dnx1lifp/body.md
+   1 /private/tmp/claude-501/-Users-me-handoff/ff228636-f8c4-4d14-9f11-003d4d3e532da7/<probe>
+   1 /private/tmp/claude-501/-Users-me-handoff/b1e5f06c-93a2-43b7-bce8-e1bbbb43b2e1/scratchpad/probes-main.sh:
+   1 /private/tmp/claude-501/-Users-me-handoff/b1e5f06c-93a2-43b7-bce8-e1bbbb43b2e1/scratchpad/gate-probes.sh:
+   1 *the operator*
+   1 **the operator**
+   1 **The operator's
+   1 {"session_id":"01a14eef-6161-7033-9773-5f6a768b7716","turn_id":"01a14eef-640b-7242-abd4-8f90ad985228","transcript_path":"~/.codex/sessions/2026/10/18/rollout-2026-10-18T13-14-33-01a14eef-6161-7033-9773-5f6a768b7716.jsonl","cwd":"<probe>","hook_event_name":"Stop","model":"gpt-6-luna","permission_mode":"bypassPermissions","stop_hook_active":true,"last_assistant_message":"PONG"}
+   1 {"session_id":"01a14eef-6161-7033-9773-5f6a768b7716","turn_id":"01a14eef-640b-7242-abd4-8f90ad985228","transcript_path":"~/.codex/sessions/2026/10/18/rollout-2026-10-18T13-14-33-01a14eef-6161-7033-9773-5f6a768b7716.jsonl","cwd":"<probe>","hook_event_name":"Stop","model":"gpt-6-luna","permission_mode":"bypassPermissions","stop_hook_active":false,"last_assistant_message":"CODEX_SANDBOX=unset
+   1 (~/handoff/evidence/reviewer/H8-8b0735d),
+   1 (~/handoff/evidence/reviewer/H8-8b0735d
+   1 (`~/website`)
+   1 ("The operator
+   1 "~/handoff/evidence/reviewer/H10b-418a0c4/probes.py",
+   1   File "~/handoff/evidence/reviewer/H10b-418a0c4/brief_probe.py", line 152, in <module>
+   1   File "~/handoff/evidence/reviewer/H10a-d320393/probes.py", line 152, in <module>

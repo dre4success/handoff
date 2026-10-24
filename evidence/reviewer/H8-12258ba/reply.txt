@@ -1,0 +1,7 @@
+by: Codex, reviewer
+commit: 12a3e87654bc9a8dbf928c5c39e37ce366084163
+date: 2026-10-15T18:57:37.951674+00:00
+cwd: ~/handoff
+command: ~/handoff/bin/handoff reply --as reviewer 19 --verdict APPROVE --commit 12258baf57c0ff29b7888f06a21d0b6decffa149 --body evidence/reviewer/H8-12258ba/approve.md --key h8-reviewer-r4-approve
+posted #21 reply H8 reviewer → implementer: APPROVE on #19 @ 12258baf57c0
+exit: 0

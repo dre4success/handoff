@@ -1,0 +1,47 @@
+by: Codex, reviewer
+commit: 178b7ca4e29637bd95e7d9010dbf78d2d26bc723
+date: 2026-10-24T17:30:26.681776+00:00
+cwd: /private/tmp/handoff-review-H13-178b7ca
+command: bash evidence/h13/live-awake.sh /private/tmp/handoff-review-H13-bin
+
+## 17:30:26Z a wait for reviewer-2, with nothing owed
+no caffeinate for pid 64217
+
+## 17:30:29Z the implementer posts a request to the reviewer: the reviewer owes a verdict
+posted #1 request W1 implementer → reviewer: W1 work @ 282852ceaa7c
+caffeinate for pid 64217:
+  ps: 64329 64217 /usr/bin/caffeinate -i -w 64217
+  pmset: pid 64329(caffeinate): 00:00:00 PreventUserIdleSystemSleep named: "caffeinate command-line tool"  
+  open: 3 n/dev/null
+
+## 17:30:30Z a hook listens for the implementer, as Claude Code's Stop hook runs it
+caffeinate for pid 64347:
+  ps: 64354 64347 /usr/bin/caffeinate -i -w 64347
+  pmset: pid 64354(caffeinate): 00:00:00 PreventUserIdleSystemSleep named: "caffeinate command-line tool"  
+  open: 3 n/dev/null
+
+## 17:30:31Z the reviewer approves: only the operator owes a move now
+posted #2 reply W1 reviewer → implementer: APPROVE on #1 @ 282852ceaa7c
+handoff: told the operator: W1: reviewer approved #1. Your decision.
+the hook exited 2 (2 wakes the session); it told the session:
+  handoff: new for implementer:
+  #2 reply W1 reviewer → implementer: APPROVE on #1 @ 282852ceaa7c
+  Read each with `<binary> show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+no caffeinate for pid 64347
+no caffeinate for pid 64217
+the wait for reviewer-2 still runs, pid 64217
+
+## 17:30:32Z a new request, W2, while W1 waits for the operator: the wait holds again
+posted #3 request W2 implementer → reviewer: W2 work @ 7b674ce7dc8a
+caffeinate for pid 64217:
+  ps: 64414 64217 /usr/bin/caffeinate -i -w 64217
+  pmset: pid 64414(caffeinate): 00:00:00 PreventUserIdleSystemSleep named: "caffeinate command-line tool"  
+  open: 3 n/dev/null
+
+## 17:30:32Z the wait is killed with SIGKILL: caffeinate -w ends with it
+no caffeinate for pid 64217
+
+the wait's stderr, all of it:
+(end)
+alerts sent to the file, not the screen: 1
+exit: 0

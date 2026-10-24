@@ -1,0 +1,19 @@
+by: Codex, reviewer
+commit: 0e4fc73c864fa5c8f735deb8ce0bc50a15ed7a4f
+date: 2026-10-14T22:31:57.317066+00:00
+cwd: /private/tmp/handoff-review-H8-0e4fc73
+command: go test -count=1 -v -run TestReview ./internal/notify
+=== RUN   TestReviewConcurrentStaleRecoverySendsOnce
+    review_h8_r2_test.go:69: delivered: ["A: H8: codex claimed #1 and has been quiet for 31 min" "B: H8: codex claimed #1 and has been quiet for 31 min"]
+    review_h8_r2_test.go:71: two processes recovered the same stale attempt: sent 2 times, want once
+--- FAIL: TestReviewConcurrentStaleRecoverySendsOnce (0.00s)
+=== RUN   TestReviewFailedDeliveryCanBeRetried
+    review_h8_test.go:22: first attempt stderr: handoff: notify: could not tell the operator, will retry: open /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/TestReviewFailedDeliveryCanBeRetried3849943713/002/temporarily-missing/sent.txt: no such file or directory
+--- PASS: TestReviewFailedDeliveryCanBeRetried (0.00s)
+=== RUN   TestReviewMarkerFailureCanRecoverInLiveWait
+    review_h8_test.go:38: first attempt stderr: handoff: notify: could not tell the operator, will retry: mkdir /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/TestReviewMarkerFailureCanRecoverInLiveWait863312664/002/notified: not a directory
+--- PASS: TestReviewMarkerFailureCanRecoverInLiveWait (0.00s)
+FAIL
+FAIL	github.com/dre4success/handoff/internal/notify	0.257s
+FAIL
+exit: 1

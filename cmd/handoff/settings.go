@@ -1,0 +1,168 @@
+package main
+
+import (
+	"encoding/json"
+	"errors"
+	"flag"
+	"fmt"
+	"path/filepath"
+	"strconv"
+
+	"github.com/dre4success/handoff/internal/status"
+)
+
+// cmdSettings prints the settings that keep a CLI's sessions on duty in
+// this project (proposal §7, §17 rows 67, 73). It prints; it never edits a
+// settings file (§9). With --as, every session of the CLI here has that
+// role. Without it, each session takes the role the operator gives it (handoff role),
+// and one that starts with none takes the role named after the CLI, if the
+// project has one and no running session holds it.
+func (a *app) cmdSettings(args []string) (int, error) {
+	fs := flag.NewFlagSet("settings", flag.ContinueOnError)
+	as := fs.String("as", "", "")
+	pos, err := parse(fs, args)
+	if err != nil {
+		return 0, err
+	}
+	if len(pos) != 1 || (pos[0] != "claude" && pos[0] != "codex") {
+		return 0, errors.New("settings needs a CLI: claude or codex")
+	}
+	if err := a.open(); err != nil {
+		return 0, err
+	}
+	if _, ok := a.cfg.role(*as); *as != "" && (!ok || *as == status.Operator) {
+		return 0, fmt.Errorf("unknown role %q; the roles are %s", *as, a.roleNames())
+	}
+	prefer := ""
+	if _, ok := a.cfg.role(pos[0]); ok && *as == "" {
+		prefer = pos[0]
+	}
+	if pos[0] == "codex" {
+		return exitOK, a.printCodexSettings(selfCommand(), *as, prefer)
+	}
+	record := a.dir
+	if real, err := filepath.EvalSymlinks(record); err == nil {
+		record = real
+	}
+	b, err := json.MarshalIndent(claudeSettings(selfCommand(), *as, prefer, record), "", "  ")
+	if err != nil {
+		return 0, err
+	}
+	fmt.Fprintf(a.stdout, `Put this in .claude/settings.local.json in this project, merged with anything
+already there. That file stays out of git. Then start Claude Code here again.
+%s It gets the brief when it starts or is summarised, a hook listens for its
+work whenever its turn ends, and it runs handoff without asking, but never
+decide, nor edits .handoff/.
+
+%s
+`, whose("Claude Code", *as, prefer), b)
+	return exitOK, nil
+}
+
+// whose says where a CLI's sessions get their role.
+func whose(cli, role, prefer string) string {
+	if role != "" {
+		return fmt.Sprintf("Every %s session in this project is then %s.", cli, role)
+	}
+	s := fmt.Sprintf("Every %s session in this project then takes the role you give it:\ntell it, and it runs handoff role <role>.", cli)
+	if prefer != "" {
+		s += fmt.Sprintf(" One that starts with no role takes\n%s, if no other session has it.", prefer)
+	}
+	return s
+}
+
+// claudeSettings are Claude Code settings: the session's role when it is
+// fixed, the three hooks, and permission rules. h is the handoff command as
+// the brief names it, so the rules match what the session types. record is
+// the record's real, absolute path: a session in a linked worktree has its
+// own settings, but every worktree shares the one record, so the rules name
+// it in full ("//" starts an absolute path in Claude Code's rules). The
+// Edit rule covers every tool that writes a file.
+func claudeSettings(h, role, prefer, record string) map[string]any {
+	hook := func(name string) map[string]any {
+		args := []string{"hook", name}
+		if prefer != "" && name != "notify" {
+			args = append(args, "--prefer", prefer)
+		}
+		return map[string]any{"type": "command", "command": h, "args": args}
+	}
+	// listen waits up to 23 hours; the CLI's limit for it is a day.
+	listen := hook("listen")
+	listen["asyncRewake"] = true
+	listen["timeout"] = 24 * 60 * 60
+	out := map[string]any{
+		"hooks": map[string]any{
+			"SessionStart": []any{map[string]any{"hooks": []any{hook("brief"), listen}}},
+			"Stop":         []any{map[string]any{"hooks": []any{listen}}},
+			"Notification": []any{map[string]any{"matcher": "permission_prompt", "hooks": []any{hook("notify")}}},
+		},
+		"permissions": map[string]any{
+			"allow": []string{"Bash(" + shellQuote(h) + " *)"},
+			"deny":  []string{"Bash(" + shellQuote(h) + " decide *)", "Edit(/" + record + "/**)"},
+		},
+	}
+	if role != "" {
+		out["env"] = map[string]string{"HANDOFF_ROLE": role}
+	}
+	return out
+}
+
+// printCodexSettings prints .codex/hooks.json and .codex/rules/handoff.rules,
+// and, for a fixed role, .codex/config.toml (§17 rows 68, 71, 73).
+// config.toml gives every command the session runs its fixed role, as Claude
+// Code's env does, so a bare handoff, which the rule allows, never takes the
+// session for the operator; a session with a role the operator gave it, or none, is known by
+// CODEX_THREAD_ID and never is either. Codex runs a hook's command through a
+// shell, so each starts with exec: the hook's parent is then Codex itself,
+// and listen notices when Codex dies. Codex passes hooks its own
+// environment, which may have no HANDOFF_ROLE, so each names a fixed role.
+func (a *app) printCodexSettings(h, role, prefer string) error {
+	cmd := func(hook string) string {
+		c := "exec " + shellQuote(h) + " hook " + hook
+		if role != "" {
+			c += " --as " + shellQuote(role)
+		} else if prefer != "" {
+			c += " --prefer " + shellQuote(prefer)
+		}
+		return c
+	}
+	hooks := map[string]any{"hooks": map[string]any{
+		"SessionStart": []any{map[string]any{"hooks": []any{map[string]any{"type": "command", "command": cmd("brief"), "timeout": 30}}}},
+		// listen waits up to 23 hours; Codex's limit for it is a day.
+		"Stop": []any{map[string]any{"hooks": []any{map[string]any{"type": "command", "command": cmd("listen"), "timeout": 24 * 60 * 60}}}},
+	}}
+	b, err := json.MarshalIndent(hooks, "", "  ")
+	if err != nil {
+		return err
+	}
+	files, config := "these two files", ""
+	if role != "" {
+		files = "these three files"
+		config = fmt.Sprintf(".codex/config.toml:\n[shell_environment_policy]\nset = { HANDOFF_ROLE = %s }\n\n", strconv.Quote(role))
+	}
+	fixed := "Without a role, handoff on its own never shows it your decisions."
+	if role != "" {
+		fixed = fmt.Sprintf("Every command it runs has HANDOFF_ROLE=%s, so handoff on its own\nshows its inbox, never your decisions.", role)
+	}
+	q := strconv.Quote(h)
+	fmt.Fprintf(a.stdout, `Put %s in this project's .codex/ folder, merged with any already
+there, and keep it out of git (add .codex/ to .git/info/exclude). Codex reads
+them only in a project it trusts. The next time Codex starts here, it asks you
+to review the new hooks: choose Trust all.
+
+%s %s
+It gets the brief when its first turn starts and after a summary. When its turn
+would end, a hook listens for its work and continues it with what arrives. And
+handoff runs outside Codex's sandbox, so its notifications and pop-ups reach
+you; handoff decide is forbidden.
+
+%s.codex/hooks.json:
+%s
+
+.codex/rules/handoff.rules:
+# handoff writes only under .handoff/ and has no network code (proposal §9).
+prefix_rule(pattern=[%s], decision="allow", justification="handoff runs outside the sandbox so that it can notify the operator")
+prefix_rule(pattern=[%s, "decide"], decision="forbidden", justification="The operator decides, not an agent")
+`, files, whose("Codex", role, prefer), fixed, config, b, q, q)
+	return nil
+}

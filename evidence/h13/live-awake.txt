@@ -1,0 +1,41 @@
+
+## 17:30:40Z a wait for reviewer-2, with nothing owed
+no caffeinate for pid 42227
+
+## 17:30:43Z the implementer posts a request to the reviewer: the reviewer owes a verdict
+posted #1 request W1 implementer → reviewer: W1 work @ b5fe9504ce03
+caffeinate for pid 42227:
+  ps: 42266 42227 /usr/bin/caffeinate -i -w 42227
+  pmset: pid 42266(caffeinate): 00:00:00 PreventUserIdleSystemSleep named: "caffeinate command-line tool"  
+  open: 3 n/dev/null
+
+## 17:30:45Z a hook listens for the implementer, as Claude Code's Stop hook runs it
+caffeinate for pid 42284:
+  ps: 42289 42284 /usr/bin/caffeinate -i -w 42284
+  pmset: pid 42289(caffeinate): 00:00:00 PreventUserIdleSystemSleep named: "caffeinate command-line tool"  
+  open: 3 n/dev/null
+
+## 17:30:45Z the reviewer approves: only the operator owes a move now
+posted #2 reply W1 reviewer → implementer: APPROVE on #1 @ b5fe9504ce03
+handoff: told the operator: W1: reviewer approved #1. Your decision.
+the hook exited 2 (2 wakes the session); it told the session:
+  handoff: new for implementer:
+  #2 reply W1 reviewer → implementer: APPROVE on #1 @ b5fe9504ce03
+  Read each with `<binary> show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+no caffeinate for pid 42284
+no caffeinate for pid 42227
+the wait for reviewer-2 still runs, pid 42227
+
+## 17:30:46Z a new request, W2, while W1 waits for the operator: the wait holds again
+posted #3 request W2 implementer → reviewer: W2 work @ 06f9990198bc
+caffeinate for pid 42227:
+  ps: 42342 42227 /usr/bin/caffeinate -i -w 42227
+  pmset: pid 42342(caffeinate): 00:00:00 PreventUserIdleSystemSleep named: "caffeinate command-line tool"  
+  open: 3 n/dev/null
+
+## 17:30:47Z the wait is killed with SIGKILL: caffeinate -w ends with it
+no caffeinate for pid 42227
+
+the wait's stderr, all of it:
+(end)
+alerts sent to the file, not the screen: 1

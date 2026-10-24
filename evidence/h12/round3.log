@@ -1,0 +1,24 @@
+# command: GPT-6's startup-race.py (evidence/reviewer/H12-589c1cd/) against 589c1cd (round 2), then here
+# date: 2026-10-21 04:34:39 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 6714cbfbeb0a3d00b8ef12d4b14fdd810cdff5f2
+
+(read from main; its one change: the binary comes from the second argument)
+
+## hook, round2 (589c1cd; expected: found: True)
+REPRODUCED: displaced hook consumed the replacement's note after a startup/transfer race.
+found: True
+# exit: 0
+
+## hook, here (6714cbfbeb0a3d00b8ef12d4b14fdd810cdff5f2; expected: found: False)
+found: False
+# exit: 1
+
+## wait, round2 (589c1cd; expected: found: True)
+REPRODUCED: displaced wait consumed the replacement's note after a startup/transfer race.
+found: True
+# exit: 0
+
+## wait, here (6714cbfbeb0a3d00b8ef12d4b14fdd810cdff5f2; expected: found: False)
+found: False
+# exit: 1

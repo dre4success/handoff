@@ -1,0 +1,22 @@
+# command: go test -count=1 -v on the H13 tests
+# date: 2026-10-21 17:30:30 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 297919b0d7307a7fec5f0f1103641a9414a96fe2
+
+--- PASS: TestOwedFollowsTheMoveAndItsAge (0.00s)
+ok  	github.com/dre4success/handoff/internal/status	0.306s
+--- PASS: TestDeadlineIsWallClockAndGapIsReported (0.01s)
+--- PASS: TestOneSleepWithBriefWakesIsReportedOnce (0.01s)
+--- PASS: TestAPauseUnderAMinuteIsNotReported (0.01s)
+--- PASS: TestAwakeWhileAnAgentOwesAMove (0.02s)
+--- PASS: TestEntryIsDeliveredBeforeAnExpiredDeadline (0.02s)
+ok  	github.com/dre4success/handoff/internal/wait	0.298s
+--- PASS: TestHoldStartsOneCaffeinateAndReleaseEndsIt (0.00s)
+--- PASS: TestAHoldEndedElsewhereIsLeftEnded (0.00s)
+--- PASS: TestAKilledHolderLeavesNoHold (0.06s)
+    awake_test.go:109: run by TestAKilledHolderLeavesNoHold
+--- SKIP: TestHelperHolds (0.00s)
+--- PASS: TestTestModeWritesChangesOnly (0.00s)
+ok  	github.com/dre4success/handoff/internal/awake	0.291s
+--- PASS: TestH13ListenersHoldOffSleepWhileAMoveIsOwed (4.79s)
+ok  	github.com/dre4success/handoff/cmd/handoff	5.194s

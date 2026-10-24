@@ -1,0 +1,6 @@
+by: Codex, reviewer
+commit: f232ee35ecda4a778f22313cf5b9e11595406845
+date: 2026-10-17T22:06:59.754573+00:00
+cwd: /private/tmp/handoff-review-H9b-f232ee3
+command: git diff --check 9b2dfec4d9a511bf2bbaef0dc1afe73db9082fd9 HEAD -- cmd internal README.md docs
+exit: 0

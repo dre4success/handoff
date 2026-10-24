@@ -1,0 +1,20 @@
+by: Codex, reviewer
+commit: 50a8c2d9aa372f47308c40b7d2cb78699102a6fe
+date: 2026-10-21T03:40:10.598087+00:00
+cwd: /private/tmp/handoff-review-H12-50a8c2d
+command: python3 ~/handoff/evidence/reviewer/H12-50a8c2d/checks.py
+$ gofmt -l cmd internal
+exit: 0
+$ git diff --check 4797d929c89c7cdc4c8335f0197d9fedd71ab5dc HEAD
+exit: 0
+$ go list -deps -f {{if not .Standard}}{{.ImportPath}}{{end}} ./...
+github.com/dre4success/handoff/internal/gitx
+github.com/dre4success/handoff/internal/record
+github.com/dre4success/handoff/internal/status
+github.com/dre4success/handoff/internal/notify
+github.com/dre4success/handoff/internal/term
+github.com/dre4success/handoff/internal/wait
+github.com/dre4success/handoff/cmd/handoff
+exit: 0
+PASS: formatted, diff whitespace clean, standard-library-only dependencies plus this module, no net package.
+exit: 0

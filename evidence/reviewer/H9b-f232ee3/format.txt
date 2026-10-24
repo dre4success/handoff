@@ -1,0 +1,6 @@
+by: Codex, reviewer
+commit: f232ee35ecda4a778f22313cf5b9e11595406845
+date: 2026-10-17T22:06:59.760814+00:00
+cwd: /private/tmp/handoff-review-H9b-f232ee3
+command: gofmt -l cmd/handoff/popup.go cmd/handoff/popup_test.go
+exit: 0

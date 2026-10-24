@@ -1,0 +1,49 @@
+# command: the H12 tests on 4797d929c89c7cdc4c8335f0197d9fedd71ab5dc (main) with this commit's tests copied in, then here
+# date: 2026-10-21 04:33:48 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 6714cbfbeb0a3d00b8ef12d4b14fdd810cdff5f2
+
+## at 4797d929c89c7cdc4c8335f0197d9fedd71ab5dc (expected: the TestH12 tests fail, since there is no handoff role; the settings tests as main has them pass there)
+--- PASS: TestH10bSettingsCodex (0.39s)
+--- PASS: TestH10SettingsClaude (0.17s)
+--- PASS: TestH10SettingsInALinkedWorktree (0.17s)
+--- PASS: TestH11SettingsTakeTheCLIsOwnRole (0.24s)
+    session_test.go:82: handoff [role implementer] in [CLAUDE_CODE_SESSION_ID=s-opus CLAUDE_PID=62230]: exit 2
+--- FAIL: TestH12TwoClaudeSessionsTakeTheRolesTheOperatorGives (0.15s)
+    session_test.go:109: handoff [role reviewer] in [CLAUDE_CODE_SESSION_ID=s-a CLAUDE_PID=62253]: exit 2
+--- FAIL: TestH12ARoleMovesAndTheOldListenerStops (0.15s)
+    session_test.go:151: handoff [role reviewer] in [CLAUDE_CODE_SESSION_ID=s-1 CLAUDE_PID=62275]: exit 2
+--- FAIL: TestH12ARoleOutlivesClearAndResume (0.15s)
+    session_test.go:188: handoff [role implementer] in [CODEX_THREAD_ID=t-1]: exit 2
+--- FAIL: TestH12ACodexThreadKeepsItsRoleAlone (0.14s)
+    session_test.go:220: handoff [role reviewer] in [CODEX_THREAD_ID=t-a]: exit 2
+--- FAIL: TestH12AWaitStopsWhenItsRoleMoves (0.14s)
+    session_test.go:271: the first session's brief:
+--- FAIL: TestH12AStartTakesTheCLIsRoleIfFree (0.08s)
+    session_test.go:298: bare handoff in a session with no role: signal: killed
+--- FAIL: TestH12AnAgentSessionNeverAnswersForTheOperator (20.22s)
+    session_test.go:321: handoff [role reviewer] as "": exit 2, stderr "handoff: unknown command \"role\"\n\nusage: handoff [command] [flags]\n\n  (none)  in a project: what waits for the operator's decision; at a terminal, decid
+--- FAIL: TestH12RoleRefusals (0.17s)
+    session_test.go:338: handoff [role reviewer] in [CODEX_THREAD_ID=t-a]: exit 2
+    session_test.go:338: handoff [role reviewer] in [CODEX_THREAD_ID=t-a]: exit 2
+--- FAIL: TestH12ARoleMovedWhileAListenerStartsStopsIt (0.29s)
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	23.057s
+FAIL
+
+## at 6714cbfbeb0a3d00b8ef12d4b14fdd810cdff5f2 (expected to pass)
+--- PASS: TestH10bSettingsCodex (0.38s)
+--- PASS: TestH10SettingsClaude (0.17s)
+--- PASS: TestH10SettingsInALinkedWorktree (0.16s)
+--- PASS: TestH11SettingsTakeTheCLIsOwnRole (0.11s)
+--- PASS: TestH12TwoClaudeSessionsTakeTheRolesTheOperatorGives (0.30s)
+--- PASS: TestH12ARoleMovesAndTheOldListenerStops (3.25s)
+--- PASS: TestH12ARoleOutlivesClearAndResume (0.23s)
+--- PASS: TestH12ACodexThreadKeepsItsRoleAlone (1.26s)
+--- PASS: TestH12AWaitStopsWhenItsRoleMoves (2.32s)
+--- PASS: TestH12AStartTakesTheCLIsRoleIfFree (0.18s)
+--- PASS: TestH12AnAgentSessionNeverAnswersForTheOperator (0.30s)
+--- PASS: TestH12RoleRefusals (0.18s)
+--- PASS: TestH12ARoleMovedWhileAListenerStartsStopsIt (5.49s)
+ok  	github.com/dre4success/handoff/cmd/handoff	14.730s
+# go test exit: 0

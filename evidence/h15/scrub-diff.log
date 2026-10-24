@@ -1,0 +1,22 @@
+# command: git diff --numstat, --name-only and --word-diff=porcelain c8b0163^ c8b0163
+# date: 2026-10-24 18:03:31 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: b71db25b6c06274dd180e90858094c901e9af67b
+
+7 files; 13 lines in, 13 lines out
+## the files
+evidence/reviewer/H13-178b7ca/checks-final.txt
+evidence/reviewer/H13-178b7ca/checks.txt
+evidence/reviewer/H13-178b7ca/live-awake-unrestricted.txt
+evidence/reviewer/H13-178b7ca/live-awake.txt
+evidence/reviewer/H14-48eb3b5/audit.txt
+evidence/reviewer/H14-48eb3b5/checks.txt
+evidence/reviewer/H14-82d98a7/checks.txt
+## each word or phrase put in, with how often:
+   4 the operator:
+   2 the operator
+   2 ~/handoff/evidence/reviewer/H13-178b7ca/checks.py
+   2 "~/handoff/evidence/reviewer/H13-178b7ca/checks.py",
+   1 ~/handoff/evidence/reviewer/H14-82d98a7/checks.py
+   1 ~/handoff/evidence/reviewer/H14-48eb3b5/checks.py
+   1 ~/handoff/evidence/reviewer/H14-48eb3b5/audit.py

@@ -1,0 +1,13 @@
+by: Codex, reviewer
+commit: d3367527c5132a1edfacd688c1deca73d5459d9b
+date: 2026-10-24T18:08:54.708530+00:00
+cwd: /private/tmp/handoff-review-H15-d336752
+command: python3 reviewer_evidence.py
+New reviewer evidence files scanned: 8
+the operator's name, as a word, in a file name or inside an identifier: 0 lines; 0 paths
+the operator's account name, other than in the module path: 0 lines; 0 paths
+a path under a home folder, other than the test's made-up ones: 0 lines; 0 paths
+the other project's name: 0 lines; 0 paths
+the operator's email domains: 0 lines; 0 paths
+PASS: new reviewer evidence needs no additional personal-reference scrub.
+exit: 0

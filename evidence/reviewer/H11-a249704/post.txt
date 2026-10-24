@@ -1,0 +1,10 @@
+by: Codex, reviewer
+commit: a249704f01800aa4e0c28cab271093813cf31bbb
+date: 2026-10-19T21:32:03.663368+00:00
+cwd: /private/tmp/handoff-review-H11-a249704
+command: python3 ~/handoff/evidence/reviewer/H11-a249704/probes.py /private/tmp/handoff-review-H11-bin post
+Printed command with placeholders filled: /private/tmp/handoff-review-H11-bin post --as claude --item W1 --to codex --commit 37c1a8a21e3795cd734198c8f3954bc1892d01c6 --title "Independent review" --body '/private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h11-post-ffxr7le6/body with spaces.md'
+posted #1 request W1 claude → codex: Independent review @ 37c1a8a21e37
+posted #2 reply W1 codex → claude: QUESTION on #1 @ 37c1a8a21e37
+PASS: the generated post command records the exact commit for the other reviewing agent; the reverse brief addresses claude. Both roles can review, but the requester cannot reply to its own request; its addressee can.
+exit: 0

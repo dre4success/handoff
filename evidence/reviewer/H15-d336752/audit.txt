@@ -1,0 +1,34 @@
+by: Codex, reviewer
+commit: d3367527c5132a1edfacd688c1deca73d5459d9b
+date: 2026-10-24T18:07:04.440786+00:00
+cwd: /private/tmp/handoff-review-H15-d336752
+command: python3 reviewer_h15.py
+PASS: product source, tests, module and license identical to approved H14.
+PASS: source/docs whitespace.
+Requested tracked tree: 488 files
+  the operator's name, as a word, in a file name or inside an identifier: 0 lines; 0 paths
+  the operator's account name, other than in the module path: 0 lines; 0 paths
+  a path under a home folder, other than the test's made-up ones: 0 lines; 0 paths
+  the other project's name: 0 lines; 0 paths
+  the operator's email domains: 0 lines; 0 paths
+PASS: email-shaped values are only the two documented fixture addresses.
+PASS: no common private-key or credential prefixes; all tracked entries are regular files.
+renamed 0 files; changed 7 files
+PASS: supplied scrub exactly reproduces c8b0163, including all paths, modes and bytes.
+Scrub reproduction retained at: /private/tmp/handoff-h15-scrub-th84rykl
+Merge differences from H14: 32 paths; only the board and added reviewer evidence.
+PASS: added reviewer evidence is identical to the pre-merge main copy.
+renamed 4 files; changed 273 files
+PASS: merged board exactly equals the supplied scrub applied to the pre-merge main board; only H13/H14 rows differ from H14.
+Board reproduction retained at: /private/tmp/handoff-h15-board-7dwwt7em
+PASS: offline export has one root commit, identical tracked tree and modes, no remote/alternates, no record/bin/untracked helper, and explicitly supplied noreply-format fixture identities.
+Export identity is a test fixture, not a verification of the actual account ID intended for publication.
+Export retained at: /private/tmp/handoff-h15-export-itc82me0
+Exported tree: 488 files
+  the operator's name, as a word, in a file name or inside an identifier: 0 lines; 0 paths
+  the operator's account name, other than in the module path: 0 lines; 0 paths
+  a path under a home folder, other than the test's made-up ones: 0 lines; 0 paths
+  the other project's name: 0 lines; 0 paths
+  the operator's email domains: 0 lines; 0 paths
+PASS: source worktree revision unchanged; no push or source-history mutation.
+exit: 0

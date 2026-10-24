@@ -1,0 +1,8 @@
+by: Codex, reviewer
+commit: 50a8c2d9aa372f47308c40b7d2cb78699102a6fe
+date: 2026-10-21T03:41:47.235677+00:00
+cwd: /private/tmp/handoff-review-H12-50a8c2d
+command: codex --version
+WARNING: proceeding, even though we could not create PATH aliases: Operation not permitted (os error 1)
+codex-cli 0.162.1
+exit: 0

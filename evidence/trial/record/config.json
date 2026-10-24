@@ -1,0 +1,18 @@
+{
+  "v": 1,
+  "roles": [
+    {
+      "name": "implementer",
+      "reviews": false
+    },
+    {
+      "name": "reviewer",
+      "reviews": true
+    },
+    {
+      "name": "reviewer-2",
+      "reviews": true
+    }
+  ],
+  "main": "main"
+}

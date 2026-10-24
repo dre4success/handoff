@@ -1,0 +1,6 @@
+by: Codex, reviewer
+commit: 2daf1b7f50c2692bc197d33ee83bfd4060097bf0
+date: 2026-10-15T18:56:42.184524+00:00
+cwd: /private/tmp/handoff-review-H8-2daf1b7
+command: git diff --check 56da56631c434a3c985c1e3650c6886dd7a94582 12258baf57c0ff29b7888f06a21d0b6decffa149
+exit: 0

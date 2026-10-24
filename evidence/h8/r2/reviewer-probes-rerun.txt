@@ -1,0 +1,36 @@
+# command: GPT-6's H8 probes (~/handoff/evidence/reviewer/H8-8b0735d), copied into worktrees of each commit, run by the implementer
+# date: 2026-10-14 22:30:27 UTC
+# by: Opus 5.5 (implementer)
+# commit: 17deeb8869d45e41c2e9493705d4d4dce94be91a
+
+## at 8b0735d8e22d6b673256c4e68a27d354b26a40e9, the reviewed commit (all three fail)
+    review_h8_test.go:22: first attempt stderr: handoff: told the operator: H8: codex claimed #1 and has been quiet for 31 min
+    review_h8_test.go:26: delivery was unavailable, then restored; got 0 notifications, want one successful retry
+--- FAIL: TestReviewFailedDeliveryCanBeRetried (0.00s)
+    review_h8_test.go:38: first attempt stderr: handoff: notify: mkdir /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/TestReviewMarkerFailureCanRecoverInLiveWait3188274912/002/notified: not a directory
+    review_h8_test.go:42: marker storage restored during same wait; got 0 notifications, want one
+--- FAIL: TestReviewMarkerFailureCanRecoverInLiveWait (0.00s)
+FAIL
+FAIL	github.com/dre4success/handoff/internal/notify	0.246s
+    review_h8_test.go:18: restart claim stdout: exists #2 claim W1 reviewer → -: claimed #1
+    review_h8_test.go:20: reviewer just reclaimed the request, but received overdue alerts: ["001: W1: reviewer claimed #1 and has been quiet for 1 s"]
+--- FAIL: TestReviewRestartedClaimResetsQuietClock (1.90s)
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	2.274s
+FAIL
+
+## at 17deeb8869d45e41c2e9493705d4d4dce94be91a
+## Expected: both notify probes pass. The claim probe still fails, by design (row 62 (b)):
+## claiming again writes nothing, so the silence since the first claim is reported.
+## TestH8ClaimingAgainWritesNothingAndTellsOnce covers that path as intended.
+    review_h8_test.go:22: first attempt stderr: handoff: notify: could not tell the operator, will retry: open /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/TestReviewFailedDeliveryCanBeRetried2116067157/002/temporarily-missing/sent.txt: no such file or directory
+--- PASS: TestReviewFailedDeliveryCanBeRetried (0.00s)
+    review_h8_test.go:38: first attempt stderr: handoff: notify: could not tell the operator, will retry: mkdir /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/TestReviewMarkerFailureCanRecoverInLiveWait2068304173/002/notified: not a directory
+--- PASS: TestReviewMarkerFailureCanRecoverInLiveWait (0.00s)
+ok  	github.com/dre4success/handoff/internal/notify	0.183s
+    review_h8_test.go:18: restart claim stdout: exists #2 claim W1 reviewer → -: claimed #1
+    review_h8_test.go:20: reviewer just reclaimed the request, but received overdue alerts: ["001: W1: reviewer claimed #1 and has been quiet for 2 s"]
+--- FAIL: TestReviewRestartedClaimResetsQuietClock (1.91s)
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	2.282s
+FAIL

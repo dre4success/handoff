@@ -1,0 +1,37 @@
+# command: go test -count=5 -v -run 'TestH6|TestH5|TestCheck8|TestCheck13' ./cmd/handoff
+# date: 2026-10-09 21:41:30 UTC
+# by: Opus 5.5 (implementer), Claude Code 2.1.295, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: afc42b49cbf484f9843a4f35e318705cf212acab
+
+    main_test.go:548: wait woke 515ms after the post returned
+--- PASS: TestCheck8WaitWakesWithinTwoSeconds (2.24s)
+--- PASS: TestCheck13NextWaitDeliversAtOnce (2.21s)
+--- PASS: TestH5ForgedLineDuringAnEmittingWait (3.26s)
+--- PASS: TestH6EditedLastLineIsWithheld (0.26s)
+--- PASS: TestH5LinkedEscalationIsNotAnAnswer (0.37s)
+    main_test.go:548: wait woke 518ms after the post returned
+--- PASS: TestCheck8WaitWakesWithinTwoSeconds (2.18s)
+--- PASS: TestCheck13NextWaitDeliversAtOnce (2.20s)
+--- PASS: TestH5ForgedLineDuringAnEmittingWait (3.19s)
+--- PASS: TestH6EditedLastLineIsWithheld (0.24s)
+--- PASS: TestH5LinkedEscalationIsNotAnAnswer (0.31s)
+    main_test.go:548: wait woke 518ms after the post returned
+--- PASS: TestCheck8WaitWakesWithinTwoSeconds (2.16s)
+--- PASS: TestCheck13NextWaitDeliversAtOnce (2.22s)
+--- PASS: TestH5ForgedLineDuringAnEmittingWait (3.19s)
+--- PASS: TestH6EditedLastLineIsWithheld (0.24s)
+--- PASS: TestH5LinkedEscalationIsNotAnAnswer (0.31s)
+    main_test.go:548: wait woke 515ms after the post returned
+--- PASS: TestCheck8WaitWakesWithinTwoSeconds (2.15s)
+--- PASS: TestCheck13NextWaitDeliversAtOnce (2.20s)
+--- PASS: TestH5ForgedLineDuringAnEmittingWait (3.20s)
+--- PASS: TestH6EditedLastLineIsWithheld (0.24s)
+--- PASS: TestH5LinkedEscalationIsNotAnAnswer (0.31s)
+    main_test.go:548: wait woke 517ms after the post returned
+--- PASS: TestCheck8WaitWakesWithinTwoSeconds (2.16s)
+--- PASS: TestCheck13NextWaitDeliversAtOnce (2.23s)
+--- PASS: TestH5ForgedLineDuringAnEmittingWait (3.42s)
+--- PASS: TestH6EditedLastLineIsWithheld (0.56s)
+--- PASS: TestH5LinkedEscalationIsNotAnAnswer (0.67s)
+ok  	github.com/dre4success/handoff/cmd/handoff	42.016s
+# go test exit: 0

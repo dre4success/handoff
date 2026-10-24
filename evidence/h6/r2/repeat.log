@@ -1,0 +1,52 @@
+# command: go test -count=5 -v -run 'TestH6|TestH5|TestCheck3|TestRow51|TestCheck8' ./cmd/handoff
+# date: 2026-10-10 09:33:10 UTC
+# by: Opus 5.5 (implementer), Claude Code 2.1.295, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 30974e354702a4d7bd9bf4e3301770282a75080c
+
+--- PASS: TestCheck3KilledWriterLeavesATornTail (0.45s)
+--- PASS: TestRow51KilledAfterSyncIsAnAdvisory (0.24s)
+    main_test.go:548: wait woke 519ms after the post returned
+--- PASS: TestCheck8WaitWakesWithinTwoSeconds (2.19s)
+--- PASS: TestH5ForgedLineDuringAnEmittingWait (3.24s)
+--- PASS: TestH6EditedLastLineIsWithheld (0.32s)
+--- PASS: TestH5LinkedEscalationIsNotAnAnswer (0.46s)
+--- PASS: TestH6CutThenPostKilledAfterSyncIsRecoverable (0.32s)
+--- PASS: TestH6CutThenRepairKilledAfterSyncIsRecoverable (0.25s)
+--- PASS: TestCheck3KilledWriterLeavesATornTail (0.29s)
+--- PASS: TestRow51KilledAfterSyncIsAnAdvisory (0.26s)
+    main_test.go:548: wait woke 519ms after the post returned
+--- PASS: TestCheck8WaitWakesWithinTwoSeconds (2.19s)
+--- PASS: TestH5ForgedLineDuringAnEmittingWait (3.27s)
+--- PASS: TestH6EditedLastLineIsWithheld (0.32s)
+--- PASS: TestH5LinkedEscalationIsNotAnAnswer (0.39s)
+--- PASS: TestH6CutThenPostKilledAfterSyncIsRecoverable (0.31s)
+--- PASS: TestH6CutThenRepairKilledAfterSyncIsRecoverable (0.24s)
+--- PASS: TestCheck3KilledWriterLeavesATornTail (0.27s)
+--- PASS: TestRow51KilledAfterSyncIsAnAdvisory (0.25s)
+    main_test.go:548: wait woke 517ms after the post returned
+--- PASS: TestCheck8WaitWakesWithinTwoSeconds (2.19s)
+--- PASS: TestH5ForgedLineDuringAnEmittingWait (3.25s)
+--- PASS: TestH6EditedLastLineIsWithheld (0.31s)
+--- PASS: TestH5LinkedEscalationIsNotAnAnswer (0.40s)
+--- PASS: TestH6CutThenPostKilledAfterSyncIsRecoverable (0.31s)
+--- PASS: TestH6CutThenRepairKilledAfterSyncIsRecoverable (0.25s)
+--- PASS: TestCheck3KilledWriterLeavesATornTail (0.31s)
+--- PASS: TestRow51KilledAfterSyncIsAnAdvisory (0.25s)
+    main_test.go:548: wait woke 518ms after the post returned
+--- PASS: TestCheck8WaitWakesWithinTwoSeconds (2.19s)
+--- PASS: TestH5ForgedLineDuringAnEmittingWait (3.24s)
+--- PASS: TestH6EditedLastLineIsWithheld (0.32s)
+--- PASS: TestH5LinkedEscalationIsNotAnAnswer (0.40s)
+--- PASS: TestH6CutThenPostKilledAfterSyncIsRecoverable (0.31s)
+--- PASS: TestH6CutThenRepairKilledAfterSyncIsRecoverable (0.25s)
+--- PASS: TestCheck3KilledWriterLeavesATornTail (0.28s)
+--- PASS: TestRow51KilledAfterSyncIsAnAdvisory (0.26s)
+    main_test.go:548: wait woke 517ms after the post returned
+--- PASS: TestCheck8WaitWakesWithinTwoSeconds (2.19s)
+--- PASS: TestH5ForgedLineDuringAnEmittingWait (3.23s)
+--- PASS: TestH6EditedLastLineIsWithheld (0.33s)
+--- PASS: TestH5LinkedEscalationIsNotAnAnswer (0.47s)
+--- PASS: TestH6CutThenPostKilledAfterSyncIsRecoverable (0.36s)
+--- PASS: TestH6CutThenRepairKilledAfterSyncIsRecoverable (0.28s)
+ok  	github.com/dre4success/handoff/cmd/handoff	37.035s
+# go test exit: 0

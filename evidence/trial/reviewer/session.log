@@ -1,0 +1,206 @@
+START 2026-10-12T21:37:46.871092+00:00 cwd=/private/tmp/handoff-review-H7-4e4ffad command=go test ./...
+START 2026-10-12T21:37:53.536095+00:00 cwd=~/handoff command=~/handoff/bin/handoff reply --as reviewer 1 --verdict QUESTION --commit 4e4ffad7cf6ea6d4fd78e65ed03b2b678663f444 --body evidence/trial/reviewer/h7-r1-question.md --key h7-reviewer-r1-question
+posted #3 reply H7 reviewer → implementer: QUESTION on #1 @ 4e4ffad7cf6e
+END 2026-10-12T21:37:53.589010+00:00 exit=0
+START 2026-10-12T21:37:53.746945+00:00 cwd=~/handoff command=~/handoff/bin/handoff wait --as reviewer --for reviewer --timeout 25m
+ok  	github.com/dre4success/handoff/cmd/handoff	24.261s
+?   	github.com/dre4success/handoff/internal/gitx	[no test files]
+ok  	github.com/dre4success/handoff/internal/record	2.821s
+ok  	github.com/dre4success/handoff/internal/status	0.340s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	1.025s
+END 2026-10-12T21:38:15.998205+00:00 exit=0
+#4 note H7 implementer → reviewer: Answer to QUESTION #3 (re #3)
+END 2026-10-12T21:38:41.815420+00:00 exit=0
+START 2026-10-12T21:38:45.674341+00:00 cwd=~/handoff command=~/handoff/bin/handoff show 4
+#4 note H7
+from: implementer → reviewer
+ts: 2026-10-12T21:38:41Z
+title: Answer to QUESTION #3
+re: #3
+key: h7-note-q3
+prev: d3786fc854e77b3aca642761279f89816b755765f2064223366fd6b1b81c121b
+---
+Answer to QUESTION #3 on #1. All three points are right. Fixed in the revision that follows, which supersedes #1.
+
+1. Invocation: the README now says the examples call it `handoff`. Put bin/ on PATH, or call it by its full path (with an `H=…/bin/handoff` example). Agent sessions should use the full path, because in Claude Code an `export` doesn't survive to the next shell call (Run, 2026-10-09, in docs/reviews/fable-5.1_review_r1.md).
+2. Go: "Go 1.25.3 or later, as in go.mod".
+3. Roles, now a list. Need a role: post, claim, reply, note, decide, repair. Don't need one: init, and the reads. inbox and wait take --for (or --as). show takes neither.
+   Run (implementer): show with --as gives exit 2, "flag provided but not defined: -as". repair, note and claim without a role give exit 2. init and inbox --as work.
+
+The trial plan's "--as on every command" is wrong for show. That's a plan bug, not a README one. I'll record it as a trial finding and fix the plan after the trial, so the prompts stay unchanged while the trial runs. Whether show should accept --as is a step-3 question.
+END 2026-10-12T21:38:45.687668+00:00 exit=0
+START 2026-10-12T21:38:45.809201+00:00 cwd=~/handoff command=~/handoff/bin/handoff wait --as reviewer --for reviewer --timeout 25m
+#5 request H7 implementer → reviewer: H7: README after step 1, revised @ d15b100e24cf (supersedes #1)
+END 2026-10-12T21:38:49.829019+00:00 exit=0
+START 2026-10-12T21:38:55.877704+00:00 cwd=~/handoff command=~/handoff/bin/handoff show 5
+#5 request H7
+from: implementer → reviewer
+ts: 2026-10-12T21:38:49Z
+title: H7: README after step 1, revised
+commit: d15b100e24cf6d574e12b6b866f0e664c14ca653
+base: 7f92b9aa13f2bf05c73fa1bdba0dca9f9f15fbc0
+supersedes: #1
+key: h7-r2
+state: open
+prev: 3caeb0cd63c0721255ebc1f67aae1267707353851778e9b1eadd72b0dc4e531a
+---
+H7, revised. Supersedes #1, after QUESTION #3, answered in note #4. Docs only: README.md.
+
+Commit d15b100e24cf6d574e12b6b866f0e664c14ca653 on h7-readme, one commit after 4e4ffad.
+
+What changed since #1:
+- Build: Go 1.25.3 or later, as in go.mod. How to call it: bin/ on PATH, or the full path; agent sessions should use the full path.
+- Roles: a list. Need a role: post, claim, reply, note, decide, repair. Don't: init, and the reads (inbox and wait take --for or --as; show takes neither).
+
+How verified:
+- Run (implementer): repair, note and claim without a role give exit 2; show with --as gives exit 2; init without a role and inbox --as give exit 0.
+- Run (implementer), unchanged from #1: the "A round, in short" example ran end to end in a scratch repo, decide included.
+
+What to review: the two changed sections, against the code at this commit. git diff 4e4ffad d15b100e24cf6d574e12b6b866f0e664c14ca653.
+END 2026-10-12T21:38:55.890391+00:00 exit=0
+START 2026-10-12T21:38:56.011658+00:00 cwd=~/handoff command=~/handoff/bin/handoff claim --as reviewer 5
+posted #6 claim H7 reviewer → -: claimed #5
+END 2026-10-12T21:38:56.031462+00:00 exit=0
+START 2026-10-14T20:13:52.271821+00:00 cwd=~/handoff command=~/handoff/bin/handoff show 5
+#5 request H7
+from: implementer → reviewer
+ts: 2026-10-12T21:38:49Z
+title: H7: README after step 1, revised
+commit: d15b100e24cf6d574e12b6b866f0e664c14ca653
+base: 7f92b9aa13f2bf05c73fa1bdba0dca9f9f15fbc0
+supersedes: #1
+key: h7-r2
+state: claimed
+prev: 3caeb0cd63c0721255ebc1f67aae1267707353851778e9b1eadd72b0dc4e531a
+---
+H7, revised. Supersedes #1, after QUESTION #3, answered in note #4. Docs only: README.md.
+
+Commit d15b100e24cf6d574e12b6b866f0e664c14ca653 on h7-readme, one commit after 4e4ffad.
+
+What changed since #1:
+- Build: Go 1.25.3 or later, as in go.mod. How to call it: bin/ on PATH, or the full path; agent sessions should use the full path.
+- Roles: a list. Need a role: post, claim, reply, note, decide, repair. Don't: init, and the reads (inbox and wait take --for or --as; show takes neither).
+
+How verified:
+- Run (implementer): repair, note and claim without a role give exit 2; show with --as gives exit 2; init without a role and inbox --as give exit 0.
+- Run (implementer), unchanged from #1: the "A round, in short" example ran end to end in a scratch repo, decide included.
+
+What to review: the two changed sections, against the code at this commit. git diff 4e4ffad d15b100e24cf6d574e12b6b866f0e664c14ca653.
+END 2026-10-14T20:13:52.283235+00:00 exit=0
+START 2026-10-14T20:14:14.066367+00:00 cwd=/private/tmp/handoff-review-H7-4e4ffad command=git show d15b100e24cf6d574e12b6b866f0e664c14ca653:go.mod
+START 2026-10-14T20:14:14.066356+00:00 cwd=/private/tmp/handoff-review-H7-4e4ffad command=git diff --check 7f92b9aa13f2bf05c73fa1bdba0dca9f9f15fbc0 d15b100e24cf6d574e12b6b866f0e664c14ca653
+START 2026-10-14T20:14:14.066474+00:00 cwd=/private/tmp/handoff-review-H7-4e4ffad command=git show d15b100e24cf6d574e12b6b866f0e664c14ca653:README.md
+START 2026-10-14T20:14:14.066357+00:00 cwd=/private/tmp/handoff-review-H7-4e4ffad command=git diff --exit-code 4e4ffad7cf6ea6d4fd78e65ed03b2b678663f444 d15b100e24cf6d574e12b6b866f0e664c14ca653 -- . ':(exclude)README.md'
+# handoff
+END 2026-10-14T20:14:14.079510+00:00 exit=0
+
+A small local tool that lets two coding agents on one machine, one implementing and one reviewing, hand work to each other through a record a person can read, without the person relaying messages.
+
+The operator starts each agent in its own session and gives it the project and the rules. After that the agents talk to each other through `handoff`. The operator is called in only to decide.
+
+## Status
+module github.com/dre4success/handoff
+
+
+- **Step 1 is done and merged.** The record and the commands below work, with tests and saved evidence (`evidence/step1/`, `evidence/h6/`).
+go 1.25.3
+- **Now:** the first real trial in this repository, two sessions with no relay (`docs/TRIAL_PLAN.md`).
+- **Not built yet:** `render` and `CHANNEL.md`, `board`, `brief`, hooks, presence, `verify-merge`, `export`. These are steps 3 and 4 of the proposal (§14).
+END 2026-10-14T20:14:14.080163+00:00 exit=0
+
+## Build
+
+Go 1.25.3 or later, as in `go.mod`. No other dependencies.
+
+END 2026-10-14T20:14:14.080276+00:00 exit=0
+```
+go build -o bin/handoff ./cmd/handoff
+go test ./...
+```
+
+The examples below call it `handoff`. Either put `bin/` on your `PATH`, or call it by its full path:
+
+```
+H=/path/to/handoff/bin/handoff
+$H inbox --for operator
+```
+
+Agent sessions should use the full path. In Claude Code every shell call starts fresh, so an `export PATH=…` doesn't last.
+
+## Set up a project
+
+In the project's main worktree:
+
+```
+handoff init --roles implementer,reviewer --reviewers reviewer --main main
+```
+
+This creates `.handoff/`. Add `.handoff/` to `.gitignore` yourself; the record is never committed. Every worktree of the repository shares the one record.
+
+Each session needs a role. Set `HANDOFF_ROLE` when you start the session, or pass `--as <role>`.
+
+- **Need a role:** `post`, `claim`, `reply`, `note`, `decide`, `repair`. They refuse without one.
+- **Don't:** `init`, and the reads. `inbox` and `wait` take `--for <role>` (or `--as`). `show` takes neither.
+
+## Commands
+
+| Command | What it does |
+|---|---|
+| `post` | Ask for a review of one commit. `--supersedes <id>` replaces an earlier request |
+| `claim <id>` | The reviewer says "seen, reviewing". Not a verdict |
+| `reply <id> --verdict …` | APPROVE, CHANGES or QUESTION, for exactly the request's commit |
+| `note` | Anything else, such as an answer to a QUESTION (`--re <id>`) |
+| `decide <id>` | The operator closes an item. Needs a real terminal and the id typed again |
+| `inbox [--for role]` | What's waiting for a role, or for the operator |
+| `wait [--for role]` | Blocks until something new arrives, then prints it |
+| `show <id>` | One entry in full |
+| `repair` | Recovers the record after a crash, keeping every byte |
+
+Run `handoff` with no arguments for every flag. Exit codes: 0 done, 2 refused or failed, 3 `wait` timed out.
+
+## A round, in short
+
+```
+# implementer
+handoff post --as implementer --item W1 --to reviewer --commit <sha> --title "…" --body req.md
+handoff wait --for implementer
+
+# reviewer
+handoff wait --for reviewer
+handoff claim --as reviewer 1
+handoff reply --as reviewer 1 --verdict APPROVE --commit <sha> --body verdict.md
+
+# operator, at a terminal: decide takes the request's id
+handoff inbox --for operator
+handoff decide 1 --approve --body ok.md --as operator
+```
+
+## Read more
+
+- The spec: `docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md` (revision 2.1)
+- How this project was built, entry by entry: `docs/CHANNEL.md`
+- The duty prompts for each role: `docs/prompts/`
+- The reviews and the referee reading: `docs/reviews/`
+
+`handoff` succeeds the earlier `tripartite` experiment, which drove the agents headless from a state machine. This tool lets the agents drive themselves and shares no code with it.
+END 2026-10-14T20:14:14.083279+00:00 exit=0
+START 2026-10-14T20:14:47.821500+00:00 cwd=~/handoff command=~/handoff/bin/handoff reply --as reviewer 5 --verdict APPROVE --commit d15b100e24cf6d574e12b6b866f0e664c14ca653 --body evidence/trial/reviewer/h7-r2-approve.md --key h7-reviewer-r2-approve
+posted #7 reply H7 reviewer → implementer: APPROVE on #5 @ d15b100e24cf
+END 2026-10-14T20:14:47.847813+00:00 exit=0
+START 2026-10-14T20:14:47.956706+00:00 cwd=~/handoff command=~/handoff/bin/handoff inbox --as reviewer
+inbox for reviewer
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  #5 request H7 implementer → reviewer: H7: README after step 1, revised @ d15b100e24cf (supersedes #1)
+    #7 reply H7 reviewer → implementer: APPROVE on #5 @ d15b100e24cf
+END 2026-10-14T20:14:47.967478+00:00 exit=0

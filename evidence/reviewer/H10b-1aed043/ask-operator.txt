@@ -1,0 +1,11 @@
+by: Codex, reviewer
+commit: 1aed04339f18c6f9b55b3d6daa5a35e00ea5c66c
+date: 2026-10-18T23:02:31.404218+00:00
+cwd: /private/tmp/handoff-review-H10b-1aed043
+command: python3 ~/handoff/evidence/reviewer/H10b-1aed043/brief_probe.py /private/tmp/handoff-review-H10b-r3-bin ask-operator
+Brief command: /private/tmp/handoff-review-H10b-r3-bin note --as reviewer --to operator --item W1 --title "Fixture question" --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h10a-ask-operator-dnx1lifp/body.md
+Shell exit: 0
+Shell stderr: handoff: told the operator: W1: reviewer asks you: Fixture question
+Posted: posted #1 note W1 reviewer → operator: Fixture question
+PASS: the brief's operator note command posts.
+exit: 0

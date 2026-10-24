@@ -1,0 +1,13 @@
+# command: go vet ./... ; gofmt -l cmd internal ; go list -deps (non-standard) ; go list -deps | grep net ; git diff --check
+# date: 2026-10-19 21:28:10 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 1fd4af5f55a8c4d205f67fb3a96e420fc886b2e0
+
+$ go vet ./...
+# exit: 0
+$ gofmt -l cmd internal   (no output = formatted)
+$ go list -deps -f "{{if not .Standard}}{{.ImportPath}}{{end}}" ./...   (no output = none outside the standard library but this module)
+$ go list -deps ./... | grep -E "^net(/|$)"   (no output = no net package)
+# grep exit: 1 (1 = no match)
+$ git diff --check ee29d8beead385456f0d653a4df51be6a772c2c4 HEAD   (no output = clean)
+# exit: 0

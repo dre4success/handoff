@@ -1,0 +1,133 @@
+Run by GPT-6, primary reviewer; snapshot 7c1d0a2fd6e660079cdfc8beacf2fe705a7c38ad
+2026-10-09T20:25:30.163872+00:00
+
+CASE 1: real post-sync SIGKILL followed by same-key retry and repair
+$ /private/tmp/handoff-review-H5.QgNgXk/handoff-review-bin init --roles implementer,reviewer,reviewer-2 --reviewers reviewer,reviewer-2
+exit=0
+stdout: created /private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h5-crash-x3c284nj/.handoff
+The record is never committed: add .handoff/ to .gitignore (proposal §5).
+stderr: 
+$ /private/tmp/handoff-review-H5.QgNgXk/handoff-review-bin post --as implementer --item BASE --to reviewer --commit 9b8b3cdf2ccc363964eeced274dbd044eed3ce99 --base 9b8b3cdf2ccc363964eeced274dbd044eed3ce99 --title BASE --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h5-crash-x3c284nj/body.md --key baseline
+exit=0
+stdout: posted #1 request BASE implementer → reviewer: BASE @ 9b8b3cdf2ccc
+stderr: 
+$ HANDOFF_TEST_FAULT=after-sync /private/tmp/handoff-review-H5.QgNgXk/handoff-review-bin post --as implementer --item W1 --to reviewer --commit 9b8b3cdf2ccc363964eeced274dbd044eed3ce99 --base 9b8b3cdf2ccc363964eeced274dbd044eed3ce99 --title W1 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h5-crash-x3c284nj/body.md --key crash-retry
+exit=-9
+stdout: 
+stderr: 
+$ /private/tmp/handoff-review-H5.QgNgXk/handoff-review-bin post --as implementer --item W1 --to reviewer --commit 9b8b3cdf2ccc363964eeced274dbd044eed3ce99 --base 9b8b3cdf2ccc363964eeced274dbd044eed3ce99 --title W1 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h5-crash-x3c284nj/body.md --key crash-retry
+exit=0
+stdout: exists #2 request W1 implementer → reviewer: W1 @ 9b8b3cdf2ccc
+stderr: handoff: advisory: head.json is behind the record: it counts 1 lines, the record has 2 that chain on from them (a writer stopped between the record and head.json); `handoff repair` acknowledges it
+$ /private/tmp/handoff-review-H5.QgNgXk/handoff-review-bin repair --as reviewer
+exit=0
+stdout: posted #3 repair - reviewer → -: head.json rewritten to match the record, whose chain verifies to its last line.…
+stderr: 
+PASS: one request after retry; repair only appended; original bytes unchanged; head catches up; SHA256 before repair=d6d6662a74ce16e9b6de473c98dd370cda4aa5ebd74d4708206fd7c1ac00cf9f
+
+CASE 2: corruption introduced after an emit wait has delivered its first entry
+$ /private/tmp/handoff-review-H5.QgNgXk/handoff-review-bin init --roles implementer,reviewer,reviewer-2 --reviewers reviewer,reviewer-2
+exit=0
+stdout: created /private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h5-corruption-snu2o0wi/.handoff
+The record is never committed: add .handoff/ to .gitignore (proposal §5).
+stderr: 
+$ /private/tmp/handoff-review-H5.QgNgXk/handoff-review-bin post --as implementer --item W1 --to reviewer --commit 9b8b3cdf2ccc363964eeced274dbd044eed3ce99 --base 9b8b3cdf2ccc363964eeced274dbd044eed3ce99 --title W1 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h5-corruption-snu2o0wi/body.md --key first
+exit=0
+stdout: posted #1 request W1 implementer → reviewer: W1 @ 9b8b3cdf2ccc
+stderr: 
+$ /private/tmp/handoff-review-H5.QgNgXk/handoff-review-bin wait --for reviewer --emit --timeout 3s
+exit=3
+stdout: #1 request W1 implementer → reviewer: W1 @ 9b8b3cdf2ccc
+#99 request BAD implementer → reviewer:  @ 9b8b3cdf2ccc
+stderr: 
+cursor: {"v":1,"id":99}
+
+BUG: unverified entry delivered and cursor advanced, without reporting new corruption
+
+CASE 3: a complete damaged line followed by a partial repair line (simulated interrupted repair write)
+$ /private/tmp/handoff-review-H5.QgNgXk/handoff-review-bin init --roles implementer,reviewer,reviewer-2 --reviewers reviewer,reviewer-2
+exit=0
+stdout: created /private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h5-repair-sxfccpuo/.handoff
+The record is never committed: add .handoff/ to .gitignore (proposal §5).
+stderr: 
+$ /private/tmp/handoff-review-H5.QgNgXk/handoff-review-bin post --as implementer --item W1 --to reviewer --commit bd0d14ae4ebc39417b8a84d69e12511b243ba33b --base bd0d14ae4ebc39417b8a84d69e12511b243ba33b --title W1 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h5-repair-sxfccpuo/body.md --key first
+exit=0
+stdout: posted #1 request W1 implementer → reviewer: W1 @ bd0d14ae4ebc
+stderr: 
+$ HANDOFF_TEST_FAULT=torn /private/tmp/handoff-review-H5.QgNgXk/handoff-review-bin post --as implementer --item W2 --to reviewer --commit bd0d14ae4ebc39417b8a84d69e12511b243ba33b --base bd0d14ae4ebc39417b8a84d69e12511b243ba33b --title W2 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h5-repair-sxfccpuo/body.md --key torn
+exit=-9
+stdout: 
+stderr: 
+$ /private/tmp/handoff-review-H5.QgNgXk/handoff-review-bin repair --as reviewer
+exit=2
+stdout: 
+stderr: handoff repair: the record's hash chain does not verify at line 2: does not parse as an entry: unexpected end of JSON input; repair only mends a torn tail or head.json, so the operator decides
+OBSERVED: repair refuses after a partial repair write; original good prefix unchanged=True
+
+CASE 4: a note to the operator linked to a reviewer question
+$ /private/tmp/handoff-review-H5.QgNgXk/handoff-review-bin init --roles implementer,reviewer,reviewer-2 --reviewers reviewer,reviewer-2
+exit=0
+stdout: created /private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h5-note-c8n0y27a/.handoff
+The record is never committed: add .handoff/ to .gitignore (proposal §5).
+stderr: 
+$ /private/tmp/handoff-review-H5.QgNgXk/handoff-review-bin post --as implementer --item W1 --to reviewer --commit bd0d14ae4ebc39417b8a84d69e12511b243ba33b --base bd0d14ae4ebc39417b8a84d69e12511b243ba33b --title W1 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h5-note-c8n0y27a/body.md --key request
+exit=0
+stdout: posted #1 request W1 implementer → reviewer: W1 @ bd0d14ae4ebc
+stderr: 
+$ /private/tmp/handoff-review-H5.QgNgXk/handoff-review-bin reply 1 --as reviewer --verdict QUESTION --commit bd0d14ae4ebc39417b8a84d69e12511b243ba33b --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h5-note-c8n0y27a/body.md
+exit=0
+stdout: posted #2 reply W1 reviewer → implementer: QUESTION on #1 @ bd0d14ae4ebc
+stderr: 
+$ /private/tmp/handoff-review-H5.QgNgXk/handoff-review-bin note --as implementer --to operator --re 2 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h5-note-c8n0y27a/body.md
+exit=0
+stdout: posted #3 note W1 implementer → operator: Review fixture body. (re #2)
+stderr: 
+$ /private/tmp/handoff-review-H5.QgNgXk/handoff-review-bin show 1
+exit=0
+stdout: #1 request W1
+from: implementer → reviewer
+ts: 2026-10-09T20:25:33Z
+title: W1
+commit: bd0d14ae4ebc39417b8a84d69e12511b243ba33b
+base: bd0d14ae4ebc39417b8a84d69e12511b243ba33b
+key: request
+state: claimed
+standing verdict: QUESTION in #2
+prev: genesis
+---
+Review fixture body.
+stderr: 
+$ /private/tmp/handoff-review-H5.QgNgXk/handoff-review-bin inbox --for implementer
+exit=0
+stdout: inbox for implementer
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  #3 note W1 implementer → operator: Review fixture body. (re #2)
+stderr: 
+$ /private/tmp/handoff-review-H5.QgNgXk/handoff-review-bin inbox --for reviewer
+exit=0
+stdout: inbox for reviewer
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  #1 request W1 implementer → reviewer: W1 @ bd0d14ae4ebc
+    #2 reply W1 reviewer → implementer: QUESTION on #1 @ bd0d14ae4ebc
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  #3 note W1 implementer → operator: Review fixture body. (re #2)
+stderr: 
+OBSERVED: operator-directed note clears the implementer response obligation without addressing the reviewer

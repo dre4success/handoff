@@ -1,0 +1,8 @@
+by: Codex, reviewer
+commit: 418a0c42ea6e6fdbc2688834ba04277032000084
+date: 2026-10-18T22:14:08.179140+00:00
+cwd: /private/tmp/handoff-review-H10b-418a0c4
+command: python3 ~/handoff/evidence/reviewer/H10b-418a0c4/probes.py /private/tmp/handoff-review-H10b-bin parent
+Replacement wait: #1 note W1 implementer → reviewer: Disposable reviewer fixture.
+PASS: exec preserves the intended parent relationship and the orphan leaves the note.
+exit: 0

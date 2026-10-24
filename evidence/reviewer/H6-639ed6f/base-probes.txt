@@ -1,0 +1,56 @@
+Run by GPT-6, primary reviewer; snapshot 1b75b877390178520922a52e976e6c30052d13b3
+2026-10-10T09:12:01.580885+00:00
+
+CASE 1: real post-sync SIGKILL followed by same-key retry and repair
+$ /tmp/handoff-review-H6-base.9AYltC/handoff-review-bin init --roles implementer,reviewer,reviewer-2 --reviewers reviewer,reviewer-2
+exit=0
+stdout: created /private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-crash-rvnfa_d6/.handoff
+The record is never committed: add .handoff/ to .gitignore (proposal §5).
+stderr: 
+$ /tmp/handoff-review-H6-base.9AYltC/handoff-review-bin post --as implementer --item BASE --to reviewer --commit 03e7202499e6a5613ab673748c64363f9920f381 --base 03e7202499e6a5613ab673748c64363f9920f381 --title BASE --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-crash-rvnfa_d6/body.md --key baseline
+exit=0
+stdout: posted #1 request BASE implementer → reviewer: BASE @ 03e7202499e6
+stderr: 
+$ HANDOFF_TEST_FAULT=after-sync /tmp/handoff-review-H6-base.9AYltC/handoff-review-bin post --as implementer --item W1 --to reviewer --commit 03e7202499e6a5613ab673748c64363f9920f381 --base 03e7202499e6a5613ab673748c64363f9920f381 --title W1 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-crash-rvnfa_d6/body.md --key crash-retry
+exit=-9
+stdout: 
+stderr: 
+$ /tmp/handoff-review-H6-base.9AYltC/handoff-review-bin post --as implementer --item W1 --to reviewer --commit 03e7202499e6a5613ab673748c64363f9920f381 --base 03e7202499e6a5613ab673748c64363f9920f381 --title W1 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-crash-rvnfa_d6/body.md --key crash-retry
+exit=0
+stdout: exists #2 request W1 implementer → reviewer: W1 @ 03e7202499e6
+stderr: handoff: advisory: head.json is behind the record: it counts 1 lines, the record has 2 that chain on from them (a writer stopped between the record and head.json); `handoff repair` acknowledges it
+$ /tmp/handoff-review-H6-base.9AYltC/handoff-review-bin repair --as reviewer
+exit=0
+stdout: posted #3 repair - reviewer → -: head.json rewritten to match the record, whose chain verifies to its last line.…
+stderr: 
+PASS: one request after retry; repair only appended; original bytes unchanged; head catches up; SHA256 before repair=2f818221c72deadd3c9669376f051ee2cb7eb07d833c7c0369d2bf0c6b7fcca5
+
+CASE 2: cut tail followed by a permitted post killed after sync, before head update
+$ /tmp/handoff-review-H6-base.9AYltC/handoff-review-bin init --roles implementer,reviewer,reviewer-2 --reviewers reviewer,reviewer-2
+exit=0
+stdout: created /private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-cut-crash-cuimc8ft/.handoff
+The record is never committed: add .handoff/ to .gitignore (proposal §5).
+stderr: 
+$ /tmp/handoff-review-H6-base.9AYltC/handoff-review-bin post --as implementer --item BASE --to reviewer --commit 03e7202499e6a5613ab673748c64363f9920f381 --base 03e7202499e6a5613ab673748c64363f9920f381 --title BASE --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-cut-crash-cuimc8ft/body.md --key baseline
+exit=0
+stdout: posted #1 request BASE implementer → reviewer: BASE @ 03e7202499e6
+stderr: 
+$ /tmp/handoff-review-H6-base.9AYltC/handoff-review-bin post --as implementer --item W1 --to reviewer --commit 03e7202499e6a5613ab673748c64363f9920f381 --base 03e7202499e6a5613ab673748c64363f9920f381 --title W1 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-cut-crash-cuimc8ft/body.md --key lost-tail
+exit=0
+stdout: posted #2 request W1 implementer → reviewer: W1 @ 03e7202499e6
+stderr: 
+$ HANDOFF_TEST_FAULT=after-sync /tmp/handoff-review-H6-base.9AYltC/handoff-review-bin post --as implementer --item W2 --to reviewer --commit 03e7202499e6a5613ab673748c64363f9920f381 --base 03e7202499e6a5613ab673748c64363f9920f381 --title W2 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-cut-crash-cuimc8ft/body.md --key cut-crash-retry
+exit=-9
+stdout: 
+stderr: 
+The new line links correctly to #1; head has its pre-cut count and hash; no last-line body was edited.
+$ /tmp/handoff-review-H6-base.9AYltC/handoff-review-bin post --as implementer --item W2 --to reviewer --commit 03e7202499e6a5613ab673748c64363f9920f381 --base 03e7202499e6a5613ab673748c64363f9920f381 --title W2 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h6-cut-crash-cuimc8ft/body.md --key cut-crash-retry
+exit=0
+stdout: exists #3 request W2 implementer → reviewer: W2 @ 03e7202499e6
+stderr: handoff: advisory: head.json disagrees with the record: it counts 2 lines ending in 1a159b2fd6ee, the record has 2 ending in 4a337652c55d (a cut tail, or an edited last line); `handoff repair` acknowledges it
+$ /tmp/handoff-review-H6-base.9AYltC/handoff-review-bin repair --as reviewer
+exit=0
+stdout: posted #4 repair - reviewer → -: head.json rewritten to match the record, whose chain verifies to its last line.…
+stderr: 
+record bytes unchanged by both refusals=False
+No expected bug: retry exit=0, repair exit=0

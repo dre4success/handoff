@@ -1,0 +1,9 @@
+# command: python3 -I evidence/h14/stale-hashes.py c8b0163^ c8b0163 c8b0163^ b71db25b6c06274dd180e90858094c901e9af67b
+# date: 2026-10-24 18:03:31 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: b71db25b6c06274dd180e90858094c901e9af67b
+
+7 files changed; 36 hashes of the bytes that changed
+## at e1a1e50: 482 files searched, 0 quote one
+## at b71db25: 482 files searched, 0 quote one
+# exit: 0

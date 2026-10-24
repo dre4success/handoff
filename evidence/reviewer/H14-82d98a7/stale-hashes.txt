@@ -1,0 +1,12 @@
+by: Codex, reviewer
+commit: 82d98a7c634d57e12725a8f2a0165894e8937fb8
+date: 2026-10-24T17:57:10.249719+00:00
+cwd: /private/tmp/handoff-review-H14-82d98a7
+command: python3 -I evidence/h14/stale-hashes.py 178b7ca4e29637bd95e7d9010dbf78d2d26bc723 9dbdf5f HEAD
+266 files changed; 2246 hashes of the bytes that changed
+## at 82d98a7: 451 files searched, 4 quote one
+evidence/h14/stale-hashes.log quotes the sha256 of evidence/trial/record/channel.jsonl line 1 (efbaf25f39b8)
+evidence/h14/stale-hashes.log quotes the sha256 of evidence/trial/record/channel.jsonl line 7 (47dc2bbd768e)
+evidence/trial/record/channel.jsonl quotes the sha256 of evidence/trial/record/channel.jsonl line 1 (efbaf25f39b8)
+evidence/trial/record/channel.jsonl quotes the sha256 of evidence/trial/record/channel.jsonl line 7 (47dc2bbd768e)
+exit: 0

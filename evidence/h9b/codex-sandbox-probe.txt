@@ -1,0 +1,16 @@
+# command: osascript under Codex's own sandbox (codex sandbox -c sandbox_mode="workspace-write" -- ...)
+# date: 2026-10-15 19:41:27 UTC
+# by: Opus 5.5 (implementer), on the operator's Mac, codex-cli 0.162.1
+
+$ osascript -e 'return 1 + 1'
+2
+# exit: 0
+$ osascript -e 'display dialog "x" giving up after 1'
+0:14: syntax error: A identifier can’t go after this identifier. (-2740)
+# exit: 1
+$ osascript (notification, argument form, as handoff calls it)
+20:32: syntax error: Expected end of line but found identifier. (-2741)
+# exit: 1
+$ env | grep ^CODEX_SANDBOX (inside)
+CODEX_SANDBOX=seatbelt
+CODEX_SANDBOX_NETWORK_DISABLED=1

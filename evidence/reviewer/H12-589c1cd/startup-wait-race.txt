@@ -1,0 +1,14 @@
+by: Codex, reviewer
+commit: 589c1cd5af490ba1f9b4d9ea8b296940d9bbb92c
+date: 2026-10-21T04:10:01.326785+00:00
+cwd: /private/tmp/handoff-review-H12-589c1cd
+command: python3 ~/handoff/evidence/reviewer/H12-589c1cd/startup-race.py wait
+kind: wait scratch: /private/tmp/handoff-h12-startup-race-a25dx3sk ; seeded 300 unrelated bindings through the CLI to widen the read/transfer overlap
+attempt 0 delay 0 old listener exit None
+posted: posted #1 note STARTUP implementer → reviewer: Only the replacement should receive this.
+displaced listener: 0 #1 note STARTUP implementer → reviewer: Only the replacement should receive this.
+ 
+REPRODUCED: displaced wait consumed the replacement's note after a startup/transfer race.
+replacement wait: 3  
+found: True
+exit: 0

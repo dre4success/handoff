@@ -1,0 +1,46 @@
+# command: go test -count=5 -v -run 'TestCheck8|TestCheck13|TestCheck19|TestCheck3|TestRow51' ./cmd/handoff ; go test -count=3 -v -run TestCheck1Fifty ./cmd/handoff
+# date: 2026-10-09 20:16:07 UTC
+# by: Opus 5.5 (implementer), Claude Code 2.1.295, on the operator's Mac
+# commit: b023ed5d32b9ae809586ff6522143238dedd4733
+# why: the checks with timing or real processes, repeated to look for flakiness
+
+--- PASS: TestCheck3KilledWriterLeavesATornTail (0.32s)
+--- PASS: TestRow51KilledAfterSyncIsAnAdvisory (0.19s)
+    main_test.go:541: wait woke 514ms after the post returned
+--- PASS: TestCheck8WaitWakesWithinTwoSeconds (2.16s)
+--- PASS: TestCheck13NextWaitDeliversAtOnce (2.24s)
+--- PASS: TestCheck19InterruptedWait (1.74s)
+--- PASS: TestCheck3KilledWriterLeavesATornTail (0.23s)
+--- PASS: TestRow51KilledAfterSyncIsAnAdvisory (0.20s)
+    main_test.go:541: wait woke 515ms after the post returned
+--- PASS: TestCheck8WaitWakesWithinTwoSeconds (2.16s)
+--- PASS: TestCheck13NextWaitDeliversAtOnce (2.22s)
+--- PASS: TestCheck19InterruptedWait (1.75s)
+--- PASS: TestCheck3KilledWriterLeavesATornTail (0.23s)
+--- PASS: TestRow51KilledAfterSyncIsAnAdvisory (0.20s)
+    main_test.go:541: wait woke 514ms after the post returned
+--- PASS: TestCheck8WaitWakesWithinTwoSeconds (2.16s)
+--- PASS: TestCheck13NextWaitDeliversAtOnce (2.23s)
+--- PASS: TestCheck19InterruptedWait (1.73s)
+--- PASS: TestCheck3KilledWriterLeavesATornTail (0.24s)
+--- PASS: TestRow51KilledAfterSyncIsAnAdvisory (0.21s)
+    main_test.go:541: wait woke 516ms after the post returned
+--- PASS: TestCheck8WaitWakesWithinTwoSeconds (2.16s)
+--- PASS: TestCheck13NextWaitDeliversAtOnce (2.22s)
+--- PASS: TestCheck19InterruptedWait (1.75s)
+--- PASS: TestCheck3KilledWriterLeavesATornTail (0.22s)
+--- PASS: TestRow51KilledAfterSyncIsAnAdvisory (0.20s)
+    main_test.go:541: wait woke 515ms after the post returned
+--- PASS: TestCheck8WaitWakesWithinTwoSeconds (2.16s)
+--- PASS: TestCheck13NextWaitDeliversAtOnce (2.22s)
+--- PASS: TestCheck19InterruptedWait (1.74s)
+ok  	github.com/dre4success/handoff/cmd/handoff	33.311s
+# go test exit: 0
+    main_test.go:239: 50 processes x 20 posts: 1000 entries, ids 1..1000, chain intact
+--- PASS: TestCheck1FiftyProcessesTwentyPostsEach (7.80s)
+    main_test.go:239: 50 processes x 20 posts: 1000 entries, ids 1..1000, chain intact
+--- PASS: TestCheck1FiftyProcessesTwentyPostsEach (7.71s)
+    main_test.go:239: 50 processes x 20 posts: 1000 entries, ids 1..1000, chain intact
+--- PASS: TestCheck1FiftyProcessesTwentyPostsEach (7.71s)
+ok  	github.com/dre4success/handoff/cmd/handoff	23.592s
+# go test exit: 0

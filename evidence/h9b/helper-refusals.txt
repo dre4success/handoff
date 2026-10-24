@@ -1,0 +1,35 @@
+# command: handoff _popup started by hand, as an agent might
+# date: 2026-10-17 22:04:56 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 8bebbdbf9da26b2cd7301804b01853b82c635487
+
+$ handoff _popup decide-note-3 3   (no descriptor 3)
+handoff _popup: no lock on descriptor 3: stat lock: bad file descriptor
+# exit: 2
+$ handoff _popup decide-note-3 3 3<some other file
+handoff _popup: descriptor 3 is not /private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/tmp.2ZtKKtappI/here/demo/.handoff/notified/decide-note-3.lock
+# exit: 2
+$ handoff _popup decide-note-3 3 3<the lock file, while another process holds it
+handoff _popup: another process holds /private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/tmp.2ZtKKtappI/here/demo/.handoff/notified/decide-note-3.lock
+# exit: 2
+$ cat never.txt   (no dialog was shown)
+(none)
+$ handoff inbox --for operator   (nothing was decided)
+inbox for operator
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  #1 request H1 claude → codex: H1: the login page @ 404084cf4c1f
+    #2 reply H1 codex → claude: APPROVE on #1 @ 404084cf4c1f
+  #3 note H2 claude → operator: May I deploy H2?
+
+gone quiet:
+  (none)

@@ -1,0 +1,22 @@
+# command: go vet ./... ; gofmt -l cmd internal ; go.mod ; go list -deps (non-standard) ; go list -deps | grep net
+# date: 2026-10-18 22:28:47 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 854c4c64de40a7bb4eb3abbf230e544638f5ef51
+
+$ go vet ./...
+# exit: 0
+$ gofmt -l cmd internal   (no output = formatted)
+$ cat go.mod
+module github.com/dre4success/handoff
+
+go 1.25.3
+$ go list -deps -f "{{if not .Standard}}{{.ImportPath}}{{end}}" ./...
+github.com/dre4success/handoff/internal/gitx
+github.com/dre4success/handoff/internal/record
+github.com/dre4success/handoff/internal/status
+github.com/dre4success/handoff/internal/notify
+github.com/dre4success/handoff/internal/term
+github.com/dre4success/handoff/internal/wait
+github.com/dre4success/handoff/cmd/handoff
+$ go list -deps ./... | grep -E "^net(/|$)"   (no output = no net package)
+# grep exit: 1 (1 = no match)

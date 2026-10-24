@@ -1,0 +1,7 @@
+$ codex exec -m gpt-6-luna -c model_reasoning_effort=low --skip-git-repo-check "Run exactly: printenv CODEX_THREAD_ID CODEX_SESSION_ID . Reply with its output only."
+## stderr, the session id line
+session id: 01a15c63-6c66-7921-aa88-20d9592f6ee4
+## stdout (CODEX_SESSION_ID is unset)
+01a15c63-6c66-7921-aa88-20d9592f6ee4
+## its transcript file
+rollout-2026-10-21T03-56-22-01a15c63-6c66-7921-aa88-20d9592f6ee4.jsonl

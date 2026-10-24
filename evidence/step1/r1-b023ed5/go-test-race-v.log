@@ -1,0 +1,108 @@
+# command: go test -count=1 -race -v ./...
+# date: 2026-10-09 20:14:21 UTC
+# by: Opus 5.5 (implementer), Claude Code 2.1.295, on the operator's Mac (darwin arm64, go1.25.3, git 2.55.0)
+# commit: b023ed5d32b9ae809586ff6522143238dedd4733 (branch h-step1-record)
+
+=== RUN   TestInitRefusesASecondTime
+--- PASS: TestInitRefusesASecondTime (0.39s)
+=== RUN   TestCheck1FiftyProcessesTwentyPostsEach
+    main_test.go:239: 50 processes x 20 posts: 1000 entries, ids 1..1000, chain intact
+--- PASS: TestCheck1FiftyProcessesTwentyPostsEach (8.44s)
+=== RUN   TestCheck2SamePostTwice
+--- PASS: TestCheck2SamePostTwice (0.36s)
+=== RUN   TestCheck18RetryAfterLostReceipt
+--- PASS: TestCheck18RetryAfterLostReceipt (0.28s)
+=== RUN   TestCheck3KilledWriterLeavesATornTail
+--- PASS: TestCheck3KilledWriterLeavesATornTail (0.26s)
+=== RUN   TestRow51KilledAfterSyncIsAnAdvisory
+--- PASS: TestRow51KilledAfterSyncIsAnAdvisory (0.23s)
+=== RUN   TestCheck4EditedMiddleLineStopsPosting
+--- PASS: TestCheck4EditedMiddleLineStopsPosting (0.24s)
+=== RUN   TestCheck5ReplyRefusals
+--- PASS: TestCheck5ReplyRefusals (0.41s)
+=== RUN   TestCheck6SecondRevision
+--- PASS: TestCheck6SecondRevision (0.39s)
+=== RUN   TestPostChecksCommitsBranchAndParents
+--- PASS: TestPostChecksCommitsBranchAndParents (0.37s)
+=== RUN   TestQuestionAnsweredByANote
+--- PASS: TestQuestionAnsweredByANote (0.44s)
+=== RUN   TestCheck16Roles
+--- PASS: TestCheck16Roles (0.30s)
+=== RUN   TestDecideWithATerminal
+--- PASS: TestDecideWithATerminal (0.27s)
+=== RUN   TestCheck8WaitWakesWithinTwoSeconds
+    main_test.go:541: wait woke 516ms after the post returned
+--- PASS: TestCheck8WaitWakesWithinTwoSeconds (2.18s)
+=== RUN   TestCheck13NextWaitDeliversAtOnce
+--- PASS: TestCheck13NextWaitDeliversAtOnce (2.24s)
+=== RUN   TestCheck19InterruptedWait
+--- PASS: TestCheck19InterruptedWait (1.77s)
+=== RUN   TestLinkedWorktreeUsesTheSameRecord
+--- PASS: TestLinkedWorktreeUsesTheSameRecord (0.21s)
+PASS
+ok  	github.com/dre4success/handoff/cmd/handoff	21.441s
+?   	github.com/dre4success/handoff/internal/gitx	[no test files]
+=== RUN   TestAppendBuildsSequentialChain
+--- PASS: TestAppendBuildsSequentialChain (0.05s)
+=== RUN   TestBodyIsInsideTheLine
+--- PASS: TestBodyIsInsideTheLine (0.02s)
+=== RUN   TestConcurrentAppendsStaySequential
+--- PASS: TestConcurrentAppendsStaySequential (1.99s)
+=== RUN   TestBuildCanReturnExistingReceipt
+--- PASS: TestBuildCanReturnExistingReceipt (0.04s)
+=== RUN   TestBuildErrorWritesNothing
+--- PASS: TestBuildErrorWritesNothing (0.03s)
+=== RUN   TestTornTailRefusesUntilRepair
+--- PASS: TestTornTailRefusesUntilRepair (0.15s)
+=== RUN   TestEditedMiddleLineBreaksChain
+--- PASS: TestEditedMiddleLineBreaksChain (0.09s)
+=== RUN   TestCutTailIsAnAdvisoryNotARefusal
+--- PASS: TestCutTailIsAnAdvisoryNotARefusal (0.08s)
+=== RUN   TestHeadBehindAfterCrashIsAnAdvisory
+--- PASS: TestHeadBehindAfterCrashIsAnAdvisory (0.08s)
+=== RUN   TestEditedLastLineShowsAgainstHead
+--- PASS: TestEditedLastLineShowsAgainstHead (0.04s)
+=== RUN   TestRepairWithNothingToRepair
+--- PASS: TestRepairWithNothingToRepair (0.02s)
+=== RUN   TestCreateRefusesAnExistingRecord
+--- PASS: TestCreateRefusesAnExistingRecord (0.01s)
+PASS
+ok  	github.com/dre4success/handoff/internal/record	3.806s
+=== RUN   TestRequestLifecycle
+--- PASS: TestRequestLifecycle (0.00s)
+=== RUN   TestNoteAnsweringAnOlderReplyChangesNothing
+--- PASS: TestNoteAnsweringAnOlderReplyChangesNothing (0.00s)
+=== RUN   TestSupersededRequestIgnoresLaterReplies
+--- PASS: TestSupersededRequestIgnoresLaterReplies (0.00s)
+=== RUN   TestLiveRequest
+--- PASS: TestLiveRequest (0.00s)
+=== RUN   TestInboxLists
+--- PASS: TestInboxLists (0.00s)
+=== RUN   TestDecisionOnOperatorNote
+--- PASS: TestDecisionOnOperatorNote (0.00s)
+=== RUN   TestDecidable
+--- PASS: TestDecidable (0.00s)
+PASS
+ok  	github.com/dre4success/handoff/internal/status	1.252s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+=== RUN   TestDeliversPendingEntriesAtOnce
+--- PASS: TestDeliversPendingEntriesAtOnce (0.05s)
+=== RUN   TestCursorMovesOnlyAfterPrinting
+--- PASS: TestCursorMovesOnlyAfterPrinting (0.02s)
+=== RUN   TestWakesWhenAnEntryLands
+--- PASS: TestWakesWhenAnEntryLands (0.03s)
+=== RUN   TestTimeoutCountsAwakeTicks
+--- PASS: TestTimeoutCountsAwakeTicks (0.01s)
+=== RUN   TestDeadlineIsWallClockAndGapIsReported
+--- PASS: TestDeadlineIsWallClockAndGapIsReported (0.01s)
+=== RUN   TestEntryIsDeliveredBeforeAnExpiredDeadline
+--- PASS: TestEntryIsDeliveredBeforeAnExpiredDeadline (0.03s)
+=== RUN   TestEmitStreamsUntilTheDeadline
+--- PASS: TestEmitStreamsUntilTheDeadline (0.05s)
+=== RUN   TestEntryBetweenTwoArmsIsDelivered
+--- PASS: TestEntryBetweenTwoArmsIsDelivered (0.04s)
+=== RUN   TestWarnsAboutADamagedRecord
+--- PASS: TestWarnsAboutADamagedRecord (0.04s)
+PASS
+ok  	github.com/dre4success/handoff/internal/wait	1.531s
+# exit: 0

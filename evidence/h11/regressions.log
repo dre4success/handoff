@@ -1,0 +1,34 @@
+# command: the H11 tests on ee29d8beead385456f0d653a4df51be6a772c2c4 (main) with this commit's tests copied in, then here
+# date: 2026-10-19 21:28:02 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 1fd4af5f55a8c4d205f67fb3a96e420fc886b2e0
+
+## at ee29d8beead385456f0d653a4df51be6a772c2c4 (expected: the TestH11 tests fail, since init needs --roles, settings needs --as and the brief has no post command; TestH10BriefCommandsRun passes)
+--- PASS: TestH10BriefCommandsRun (0.59s)
+    pickup_test.go:42: handoff [init] as "": exit 2
+--- FAIL: TestH11InitWithNoFlags (0.18s)
+    pickup_test.go:87: handoff [init] as "": exit 2
+--- FAIL: TestH11InitFindsTheMainBranch (0.55s)
+    pickup_test.go:110: init [--roles implementer,reviewer,reviewer-2]: roles [{Name:implementer Reviews:false} {Name:reviewer Reviews:true} {Name:reviewer-2 Reviews:false}], want [{Name:implementer Reviews:false} {Name:
+    pickup_test.go:108: handoff [init --roles alice,bob] as "": exit 2
+--- FAIL: TestH11InitReviewers (0.25s)
+    pickup_test.go:117: handoff [init] as "": exit 2
+--- FAIL: TestH11SettingsTakeTheCLIsOwnRole (0.11s)
+    pickup_test.go:135: handoff [init] as "": exit 2
+--- FAIL: TestH11BriefCommandsRunForClaudeAndCodex (0.11s)
+    pickup_test.go:166: ran "show note note" from the brief:
+--- FAIL: TestH11BriefTellsTheImplementerHowToAsk (0.55s)
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	2.832s
+FAIL
+
+## at 1fd4af5f55a8c4d205f67fb3a96e420fc886b2e0 (expected to pass)
+--- PASS: TestH10BriefCommandsRun (0.77s)
+--- PASS: TestH11InitWithNoFlags (0.27s)
+--- PASS: TestH11InitFindsTheMainBranch (0.73s)
+--- PASS: TestH11InitReviewers (0.24s)
+--- PASS: TestH11SettingsTakeTheCLIsOwnRole (0.26s)
+--- PASS: TestH11BriefCommandsRunForClaudeAndCodex (0.43s)
+--- PASS: TestH11BriefTellsTheImplementerHowToAsk (0.36s)
+ok  	github.com/dre4success/handoff/cmd/handoff	3.577s
+# go test exit: 0

@@ -1,0 +1,17 @@
+# command: the round-3 test on d320393 (round 2) with this commit's tests copied in, then here
+# date: 2026-10-18 22:27:49 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 854c4c64de40a7bb4eb3abbf230e544638f5ef51
+
+## at d320393 (expected to fail: the question to the operator names no item, and note refuses it)
+    hook_test.go:227: the brief's `<test binary> note --to operator --title "<question>" --body <file>`: exit status 2
+        handoff note: --item or --re is required
+--- FAIL: TestH10BriefCommandsRun (0.65s)
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	1.101s
+FAIL
+
+## at 854c4c64de40a7bb4eb3abbf230e544638f5ef51 (expected to pass)
+--- PASS: TestH10BriefCommandsRun (0.40s)
+ok  	github.com/dre4success/handoff/cmd/handoff	0.668s
+# go test exit: 0

@@ -1,0 +1,19 @@
+by: Codex, reviewer
+commit: 418a0c42ea6e6fdbc2688834ba04277032000084
+date: 2026-10-18T22:14:08.179048+00:00
+cwd: /private/tmp/handoff-review-H10b-418a0c4
+command: python3 ~/handoff/evidence/reviewer/H10b-418a0c4/probes.py /private/tmp/handoff-review-H10b-bin rules
+Installed: /private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h10b-rules-44ghkw6i/install with spaces and 'quote'/handoff
+Generated rules:
+# handoff writes only under .handoff/ and has no network code (proposal §9).
+prefix_rule(pattern=["/private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h10b-rules-44ghkw6i/install with spaces and 'quote'/handoff"], decision="allow", justification="handoff runs outside the sandbox so that it can notify the operator")
+prefix_rule(pattern=["/private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h10b-rules-44ghkw6i/install with spaces and 'quote'/handoff", "decide"], decision="forbidden", justification="The operator decides, not an agent")
+
+argv: ['show', '1'] decision: allow
+argv: ['claim', '--as', 'reviewer', '1'] decision: allow
+argv: ['reply', '--as', 'reviewer', '1', '--verdict', 'APPROVE'] decision: allow
+argv: ['decide', 'W1', '--approve'] decision: forbidden
+argv: [] decision: allow
+Generated SessionStart command: exec '/private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h10b-rules-44ghkw6i/install with spaces and '\''quote'\''/handoff' hook brief --as reviewer
+PASS: policy checker reads the generated rules; shell executes the quoted hook without HANDOFF_ROLE.
+exit: 0

@@ -1,0 +1,6 @@
+$ claude -p --model haiku --tools Bash --permission-mode default --allowedTools "Bash(printenv *)" --output-format json "Run exactly: printenv CLAUDE_CODE_SESSION_ID CLAUDE_PID . Reply with its output only."
+session_id: 442ab10c-dd6c-437d-914b-4a839dbbac6d
+result: 442ab10c-dd6c-437d-914b-4a839dbbac6d
+
+$ claude -p ... --resume 442ab10c-dd6c-437d-914b-4a839dbbac6d "Run exactly: printenv CLAUDE_CODE_SESSION_ID CLAUDE_PID . Reply with its output only."
+session_id: 442ab10c-dd6c-437d-914b-4a839dbbac6d (the same; see claude-hooks.log for the new CLAUDE_PID)

@@ -1,0 +1,129 @@
+Run by GPT-6, primary reviewer
+2026-10-10 09:06:30 UTC
+639ed6fea63aa566ee693da1bc3996c8d70b7da8
+go version go1.25.3 darwin/arm64
+$ go build ./...
+$ go vet ./...
+$ go test ./... -race -count=1 -v
+=== RUN   TestInitRefusesASecondTime
+--- PASS: TestInitRefusesASecondTime (1.44s)
+=== RUN   TestCheck1FiftyProcessesTwentyPostsEach
+    main_test.go:246: 50 processes x 20 posts: 1000 entries, ids 1..1000, chain intact
+--- PASS: TestCheck1FiftyProcessesTwentyPostsEach (31.95s)
+=== RUN   TestCheck2SamePostTwice
+--- PASS: TestCheck2SamePostTwice (4.49s)
+=== RUN   TestCheck18RetryAfterLostReceipt
+--- PASS: TestCheck18RetryAfterLostReceipt (4.36s)
+=== RUN   TestCheck3KilledWriterLeavesATornTail
+--- PASS: TestCheck3KilledWriterLeavesATornTail (5.34s)
+=== RUN   TestRow51KilledAfterSyncIsAnAdvisory
+--- PASS: TestRow51KilledAfterSyncIsAnAdvisory (4.31s)
+=== RUN   TestCheck4EditedMiddleLineStopsPosting
+--- PASS: TestCheck4EditedMiddleLineStopsPosting (5.38s)
+=== RUN   TestCheck5ReplyRefusals
+--- PASS: TestCheck5ReplyRefusals (7.58s)
+=== RUN   TestCheck6SecondRevision
+--- PASS: TestCheck6SecondRevision (8.57s)
+=== RUN   TestPostChecksCommitsBranchAndParents
+--- PASS: TestPostChecksCommitsBranchAndParents (3.47s)
+=== RUN   TestQuestionAnsweredByANote
+--- PASS: TestQuestionAnsweredByANote (14.75s)
+=== RUN   TestCheck16Roles
+--- PASS: TestCheck16Roles (4.43s)
+=== RUN   TestDecideWithATerminal
+--- PASS: TestDecideWithATerminal (6.39s)
+=== RUN   TestCheck8WaitWakesWithinTwoSeconds
+    main_test.go:548: wait woke 1.533s after the post returned
+--- PASS: TestCheck8WaitWakesWithinTwoSeconds (4.25s)
+=== RUN   TestCheck13NextWaitDeliversAtOnce
+--- PASS: TestCheck13NextWaitDeliversAtOnce (5.30s)
+=== RUN   TestCheck19InterruptedWait
+--- PASS: TestCheck19InterruptedWait (4.82s)
+=== RUN   TestLinkedWorktreeUsesTheSameRecord
+--- PASS: TestLinkedWorktreeUsesTheSameRecord (2.25s)
+=== RUN   TestH5ForgedLineDuringAnEmittingWait
+--- PASS: TestH5ForgedLineDuringAnEmittingWait (6.28s)
+=== RUN   TestH6EditedLastLineIsWithheld
+--- PASS: TestH6EditedLastLineIsWithheld (5.43s)
+=== RUN   TestH5LinkedEscalationIsNotAnAnswer
+--- PASS: TestH5LinkedEscalationIsNotAnAnswer (11.61s)
+PASS
+ok  	github.com/dre4success/handoff/cmd/handoff	144.083s
+?   	github.com/dre4success/handoff/internal/gitx	[no test files]
+=== RUN   TestAppendBuildsSequentialChain
+--- PASS: TestAppendBuildsSequentialChain (0.07s)
+=== RUN   TestBodyIsInsideTheLine
+--- PASS: TestBodyIsInsideTheLine (0.02s)
+=== RUN   TestConcurrentAppendsStaySequential
+--- PASS: TestConcurrentAppendsStaySequential (1.97s)
+=== RUN   TestBuildCanReturnExistingReceipt
+--- PASS: TestBuildCanReturnExistingReceipt (0.01s)
+=== RUN   TestBuildErrorWritesNothing
+--- PASS: TestBuildErrorWritesNothing (0.01s)
+=== RUN   TestTornTailRefusesUntilRepair
+--- PASS: TestTornTailRefusesUntilRepair (0.03s)
+=== RUN   TestEditedMiddleLineBreaksChain
+--- PASS: TestEditedMiddleLineBreaksChain (0.03s)
+=== RUN   TestForgedAppendIsWithheldFromTheBreakWhenHeadVouches
+--- PASS: TestForgedAppendIsWithheldFromTheBreakWhenHeadVouches (0.02s)
+=== RUN   TestForgedAppendWithoutAVouchingHeadWithholdsTheLineBefore
+--- PASS: TestForgedAppendWithoutAVouchingHeadWithholdsTheLineBefore (0.02s)
+=== RUN   TestCutTailIsAnAdvisoryNotARefusal
+--- PASS: TestCutTailIsAnAdvisoryNotARefusal (0.05s)
+=== RUN   TestHeadBehindAfterCrashIsAnAdvisory
+--- PASS: TestHeadBehindAfterCrashIsAnAdvisory (0.04s)
+=== RUN   TestEditedLastLineIsABreak
+--- PASS: TestEditedLastLineIsABreak (0.02s)
+=== RUN   TestRepairWithNothingToRepair
+--- PASS: TestRepairWithNothingToRepair (0.01s)
+=== RUN   TestCreateRefusesAnExistingRecord
+--- PASS: TestCreateRefusesAnExistingRecord (0.00s)
+PASS
+ok  	github.com/dre4success/handoff/internal/record	3.566s
+=== RUN   TestRequestLifecycle
+--- PASS: TestRequestLifecycle (0.00s)
+=== RUN   TestOnlyANoteToTheReviewerAnswers
+--- PASS: TestOnlyANoteToTheReviewerAnswers (0.00s)
+=== RUN   TestNoteAnsweringAnOlderReplyChangesNothing
+--- PASS: TestNoteAnsweringAnOlderReplyChangesNothing (0.00s)
+=== RUN   TestSupersededRequestIgnoresLaterReplies
+--- PASS: TestSupersededRequestIgnoresLaterReplies (0.00s)
+=== RUN   TestLiveRequest
+--- PASS: TestLiveRequest (0.00s)
+=== RUN   TestInboxLists
+--- PASS: TestInboxLists (0.00s)
+=== RUN   TestDecisionOnOperatorNote
+--- PASS: TestDecisionOnOperatorNote (0.00s)
+=== RUN   TestDecidable
+--- PASS: TestDecidable (0.00s)
+PASS
+ok  	github.com/dre4success/handoff/internal/status	1.214s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+=== RUN   TestDeliversPendingEntriesAtOnce
+--- PASS: TestDeliversPendingEntriesAtOnce (0.05s)
+=== RUN   TestCursorMovesOnlyAfterPrinting
+--- PASS: TestCursorMovesOnlyAfterPrinting (0.02s)
+=== RUN   TestWakesWhenAnEntryLands
+--- PASS: TestWakesWhenAnEntryLands (0.03s)
+=== RUN   TestTimeoutCountsAwakeTicks
+--- PASS: TestTimeoutCountsAwakeTicks (0.01s)
+=== RUN   TestDeadlineIsWallClockAndGapIsReported
+--- PASS: TestDeadlineIsWallClockAndGapIsReported (0.01s)
+=== RUN   TestEntryIsDeliveredBeforeAnExpiredDeadline
+--- PASS: TestEntryIsDeliveredBeforeAnExpiredDeadline (0.03s)
+=== RUN   TestEmitStreamsUntilTheDeadline
+--- PASS: TestEmitStreamsUntilTheDeadline (0.04s)
+=== RUN   TestEntryBetweenTwoArmsIsDelivered
+--- PASS: TestEntryBetweenTwoArmsIsDelivered (0.02s)
+=== RUN   TestWarnsAboutADamagedRecord
+--- PASS: TestWarnsAboutADamagedRecord (0.03s)
+=== RUN   TestDamageArrivingDuringAWaitStopsIt
+--- PASS: TestDamageArrivingDuringAWaitStopsIt (0.03s)
+=== RUN   TestBrokenRecordDeliversOnlyVerifiedEntries
+--- PASS: TestBrokenRecordDeliversOnlyVerifiedEntries (0.06s)
+=== RUN   TestEditedLastLineIsNotDelivered
+--- PASS: TestEditedLastLineIsNotDelivered (0.03s)
+=== RUN   TestNewAdvisoryDuringAWaitIsPrinted
+--- PASS: TestNewAdvisoryDuringAWaitIsPrinted (0.03s)
+PASS
+ok  	github.com/dre4success/handoff/internal/wait	1.620s

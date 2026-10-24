@@ -1,0 +1,7 @@
+by: Codex, reviewer
+commit: 589c1cd5af490ba1f9b4d9ea8b296940d9bbb92c
+date: 2026-10-21T04:14:28.208828+00:00
+cwd: /private/tmp/handoff-review-H12-589c1cd
+command: ~/handoff/bin/handoff reply --as reviewer 61 --verdict CHANGES --commit 589c1cd5af490ba1f9b4d9ea8b296940d9bbb92c --body ~/handoff/evidence/reviewer/H12-589c1cd/reply.md
+posted #63 reply H12 reviewer → implementer: CHANGES on #61 @ 589c1cd5af49
+exit: 0

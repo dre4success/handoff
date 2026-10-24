@@ -1,0 +1,72 @@
+by: Codex, reviewer
+commit: 40a37680b9d51997c762bc602928b7afec2c977a
+date: 2026-10-21T04:42:10.670025+00:00
+cwd: /private/tmp/handoff-review-H12-40a3768
+command: python3 ~/handoff/evidence/reviewer/H12-40a3768/controls.py
+$ init --roles implementer,reviewer,reviewer-2 --reviewers reviewer,reviewer-2 --main main env {}
+exit: 0
+Created /private/tmp/handoff-h12-review-ob0erd6j/.handoff. Git ignores it; nothing else in the project changed.
+Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.
+Main branch: main.
+
+To keep each CLI's sessions on duty here, run these and do what they say:
+  /private/tmp/handoff-review-H12-r3-bin settings claude --as <role>
+  /private/tmp/handoff-review-H12-r3-bin settings codex --as <role>
+hook old exit: 0 stdout:  stderr: 
+PASS: hook
+$ init --roles implementer,reviewer,reviewer-2 --reviewers reviewer,reviewer-2 --main main env {}
+exit: 0
+Created /private/tmp/handoff-h12-review-me7s9_dk/.handoff. Git ignores it; nothing else in the project changed.
+Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.
+Main branch: main.
+
+To keep each CLI's sessions on duty here, run these and do what they say:
+  /private/tmp/handoff-review-H12-r3-bin settings claude --as <role>
+  /private/tmp/handoff-review-H12-r3-bin settings codex --as <role>
+plain old exit: 2 stdout:  stderr: handoff wait: this session no longer holds reviewer: the operator gave it another role, or gave reviewer to another session
+PASS: plain
+$ init --roles implementer,reviewer,reviewer-2 --reviewers reviewer,reviewer-2 --main main env {}
+exit: 0
+Created /private/tmp/handoff-h12-review-_hm49efq/.handoff. Git ignores it; nothing else in the project changed.
+Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.
+Main branch: main.
+
+To keep each CLI's sessions on duty here, run these and do what they say:
+  /private/tmp/handoff-review-H12-r3-bin settings claude --as <role>
+  /private/tmp/handoff-review-H12-r3-bin settings codex --as <role>
+as-own-role old exit: 2 stdout:  stderr: handoff wait: this session no longer holds reviewer: the operator gave it another role, or gave reviewer to another session
+PASS: as-own-role
+$ init --roles implementer,reviewer,reviewer-2 --reviewers reviewer,reviewer-2 --main main env {}
+exit: 0
+Created /private/tmp/handoff-h12-review-evx62p_d/.handoff. Git ignores it; nothing else in the project changed.
+Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.
+Main branch: main.
+
+To keep each CLI's sessions on duty here, run these and do what they say:
+  /private/tmp/handoff-review-H12-r3-bin settings claude --as <role>
+  /private/tmp/handoff-review-H12-r3-bin settings codex --as <role>
+for-own-role old exit: 2 stdout:  stderr: handoff wait: this session no longer holds reviewer: the operator gave it another role, or gave reviewer to another session
+PASS: for-own-role
+$ init --roles implementer,reviewer,reviewer-2 --reviewers reviewer,reviewer-2 --main main env {}
+exit: 0
+Created /private/tmp/handoff-h12-review-f8unc1x_/.handoff. Git ignores it; nothing else in the project changed.
+Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.
+Main branch: main.
+
+To keep each CLI's sessions on duty here, run these and do what they say:
+  /private/tmp/handoff-review-H12-r3-bin settings claude --as <role>
+  /private/tmp/handoff-review-H12-r3-bin settings codex --as <role>
+for-another-role old exit: 0 stdout: #1 note CONTROL implementer → reviewer-2: Delivery control for-another-role. stderr: 
+PASS: for-another-role
+$ init --roles implementer,reviewer,reviewer-2 --reviewers reviewer,reviewer-2 --main main env {}
+exit: 0
+Created /private/tmp/handoff-h12-review-o_9kg3a7/.handoff. Git ignores it; nothing else in the project changed.
+Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.
+Main branch: main.
+
+To keep each CLI's sessions on duty here, run these and do what they say:
+  /private/tmp/handoff-review-H12-r3-bin settings claude --as <role>
+  /private/tmp/handoff-review-H12-r3-bin settings codex --as <role>
+outside-explicit-role old exit: 0 stdout: #1 note CONTROL implementer → reviewer: Delivery control outside-explicit-role. stderr: 
+PASS: outside-explicit-role
+exit: 0

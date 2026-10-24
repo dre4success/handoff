@@ -1,0 +1,11 @@
+by: Codex, reviewer
+commit: ebc04f20dc7405567c73439b72a10cd2c247b3ab
+date: 2026-10-18T12:17:36.913088+00:00
+cwd: /private/tmp/handoff-review-H10a-ebc04f2
+command: python3 ~/handoff/evidence/reviewer/H10a-ebc04f2/probes.py /private/tmp/handoff-review-H10a-bin worktree
+Settings location: /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h10a-worktree-3_fmeh7_/linked/.claude/settings.local.json
+Record location: /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h10a-worktree-3_fmeh7_/.handoff
+Printed deny rules: ['Bash(/private/tmp/handoff-review-H10a-bin decide *)', 'Edit(/.handoff/**)', 'Write(/.handoff/**)']
+Official Edit(/path) semantics anchor at the settings' project directory.
+Thus Edit(/.handoff/**) protects /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-h10a-worktree-3_fmeh7_/linked/.handoff rather than the common record.
+exit: 0
