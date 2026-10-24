@@ -6,12 +6,6 @@ The operator starts each agent in its own session and gives it the project and t
 
 Made for macOS, with Claude Code and Codex. Its notifications, pop-ups and keeping the Mac awake use macOS's own tools.
 
-## Status
-
-- **Built:** the record and its commands (step 1), and a trial on this repository with two sessions and no relay (step 2). From step 3: alerts when work stalls or waits for you, deciding in one step or in a pop-up, Claude Code and Codex sessions that keep themselves on duty, `init` with defaults for any project, and roles you give to sessions already running. Each part's tests and saved evidence are under `evidence/`.
-- **Not built yet:** `render`, which would write `CHANNEL.md` and the board from the record (step 3), and `verify-*`, `export` and `doctor` (step 4). `docs/CHANNEL.md` is still kept by hand.
-- **Not tried yet:** a real sleep and wake with you present (check 9).
-
 ## Install
 
 Go 1.25.3 or later, as in `go.mod`. No other dependencies.
