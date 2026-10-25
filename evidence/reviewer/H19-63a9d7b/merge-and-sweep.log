@@ -1,0 +1,39 @@
+# command: git merge-tree --write-tree main HEAD (objects to a temporary directory); H14's sweep over git archive of HEAD, of main, and of the merged tree plus evidence/reviewer/H19-63a9d7b/
+# date: 2026-10-25 16:53:25 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 63a9d7b06ab928297b160418d786decbaf788cff
+
+## merge-tree exit 0 (0: clean); merged tree 666a674bd208408b76b05f3f17c32c59d03f3fc4
+## objects in the repository before 2645, after 2645; in the temporary directory: 3
+## 63a9d7b06ab928297b160418d786decbaf788cff
+553 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder, other than the test's made-up ones: 0 lines, 0 file names
+the other project's name: 0 lines, 0 file names
+the operator's email domains: 0 lines, 0 file names
+## 7ec3269f1d8523c0ea2f4f671db92d50edaca3ab
+561 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder, other than the test's made-up ones: 0 lines, 0 file names
+the other project's name: 0 lines, 0 file names
+the operator's email domains: 0 lines, 0 file names
+## 666a674bd208408b76b05f3f17c32c59d03f3fc4
+(with the reviewer's evidence so far: build-vet-deps.log collect.sh loop.log loop.sh merge-and-sweep.log )
+573 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder, other than the test's made-up ones: 0 lines, 0 file names
+the other project's name: 0 lines, 0 file names
+the operator's email domains: 0 lines, 0 file names
+
+# command: H14's sweep over every file of evidence/reviewer/H19-63a9d7b/ as it stands, README.md and go-test-race.log included, appended after README.md was written
+# date: 2026-10-25 17:02:08 UTC
+
+7 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder, other than the test's made-up ones: 0 lines, 0 file names
+the other project's name: 0 lines, 0 file names
+the operator's email domains: 0 lines, 0 file names

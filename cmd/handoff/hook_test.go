@@ -207,9 +207,9 @@ func TestH10BriefCommandsRun(t *testing.T) {
 	req := r.request(t, "W1", r.commitA)
 	body := r.body(t, "a question")
 	fill := strings.NewReplacer("<id>", req, "<that sha>", r.commitA, "<file>", body, "<role>", "implementer",
-		"<item>", "W1", "<question>", "A question", "APPROVE|CHANGES|QUESTION", "APPROVE")
+		"<item>", "W1", "<title>", "Findings", "<question>", "A question", "APPROVE|CHANGES|QUESTION", "APPROVE")
 	ran, last, brief := briefCommands(t, r, "reviewer", fill)
-	if got := strings.Join(ran, " "); got != "show claim reply note note" {
+	if got := strings.Join(ran, " "); got != "show claim reply note note note" {
 		t.Fatalf("ran %q from the brief:\n%s", got, brief)
 	}
 	if !strings.Contains(string(last), "note W1 reviewer → operator: A question") {

@@ -1,0 +1,27 @@
+# command: a new project with no commit: the implementer commits on a branch and posts it; built from e832f00bdef94a3be2bfcf2f934e4816b5bd20c2 (H18) and from here
+# date: 2026-10-25 17:13:17 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 874d3b84cfcfd8754446c0c614a9dba8015fba33
+
+## before: post the project's first commit, main with no commit
+handoff post: the main branch "main" does not resolve ("main" does not name a commit in this repository); pass --base
+# exit 2
+## after: post the project's first commit, main with no commit
+posted #1 request W1 implementer → reviewer: W1 first work @ 88faf4c9f60b
+# exit 0
+## after: show the request: no base line
+#1 request W1
+from: implementer → reviewer
+ts: 2026-10-25T17:13:17Z
+title: W1 first work
+commit: 88faf4c9f60b090bc7483361560c8dda38e4ee3a
+state: open
+prev: genesis
+---
+please review
+## after: a second commit, no --base
+handoff post: the main branch "main" does not resolve ("main" does not name a commit in this repository): it has no commit yet, or init named the wrong branch. Pass --base. A project's first request, on a commit with no parent, needs none, nor do its later rounds
+# exit 2
+## after: the same, with --base the first commit
+posted #2 request W2 implementer → reviewer: W2 @ fdbf31f165ea
+# exit 0

@@ -36,12 +36,28 @@ func git(dir string, args ...string) (string, error) {
 func RecordDir(dir string) (string, error) {
 	common, err := git(dir, "rev-parse", "--path-format=absolute", "--git-common-dir")
 	if err != nil {
+		// Only when git found no repository is git init the answer. Any other
+		// failure, such as a repository owned by someone else, keeps git's
+		// words alone (row 83).
+		if noRepository(err.Error()) {
+			return "", fmt.Errorf("not inside a git repository, which handoff needs; run `git init` first (%w)", err)
+		}
 		return "", fmt.Errorf("not inside a git repository: %w", err)
 	}
 	if filepath.Base(common) != ".git" {
 		return "", fmt.Errorf("the common git directory %s is not a .git directory inside a worktree; handoff needs a non-bare repository", common)
 	}
 	return filepath.Join(filepath.Dir(common), RecordDirName), nil
+}
+
+// noRepository says whether git's words mean it looked for a repository and
+// found none, which git init fixes: "not a git repository (or any of the
+// parent directories)", or "(or any parent up to mount point …)" at a
+// filesystem boundary. A pointer to a repository that isn't there, a
+// worktree's .git file or GIT_DIR, reads "not a git repository: <path>", and
+// git init does not fix it (row 84).
+func noRepository(msg string) bool {
+	return strings.Contains(msg, "not a git repository (or any")
 }
 
 // ResolveCommit turns a ref into a full commit id, or fails if it names no

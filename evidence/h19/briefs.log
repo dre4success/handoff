@@ -1,0 +1,42 @@
+# command: handoff brief for implementer and reviewer, built from e832f00bdef94a3be2bfcf2f934e4816b5bd20c2 (H18) and from here
+# date: 2026-10-25 17:13:15 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 874d3b84cfcfd8754446c0c614a9dba8015fba33
+
+## before: implementer
+When something arrives, read it with `handoff show <id>`, then:
+- A reply to your request: on CHANGES or QUESTION, fix or answer, then post again (`handoff post --as implementer ... --supersedes <id>`). On APPROVE, the operator decides; wait for the decision.
+- A decision from the operator: act on it. Merge only on approve.
+- A note to you: answer with `handoff note --as implementer --to <role> --re <id> --body <file>`.
+
+To ask for a review, commit your work, then `handoff post --as implementer --item <item> --to <reviewer> --commit <sha> --title "<title>" --body <file>`, where <reviewer> is reviewer or reviewer-2.
+To ask the operator about an item: `handoff note --as implementer --to operator --item <item> --title "<question>" --body <file>`.
+Rules: never edit .handoff/ by hand. Never merge, push or deploy without the operator's decision. A claim is not an approval.
+## before: reviewer
+When something arrives, read it with `handoff show <id>`, then:
+- A request to you: `handoff claim --as reviewer <id>`, review exactly the commit it names in a temporary worktree, then `handoff reply --as reviewer <id> --verdict APPROVE|CHANGES|QUESTION --commit <that sha> --body <file>`.
+- A reply to your request: on CHANGES or QUESTION, fix or answer, then post again (`handoff post --as reviewer ... --supersedes <id>`). On APPROVE, the operator decides; wait for the decision.
+- A decision from the operator: act on it. Merge only on approve.
+- A note to you: answer with `handoff note --as reviewer --to <role> --re <id> --body <file>`.
+
+To ask the operator about an item: `handoff note --as reviewer --to operator --item <item> --title "<question>" --body <file>`.
+Rules: never edit .handoff/ by hand. Never merge, push or deploy without the operator's decision. A claim is not an approval.
+## after: implementer
+When something arrives, read it with `handoff show <id>`, then:
+- A reply to your request: on CHANGES or QUESTION, fix or answer, then post again (`handoff post --as implementer ... --supersedes <id>`). On APPROVE, the operator decides; wait for the decision.
+- A decision from the operator: act on it. Merge only on approve.
+- A note to you: answer with `handoff note --as implementer --to <role> --re <id> --body <file>`. If it has findings on work you haven't asked about, fix them, then ask for a review.
+
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as implementer --item <item> --to <reviewer> --commit <sha> --title "<title>" --body <file>`, where <reviewer> is reviewer or reviewer-2.
+To ask the operator about an item: `handoff note --as implementer --to operator --item <item> --title "<question>" --body <file>`.
+Rules: never edit .handoff/ by hand. Never merge, push or deploy without the operator's decision. A claim is not an approval.
+## after: reviewer
+When something arrives, read it with `handoff show <id>`, then:
+- A request to you: `handoff claim --as reviewer <id>`, review exactly the commit it names in a temporary worktree, then `handoff reply --as reviewer <id> --verdict APPROVE|CHANGES|QUESTION --commit <that sha> --body <file>`.
+- A reply to your request: on CHANGES or QUESTION, fix or answer, then post again (`handoff post --as reviewer ... --supersedes <id>`). On APPROVE, the operator decides; wait for the decision.
+- A decision from the operator: act on it. Merge only on approve.
+- A note to you: answer with `handoff note --as reviewer --to <role> --re <id> --body <file>`.
+
+If the operator asks you to review work with no request, such as uncommitted changes, send what you find to implementer as a note: `handoff note --as reviewer --to implementer --item <item> --title "<title>" --body <file>`. Only a request names a commit, so only a request gets a verdict.
+To ask the operator about an item: `handoff note --as reviewer --to operator --item <item> --title "<question>" --body <file>`.
+Rules: never edit .handoff/ by hand. Never merge, push or deploy without the operator's decision. A claim is not an approval.

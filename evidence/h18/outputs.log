@@ -1,0 +1,54 @@
+# command: handoff init, inbox and brief outside a git repository, then git init and init, built from 05354af231534666ca614920171208b8b1d7fe8f (main) and from here; init where the repository is missing; each command init names, through sh
+# date: 2026-10-25 16:33:14 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 0c9e8c7a484dd1cf3e83b2bc814de8176ccf26f9
+
+## main: outside a git repository
+handoff init: not inside a git repository: git rev-parse --path-format=absolute --git-common-dir: fatal: not a git repository (or any of the parent directories): .git
+# exit 2
+handoff inbox: not inside a git repository: git rev-parse --path-format=absolute --git-common-dir: fatal: not a git repository (or any of the parent directories): .git
+# exit 2
+handoff brief: not inside a git repository: git rev-parse --path-format=absolute --git-common-dir: fatal: not a git repository (or any of the parent directories): .git
+# exit 2
+## main: after git init -b main, init
+Created <scratch>/main/.handoff. Git ignores it; nothing else in the project changed.
+Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.
+Main branch: main.
+
+To keep each CLI's sessions on duty here, run these and do what they say:
+  <scratch>/base-handoff settings claude
+  <scratch>/base-handoff settings codex
+Then give each session its role: tell it, such as "you review", and it runs <scratch>/base-handoff role <role>.
+# exit 0
+## here: outside a git repository
+handoff init: not inside a git repository, which handoff needs; run `git init` first (git rev-parse --path-format=absolute --git-common-dir: fatal: not a git repository (or any of the parent directories): .git)
+# exit 2
+handoff inbox: not inside a git repository, which handoff needs; run `git init` first (git rev-parse --path-format=absolute --git-common-dir: fatal: not a git repository (or any of the parent directories): .git)
+# exit 2
+handoff brief: not inside a git repository, which handoff needs; run `git init` first (git rev-parse --path-format=absolute --git-common-dir: fatal: not a git repository (or any of the parent directories): .git)
+# exit 2
+## here: after git init -b main, init
+Created <scratch>/here/.handoff. Git ignores it; nothing else in the project changed.
+Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.
+Main branch: main.
+
+To keep sessions on duty here, run the command for each CLI you use, and do what it prints:
+  Claude Code:  <scratch>/handoff settings claude
+  Codex:        <scratch>/handoff settings codex
+Then give each session its role: tell it, such as "you review", and it runs <scratch>/handoff role <role>.
+# exit 0
+## main: init in a worktree whose repository is gone
+handoff init: not inside a git repository: git rev-parse --path-format=absolute --git-common-dir: fatal: not a git repository: (null)
+# exit 2
+## main: init with GIT_DIR naming a missing path
+handoff init: not inside a git repository: git rev-parse --path-format=absolute --git-common-dir: fatal: not a git repository: '<scratch>/main-nowhere/nowhere'
+# exit 2
+## here: init in a worktree whose repository is gone
+handoff init: not inside a git repository: git rev-parse --path-format=absolute --git-common-dir: fatal: not a git repository: (null)
+# exit 2
+## here: init with GIT_DIR naming a missing path
+handoff init: not inside a git repository: git rev-parse --path-format=absolute --git-common-dir: fatal: not a git repository: '<scratch>/here-nowhere/nowhere'
+# exit 2
+## here: each command init printed, after its name, run through sh
+<scratch>/handoff settings claude: exit 0, 75 lines, first: Put this in .claude/settings.local.json in this project, merged with anything
+<scratch>/handoff settings codex: exit 0, 44 lines, first: Put these two files in this project's .codex/ folder, merged with any already

@@ -16,6 +16,8 @@ go install github.com/dre4success/handoff/cmd/handoff@latest
 
 You need Go 1.25.3 or later, and Go's bin folder (`~/go/bin`) on your `PATH`. Run it again to update. `handoff version` shows what you have.
 
+Your project must be a git repository, since every review is of one commit. If it isn't one yet, run `git init` first.
+
 ## Quick start
 
 1. In your project, run `handoff init`. It makes a `.handoff/` folder, which git ignores, with three roles: `implementer`, `reviewer` and `reviewer-2`. Every worktree of the project shares it.
@@ -51,6 +53,8 @@ A Claude Code session also tells you when it's stuck at a permission prompt.
 - A session has no role until you give it one. Tell it, and it runs `handoff role <role>`.
 - It keeps the role through a resume and Claude Code's `/clear`. A new Codex thread needs telling again.
 - Giving a role to a second session takes it from the first.
+- The implementer commits its work on a branch of its own and asks for a review without asking you first. It never merges or pushes without your decision.
+- If you ask a reviewer to look at work nobody has posted, it sends what it finds to the implementer as a note. Only a commit can get a verdict.
 - Choose other roles with `handoff init --roles a,b`. Every role reviews except one named `implementer`; `--reviewers` picks them yourself.
 - Add roles later with `handoff roles add reviewer-3`. Roles can't be renamed or removed.
 - To give every session of one CLI the same role: `handoff settings claude --as reviewer`.

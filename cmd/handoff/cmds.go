@@ -112,10 +112,12 @@ func (a *app) cmdInit(args []string) (int, error) {
 	}
 	fmt.Fprintf(a.stdout, "Created %s. Git ignores it; nothing else in the project changed.\n", dir)
 	writeRoles(a.stdout, &cfg)
-	fmt.Fprintf(a.stdout, "Main branch: %s.\n\nTo keep each CLI's sessions on duty here, run these and do what they say:\n", cfg.Main)
+	fmt.Fprintf(a.stdout, "Main branch: %s.\n\nTo keep sessions on duty here, run the command for each CLI you use, and do what it prints:\n", cfg.Main)
 	h := shellQuote(selfCommand())
-	for _, cli := range []string{"claude", "codex"} {
-		fmt.Fprintf(a.stdout, "  %s settings %s\n", h, cli)
+	// The CLI's name comes first, so the rest of the line is a command to
+	// copy as it is (row 83).
+	for _, c := range []struct{ name, cli string }{{"Claude Code:", "claude"}, {"Codex:", "codex"}} {
+		fmt.Fprintf(a.stdout, "  %-13s %s settings %s\n", c.name, h, c.cli)
 	}
 	fmt.Fprintf(a.stdout, "Then give each session its role: tell it, such as \"you review\", and it runs %s role <role>.\n", h)
 	return exitOK, nil
@@ -258,7 +260,12 @@ func (a *app) cmdPost(args []string) (int, error) {
 	if e.Commit, err = gitx.ResolveCommit(a.cwd, *ref); err != nil {
 		return 0, err
 	}
-	if e.Base, err = a.base(*baseRef, e.Commit); err != nil {
+	if *supersedes != "" {
+		if e.Supersedes, err = parseID(*supersedes); err != nil {
+			return 0, err
+		}
+	}
+	if e.Base, err = a.base(*baseRef, e.Commit, e.Supersedes); err != nil {
 		return 0, err
 	}
 	if *on != "" {
@@ -274,11 +281,6 @@ func (a *app) cmdPost(args []string) (int, error) {
 	}
 	if *parentRefs != "" {
 		if e.Parents, err = a.parents(*parentRefs, e.Commit); err != nil {
-			return 0, err
-		}
-	}
-	if *supersedes != "" {
-		if e.Supersedes, err = parseID(*supersedes); err != nil {
 			return 0, err
 		}
 	}
@@ -317,7 +319,8 @@ func (a *app) cmdPost(args []string) (int, error) {
 
 // base resolves --base, or defaults it to the merge base with the main
 // branch, and checks that it is an ancestor of the commit under review.
-func (a *app) base(ref, commit string) (string, error) {
+// supersedes is the request a new round replaces, or 0.
+func (a *app) base(ref, commit string, supersedes int64) (string, error) {
 	var base string
 	var err error
 	if ref != "" {
@@ -325,7 +328,27 @@ func (a *app) base(ref, commit string) (string, error) {
 	} else {
 		var tip string
 		if tip, err = gitx.ResolveCommit(a.cwd, a.cfg.Main); err != nil {
-			return "", fmt.Errorf("the main branch %q does not resolve (%v); pass --base", a.cfg.Main, err)
+			// In a new project, main has no commit yet. The project's first
+			// commit has no parent, so nothing can be its base, and the
+			// review covers all of it. Any other commit still needs main or
+			// --base, so a misnamed main is still caught (row 85).
+			if ps, perr := gitx.Parents(a.cwd, commit); perr == nil && len(ps) == 0 {
+				return "", nil
+			}
+			// A later round of a request with no base has none either: the
+			// fix goes on top, and the review still covers all of it (row
+			// 86). Entries never change, so reading this one outside the
+			// lock is safe; under it, post checks that it is the live one.
+			if supersedes != 0 {
+				if snap, lerr := a.store.Load(); lerr == nil {
+					for _, x := range snap.Entries {
+						if x.ID == supersedes && x.Kind == "request" && x.Base == "" {
+							return "", nil
+						}
+					}
+				}
+			}
+			return "", fmt.Errorf("the main branch %q does not resolve (%v): it has no commit yet, or init named the wrong branch. Pass --base. A project's first request, on a commit with no parent, needs none, nor do its later rounds", a.cfg.Main, err)
 		}
 		base, err = gitx.MergeBase(a.cwd, commit, tip)
 	}

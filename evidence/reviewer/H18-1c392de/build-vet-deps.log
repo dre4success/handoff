@@ -1,0 +1,35 @@
+# command: go build ./...; go vet ./...; gofmt -l cmd internal; go list -deps ./... | grep net; go.mod; git log/diff --stat
+# date: 2026-10-25 16:11:18 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 1c392de29d81a8c196bbdd0baf32faa37090288c
+
+## go build: ok
+## go vet: clean
+## gofmt -l cmd internal: []
+## go list -deps ./... matching net: []
+## go.mod: 0 require lines; go 1.25.3
+## commits on the base (05354af231534666ca614920171208b8b1d7fe8f):
+1c392de test: H18 evidence: the messages before and after, all tests under -race, the sweep
+e7aa86b docs: §17 row 83: git init when there's no repository; init names each CLI
+910facb docs: README: a project must be a git repository
+53a54c8 fix: init names the CLI each settings command is for
+f29e006 fix: outside a git repository, say handoff needs one: run git init first
+## the base is an ancestor of HEAD: yes; of main (d6ec37f5daf1c33376b8c4ab952029fc4860c2ed): yes
+## main since the base: docs/CHANNEL.md 
+## files changed, base to HEAD:
+ README.md                                 |   2 +
+ cmd/handoff/cmds.go                       |   8 +-
+ cmd/handoff/pickup_test.go                |  50 +++++++++
+ docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md |   1 +
+ evidence/h18/README.md                    |  12 ++
+ evidence/h18/collect.sh                   |  85 +++++++++++++++
+ evidence/h18/deps-vet-fmt.log             |   9 ++
+ evidence/h18/go-test-race.log             | 175 ++++++++++++++++++++++++++++++
+ evidence/h18/names.log                    |  11 ++
+ evidence/h18/outputs.log                  |  42 +++++++
+ internal/gitx/gitx.go                     |   6 +
+ 11 files changed, 398 insertions(+), 3 deletions(-)
+## the evidence commit alone:
+ 6 files changed, 334 insertions(+)
+## the match in internal/gitx/gitx.go:
+42:		if strings.Contains(err.Error(), "not a git repository") {

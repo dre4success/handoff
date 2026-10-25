@@ -1,0 +1,37 @@
+# command: the v0.1.0 release: the public commit checked in a plain clone, the push, then go install through the module proxy
+# date: 2026-10-24 22:11:03 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (go1.25.3)
+## clone at v0.1.0: 2226a1194e87d2f1a301a778b2ed51a8a2d72b1e, tree 4d4b4bccc01da5b2c3a6c83839d1f282fc78c614
+## local main tree: 4d4b4bccc01da5b2c3a6c83839d1f282fc78c614
+## handoff version: handoff v0.1.0
+## go.mod require lines: 0
+## go vet: clean
+## gofmt -l: []
+## go test -count=1 -race ./...
+ok  	github.com/dre4success/handoff/cmd/handoff	466.595s
+ok  	github.com/dre4success/handoff/internal/awake	1.304s
+?   	github.com/dre4success/handoff/internal/gitx	[no test files]
+ok  	github.com/dre4success/handoff/internal/notify	1.282s
+ok  	github.com/dre4success/handoff/internal/record	3.801s
+ok  	github.com/dre4success/handoff/internal/status	1.221s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	1.803s
+## go test exit: 0
+## sweep of every tracked file
+538 files
+the operator's name, as a word, in a file name or inside an identifier: 0
+the operator's account name, other than in the module path: 0
+a path under a home folder, other than the test's made-up ones: 0
+the other project's name: 0
+the operator's email domains: 0
+## alerts sent: 0 (to the test file only)
+## git push origin main v0.1.0, on the operator's decision: d52ff3f..2226a11 main, new tag v0.1.0
+## git ls-remote after the push
+2226a1194e87d2f1a301a778b2ed51a8a2d72b1e	HEAD
+2226a1194e87d2f1a301a778b2ed51a8a2d72b1e	refs/heads/main
+7dad3b17cbeb6fe472c81d85066906d0d17029fd	refs/tags/v0.1.0
+2226a1194e87d2f1a301a778b2ed51a8a2d72b1e	refs/tags/v0.1.0^{}
+## 2026-10-24 22:35:57 UTC: go install github.com/dre4success/handoff/cmd/handoff@v0.1.0 and @latest, with a scratch GOBIN and module cache
+@v0.1.0: handoff v0.1.0
+@latest: handoff v0.1.0
+## proxy.golang.org list: v0.1.0

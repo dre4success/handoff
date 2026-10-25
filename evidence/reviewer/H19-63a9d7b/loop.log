@@ -1,0 +1,188 @@
+# command: bash loop.sh (built from HEAD)
+# date: 2026-10-25 16:53:23 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 63a9d7b06ab928297b160418d786decbaf788cff
+
+## P1 a new project's loop: git init -b main; handoff init; a branch; the first commit; post, claim, CHANGES; a second commit; post again
+$ handoff init
+  | Created <scratch>/p1/.handoff. Git ignores it; nothing else in the project changed.
+  | Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.
+  | Main branch: main.
+  | 
+  | To keep sessions on duty here, run the command for each CLI you use, and do what it prints:
+  |   Claude Code:  <scratch>/handoff settings claude
+  |   Codex:        <scratch>/handoff settings codex
+  | Then give each session its role: tell it, such as "you review", and it runs <scratch>/handoff role <role>.
+  [exit 0]
+  first commit 6326b8f34d00e2ac10365d70470258c2eb858352 on w1; main has none: unborn
+$ handoff post --as implementer --item W1 --to reviewer --commit HEAD --title W1: first work --body <scratch>/body-please-review-.md
+  | posted #1 request W1 implementer → reviewer: W1: first work @ 6326b8f34d00
+  [exit 0]
+$ handoff show 1
+  | #1 request W1
+  | from: implementer → reviewer
+  | ts: 2026-10-25T16:53:23Z
+  | title: W1: first work
+  | commit: 6326b8f34d00e2ac10365d70470258c2eb858352
+  | state: open
+  | prev: genesis
+  | ---
+  | please review
+  [exit 0]
+  record line of #1 (body and prev shortened):
+    {"v":1,"id":1,"ts":"2026-10-25T16:53:23Z","kind":"request","item":"W1","from":"implementer","to":"reviewer","title":"W1: first work","commit":"6326b8f34d00e2ac10365d70470258c2eb858352","body":"…","prev":"…"}
+$ handoff claim --as reviewer 1
+  | posted #2 claim W1 reviewer → -: claimed #1
+  [exit 0]
+$ handoff reply --as reviewer 1 --verdict CHANGES --commit 6326b8f34d00e2ac10365d70470258c2eb858352 --body <scratch>/body-1--one-thing-to-fix-.md
+  | posted #3 reply W1 reviewer → implementer: CHANGES on #1 @ 6326b8f34d00
+  [exit 0]
+  second commit d22d0960f7d458c65134bbebffca7f144d62714e on w1, the fix
+  -- round 2, as the brief says (post again with --supersedes):
+$ handoff post --as implementer --item W1 --to reviewer --commit HEAD --title W1: round 2 --supersedes 1 --body <scratch>/body-fixed-.md
+  | handoff post: the main branch "main" does not resolve ("main" does not name a commit in this repository): it has no commit yet, or init named the wrong branch. Pass --base; a project's first commit, with no parent, needs none
+  [exit 2]
+  -- the only base that exists, the first commit:
+$ handoff post --as implementer --item W1 --to reviewer --commit HEAD --title W1: round 2 --supersedes 1 --base 6326b8f34d00e2ac10365d70470258c2eb858352 --body <scratch>/body-fixed-.md
+  | posted #4 request W1 implementer → reviewer: W1: round 2 @ d22d0960f7d4 (supersedes #1)
+  [exit 0]
+$ handoff show 4
+  | #4 request W1
+  | from: implementer → reviewer
+  | ts: 2026-10-25T16:53:24Z
+  | title: W1: round 2
+  | commit: d22d0960f7d458c65134bbebffca7f144d62714e
+  | base: 6326b8f34d00e2ac10365d70470258c2eb858352
+  | supersedes: #1
+  | state: open
+  | prev: 0d4e2c8d344652f1ac2d8b8075be33762cd3f9dacb91328c88f8452538665c50
+  | ---
+  | fixed
+  [exit 0]
+  what that base gives a reviewer (git diff --stat 6326b8f34d00e2ac10365d70470258c2eb858352 d22d0960f7d458c65134bbebffca7f144d62714e):
+     second.txt | 1 +
+     1 file changed, 1 insertion(+)
+  what the tree holds (git ls-tree -r --name-only d22d0960f7d458c65134bbebffca7f144d62714e):
+    first.txt
+    second.txt
+$ handoff claim --as reviewer 4
+  | posted #5 claim W1 reviewer → -: claimed #4
+  [exit 0]
+$ handoff reply --as reviewer 4 --verdict APPROVE --commit d22d0960f7d458c65134bbebffca7f144d62714e --body <scratch>/body-fine-.md
+  | posted #6 reply W1 reviewer → implementer: APPROVE on #4 @ d22d0960f7d4
+  | handoff: told the operator: W1: reviewer approved #4. Your decision.
+  [exit 0]
+$ handoff inbox --for operator
+  | inbox for operator
+  | 
+  | needs my review:
+  |   (none)
+  | 
+  | being reviewed by me:
+  |   (none)
+  | 
+  | needs my response:
+  |   (none)
+  | 
+  | awaiting the operator:
+  |   #4 request W1 implementer → reviewer: W1: round 2 @ d22d0960f7d4 (supersedes #1)
+  |     #6 reply W1 reviewer → implementer: APPROVE on #4 @ d22d0960f7d4
+  | 
+  | gone quiet:
+  |   (none)
+  [exit 0]
+$ handoff decide W1 --approve --note merge it
+  | handoff decide: decide needs a terminal on stdin: the operator types it, an agent's shell cannot
+  [exit 2]
+  -- the implementer makes main from w1 (git branch main w1), then a second item on a new branch:
+$ handoff post --as implementer --item W2 --to reviewer --commit HEAD --title W2: more --body <scratch>/body-please-review-.md
+  | posted #7 request W2 implementer → reviewer: W2: more @ 08d544c896a0
+  [exit 0]
+$ handoff show 7
+  | #7 request W2
+  | from: implementer → reviewer
+  | ts: 2026-10-25T16:53:24Z
+  | title: W2: more
+  | commit: 08d544c896a0808fb691ba94cf445f45c37f3c54
+  | base: d22d0960f7d458c65134bbebffca7f144d62714e
+  | state: open
+  | prev: 5f207d6737f8ae6c37e79103ed4fcc12cf4b44b62eb32c9b3c2c032ecbec5e66
+  | ---
+  | please review
+  [exit 0]
+  files in .handoff: channel.jsonl config.json head.json lock notified 
+## P1b round 2 by amending the first commit instead (git commit --amend): the new root has no parent
+$ handoff post --as implementer --item W1 --to reviewer --commit HEAD --title W1: first work --body <scratch>/body-please-review-.md
+  | posted #1 request W1 implementer → reviewer: W1: first work @ 7c69fbe25188
+  [exit 0]
+$ handoff claim --as reviewer 1
+  | posted #2 claim W1 reviewer → -: claimed #1
+  [exit 0]
+$ handoff reply --as reviewer 1 --verdict CHANGES --commit 7c69fbe2518881520bab858f3cbd3bd02d8e9c21 --body <scratch>/body-1--one-thing-to-fix-.md
+  | posted #3 reply W1 reviewer → implementer: CHANGES on #1 @ 7c69fbe25188
+  [exit 0]
+  amended root cac724abef4040cc7a1e433cda2c17198b690a50
+$ handoff post --as implementer --item W1 --to reviewer --commit HEAD --title W1: round 2 --supersedes 1 --body <scratch>/body-fixed-.md
+  | posted #4 request W1 implementer → reviewer: W1: round 2 @ cac724abef40 (supersedes #1)
+  [exit 0]
+$ handoff show 4
+  | #4 request W1
+  | from: implementer → reviewer
+  | ts: 2026-10-25T16:53:24Z
+  | title: W1: round 2
+  | commit: cac724abef4040cc7a1e433cda2c17198b690a50
+  | supersedes: #1
+  | state: open
+  | prev: c015ce2d99697503e3cdcf2b4080a36a36d8872e50fb257114fed37bc2c6ff0e
+  | ---
+  | fixed
+  [exit 0]
+## P2 a misnamed main branch: git init -b master; handoff init --main main
+$ handoff init --main main
+  | Created <scratch>/p2/.handoff. Git ignores it; nothing else in the project changed.
+  | Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.
+  | Main branch: main.
+  | 
+  | To keep sessions on duty here, run the command for each CLI you use, and do what it prints:
+  |   Claude Code:  <scratch>/handoff settings claude
+  |   Codex:        <scratch>/handoff settings codex
+  | Then give each session its role: tell it, such as "you review", and it runs <scratch>/handoff role <role>.
+  [exit 0]
+$ handoff post --as implementer --item W1 --to reviewer --commit HEAD --title W1 --body <scratch>/body-please-review-.md
+  | posted #1 request W1 implementer → reviewer: W1 @ 7c69fbe25188
+  [exit 0]
+$ handoff post --as implementer --item W2 --to reviewer --commit HEAD --title W2 --body <scratch>/body-please-review-.md
+  | handoff post: the main branch "main" does not resolve ("main" does not name a commit in this repository): it has no commit yet, or init named the wrong branch. Pass --base; a project's first commit, with no parent, needs none
+  [exit 2]
+## P3 the first commit made on the unborn main itself, no branch
+$ handoff post --as implementer --item W1 --to reviewer --commit HEAD --title W1 --body <scratch>/body-please-review-.md
+  | posted #1 request W1 implementer → reviewer: W1 @ 7c69fbe25188
+  [exit 0]
+$ handoff show 1
+  | #1 request W1
+  | from: implementer → reviewer
+  | ts: 2026-10-25T16:53:24Z
+  | title: W1
+  | commit: 7c69fbe2518881520bab858f3cbd3bd02d8e9c21
+  | base: 7c69fbe2518881520bab858f3cbd3bd02d8e9c21
+  | state: open
+  | prev: genesis
+  | ---
+  | please review
+  [exit 0]
+## P4 the briefs' new lines: init with no flags; --roles claude,codex; --roles a,b,c --reviewers c
+  implementer:
+    8:- A note to you: answer with `<scratch>/handoff note --as implementer --to <role> --re <id> --body <file>`. If it has findings on work you haven't asked about, fix them, then ask for a review.
+    10:To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `<scratch>/handoff post --as implementer --item <item> --to <reviewer> --commit <sha> --title "<title>" --body <file>`, where <reviewer> is reviewer or reviewer-2.
+  reviewer:
+    11:If the operator asks you to review work with no request, such as uncommitted changes, send what you find to implementer as a note: `<scratch>/handoff note --as reviewer --to implementer --item <item> --title "<title>" --body <file>`. Only a request names a commit, so only a request gets a verdict.
+  claude (both implement and review):
+    10:- A note to you: answer with `<scratch>/handoff note --as claude --to <role> --re <id> --body <file>`. If it has findings on work you haven't asked about, fix them, then ask for a review.
+    12:If the operator asks you to review work with no request, such as uncommitted changes, send what you find to <role> as a note: `<scratch>/handoff note --as claude --to <role> --item <item> --title "<title>" --body <file>`. Only a request names a commit, so only a request gets a verdict.
+    13:To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `<scratch>/handoff post --as claude --item <item> --to codex --commit <sha> --title "<title>" --body <file>`.
+  c (the one reviewer, two implementers):
+    11:If the operator asks you to review work with no request, such as uncommitted changes, send what you find to <role> as a note: `<scratch>/handoff note --as c --to <role> --item <item> --title "<title>" --body <file>`. Only a request names a commit, so only a request gets a verdict.
+  a (implements; one reviewer):
+    10:To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `<scratch>/handoff post --as a --item <item> --to c --commit <sha> --title "<title>" --body <file>`.
+
+# alerts sent to the scratch file during these probes: 1

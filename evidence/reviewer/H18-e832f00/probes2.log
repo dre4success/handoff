@@ -1,0 +1,59 @@
+# command: bash probes2.sh (round-2 probes: P12 to P16; built from HEAD)
+# date: 2026-10-25 16:37:14 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: e832f00bdef94a3be2bfcf2f934e4816b5bd20c2
+
+## P12 a repository whose .git directory cannot be read (mode 000)
+  git: fatal: not a git repository (or any of the parent directories): .git
+  git: [exit 128]
+  git's words contain "not a git repository (or any": yes
+  handoff: handoff init: not inside a git repository, which handoff needs; run `git init` first (git rev-parse --path-format=absolute --git-common-dir: fatal: not a git repository (or any of the parent directories): .git)
+  handoff: [exit 2]
+  then, as the hint says: git init -q -b main
+  git init: [exit 128]
+  git init: warning: unable to access '<scratch>/p12/.git/config': Permission denied
+  git init: fatal: unable to access '<scratch>/p12/.git/config': Permission denied
+  handoff init again: [exit 2]
+  handoff init again: handoff init: not inside a git repository, which handoff needs; run `git init` first (git rev-parse --path-format=absolute --git-common-dir: fatal: not a git repository (or any of the parent directories): .git)
+## P13 a .git file that is not a gitdir pointer
+  git: fatal: invalid gitfile format: <scratch>/p13/.git
+  git: [exit 128]
+  git's words contain "not a git repository": no
+  handoff: handoff init: not inside a git repository: git rev-parse --path-format=absolute --git-common-dir: fatal: invalid gitfile format: <scratch>/p13/.git
+  handoff: [exit 2]
+  then, as the hint says: git init -q -b main
+  git init: [exit 128]
+  git init: fatal: invalid gitfile format: <scratch>/p13/.git
+  handoff init again: [exit 2]
+  handoff init again: handoff init: not inside a git repository: git rev-parse --path-format=absolute --git-common-dir: fatal: invalid gitfile format: <scratch>/p13/.git
+## P14 an empty .git directory (mkdir .git)
+  git: fatal: not a git repository (or any of the parent directories): .git
+  git: [exit 128]
+  git's words contain "not a git repository (or any": yes
+  handoff: handoff init: not inside a git repository, which handoff needs; run `git init` first (git rev-parse --path-format=absolute --git-common-dir: fatal: not a git repository (or any of the parent directories): .git)
+  handoff: [exit 2]
+  then, as the hint says: git init -q -b main
+  git init: [exit 0]
+  handoff init again: [exit 0]
+  handoff init again: Created <scratch>/p14/.handoff. Git ignores it; nothing else in the project changed.
+## P15 inside a repository that GIT_CEILING_DIRECTORIES hides (set to the repository's own folder; from sub/)
+  git: fatal: not a git repository (or any of the parent directories): .git
+  git: [exit 128]
+  git's words contain "not a git repository (or any": yes
+  handoff: handoff init: not inside a git repository, which handoff needs; run `git init` first (git rev-parse --path-format=absolute --git-common-dir: fatal: not a git repository (or any of the parent directories): .git)
+  handoff: [exit 2]
+## P16 TestH18AMissingRepositoryGetsNoHint as written here, run on round 1's tree (1c392de29d81a8c196bbdd0baf32faa37090288c)
+  --- FAIL: TestH18AMissingRepositoryGetsNoHint (0.24s)
+      pickup_test.go:259: a worktree whose repository is gone: exit 2, stderr "handoff init: not inside a git repository, which handoff needs; run `git init` first (git rev-parse --path-format=absolute --git-common-dir: fa
+      pickup_test.go:259: GIT_DIR naming a missing path: exit 2, stderr "handoff init: not inside a git repository, which handoff needs; run `git init` first (git rev-parse --path-format=absolute --git-common-dir: fatal: n
+  FAIL
+  FAIL	github.com/dre4success/handoff/cmd/handoff	0.711s
+  FAIL
+  [go test exit 1]
+## P16 (continued) the two new tests here
+  --- PASS: TestH18AMissingRepositoryGetsNoHint (0.20s)
+  ok  	github.com/dre4success/handoff/cmd/handoff	0.578s
+  --- PASS: TestH18NoRepositoryMeansGitInitFixesIt (0.00s)
+  ok  	github.com/dre4success/handoff/internal/gitx	0.191s
+
+# alerts sent to the scratch file during these probes: 0

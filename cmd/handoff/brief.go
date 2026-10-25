@@ -58,7 +58,7 @@ func (a *app) writeBrief(w io.Writer, role string, how listening) error {
 	}
 	h := shellQuote(selfCommand())
 	project := filepath.Base(filepath.Dir(a.dir))
-	var others, reviewers []string
+	var others, reviewers, implementers []string
 	allReview := true
 	for _, r := range a.cfg.Roles {
 		allReview = allReview && r.Reviews
@@ -66,6 +66,8 @@ func (a *app) writeBrief(w io.Writer, role string, how listening) error {
 			others = append(others, r.Name)
 			if r.Reviews {
 				reviewers = append(reviewers, r.Name)
+			} else {
+				implementers = append(implementers, r.Name)
 			}
 		}
 	}
@@ -95,14 +97,30 @@ func (a *app) writeBrief(w io.Writer, role string, how listening) error {
 	}
 	fmt.Fprintf(w, "- A reply to your request: on CHANGES or QUESTION, fix or answer, then post again (`%s post --as %s ... --supersedes <id>`). On APPROVE, the operator decides; wait for the decision.\n", h, role)
 	fmt.Fprintf(w, "- A decision from the operator: act on it. Merge only on approve.\n")
-	fmt.Fprintf(w, "- A note to you: answer with `%s note --as %s --to <role> --re <id> --body <file>`.\n", h, role)
+	fmt.Fprintf(w, "- A note to you: answer with `%s note --as %s --to <role> --re <id> --body <file>`.", h, role)
+	if asks {
+		fmt.Fprint(w, " If it has findings on work you haven't asked about, fix them, then ask for a review.")
+	}
 	fmt.Fprintln(w)
+	fmt.Fprintln(w)
+	if rc.Reviews {
+		// Asked in its session to look at work nobody has posted, a reviewer
+		// can give no verdict, since only a request names a commit. A note
+		// puts what it found in the record (row 85).
+		to := "<role>"
+		if len(implementers) == 1 {
+			to = implementers[0]
+		}
+		fmt.Fprintf(w, "If the operator asks you to review work with no request, such as uncommitted changes, send what you find to %s as a note: `%s note --as %s --to %s --item <item> --title \"<title>\" --body <file>`. Only a request names a commit, so only a request gets a verdict.\n", to, h, role, to)
+	}
 	if asks {
 		to, where := reviewers[0], ""
 		if len(reviewers) > 1 {
 			to, where = "<reviewer>", ", where <reviewer> is "+listOf(reviewers, "or")
 		}
-		fmt.Fprintf(w, "To ask for a review, commit your work, then `%s post --as %s --item <item> --to %s --commit <sha> --title \"<title>\" --body <file>`%s.\n", h, role, to, where)
+		// Agents commit only when asked. The operator asked, by giving this
+		// role, so the brief says so (row 85).
+		fmt.Fprintf(w, "To ask for a review, commit your work on a branch of its own, not on %s; you don't need to ask the operator first. Then `%s post --as %s --item <item> --to %s --commit <sha> --title \"<title>\" --body <file>`%s.\n", a.cfg.Main, h, role, to, where)
 	}
 	fmt.Fprintf(w, "To ask the operator about an item: `%s note --as %s --to operator --item <item> --title \"<question>\" --body <file>`.\n", h, role)
 	fmt.Fprintf(w, "Rules: never edit .handoff/ by hand. Never merge, push or deploy without the operator's decision. A claim is not an approval.\n")

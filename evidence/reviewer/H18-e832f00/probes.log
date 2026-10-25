@@ -1,0 +1,103 @@
+# command: bash probes.sh (round 1's, from 23f89aa:evidence/reviewer/H18-1c392de/probes.sh) (the git call handoff makes, then handoff init, in each situation; built from HEAD)
+# date: 2026-10-25 16:37:11 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: e832f00bdef94a3be2bfcf2f934e4816b5bd20c2
+
+## P1 a folder in no repository (no ceiling; under /private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T)
+  git: fatal: not a git repository (or any of the parent directories): .git
+  git: [exit 128]
+  git's words contain "not a git repository (or any": yes
+  handoff: handoff init: not inside a git repository, which handoff needs; run `git init` first (git rev-parse --path-format=absolute --git-common-dir: fatal: not a git repository (or any of the parent directories): .git)
+  handoff: [exit 2]
+  then: git init -q -b main
+  [exit 0]
+  handoff init: Created <scratch>/p1/.handoff. Git ignores it; nothing else in the project changed.
+  handoff init: Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.
+  handoff inbox with no commit yet: handoff inbox: no role: pass --as <role>, or set HANDOFF_ROLE; or give --for <role>
+  [exit 2]
+## P2 a folder in no repository, GIT_CEILING_DIRECTORIES set as the test sets it
+  git: fatal: not a git repository (or any of the parent directories): .git
+  git: [exit 128]
+  git's words contain "not a git repository (or any": yes
+  handoff: handoff init: not inside a git repository, which handoff needs; run `git init` first (git rev-parse --path-format=absolute --git-common-dir: fatal: not a git repository (or any of the parent directories): .git)
+  handoff: [exit 2]
+## P3 a folder in no repository on a volume of its own (/Volumes/h18probe, a scratch disk image; device 16777237 vs 16777231 for /Volumes)
+  git: fatal: not a git repository (or any parent up to mount point /Volumes)
+  git: Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+  git: [exit 128]
+  git's words contain "not a git repository (or any": yes
+  handoff: handoff init: not inside a git repository, which handoff needs; run `git init` first (git rev-parse --path-format=absolute --git-common-dir: fatal: not a git repository (or any parent up to mount point /Volumes)
+  handoff: Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).)
+  handoff: [exit 2]
+## P4 a folder in no repository, git speaking German
+  git: Schwerwiegend: Kein Git-Repository (oder irgendeines der Elternverzeichnisse): .git
+  git: [exit 128]
+  git's words contain "not a git repository": no
+  handoff: handoff init: not inside a git repository: git rev-parse --path-format=absolute --git-common-dir: Schwerwiegend: Kein Git-Repository (oder irgendeines der Elternverzeichnisse): .git
+  handoff: [exit 2]
+## P5 a linked worktree whose repository was removed (.git is a file: gitdir: <scratch>/A/.git/worktrees/p5)
+  git: fatal: not a git repository: (null)
+  git: [exit 128]
+  git's words contain "not a git repository": yes, but not "(or any"
+  handoff: handoff init: not inside a git repository: git rev-parse --path-format=absolute --git-common-dir: fatal: not a git repository: (null)
+  handoff: [exit 2]
+  then, as the hint says: git init -q -b main
+  git init: fatal: not a git repository: <scratch>/A/.git/worktrees/p5
+  [exit 128]
+  handoff init again: handoff init: not inside a git repository: git rev-parse --path-format=absolute --git-common-dir: fatal: not a git repository: (null)
+## P6 GIT_DIR naming a path that does not exist
+  git: fatal: not a git repository: '<scratch>/nowhere'
+  git: [exit 128]
+  git's words contain "not a git repository": yes, but not "(or any"
+  handoff: handoff init: not inside a git repository: git rev-parse --path-format=absolute --git-common-dir: fatal: not a git repository: '<scratch>/nowhere'
+  handoff: [exit 2]
+  then, as the hint says: git init -q -b main (with GIT_DIR still set)
+  [exit 0]
+  handoff init again: handoff init: the common git directory <scratch>/nowhere is not a .git directory inside a worktree; handoff needs a non-bare repository
+## P7 a repository owned by someone else (GIT_TEST_ASSUME_DIFFERENT_OWNER=1)
+  git: fatal: detected dubious ownership in repository at '<scratch>/p7'
+  git: To add an exception for this directory, call:
+  git: 
+  git: 	git config --global --add safe.directory <scratch>/p7
+  git: [exit 128]
+  git's words contain "not a git repository": no
+  handoff: handoff init: not inside a git repository: git rev-parse --path-format=absolute --git-common-dir: fatal: detected dubious ownership in repository at '<scratch>/p7'
+  handoff: To add an exception for this directory, call:
+  handoff: 
+  handoff: 	git config --global --add safe.directory <scratch>/p7
+  handoff: [exit 2]
+## P8 a repository whose .git/HEAD was removed
+  git: fatal: not a git repository (or any of the parent directories): .git
+  git: [exit 128]
+  git's words contain "not a git repository (or any": yes
+  handoff: handoff init: not inside a git repository, which handoff needs; run `git init` first (git rev-parse --path-format=absolute --git-common-dir: fatal: not a git repository (or any of the parent directories): .git)
+  handoff: [exit 2]
+  then, as the hint says: git init -q -b main
+  [exit 0]
+  [exit 0]
+  handoff init again: Created <scratch>/p8/.handoff. Git ignores it; nothing else in the project changed.
+## P9 a bare repository
+  git: <scratch>/p9
+  git: [exit 0]
+  git's words contain "not a git repository": no
+  handoff: handoff init: the common git directory <scratch>/p9 is not a .git directory inside a worktree; handoff needs a non-bare repository
+  handoff: [exit 2]
+## P10 outside any repository: version, --version, help, settings claude
+  handoff version: handoff (devel) [exit 0]
+  handoff --version: handoff (devel) [exit 0]
+  handoff help: exit 0, 31 lines
+  handoff settings claude: handoff settings: not inside a git repository, which handoff needs; run `git init` first (git rev-parse --path-format=absolute --git-common-dir: fatal: not a git repository (or any of the parent directories): .git)
+  [exit 2]
+## P11 init's lines in a fresh repository, as printed; each, after its name, through /bin/sh
+  | To keep sessions on duty here, run the command for each CLI you use, and do what it prints:
+  |   Claude Code:  <scratch>/handoff settings claude
+  |   Codex:        <scratch>/handoff settings codex
+  | Then give each session its role: tell it, such as "you review", and it runs <scratch>/handoff role <role>.
+  sh -c '<scratch>/handoff settings claude': exit 0, 75 lines; mentions "hook listen": 1
+  sh -c '<scratch>/handoff settings codex': exit 0, 44 lines; mentions "hook listen": 2
+  on PATH | To keep sessions on duty here, run the command for each CLI you use, and do what it prints:
+  on PATH |   Claude Code:  handoff settings claude
+  on PATH |   Codex:        handoff settings codex
+  on PATH | Then give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+
+# alerts sent to the scratch file during these probes: 0

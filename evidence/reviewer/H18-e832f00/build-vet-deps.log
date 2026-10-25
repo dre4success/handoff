@@ -1,0 +1,34 @@
+# command: go build ./...; go vet ./...; gofmt -l cmd internal; go list -deps ./... | grep net; go.mod; git log/diff --stat
+# date: 2026-10-25 16:37:10 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: e832f00bdef94a3be2bfcf2f934e4816b5bd20c2
+
+## go build: ok
+## go vet: clean
+## gofmt -l cmd internal: []
+## go list -deps ./... matching net: []
+## go.mod: 0 require lines; go 1.25.3
+## commits on round 1 (1c392de29d81a8c196bbdd0baf32faa37090288c):
+e832f00 test: H18 round 2 evidence: no hint where the repository is missing, all re-run
+0c9e8c7 docs: §17 row 84: the hint needs git's words for finding no repository
+4d5b3bc fix: give the git init hint only when git looked and found no repository
+## round 1 is an ancestor of HEAD: yes; the base (05354af231534666ca614920171208b8b1d7fe8f) of main (710141790bf3ea5e2fa5e8cb7b733c08bf291634): yes
+## main since the base: docs/CHANNEL.md evidence/reviewer/H18-1c392de/README.md evidence/reviewer/H18-1c392de/build-vet-deps.log evidence/reviewer/H18-1c392de/collect.sh evidence/reviewer/H18-1c392de/go-test-race.log evidence/reviewer/H18-1c392de/merge-and-sweep.log evidence/reviewer/H18-1c392de/probes.log evidence/reviewer/H18-1c392de/probes.sh 
+## files changed, round 1 to HEAD:
+ cmd/handoff/pickup_test.go                |  28 ++++
+ docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md |   1 +
+ evidence/h18/README.md                    |   6 +-
+ evidence/h18/collect.sh                   |  14 +-
+ evidence/h18/deps-vet-fmt.log             |   4 +-
+ evidence/h18/go-test-race.log             | 216 +++++++++++++++---------------
+ evidence/h18/names.log                    |   6 +-
+ evidence/h18/outputs.log                  |  18 ++-
+ internal/gitx/gitx.go                     |  12 +-
+ internal/gitx/gitx_test.go                |  22 +++
+ 10 files changed, 208 insertions(+), 119 deletions(-)
+## the evidence commit alone:
+ 6 files changed, 146 insertions(+), 118 deletions(-)
+## the helper in internal/gitx/gitx.go:
+59:func noRepository(msg string) bool {
+60-	return strings.Contains(msg, "not a git repository (or any")
+61-}

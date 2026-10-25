@@ -1,0 +1,48 @@
+# command: go build ./...; go vet ./...; gofmt -l cmd internal; go list -deps ./... | grep net; go.mod; git log/diff --stat
+# date: 2026-10-25 17:17:02 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 24ffd679d49983d3a48139121632a3a0544459b4
+
+## go build: ok
+## go vet: clean
+## gofmt -l cmd internal: []
+## go list -deps ./... matching net: []
+## go.mod: 0 require lines; go 1.25.3
+## commits on round 1 (63a9d7b06ab928297b160418d786decbaf788cff):
+24ffd67 test: H19 round 2 evidence: a first request's second round, all re-run
+874d3b8 docs: §17 row 86: a first request's later rounds need no base
+4d7a467 fix: a later round of a request with no base has none either
+## round 1 is an ancestor of HEAD: yes
+## the base is an ancestor of HEAD: yes; of main (312ec136815d157d73a7b301c4d1530792347520): yes
+## main since the branch point (e832f00bdef94a3be2bfcf2f934e4816b5bd20c2): docs/CHANNEL.md evidence/reviewer/H18-1c392de/README.md evidence/reviewer/H18-1c392de/build-vet-deps.log evidence/reviewer/H18-1c392de/collect.sh evidence/reviewer/H18-1c392de/go-test-race.log evidence/reviewer/H18-1c392de/merge-and-sweep.log evidence/reviewer/H18-1c392de/probes.log evidence/reviewer/H18-1c392de/probes.sh evidence/reviewer/H18-e832f00/README.md evidence/reviewer/H18-e832f00/build-vet-deps.log evidence/reviewer/H18-e832f00/collect.sh evidence/reviewer/H18-e832f00/go-test-race.log evidence/reviewer/H18-e832f00/merge-and-sweep.log evidence/reviewer/H18-e832f00/probes.log evidence/reviewer/H18-e832f00/probes2.log evidence/reviewer/H18-e832f00/probes2.sh evidence/reviewer/H19-63a9d7b/README.md evidence/reviewer/H19-63a9d7b/build-vet-deps.log evidence/reviewer/H19-63a9d7b/collect.sh evidence/reviewer/H19-63a9d7b/go-test-race.log evidence/reviewer/H19-63a9d7b/loop.log evidence/reviewer/H19-63a9d7b/loop.sh evidence/reviewer/H19-63a9d7b/merge-and-sweep.log 
+## files changed, round 1 to HEAD:
+ cmd/handoff/cmds.go                       |  30 ++--
+ cmd/handoff/pickup_test.go                |  30 +++-
+ docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md |   1 +
+ evidence/h19/README.md                    |   5 +-
+ evidence/h19/briefs.log                   |   4 +-
+ evidence/h19/collect.sh                   |  27 ++++
+ evidence/h19/deps-vet-fmt.log             |   4 +-
+ evidence/h19/go-test-race.log             | 222 +++++++++++++++---------------
+ evidence/h19/names.log                    |   6 +-
+ evidence/h19/new-project.log              |  14 +-
+ evidence/h19/round-2.log                  |  22 +++
+ 11 files changed, 223 insertions(+), 142 deletions(-)
+## the evidence commit alone:
+ 8 files changed, 177 insertions(+), 127 deletions(-)
+## the no-base rule in cmd/handoff/cmds.go:
+333-			// review covers all of it. Any other commit still needs main or
+334-			// --base, so a misnamed main is still caught (row 85).
+335:			if ps, perr := gitx.Parents(a.cwd, commit); perr == nil && len(ps) == 0 {
+336-				return "", nil
+337-			}
+338-			// A later round of a request with no base has none either: the
+339-			// fix goes on top, and the review still covers all of it (row
+340-			// 86). Entries never change, so reading this one outside the
+341-			// lock is safe; under it, post checks that it is the live one.
+342-			if supersedes != 0 {
+343-				if snap, lerr := a.store.Load(); lerr == nil {
+344-					for _, x := range snap.Entries {
+345-						if x.ID == supersedes && x.Kind == "request" && x.Base == "" {
+346-							return "", nil
+347-						}

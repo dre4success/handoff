@@ -1,0 +1,22 @@
+# command: a new project's first request, round 2: CHANGES, then the fix on top supersedes it; built from round 1 (63a9d7b) and from here
+# date: 2026-10-25 17:13:18 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 874d3b84cfcfd8754446c0c614a9dba8015fba33
+
+## round1: round 2, the fix on top, --supersedes 1, no --base
+handoff post: the main branch "main" does not resolve ("main" does not name a commit in this repository): it has no commit yet, or init named the wrong branch. Pass --base; a project's first commit, with no parent, needs none
+# exit 2
+## after: round 2, the fix on top, --supersedes 1, no --base
+posted #4 request W1 implementer → reviewer: W1 round 2 @ 2afd734e1aa5 (supersedes #1)
+# exit 0
+## after: show the round-2 request: no base line
+#4 request W1
+from: implementer → reviewer
+ts: 2026-10-25T17:13:18Z
+title: W1 round 2
+commit: 2afd734e1aa5e113906516c8a27e81c647e4ffa6
+supersedes: #1
+state: open
+prev: dbc44754a9a0623388cf132f708183dbce7775916bfe5b2cd082599bbe1f6001
+---
+fixed

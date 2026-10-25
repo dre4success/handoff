@@ -1,0 +1,146 @@
+# command: bash loop2.sh (built from HEAD)
+# date: 2026-10-25 17:18:14 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 24ffd679d49983d3a48139121632a3a0544459b4
+
+## P1 the loop: first commit on w1, #1 posted with no base, claimed, CHANGES (#3); then the fix on top
+  first eaddf8be17aba0304c0e61cf397fb17984a0d73d; main: unborn
+$ handoff post --as implementer --item W1 --to reviewer --commit HEAD --title W1: round 2 --supersedes 1 --body <scratch>/body-fixed-.md
+  | posted #4 request W1 implementer → reviewer: W1: round 2 @ f3acffeb112c (supersedes #1)
+  [exit 0]
+$ handoff show 4
+  | #4 request W1
+  | from: implementer → reviewer
+  | ts: 2026-10-25T17:18:14Z
+  | title: W1: round 2
+  | commit: f3acffeb112c05c6104240fc4bdc7eb47b2cabad
+  | supersedes: #1
+  | state: open
+  | prev: 428e030b65777bec4c0541006d3e9539e6b3d4218b0385c3fb7766192ba2cf17
+  | ---
+  | fixed
+  [exit 0]
+  base of #4 in the record: []
+$ handoff claim --as reviewer 4
+  | posted #5 claim W1 reviewer → -: claimed #4
+  [exit 0]
+$ handoff reply --as reviewer 4 --verdict CHANGES --commit f3acffeb112c05c6104240fc4bdc7eb47b2cabad --body <scratch>/body-1--one-more-.md
+  | posted #6 reply W1 reviewer → implementer: CHANGES on #4 @ f3acffeb112c
+  [exit 0]
+  -- round 3 supersedes #4, itself with no base:
+$ handoff post --as implementer --item W1 --to reviewer --commit HEAD --title W1: round 3 --supersedes 4 --body <scratch>/body-fixed-again-.md
+  | posted #7 request W1 implementer → reviewer: W1: round 3 @ eb14f1e1c7bc (supersedes #4)
+  [exit 0]
+  base of #7 in the record: []
+$ handoff claim --as reviewer 7
+  | posted #8 claim W1 reviewer → -: claimed #7
+  [exit 0]
+$ handoff reply --as reviewer 7 --verdict APPROVE --commit eb14f1e1c7bc48a051ce4bd02f4667b0dfb5b32f --body <scratch>/body-fine-.md
+  | posted #9 reply W1 reviewer → implementer: APPROVE on #7 @ eb14f1e1c7bc
+  | handoff: told the operator: W1: reviewer approved #7. Your decision.
+  [exit 0]
+$ handoff inbox --for operator
+  | inbox for operator
+  | 
+  | needs my review:
+  |   (none)
+  | 
+  | being reviewed by me:
+  |   (none)
+  | 
+  | needs my response:
+  |   (none)
+  | 
+  | awaiting the operator:
+  |   #7 request W1 implementer → reviewer: W1: round 3 @ eb14f1e1c7bc (supersedes #4)
+  |     #9 reply W1 reviewer → implementer: APPROVE on #7 @ eb14f1e1c7bc
+  | 
+  | gone quiet:
+  |   (none)
+  [exit 0]
+  -- a second item, W2, on the same branch, main still unborn:
+$ handoff post --as implementer --item W2 --to reviewer --commit HEAD --title W2 --body <scratch>/body-please-review-.md
+  | handoff post: the main branch "main" does not resolve ("main" does not name a commit in this repository): it has no commit yet, or init named the wrong branch. Pass --base. A project's first request, on a commit with no parent, needs none, nor do its later rounds
+  [exit 2]
+$ handoff post --as implementer --item W2 --to reviewer --commit HEAD --title W2 --base eb14f1e1c7bc48a051ce4bd02f4667b0dfb5b32f --body <scratch>/body-please-review-.md
+  | posted #10 request W2 implementer → reviewer: W2 @ bd013bfa7aeb
+  [exit 0]
+  base of #10 in the record: [eb14f1e1c7bc48a051ce4bd02f4667b0dfb5b32f]
+  -- W2's next round supersedes #10, which has a base:
+$ handoff post --as implementer --item W2 --to reviewer --commit HEAD --title W2: round 2 --supersedes 10 --body <scratch>/body-fixed-.md
+  | handoff post: the main branch "main" does not resolve ("main" does not name a commit in this repository): it has no commit yet, or init named the wrong branch. Pass --base. A project's first request, on a commit with no parent, needs none, nor do its later rounds
+  [exit 2]
+$ handoff post --as implementer --item W2 --to reviewer --commit HEAD --title W2: round 2 --supersedes 10 --base eb14f1e1c7bc48a051ce4bd02f4667b0dfb5b32f --body <scratch>/body-fixed-.md
+  | posted #11 request W2 implementer → reviewer: W2: round 2 @ 752a126944e7 (supersedes #10)
+  [exit 0]
+  base of #11 in the record: [eb14f1e1c7bc48a051ce4bd02f4667b0dfb5b32f]
+## P2 other routes to a request with no base
+### P2a --supersedes 1 with --base given: the given base wins
+$ handoff post --as implementer --item W1 --to reviewer --commit HEAD --title W1: round 2 --supersedes 1 --base 542c01b881fec4bdd1d7080cc427b407a6752b9c --body <scratch>/body-fixed-.md
+  | posted #4 request W1 implementer → reviewer: W1: round 2 @ e34fecdd9521 (supersedes #1)
+  [exit 0]
+  base of #4 in the record: [542c01b881fec4bdd1d7080cc427b407a6752b9c]
+### P2b --supersedes 1 on a commit unrelated to the first: an orphan branch with two commits
+  orphan tip fb06b862a338c7c6fde8c69c3c69fe9ff8bc9276, parent 0c33cbb5a376ccef8582fbe93ecd5fdbcdab8177; first was 542c01b881fec4bdd1d7080cc427b407a6752b9c
+$ handoff post --as implementer --item W1 --to reviewer --commit HEAD --title W1: round 2 --supersedes 1 --body <scratch>/body-fixed-.md
+  | posted #4 request W1 implementer → reviewer: W1: round 2 @ fb06b862a338 (supersedes #1)
+  [exit 0]
+  base of #4 in the record: []
+### P2c --supersedes naming an id that does not exist (#9)
+$ handoff post --as implementer --item W1 --to reviewer --commit HEAD --title W1: round 2 --supersedes 9 --body <scratch>/body-fixed-.md
+  | handoff post: the main branch "main" does not resolve ("main" does not name a commit in this repository): it has no commit yet, or init named the wrong branch. Pass --base. A project's first request, on a commit with no parent, needs none, nor do its later rounds
+  [exit 2]
+### P2d --supersedes naming the reply (#3), not the request
+$ handoff post --as implementer --item W1 --to reviewer --commit HEAD --title W1: round 2 --supersedes 3 --body <scratch>/body-fixed-.md
+  | handoff post: the main branch "main" does not resolve ("main" does not name a commit in this repository): it has no commit yet, or init named the wrong branch. Pass --base. A project's first request, on a commit with no parent, needs none, nor do its later rounds
+  [exit 2]
+### P2e --supersedes 1 from another item (W2)
+$ handoff post --as implementer --item W2 --to reviewer --commit HEAD --title W2 --supersedes 1 --body <scratch>/body-please-review-.md
+  | handoff post: #1 is not the open request on W2 from implementer to reviewer
+  [exit 2]
+### P2f main born between rounds (git branch main w1 at the first commit), then round 2
+$ handoff post --as implementer --item W1 --to reviewer --commit HEAD --title W1: round 2 --supersedes 1 --body <scratch>/body-fixed-.md
+  | posted #4 request W1 implementer → reviewer: W1: round 2 @ e6ab70ebe280 (supersedes #1)
+  [exit 0]
+  base of #4 in the record: [83d5ef516587a0c92ad2d650e91c6ab06f0dba58]
+### P2g a misnamed main (init --main main on master): the root commit posted first, then the tip of a long branch as round 2
+$ handoff post --as implementer --item W1 --to reviewer --commit 54a5af1722562c9edb47582cc93e6f157738db91 --title W1 --body <scratch>/body-please-review-.md
+  | posted #1 request W1 implementer → reviewer: W1 @ 54a5af172256
+  [exit 0]
+$ handoff post --as implementer --item W1 --to reviewer --commit f7cc1a494d1d805598e0187d357f66fb26270d00 --title W1: round 2 --supersedes 1 --body <scratch>/body-fixed-.md
+  | posted #4 request W1 implementer → reviewer: W1: round 2 @ f7cc1a494d1d (supersedes #1)
+  [exit 0]
+  base of #4 in the record: []
+## P3 two round-2 posts at once, both superseding #1 (read outside the lock; checked under it)
+  A: posted #4 request W1 implementer → reviewer: W1: round 2 (A) @ e6ab70ebe280 (supersedes #1) [exit 0]
+  B: handoff post: #1 is already superseded by #4 [exit 2]
+  requests on W1 now: 2; the record verifies: yes
+$ handoff inbox --for reviewer
+  | inbox for reviewer
+  | 
+  | needs my review:
+  |   #4 request W1 implementer → reviewer: W1: round 2 (A) @ e6ab70ebe280 (supersedes #1)
+  | 
+  | being reviewed by me:
+  |   (none)
+  | 
+  | needs my response:
+  |   (none)
+  | 
+  | awaiting the operator:
+  |   (none)
+  | 
+  | gone quiet:
+  |   (none)
+  [exit 0]
+## P4 TestH19FirstCommitNeedsNoBase as written here, run on round 1's tree (63a9d7b06ab928297b160418d786decbaf788cff), then here
+  --- FAIL: TestH19FirstCommitNeedsNoBase (0.44s)
+      pickup_test.go:309: handoff [post --item W1 --to reviewer --commit eb7ff00558baf8e551ac05976847a1baae6c2f66 --supersedes 1 --title W1 round 2 --body /var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/
+  FAIL
+  FAIL	github.com/dre4success/handoff/cmd/handoff	0.927s
+  FAIL
+  [go test exit 1]
+  --- PASS: TestH19FirstCommitNeedsNoBase (0.62s)
+  ok  	github.com/dre4success/handoff/cmd/handoff	0.962s
+
+# alerts sent to the scratch file during these probes: 1

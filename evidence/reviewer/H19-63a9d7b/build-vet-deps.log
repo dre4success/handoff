@@ -1,0 +1,41 @@
+# command: go build ./...; go vet ./...; gofmt -l cmd internal; go list -deps ./... | grep net; go.mod; git log/diff --stat
+# date: 2026-10-25 16:53:22 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 63a9d7b06ab928297b160418d786decbaf788cff
+
+## go build: ok
+## go vet: clean
+## gofmt -l cmd internal: []
+## go list -deps ./... matching net: []
+## go.mod: 0 require lines; go 1.25.3
+## commits on the base (e832f00bdef94a3be2bfcf2f934e4816b5bd20c2, H18 round 2):
+63a9d7b test: H19 evidence: the briefs and a new project before and after, all tests under -race, the sweep
+ab45f99 docs: §17 row 85: a new project's loop starts by itself
+845bfe2 docs: README: the implementer commits on a branch; findings without a request go in a note
+4cc77bc fix: a project's first commit can be asked about with no base
+ac35ec2 feat: the brief: the implementer commits on a branch without asking; a reviewer's findings go to the implementer as a note
+## the base is an ancestor of HEAD: yes; of main (7ec3269f1d8523c0ea2f4f671db92d50edaca3ab): yes
+## main since the branch point (e832f00bdef94a3be2bfcf2f934e4816b5bd20c2): docs/CHANNEL.md evidence/reviewer/H18-1c392de/README.md evidence/reviewer/H18-1c392de/build-vet-deps.log evidence/reviewer/H18-1c392de/collect.sh evidence/reviewer/H18-1c392de/go-test-race.log evidence/reviewer/H18-1c392de/merge-and-sweep.log evidence/reviewer/H18-1c392de/probes.log evidence/reviewer/H18-1c392de/probes.sh evidence/reviewer/H18-e832f00/README.md evidence/reviewer/H18-e832f00/build-vet-deps.log evidence/reviewer/H18-e832f00/collect.sh evidence/reviewer/H18-e832f00/go-test-race.log evidence/reviewer/H18-e832f00/merge-and-sweep.log evidence/reviewer/H18-e832f00/probes.log evidence/reviewer/H18-e832f00/probes2.log evidence/reviewer/H18-e832f00/probes2.sh 
+## files changed, base to HEAD:
+ README.md                                 |   2 +
+ cmd/handoff/brief.go                      |  24 +++-
+ cmd/handoff/cmds.go                       |   9 +-
+ cmd/handoff/hook_test.go                  |   4 +-
+ cmd/handoff/pickup_test.go                |  52 ++++++++-
+ docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md |   1 +
+ evidence/h19/README.md                    |  13 +++
+ evidence/h19/briefs.log                   |  42 +++++++
+ evidence/h19/collect.sh                   | 105 +++++++++++++++++
+ evidence/h19/deps-vet-fmt.log             |   9 ++
+ evidence/h19/go-test-race.log             | 181 ++++++++++++++++++++++++++++++
+ evidence/h19/names.log                    |  11 ++
+ evidence/h19/new-project.log              |  27 +++++
+ 13 files changed, 473 insertions(+), 7 deletions(-)
+## the evidence commit alone:
+ 7 files changed, 388 insertions(+)
+## the no-base rule in cmd/handoff/cmds.go:
+333-			// --base, so a misnamed main is still caught (row 85).
+334:			if ps, perr := gitx.Parents(a.cwd, commit); perr == nil && len(ps) == 0 {
+335-				return "", nil
+336-			}
+337-			return "", fmt.Errorf("the main branch %q does not resolve (%v): it has no commit yet, or init named the wrong branch. Pass --base; a project's first commit, with no parent, needs none", a.cfg.Main, err)
