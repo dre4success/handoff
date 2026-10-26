@@ -38,8 +38,9 @@ const usage = `usage: handoff [command] [flags]
   show    <id>
   brief   [--for role]          an agent's duty, its loop and what waits for it
   role    [<role>]              in an agent's session: take the role the operator gave it, or show it
-  settings claude|codex [--as <role>]   settings that keep a CLI's sessions on duty;
-          without --as, each session takes the role the operator gives it
+  settings claude|codex [--global | --as <role>]   settings that keep a CLI's sessions
+          on duty: --global for every project, else this one; without --as,
+          each session takes the role the operator gives it
   hook    listen|brief|notify   run by a CLI's hooks, as settings prints
   repair
   version                       the version of handoff installed

@@ -1,0 +1,124 @@
+# command: a throwaway Codex session (codex exec -m gpt-6-luna, low effort) in a scratch project with no .codex/, set up only by `handoff settings codex --global` in a scratch CODEX_HOME; told to take the reviewer role, then a request from the implementer; nobody typing
+# date: 2026-10-25 23:00:47 UTC
+# by: Opus 5.5 (implementer), on the operator's Mac, codex-cli 0.164.0
+# commit: 7cd892af29c95bba83c55ddf04a2f3c10c4763cb
+
+## what init printed
+Created <scratch>/live/.handoff. Git ignores it; nothing else in the project changed.
+Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.
+Main branch: main.
+
+handoff's hooks keep sessions on duty. Set them once, for every project:
+  Claude Code:  <scratch>/handoff settings claude --global
+  Codex:        set up, in <scratch>/codex-home/hooks.json
+For each CLI you use that isn't set up, run its command and do what it prints, or ask one of its sessions to.
+Then give each session its role: tell it, such as "you review", and it runs <scratch>/handoff role <role>.
+
+## what happened (times UTC)
+23:00:20Z the project has no .codex/: ls: .codex: No such file or directory
+23:00:20Z CODEX_HOME holds: ./auth.json ./hooks.json ./rules/handoff.rules
+23:00:20Z codex exec starts in <scratch>/live
+23:00:28Z presence: {"v":1,"pid":88376,"since":"2026-10-25T23:00:28Z","how":"hook"}
+23:00:28Z implementer posts: posted #1 request T1 implementer → reviewer: T1: add a.txt @ 864e212b7ef2
+23:00:33Z entry 2: #2 claim T1
+23:00:42Z entry 3: #3 reply T1
+23:00:44Z listening again after the reply: {"v":1,"pid":88797,"since":"2026-10-25T23:00:43Z","how":"hook"}
+23:00:44Z codex exec still running; stopping it
+23:00:47Z hook processes left: (none)
+
+## notifications (sent to a file)
+live: T1: reviewer approved #1. Your decision.
+
+## the record afterwards
+#1 request T1
+from: implementer → reviewer
+ts: 2026-10-25T23:00:28Z
+title: T1: add a.txt
+commit: 864e212b7ef2281ce8e518a54b78b2e4745e70da
+base: 46e8bf17e47e3928d4a40f9019dd25d047d7e6fe
+state: awaiting operator
+standing verdict: APPROVE in #3
+prev: genesis
+---
+Please review T1: it adds a.txt with one line.
+
+#2 claim T1
+from: reviewer → -
+ts: 2026-10-25T23:00:32Z
+re: #1
+prev: e4f5f1976353e62b9a59c6042a5d858b4940e0b5fbeaae1c414114e5edacef7b
+---
+
+#3 reply T1
+from: reviewer → implementer
+ts: 2026-10-25T23:00:41Z
+commit: 864e212b7ef2281ce8e518a54b78b2e4745e70da
+re: #1
+verdict: APPROVE
+prev: 5eb803de1695fada1148475accf6a9570af19da56545a86eb5de1e13a0bcf8ce
+---
+APPROVE. The commit adds only a.txt with the single line `hello`; no issues found. I reviewed the commit diff directly because the sandbox marks .git read-only, so creating the requested temporary worktree was denied.
+
+## codex exec's own log (stderr), and how it ended
+ts: 2026-10-25T23:00:28Z
+title: T1: add a.txt
+commit: 864e212b7ef2281ce8e518a54b78b2e4745e70da
+base: 46e8bf17e47e3928d4a40f9019dd25d047d7e6fe
+state: open
+prev: genesis
+---
+Please review T1: it adds a.txt with one line.
+
+exec
+/bin/zsh -lc '<scratch>/handoff claim --as reviewer 1' in <scratch>/live
+ succeeded in 31ms:
+posted #2 claim T1 reviewer → -: claimed #1
+
+exec
+/bin/zsh -lc 'git worktree add --detach /private/tmp/review-t1 864e212b7ef2281ce8e518a54b78b2e4745e70da && git -C /private/tmp/review-t1 show --stat --oneline --decorate HEAD && git -C /private/tmp/review-t1 show --format=fuller --find-renames HEAD --' in <scratch>/live
+ exited 128 in 207ms:
+Preparing worktree (detached HEAD 864e212)
+fatal: could not create leading directories of '.git/worktrees/review-t1': Operation not permitted
+
+exec
+/bin/zsh -lc 'git worktree add --detach .review-t1 864e212b7ef2281ce8e518a54b78b2e4745e70da && git -C .review-t1 show --stat --oneline HEAD && git -C .review-t1 show --format=fuller HEAD --' in <scratch>/live
+ exited 128 in 22ms:
+Preparing worktree (detached HEAD 864e212)
+fatal: could not create leading directories of '.git/worktrees/-review-t1': Operation not permitted
+
+exec
+/bin/zsh -lc 'git show --stat --oneline 864e212b7ef2281ce8e518a54b78b2e4745e70da && git show --format=fuller --find-renames 864e212b7ef2281ce8e518a54b78b2e4745e70da -- && git status --short' in <scratch>/live
+ succeeded in 129ms:
+864e212 T1: add a.txt
+ a.txt | 1 +
+ 1 file changed, 1 insertion(+)
+commit 864e212b7ef2281ce8e518a54b78b2e4745e70da
+Author:     t <t@t>
+AuthorDate: Sun Oct 25 23:00:20 2026 +0000
+Commit:     t <t@t>
+CommitDate: Sun Oct 25 23:00:20 2026 +0000
+
+    T1: add a.txt
+
+diff --git a/a.txt b/a.txt
+new file mode 100644
+index 0000000..ce01362
+--- /dev/null
++++ b/a.txt
+@@ -0,0 +1 @@
++hello
+
+exec
+/bin/zsh -lc "cat > /tmp/review-t1-body <<'EOF'
+APPROVE. The commit adds only a.txt with the single line "'`hello`; no issues found. I reviewed the commit diff directly because the sandbox marks .git read-only, so creating the requested temporary worktree was denied.
+EOF
+<scratch>/handoff reply --as reviewer 1 --verdict APPROVE --commit 864e212b7ef2281ce8e518a54b78b2e4745e70da --body /tmp/review-t1-body' in <scratch>/live
+ succeeded in 192ms:
+handoff: told the operator: T1: reviewer approved #1. Your decision.
+posted #3 reply T1 reviewer → implementer: APPROVE on #1 @ 864e212b7ef2
+
+codex
+Reviewed commit `864e212b7ef2` and approved it. It adds only `a.txt` with the line `hello`. The sandbox prevented creating a temporary worktree because `.git` is read-only, so I reviewed the commit diff directly.
+hook: Stop
+## codex exec's stdout (its last message)
+# codex exec exit: 0

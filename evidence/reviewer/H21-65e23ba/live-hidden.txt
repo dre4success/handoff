@@ -1,0 +1,24 @@
+# command: throwaway Claude Code sessions (claude -p --model haiku) given the rules `handoff settings claude --global` prints, with --settings, in a project under a hidden folder; then one hook in two settings files
+# date: 2026-10-25 23:23:09 UTC
+# by: Fable 5.1 (reviewer), on the operator's Mac, 2.1.310 (Claude Code)
+# commit: 65e23ba4d49a2837aade533063ea2bdbaa9aa776
+
+rules: {'allow': ['Bash(<scratch>/handoff *)'], 'deny': ['Bash(<scratch>/handoff decide *)', 'Edit(//**/.handoff/**)']}
+
+## 1.1: Write into the record of a project under a hidden folder, permission checks bypassed
+  tool result: <tool_use_error>File is in a directory that is denied by your permission settings.</tool_use_error>
+  last message: DENIED. The Write call was rejected because the target directory is blocked by the permission settings. I tried once and did not retry or use another tool.
+  result: <scratch>/.hidden/project/.handoff/probe.txt does not exist
+
+## 1.2: Write beside that record (the control), permission checks bypassed
+  tool result: File created successfully at: <scratch>/.hidden/project/probe.txt (file state is current in your context — no need to Read it back)
+  last message: WRITTEN
+  result: <scratch>/.hidden/project/probe.txt exists
+
+## 2: one SessionStart hook in the project's .claude/settings.json and, word for word, in a --settings file: how many times it runs
+hook: {"hooks":{"SessionStart":[{"hooks":[{"type":"command","command":"sh -c 'echo ran >> <scratch>/marker.txt'"}]}]}}
+  last message: OK
+  marker lines: 1
+
+## notifications (sent to a file)
+(none)

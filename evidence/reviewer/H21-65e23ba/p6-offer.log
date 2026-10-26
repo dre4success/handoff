@@ -1,0 +1,21 @@
+# command: the brief's offer by session CLI and by which CLI is set up, from brief (listens itself), role (maybe a hook) and hook brief (a hook listens)
+# date: 2026-10-25 23:29:14 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 65e23ba4d49a2837aade533063ea2bdbaa9aa776
+
+## Codex set up alone; brief in a Claude Code session: exit 0; offer to set them up for every project: `<scratch>/handoff settings claude --global` prints them
+## Codex set up alone; role in a Claude Code session: exit 0; offer to set them up for every project: `<scratch>/handoff settings claude --global` prints them
+## Codex set up alone; brief in a Codex session: exit 0; 
+## Codex set up alone; brief outside a session: exit 0; offer to set them up for every project: `<scratch>/handoff settings claude --global` prints them
+## Claude Code set up alone; brief in a Claude Code session: exit 0; 
+## Claude Code set up alone; brief in a Codex session: exit 0; offer to set them up for every project: `<scratch>/handoff settings codex --global` prints them
+## Claude Code set up alone; role in a Codex session: exit 0; offer to set them up for every project: `<scratch>/handoff settings codex --global` prints them
+## Claude Code set up alone; brief outside a session: exit 0; offer to set them up for every project: `<scratch>/handoff settings codex --global` prints them
+## both set up; brief outside a session: exit 0; 
+## neither set up; brief outside a session: exit 0; offer to set them up for every project: `<scratch>/handoff settings claude --global` or `<scratch>/handoff settings codex --global` prints them
+## neither set up; hook brief for a session with a role: exit 0; ; listening line: Listening: you don't run `/private/var/folders/c3/j_s5gt_d1g
+## neither in user settings, both in the project's; role in a Claude Code session: exit 0; 
+## neither in user settings, both in the project's; brief in a Codex session: exit 0; 
+## the Codex listening line, no hooks: Listening: Don't run `<scratch>/handoff wait`: Codex checks on a running command about once a minute, each time with a whole model call, which uses up the operator's plan. Instead, end your turn. If work waits for you, the operator hears of it and tells you.
+## the Claude Code listening line, no hooks: Listening: Run `<scratch>/handoff wait --for reviewer --timeout 25m` in the background. Exit 3: run it again. Exit 4: another session already listens for reviewer. After you handle what it delivers, wait again.
+## alerts sent: 1

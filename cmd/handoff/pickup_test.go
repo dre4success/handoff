@@ -46,7 +46,7 @@ func TestH11InitWithNoFlags(t *testing.T) {
 		t.Fatalf("roles %+v, main %q; want implementer, reviewer and reviewer-2, on main", c.Roles, c.Main)
 	}
 	for _, want := range []string{"Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.", "Main branch: main.",
-		" settings claude\n", " settings codex\n", "Then give each session its role: tell it, such as \"you review\", and it runs ", "handoff role <role>.\n"} {
+		" settings claude --global\n", " settings codex --global\n", "Then give each session its role: tell it, such as \"you review\", and it runs ", "handoff role <role>.\n"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("init printed no %q:\n%s", want, out)
 		}
@@ -176,7 +176,9 @@ func TestH11BriefTellsTheImplementerHowToAsk(t *testing.T) {
 	if got := strings.Join(ran, " "); got != "show note post note" {
 		t.Fatalf("ran %q from the brief:\n%s", got, brief)
 	}
-	if !strings.Contains(brief, "`, where <reviewer> is reviewer or reviewer-2.") || strings.Contains(brief, "can implement or review") {
+	// No session has either reviewer (row 89).
+	if !strings.Contains(brief, "`, where <reviewer> is reviewer or reviewer-2, whichever the operator gives a session; none has one yet.") ||
+		strings.Contains(brief, "can implement or review") {
 		t.Errorf("the implementer's brief:\n%s", brief)
 	}
 	if b := r.ok(t, "reviewer", "brief"); strings.Contains(b, "To ask for a review") {
@@ -211,7 +213,7 @@ func TestH18OutsideGitSaysRunGitInit(t *testing.T) {
 func TestH18InitNamesEachCLI(t *testing.T) {
 	r := plainRepo(t, "main")
 	out := r.ok(t, "", "init")
-	if want := "To keep sessions on duty here, run the command for each CLI you use, and do what it prints:\n"; !strings.Contains(out, want) {
+	if want := "handoff's hooks keep sessions on duty. Set them once, for every project:\n"; !strings.Contains(out, want) {
 		t.Errorf("init printed no %q:\n%s", want, out)
 	}
 	for _, c := range []struct{ name, cli string }{{"Claude Code:", "claude"}, {"Codex:", "codex"}} {
@@ -221,7 +223,7 @@ func TestH18InitNamesEachCLI(t *testing.T) {
 				line = strings.TrimSpace(strings.TrimPrefix(l, "  "+c.name))
 			}
 		}
-		if !strings.HasSuffix(line, " settings "+c.cli) {
+		if !strings.HasSuffix(line, " settings "+c.cli+" --global") {
 			t.Errorf("init printed no line for %s:\n%s", c.name, out)
 			continue
 		}
@@ -325,4 +327,162 @@ func TestH19FirstCommitNeedsNoBase(t *testing.T) {
 	again := commit(t, r.dir, "again")
 	r.refused(t, "implementer", "Pass --base",
 		"post", "--item", "W2", "--to", "reviewer", "--commit", again, "--supersedes", w2, "--title", "W2 round 2", "--body", r.body(t, "again"))
+}
+
+// H21 (row 87): a session that must listen by itself, since it may have no
+// hooks, is told to offer to set them up for every project, with the
+// settings command for its own CLI, and that command runs as printed. A
+// session a hook listens for is not told.
+func TestH21BriefOffersHooks(t *testing.T) {
+	r := newRepo(t)
+	real, err := filepath.EvalSymlinks(bin)
+	if err != nil {
+		t.Fatal(err)
+	}
+	h := shellQuote(real) // as the brief names it
+	offer := func(cmds string) string {
+		return " If your session has no handoff hooks, offer to set them up for every project: " + cmds +
+			" prints them and where they go. With the operator's OK, add them. They work once the operator starts this session again.\n"
+	}
+	for _, c := range []struct {
+		name string
+		sess []string
+		args []string
+		cli  string
+	}{
+		{"brief in Claude Code", claude("s-claude", cli(t)), []string{"brief", "--for", "reviewer"}, "claude"},
+		{"brief in Codex", codex("t-codex"), []string{"brief", "--for", "reviewer"}, "codex"},
+		{"role in Claude Code", claude("s-role", cli(t)), []string{"role", "implementer"}, "claude"},
+		{"role in Codex", codex("t-role"), []string{"role", "reviewer-2"}, "codex"},
+	} {
+		res := r.run(t, "", "", c.sess, c.args...)
+		cmd := h + " settings " + c.cli + " --global"
+		if res.code != 0 || !strings.Contains(res.out, offer("`"+cmd+"`")) {
+			t.Errorf("%s: exit %d, no offer naming %s:\n%s", c.name, res.code, c.cli, res.out)
+			continue
+		}
+		sh := exec.Command("/bin/sh", "-c", cmd)
+		sh.Dir, sh.Env = r.dir, env(c.sess...)
+		if out, err := sh.CombinedOutput(); err != nil || !strings.Contains(string(out), "Put ") {
+			t.Errorf("%s: the brief's `%s`: %v\n%s", c.name, cmd, err, out)
+		}
+	}
+	// Outside an agent session, the CLI isn't known, so both are named.
+	if out := r.ok(t, "reviewer", "brief"); !strings.Contains(out, offer("`"+h+" settings claude --global` or `"+h+" settings codex --global`")) {
+		t.Errorf("brief outside a session names no settings:\n%s", out)
+	}
+	if res := r.run(t, "reviewer", `{"source":"startup"}`, nil, "hook", "brief"); res.code != 0 || strings.Contains(res.out, "offer to set them up") {
+		t.Errorf("hook brief offers hooks: exit %d\n%s", res.code, res.out)
+	}
+}
+
+// H21 (row 87): settings --global prints each CLI's user settings, which set
+// up every project at once, so it works outside any project. It fixes no
+// role, and Claude Code's rule against edits names every .handoff/ folder.
+// What it prints, once added, is what init and the brief see as set up.
+func TestH21SettingsGlobal(t *testing.T) {
+	nowhere := &repo{dir: t.TempDir()}
+	home := map[string]string{"claude": t.TempDir(), "codex": t.TempDir()}
+	homes := []string{"CLAUDE_CONFIG_DIR=" + home["claude"], "CODEX_HOME=" + home["codex"]}
+	real, err := filepath.EvalSymlinks(bin)
+	if err != nil {
+		t.Fatal(err)
+	}
+	h := shellQuote(real)
+
+	out := nowhere.run(t, "", "", homes, "settings", "claude", "--global")
+	file := filepath.Join(home["claude"], "settings.json")
+	at := strings.Index(out.out, "\n{")
+	if out.code != 0 || at < 0 || !strings.HasPrefix(out.out, "Put these settings in "+file+", merged with any already there.\n") {
+		t.Fatalf("settings claude --global: exit %d, stderr %q\n%s", out.code, out.err, out.out)
+	}
+	var s struct {
+		Env         map[string]string `json:"env"`
+		Permissions struct {
+			Deny []string `json:"deny"`
+		} `json:"permissions"`
+	}
+	if err := json.Unmarshal([]byte(out.out[at+1:]), &s); err != nil || s.Env != nil ||
+		strings.Join(s.Permissions.Deny, "|") != "Bash("+h+" decide *)|Edit(//**/.handoff/**)" {
+		t.Fatalf("settings claude --global: %v\n%s", err, out.out)
+	}
+	if err := os.WriteFile(file, []byte(out.out[at+1:]), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	out = nowhere.run(t, "", "", homes, "settings", "codex", "--global")
+	hooks, rules := filepath.Join(home["codex"], "hooks.json"), filepath.Join(home["codex"], "rules", "handoff.rules")
+	i, j := strings.Index(out.out, hooks+":\n"), strings.Index(out.out, "\n\n"+rules+":\n")
+	if out.code != 0 || i < 0 || j < i || strings.Contains(out.out, "--as") || strings.Contains(out.out, ".git/info/exclude") ||
+		!strings.Contains(out.out, `"command": "exec `+h+` hook listen"`) || !strings.Contains(out.out, `prefix_rule(pattern=["`+real+`", "decide"], decision="forbidden"`) {
+		t.Fatalf("settings codex --global: exit %d, stderr %q\n%s", out.code, out.err, out.out)
+	}
+	if err := os.WriteFile(hooks, []byte(out.out[i+len(hooks)+2:j]), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	nowhere.refused(t, "", "--as fixes a role in one project; with --global, each session takes the role you give it",
+		"settings", "claude", "--global", "--as", "reviewer")
+
+	// A new project, with both set up: init names no command and asks
+	// nothing but roles (row 88), and no brief offers hooks.
+	r := plainRepo(t, "main")
+	got := r.run(t, "", "", homes, "init")
+	for _, want := range []string{"handoff's hooks keep sessions on duty. Both CLIs have them:\n", "  Claude Code:  set up, in " + file + "\n",
+		"  Codex:        set up, in " + hooks + "\n", "\nGive each session its role: tell it, such as \"you review\", and it runs "} {
+		if got.code != 0 || !strings.Contains(got.out, want) || strings.Contains(got.out, "--global") || strings.Contains(got.out, "isn't set up") ||
+			strings.Contains(got.out, "Set them once") || strings.Contains(got.out, "Then give") {
+			t.Errorf("init with both set up: no %q, or a command:\n%s", want, got.out)
+		}
+	}
+	for _, sess := range [][]string{claude("s-set", cli(t)), codex("t-set")} {
+		if b := r.run(t, "", "", append(sess, homes...), "role", "reviewer"); b.code != 0 || strings.Contains(b.out, "offer to set them up") {
+			t.Errorf("a session whose CLI is set up is offered hooks: exit %d\n%s", b.code, b.out)
+		}
+	}
+	// With Codex alone set up, init names only Claude Code's command.
+	got = plainRepo(t, "main").run(t, "", "", []string{"CODEX_HOME=" + home["codex"]}, "init")
+	if !strings.Contains(got.out, "  Claude Code:  "+h+" settings claude --global\n") || !strings.Contains(got.out, "  Codex:        set up, in ") ||
+		!strings.Contains(got.out, "For each CLI you use that isn't set up, run its command and do what it prints, or ask one of its sessions to.\n") ||
+		!strings.Contains(got.out, "Set them once, for every project:\n") || !strings.Contains(got.out, "\nThen give each session its role: ") {
+		t.Errorf("init with Codex alone set up:\n%s", got.out)
+	}
+}
+
+// H21 (row 87): with no hooks, a Codex session is told not to wait, since
+// Codex checks on a running command about once a minute with a whole model
+// call; it ends its turn. A Claude Code session waits in the background.
+func TestH21CodexWithNoHooksDoesNotWait(t *testing.T) {
+	r := newRepo(t)
+	real, err := filepath.EvalSymlinks(bin)
+	if err != nil {
+		t.Fatal(err)
+	}
+	h := shellQuote(real)
+	wait := "run `" + h + " wait --for reviewer --timeout 25m` in the background. Exit 3: run it again."
+	idle := "end your turn. If work waits for you, the operator hears of it and tells you."
+	for _, c := range []struct {
+		name         string
+		sess         []string
+		want, absent []string
+	}{
+		{"Codex", codex("t-1"), []string{"Listening: Don't run `" + h + " wait`: Codex checks on a running command about once a minute", "Instead, " + idle}, []string{"wait --for"}},
+		{"Claude Code", claude("s-1", cli(t)), []string{"Listening: Run `" + h + " wait --for reviewer --timeout 25m` in the background."}, []string{"Codex"}},
+		{"outside a session", nil, []string{"Listening: In Claude Code, " + wait, "In Codex, don't run wait, since each minute of it costs a whole model call: " + idle}, nil},
+	} {
+		e := c.sess
+		if e == nil {
+			e = []string{"HANDOFF_ROLE=reviewer"}
+		}
+		out := r.run(t, "", "", e, "brief", "--for", "reviewer").out
+		for _, w := range c.want {
+			if !strings.Contains(out, w) {
+				t.Errorf("brief in %s has no %q:\n%s", c.name, w, out)
+			}
+		}
+		for _, w := range c.absent {
+			if listening := strings.SplitN(out[strings.Index(out, "Listening:"):], "\n", 2)[0]; strings.Contains(listening, w) {
+				t.Errorf("brief in %s says %q:\n%s", c.name, w, listening)
+			}
+		}
+	}
 }

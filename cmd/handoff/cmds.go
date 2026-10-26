@@ -112,14 +112,32 @@ func (a *app) cmdInit(args []string) (int, error) {
 	}
 	fmt.Fprintf(a.stdout, "Created %s. Git ignores it; nothing else in the project changed.\n", dir)
 	writeRoles(a.stdout, &cfg)
-	fmt.Fprintf(a.stdout, "Main branch: %s.\n\nTo keep sessions on duty here, run the command for each CLI you use, and do what it prints:\n", cfg.Main)
 	h := shellQuote(selfCommand())
 	// The CLI's name comes first, so the rest of the line is a command to
-	// copy as it is (row 83).
-	for _, c := range []struct{ name, cli string }{{"Claude Code:", "claude"}, {"Codex:", "codex"}} {
-		fmt.Fprintf(a.stdout, "  %-13s %s settings %s\n", c.name, h, c.cli)
+	// copy as it is (row 83). A CLI already set up needs none (row 87), and
+	// with both set up, init asks for nothing but roles (row 88).
+	clis := []struct{ name, cli, file string }{{"Claude Code:", "claude", ""}, {"Codex:", "codex", ""}}
+	missing := false
+	for i := range clis {
+		clis[i].file = a.hooked(clis[i].cli)
+		missing = missing || clis[i].file == ""
 	}
-	fmt.Fprintf(a.stdout, "Then give each session its role: tell it, such as \"you review\", and it runs %s role <role>.\n", h)
+	head, give := "Both CLIs have them:", "Give"
+	if missing {
+		head, give = "Set them once, for every project:", "Then give"
+	}
+	fmt.Fprintf(a.stdout, "Main branch: %s.\n\nhandoff's hooks keep sessions on duty. %s\n", cfg.Main, head)
+	for _, c := range clis {
+		if c.file != "" {
+			fmt.Fprintf(a.stdout, "  %-13s set up, in %s\n", c.name, tilde(c.file))
+		} else {
+			fmt.Fprintf(a.stdout, "  %-13s %s settings %s --global\n", c.name, h, c.cli)
+		}
+	}
+	if missing {
+		fmt.Fprintln(a.stdout, "For each CLI you use that isn't set up, run its command and do what it prints, or ask one of its sessions to.")
+	}
+	fmt.Fprintf(a.stdout, "%s each session its role: tell it, such as \"you review\", and it runs %s role <role>.\n", give, h)
 	return exitOK, nil
 }
 
@@ -314,7 +332,16 @@ func (a *app) cmdPost(args []string) (int, error) {
 	a.receipt(got, existed)
 	a.alert()
 	a.printWarnings(warnings)
+	a.noSession(got.To)
 	return exitOK, nil
+}
+
+// noSession tells an agent that what it sent waits, when no session has the
+// role it went to (row 89).
+func (a *app) noSession(role string) {
+	if role != status.Operator && !a.hasSession(role) {
+		fmt.Fprintf(a.stderr, "handoff: no session has %s now, so this waits until the operator gives one that role; tell the operator.\n", role)
+	}
 }
 
 // base resolves --base, or defaults it to the merge base with the main
@@ -634,6 +661,7 @@ func (a *app) cmdNote(args []string) (int, error) {
 	a.receipt(got, existed)
 	a.alert()
 	a.printWarnings(warnings)
+	a.noSession(got.To)
 	return exitOK, nil
 }
 

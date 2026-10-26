@@ -1,0 +1,111 @@
+# command: hook brief|listen|notify with no record (outside git, in a git repository, in /) and in a project with a record for a session with no role; with no role, HANDOFF_ROLE=reviewer, and a Claude Code session id
+# date: 2026-10-25 23:27:09 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 65e23ba4d49a2837aade533063ea2bdbaa9aa776
+
+## in <scratch>/p1-nogit, env none: hook brief
+  exit 0; stdout 0 bytes; stderr 0 bytes
+## in <scratch>/p1-nogit, env none: hook listen
+  exit 0; stdout 0 bytes; stderr 0 bytes
+## in <scratch>/p1-nogit, env none: hook notify
+  exit 0; stdout 0 bytes; stderr 0 bytes
+## in <scratch>/p1-nogit, env HANDOFF_ROLE=reviewer: hook brief
+  exit 0; stdout 0 bytes; stderr 0 bytes
+## in <scratch>/p1-nogit, env HANDOFF_ROLE=reviewer: hook listen
+  exit 0; stdout 0 bytes; stderr 0 bytes
+## in <scratch>/p1-nogit, env HANDOFF_ROLE=reviewer: hook notify
+  exit 0; stdout 0 bytes; stderr 0 bytes
+## in <scratch>/p1-nogit, env CLAUDE_CODE_SESSION_ID=s-p1 CLAUDE_PID=25009: hook brief
+  exit 0; stdout 0 bytes; stderr 0 bytes
+## in <scratch>/p1-nogit, env CLAUDE_CODE_SESSION_ID=s-p1 CLAUDE_PID=25009: hook listen
+  exit 0; stdout 0 bytes; stderr 0 bytes
+## in <scratch>/p1-nogit, env CLAUDE_CODE_SESSION_ID=s-p1 CLAUDE_PID=25009: hook notify
+  exit 0; stdout 0 bytes; stderr 0 bytes
+## in <scratch>/p1-git, env none: hook brief
+  exit 0; stdout 0 bytes; stderr 0 bytes
+## in <scratch>/p1-git, env none: hook listen
+  exit 0; stdout 0 bytes; stderr 0 bytes
+## in <scratch>/p1-git, env none: hook notify
+  exit 0; stdout 0 bytes; stderr 0 bytes
+## in <scratch>/p1-git, env HANDOFF_ROLE=reviewer: hook brief
+  exit 0; stdout 0 bytes; stderr 0 bytes
+## in <scratch>/p1-git, env HANDOFF_ROLE=reviewer: hook listen
+  exit 0; stdout 0 bytes; stderr 0 bytes
+## in <scratch>/p1-git, env HANDOFF_ROLE=reviewer: hook notify
+  exit 0; stdout 0 bytes; stderr 0 bytes
+## in <scratch>/p1-git, env CLAUDE_CODE_SESSION_ID=s-p1 CLAUDE_PID=25009: hook brief
+  exit 0; stdout 0 bytes; stderr 0 bytes
+## in <scratch>/p1-git, env CLAUDE_CODE_SESSION_ID=s-p1 CLAUDE_PID=25009: hook listen
+  exit 0; stdout 0 bytes; stderr 0 bytes
+## in <scratch>/p1-git, env CLAUDE_CODE_SESSION_ID=s-p1 CLAUDE_PID=25009: hook notify
+  exit 0; stdout 0 bytes; stderr 0 bytes
+## in /, env none: hook brief
+  exit 0; stdout 0 bytes; stderr 0 bytes
+## in /, env none: hook listen
+  exit 0; stdout 0 bytes; stderr 0 bytes
+## in /, env none: hook notify
+  exit 0; stdout 0 bytes; stderr 0 bytes
+## in /, env HANDOFF_ROLE=reviewer: hook brief
+  exit 0; stdout 0 bytes; stderr 0 bytes
+## in /, env HANDOFF_ROLE=reviewer: hook listen
+  exit 0; stdout 0 bytes; stderr 0 bytes
+## in /, env HANDOFF_ROLE=reviewer: hook notify
+  exit 0; stdout 0 bytes; stderr 0 bytes
+## in /, env CLAUDE_CODE_SESSION_ID=s-p1 CLAUDE_PID=25009: hook brief
+  exit 0; stdout 0 bytes; stderr 0 bytes
+## in /, env CLAUDE_CODE_SESSION_ID=s-p1 CLAUDE_PID=25009: hook listen
+  exit 0; stdout 0 bytes; stderr 0 bytes
+## in /, env CLAUDE_CODE_SESSION_ID=s-p1 CLAUDE_PID=25009: hook notify
+  exit 0; stdout 0 bytes; stderr 0 bytes
+## in <scratch>/p1-rec, env none: hook brief
+  exit 0; stdout 332 bytes; stderr 0 bytes
+  out: handoff: p1-rec hands work between agents through handoff, and this session has no role in it. When the operator gives you one, run `<scratch>/handoff role <role>` (the roles are implementer, reviewer, reviewer-2); it prints your brief. Until then, leave handoff alone.
+## in <scratch>/p1-rec, env none: hook listen
+  exit 0; stdout 0 bytes; stderr 0 bytes
+## in <scratch>/p1-rec, env none: hook notify
+  exit 0; stdout 0 bytes; stderr 0 bytes
+## in <scratch>/p1-rec, env HANDOFF_ROLE=reviewer: hook brief
+  exit 0; stdout 2209 bytes; stderr 0 bytes
+  out: handoff brief: you are reviewer in p1-rec. You and implementer, reviewer-2 hand work to each other through handoff. The operator decides.
+  out: 
+  out: Listening: you don't run `<scratch>/handoff wait`. When your turn ends, a hook listens for reviewer and brings you what arrives.
+  out: 
+  out: When something arrives, read it with `<scratch>/handoff show <id>`, then:
+  out: - A request to you: `<scratch>/handoff claim --as reviewer <id>`, review exactly the commit it names in a temporary worktree, then `<scratch>/handoff reply --as reviewer <id> --verdict APPROVE|CHANGES|QUESTION --commit <that sha> --body <file>`.
+  out: - A reply to your request: on CHANGES or QUESTION, fix or answer, then post again (`<scratch>/handoff post --as reviewer ... --supersedes <id>`). On APPROVE, the operator decides; wait for the decision.
+  out: - A decision from the operator: act on it. Merge only on approve.
+  out: - A note to you: answer with `<scratch>/handoff note --as reviewer --to <role> --re <id> --body <file>`.
+  out: 
+  out: If the operator asks you to review work with no request, such as uncommitted changes, send what you find to implementer as a note: `<scratch>/handoff note --as reviewer --to implementer --item <item> --title "<title>" --body <file>`. Only a request names a commit, so only a request gets a verdict.
+  out: To ask the operator about an item: `<scratch>/handoff note --as reviewer --to operator --item <item> --title "<question>" --body <file>`.
+  out: Rules: never edit .handoff/ by hand. Never merge, push or deploy without the operator's decision. A claim is not an approval.
+  out: 
+  out: Waiting for you now (inbox for reviewer):
+  out: 
+  out: needs my review:
+  out:   (none)
+  out: 
+  out: being reviewed by me:
+  out:   (none)
+  out: 
+  out: needs my response:
+  out:   (none)
+  out: 
+  out: awaiting the operator:
+  out:   (none)
+  out: 
+  out: gone quiet:
+  out:   (none)
+## in <scratch>/p1-rec, env HANDOFF_ROLE=reviewer: hook listen
+  STILL RUNNING after 15 s; killed
+## in <scratch>/p1-rec, env HANDOFF_ROLE=reviewer: hook notify
+  exit 0; stdout 0 bytes; stderr 0 bytes
+## in <scratch>/p1-rec, env CLAUDE_CODE_SESSION_ID=s-p1 CLAUDE_PID=25009: hook brief
+  exit 0; stdout 332 bytes; stderr 0 bytes
+  out: handoff: p1-rec hands work between agents through handoff, and this session has no role in it. When the operator gives you one, run `<scratch>/handoff role <role>` (the roles are implementer, reviewer, reviewer-2); it prints your brief. Until then, leave handoff alone.
+## in <scratch>/p1-rec, env CLAUDE_CODE_SESSION_ID=s-p1 CLAUDE_PID=25009: hook listen
+  exit 0; stdout 0 bytes; stderr 0 bytes
+## in <scratch>/p1-rec, env CLAUDE_CODE_SESSION_ID=s-p1 CLAUDE_PID=25009: hook notify
+  exit 0; stdout 0 bytes; stderr 0 bytes
+## alerts sent (to the scratch file): 1
+  p1-rec: reviewer is waiting for your permission: Claude needs your permission to use Bash

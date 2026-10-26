@@ -1,0 +1,56 @@
+# command: go build ./...; go vet ./...; gofmt -l cmd internal; go.mod; go list -deps; commits and diffstat since the base f77352941b7d26e221d17c3ba20c0ad726f565e4
+# date: 2026-10-26 19:36:19 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: b24daa1367ce6978a5844027e1d11825a20f78e8
+
+go version go1.25.3 darwin/arm64
+## go build: ok
+## go vet: clean
+## gofmt -l cmd internal: []
+## go.mod require lines: 0
+## packages in go list -deps ./... named net or under net/: 0
+## commits on the base:
+b24daa1 test: H23 evidence: the brief, post and note before and after as reviewers' sessions come and go, all tests under -race, the sweep
+31017bc docs: §17 row 89, H23 reviewers with a session
+9ade3d5 docs: README: reviewer-2 is for a second reviewer
+df6d4e2 fix: H23 the implementer asks only reviewers that have a session
+## diffstat:
+ README.md                                 |   1 +
+ cmd/handoff/brief.go                      |  25 +++-
+ cmd/handoff/cmds.go                       |  10 ++
+ cmd/handoff/pickup_test.go                |   4 +-
+ cmd/handoff/session.go                    |  14 +++
+ cmd/handoff/session_test.go               |  70 +++++++++++
+ docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md |   1 +
+ evidence/h23/README.md                    |  12 ++
+ evidence/h23/collect.sh                   | 101 ++++++++++++++++
+ evidence/h23/deps-vet-fmt.log             |   9 ++
+ evidence/h23/go-test-race.log             | 189 ++++++++++++++++++++++++++++++
+ evidence/h23/names.log                    |  11 ++
+ evidence/h23/outputs.log                  |  51 ++++++++
+ internal/wait/presence.go                 |  20 ++++
+ 14 files changed, 515 insertions(+), 3 deletions(-)
+## main is now 254af22339bfdc4f9463c82bdb1bd697d1575244; commits on main since the base:
+254af22 docs(channel): board: H23 in review (#115)
+b2c77c0 docs(channel): board: H22 approved, awaiting the operator (#114)
+b8ebcd2 docs: the reviewer's H22 APPROVE evidence for f773529, as supplied (reply #114)
+dc5f39a docs(channel): board: H22 in review (#112)
+## what main adds since the base touches:
+ cmd/handoff/cmds.go                               |  27 +--
+ cmd/handoff/pickup_test.go                        |  12 +-
+ docs/CHANNEL.md                                   |   2 +
+ docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md         |   1 -
+ evidence/h22/README.md                            |  12 -
+ evidence/h22/collect.sh                           |  94 --------
+ evidence/h22/deps-vet-fmt.log                     |   9 -
+ evidence/h22/go-test-race.log                     | 188 ----------------
+ evidence/h22/names.log                            |  11 -
+ evidence/h22/outputs.log                          |  79 -------
+ evidence/reviewer/H22-f773529/README.md           |  10 +
+ evidence/reviewer/H22-f773529/build-vet-deps.log  |  31 +++
+ evidence/reviewer/H22-f773529/collect.sh          |  67 ++++++
+ evidence/reviewer/H22-f773529/go-test-race.log    | 191 ++++++++++++++++
+ evidence/reviewer/H22-f773529/merge-and-sweep.log |  98 ++++++++
+ evidence/reviewer/H22-f773529/p1-init-wording.log | 263 ++++++++++++++++++++++
+ evidence/reviewer/H22-f773529/probes.sh           | 103 +++++++++
+ 17 files changed, 778 insertions(+), 420 deletions(-)

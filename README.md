@@ -20,10 +20,13 @@ Your project must be a git repository, since every review is of one commit. If i
 
 ## Quick start
 
-1. In your project, run `handoff init`. It makes a `.handoff/` folder, which git ignores, with three roles: `implementer`, `reviewer` and `reviewer-2`. Every worktree of the project shares it.
-2. Run `handoff settings claude`, `handoff settings codex`, or both. Each prints settings and says where they go. Then restart those sessions.
-3. Start a session for each agent, and tell each one its job: "you're the implementer", "you're the reviewer".
-4. Give the implementer a task. It asks the reviewer for a review when it's ready. You decide at the end.
+Once, on your Mac: run `handoff settings claude --global`, `handoff settings codex --global`, or both. Each prints settings for your home folder and says where they go, or a session can add them for you. They set up every project at once, and do nothing where `handoff` isn't used.
+
+Then, in each project:
+
+1. Run `handoff init`. It makes a `.handoff/` folder, which git ignores, with three roles: `implementer`, `reviewer` and `reviewer-2`. Every worktree of the project shares it. It also says whether each CLI is set up.
+2. Start a session for each agent, and tell each one its job: "you're the implementer", "you're the reviewer".
+3. Give the implementer a task. It asks the reviewer for a review when it's ready. You decide at the end.
 
 Two Claude Code sessions can work together, each on its own model:
 
@@ -42,6 +45,8 @@ Once set up, each session:
 
 A Claude Code session also tells you when it's stuck at a permission prompt.
 
+A session that isn't set up offers to set itself up. With your OK, it adds what `handoff settings --global` prints; then start it again.
+
 ## Deciding
 
 - A pop-up asks: **Approve**, **Deny** or **Later**.
@@ -53,17 +58,19 @@ A Claude Code session also tells you when it's stuck at a permission prompt.
 - A session has no role until you give it one. Tell it, and it runs `handoff role <role>`.
 - It keeps the role through a resume and Claude Code's `/clear`. A new Codex thread needs telling again.
 - Giving a role to a second session takes it from the first.
+- `reviewer-2` is for a second reviewer. With one reviewer, leave it unused: the implementer asks only reviewers that have a session, and tells you if what it sent waits for a role with none.
 - The implementer commits its work on a branch of its own and asks for a review without asking you first. It never merges or pushes without your decision.
 - If you ask a reviewer to look at work nobody has posted, it sends what it finds to the implementer as a note. Only a commit can get a verdict.
 - Choose other roles with `handoff init --roles a,b`. Every role reviews except one named `implementer`; `--reviewers` picks them yourself.
 - Add roles later with `handoff roles add reviewer-3`. Roles can't be renamed or removed.
-- To give every session of one CLI the same role: `handoff settings claude --as reviewer`.
+- To give every session of one CLI the same role in one project: `handoff settings claude --as reviewer`, which sets up that project alone.
 
 ## Codex
 
-- `handoff settings codex` prints two files for the project's `.codex/` folder. Keep that folder out of git: add `.codex/` to `.git/info/exclude`.
-- Codex uses them only in a project it trusts. The next time it starts, it asks you to review the new hooks: choose **Trust all**.
+- `handoff settings codex --global` prints two files for `~/.codex/`. The next time Codex starts, it asks you to review the new hooks: choose **Trust all**.
+- Without hooks, a Codex session doesn't wait for work, since waiting there costs a whole model call every minute or so. It ends its turn, and you tell it when there's work.
 - `handoff` runs outside Codex's sandbox, so its notifications reach you.
+- To set up one project alone, leave out `--global`: the files go in its `.codex/` folder, which you keep out of git (add `.codex/` to `.git/info/exclude`), and Codex uses them only in a project it trusts.
 
 ## While you're away
 
@@ -75,7 +82,7 @@ While an agent owes a move, a listening session keeps your Mac awake, for up to 
 |---|---|
 | `handoff` | What waits for your decision. At a terminal, asks about each |
 | `init` | Sets up a project |
-| `settings claude\|codex` | Prints the settings that keep sessions working |
+| `settings claude\|codex` | Prints the settings that keep sessions working: `--global` for every project |
 | `role <role>` | Gives a session its role (the session runs it) |
 | `roles add <role>…` | Adds roles |
 | `post` | Asks for a review of one commit |

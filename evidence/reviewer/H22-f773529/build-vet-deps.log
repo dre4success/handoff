@@ -1,0 +1,31 @@
+# command: go build ./...; go vet ./...; gofmt -l cmd internal; go.mod; go list -deps; commits and diffstat since the base b6d164ec671b3b8cf2077e24947a5e496ce071f3
+# date: 2026-10-26 19:13:24 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: f77352941b7d26e221d17c3ba20c0ad726f565e4
+
+go version go1.25.3 darwin/arm64
+## go build: ok
+## go vet: clean
+## gofmt -l cmd internal: []
+## go.mod require lines: 0
+## packages in go list -deps ./... named net or under net/: 0
+## commits on the base:
+f773529 test: H22 evidence: init before and after in three setups, all tests under -race, the sweep
+40f30ec docs: §17 row 88, H22 init with both CLIs set up
+4ecefa8 fix: H22 init asks only for roles when both CLIs have hooks
+## diffstat:
+ cmd/handoff/cmds.go                       |  27 +++--
+ cmd/handoff/pickup_test.go                |  12 +-
+ docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md |   1 +
+ evidence/h22/README.md                    |  12 ++
+ evidence/h22/collect.sh                   |  94 +++++++++++++++
+ evidence/h22/deps-vet-fmt.log             |   9 ++
+ evidence/h22/go-test-race.log             | 188 ++++++++++++++++++++++++++++++
+ evidence/h22/names.log                    |  11 ++
+ evidence/h22/outputs.log                  |  79 +++++++++++++
+ 9 files changed, 420 insertions(+), 13 deletions(-)
+## main is now dc5f39a161331f3f7894486cbb35f2bbd7a064e5; commits on main since the base:
+dc5f39a docs(channel): board: H22 in review (#112)
+## what main adds since the base touches:
+ docs/CHANNEL.md | 1 +
+ 1 file changed, 1 insertion(+)

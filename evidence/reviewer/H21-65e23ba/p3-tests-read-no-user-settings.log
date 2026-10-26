@@ -1,0 +1,52 @@
+# command: go test -run 'H21|H18|H11|H12|H10' ./cmd/handoff with HOME=<scratch>/home, whose .claude/settings.json and .codex/hooks.json hold handoff's hooks, and CLAUDE_CONFIG_DIR, CODEX_HOME unset; the control is init under the same environment
+# date: 2026-10-25 23:27:34 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 65e23ba4d49a2837aade533063ea2bdbaa9aa776
+
+## control: init
+  Claude Code:  set up, in ~/.claude/settings.json
+  Codex:        set up, in ~/.codex/hooks.json
+## the tests:
+--- PASS: TestH10bSettingsCodex (0.40s)
+--- PASS: TestH10bCodexReadsTheRules (0.56s)
+--- PASS: TestH10bBriefNamesTheRole (0.23s)
+--- PASS: TestH10bShellQuote (0.00s)
+--- PASS: TestH10bTheRoleKeepsBareHandoffFromTheOperatorsQuestion (0.33s)
+--- PASS: TestH10SecondWaitForARoleExits (2.63s)
+--- PASS: TestH10HookListenWakesTheSession (2.49s)
+--- PASS: TestH10HookListenLeavesItToTheListener (1.02s)
+--- PASS: TestH10HookListenStopsWithItsSession (2.35s)
+--- PASS: TestH10HooksOffDuty (0.58s)
+--- PASS: TestH10Brief (0.70s)
+--- PASS: TestH10BriefCommandsRun (0.44s)
+--- PASS: TestH10HookNotify (0.21s)
+--- PASS: TestH10ListenTroubleIsToldOnce (0.87s)
+--- PASS: TestH10SettingsClaude (0.26s)
+--- PASS: TestH10ResumedOrphanLeavesTheEntry (1.30s)
+--- PASS: TestH10APathWithSpaces (1.10s)
+--- PASS: TestH10SettingsInALinkedWorktree (0.22s)
+--- PASS: TestH11InitWithNoFlags (0.16s)
+--- PASS: TestH11InitFindsTheMainBranch (1.65s)
+--- PASS: TestH11InitReviewers (0.33s)
+--- PASS: TestH11BriefCommandsRunForClaudeAndCodex (0.49s)
+--- PASS: TestH11BriefTellsTheImplementerHowToAsk (0.44s)
+--- PASS: TestH18OutsideGitSaysRunGitInit (0.48s)
+--- PASS: TestH18InitNamesEachCLI (0.37s)
+--- PASS: TestH18AMissingRepositoryGetsNoHint (0.03s)
+--- PASS: TestH21BriefOffersHooks (0.38s)
+--- PASS: TestH21SettingsGlobal (0.31s)
+--- PASS: TestH21CodexWithNoHooksDoesNotWait (0.46s)
+--- PASS: TestH12TwoClaudeSessionsTakeTheRolesTheOperatorGives (0.42s)
+--- PASS: TestH12ARoleMovesAndTheOldListenerStops (3.30s)
+--- PASS: TestH12ARoleOutlivesClearAndResume (0.25s)
+--- PASS: TestH12ACodexThreadKeepsItsRoleAlone (1.60s)
+--- PASS: TestH12AWaitStopsWhenItsRoleMoves (2.58s)
+--- PASS: TestH12AnAgentSessionNeverAnswersForTheOperator (0.41s)
+--- PASS: TestH12RoleRefusals (0.23s)
+--- PASS: TestH12ARoleMovedWhileAListenerStartsStopsIt (5.80s)
+PASS
+ok  	github.com/dre4success/handoff/cmd/handoff	36.081s
+## the scratch home's .claude and .codex before and after the tests: unchanged; their files now: .claude/settings.json .codex/hooks.json ; other folders go made under that home: ./Library 
+## Source: file writes in settings.go and setup.go: []
+## Source: TestMain sets, for every test process: 48:	for _, v := range []string{"CLAUDE_CONFIG_DIR", "CODEX_HOME"} { 
+## Source: env() keeps the parent's variables but HANDOFF_*, GIT_* and the session's: 85:		if !strings.HasPrefix(kv, "HANDOFF_") && !strings.HasPrefix(kv, "GIT_") && !slices.Contains(sessionVars, name) { 

@@ -1,0 +1,86 @@
+# command: init and the brief's offer (outside a session) with the hooks present or absent in each file handoff reads: user settings, the project's, a linked worktree's; other hooks, a wrong hook, malformed JSON
+# date: 2026-10-25 23:27:31 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 65e23ba4d49a2837aade533063ea2bdbaa9aa776
+
+## a. nothing set up
+  exit 0
+  Claude Code:  <scratch>/handoff settings claude --global
+  Codex:        <scratch>/handoff settings codex --global
+For each CLI you use that isn't set up, run its command and do what it prints, or ask one of its sessions to.
+  brief exit 0; offer to set them up for every project: `<scratch>/handoff settings claude --global` or `<scratch>/handoff settings codex --global` prints them
+## b. the user's Claude Code settings have another tool's Stop hook only
+  exit 0
+  Claude Code:  <scratch>/handoff settings claude --global
+  Codex:        <scratch>/handoff settings codex --global
+For each CLI you use that isn't set up, run its command and do what it prints, or ask one of its sessions to.
+  brief exit 0; offer to set them up for every project: `<scratch>/handoff settings claude --global` or `<scratch>/handoff settings codex --global` prints them
+## c. handoff's hooks in SessionStart only, none in Stop
+  exit 0
+  Claude Code:  <scratch>/handoff settings claude --global
+  Codex:        <scratch>/handoff settings codex --global
+For each CLI you use that isn't set up, run its command and do what it prints, or ask one of its sessions to.
+  brief exit 0; offer to set them up for every project: `<scratch>/handoff settings claude --global` or `<scratch>/handoff settings codex --global` prints them
+## d. malformed user settings for both CLIs
+  exit 0
+  Claude Code:  <scratch>/handoff settings claude --global
+  Codex:        <scratch>/handoff settings codex --global
+For each CLI you use that isn't set up, run its command and do what it prints, or ask one of its sessions to.
+  brief exit 0; offer to set them up for every project: `<scratch>/handoff settings claude --global` or `<scratch>/handoff settings codex --global` prints them
+## e. a line comment in otherwise good user settings
+  exit 0
+  Claude Code:  <scratch>/handoff settings claude --global
+  Codex:        <scratch>/handoff settings codex --global
+For each CLI you use that isn't set up, run its command and do what it prints, or ask one of its sessions to.
+  brief exit 0; offer to set them up for every project: `<scratch>/handoff settings claude --global` or `<scratch>/handoff settings codex --global` prints them
+## f. the project's .claude/settings.json alone
+  exit 0
+  Claude Code:  set up, in <scratch>/p2-f/.claude/settings.json
+  Codex:        <scratch>/handoff settings codex --global
+For each CLI you use that isn't set up, run its command and do what it prints, or ask one of its sessions to.
+  brief exit 0; offer to set them up for every project: `<scratch>/handoff settings codex --global` prints them
+## g. the project's .claude/settings.local.json alone, and .codex/hooks.json alone
+  exit 0
+  Claude Code:  set up, in <scratch>/p2-g/.claude/settings.local.json
+  Codex:        set up, in <scratch>/p2-g/.codex/hooks.json
+  brief exit 0; 
+## h. a Stop hook naming another handoff binary, command and arguments in one string
+  exit 0
+  Claude Code:  set up, in <scratch>/uc/settings.json
+  Codex:        <scratch>/handoff settings codex --global
+For each CLI you use that isn't set up, run its command and do what it prints, or ask one of its sessions to.
+  brief exit 0; offer to set them up for every project: `<scratch>/handoff settings codex --global` prints them
+## i. a Stop hook running handoff's notify, not listen
+  exit 0
+  Claude Code:  <scratch>/handoff settings claude --global
+  Codex:        <scratch>/handoff settings codex --global
+For each CLI you use that isn't set up, run its command and do what it prints, or ask one of its sessions to.
+  brief exit 0; offer to set them up for every project: `<scratch>/handoff settings claude --global` or `<scratch>/handoff settings codex --global` prints them
+## j. the user's and the project's both set up: which init names
+  exit 0
+  Claude Code:  set up, in <scratch>/uc/settings.json
+  Codex:        set up, in <scratch>/ux/hooks.json
+  brief exit 0; 
+## k. a linked worktree: the main worktree's .claude/settings.json is set up, the linked one has none; then from a subfolder of the main worktree; then the linked worktree's own
+  from the linked worktree:
+  exit 0
+  Claude Code:  <scratch>/handoff settings claude --global
+  Codex:        <scratch>/handoff settings codex --global
+For each CLI you use that isn't set up, run its command and do what it prints, or ask one of its sessions to.
+  from a subfolder of the main worktree (init refused: the record exists; so brief and role):
+  role exit 0; 
+  linked worktree with its own settings: role exit 0; 
+## l. no CLAUDE_CONFIG_DIR or CODEX_HOME: the home folder's .claude/settings.json and .codex/hooks.json
+  Claude Code:  set up, in ~/.claude/settings.json
+  Codex:        set up, in ~/.codex/hooks.json
+## m. settings --global, printed outside any project, from /
+Put these settings in <scratch>/uc/settings.json, merged with any already there.
+They set up every project at once, and do nothing in a project with no
+  exit 0
+Put these two files in <scratch>/ux/, merged with any already there.
+They set up every project at once, and do nothing in a project with no
+  exit 0
+## n. the Claude Code deny rule, per project and global
+"Edit(/<scratch>/p2-n/.handoff/**)"
+"Edit(//**/.handoff/**)"
+## alerts sent: 1

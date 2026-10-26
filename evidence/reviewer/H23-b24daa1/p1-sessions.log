@@ -1,0 +1,149 @@
+# command: the implementer's brief line, post, note and reply, built from f773529 (before) and b24daa1 (after), as reviewers' sessions come and go
+# date: 2026-10-26 19:38:48 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: b24daa1367ce6978a5844027e1d11825a20f78e8
+
+# Part 1: init's three roles, before and after
+
+# before
+## a. no reviewer has a session yet (no sessions folder, no lock file)
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as implementer --item <item> --to <reviewer> --commit <sha> --title "<title>" --body <file>`, where <reviewer> is reviewer or reviewer-2.
+## b. reviewer has a session (Claude Code, a live process); reviewer-2 none
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as implementer --item <item> --to <reviewer> --commit <sha> --title "<title>" --body <file>`, where <reviewer> is reviewer or reviewer-2.
+## c. post to reviewer, from an implementer with no binding (HANDOFF_ROLE)
+  out: posted #1 request W1 implementer → reviewer: W1 work @ <sha>
+  out: # exit 0
+## d. post to reviewer-2
+  out: posted #2 request W2 implementer → reviewer-2: W2 work @ <sha>
+  out: # exit 0
+## e. note to the operator
+  out: posted #3 note W1 implementer → operator: A question
+  out: # exit 0
+  err: handoff: told the operator: W1: implementer asks you: A question
+## f. reviewer-2 has a session too (Codex, given by command: no host)
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as implementer --item <item> --to <reviewer> --commit <sha> --title "<title>" --body <file>`, where <reviewer> is reviewer or reviewer-2.
+## g. reviewer's process has ended; its binding stays
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as implementer --item <item> --to <reviewer> --commit <sha> --title "<title>" --body <file>`, where <reviewer> is reviewer or reviewer-2.
+## h. note to reviewer
+  out: posted #4 note W1 implementer → reviewer: A note
+  out: # exit 0
+## i. post to reviewer, a new item
+  out: posted #5 request W3 implementer → reviewer: W3 work @ <sha>
+  out: # exit 0
+
+# after
+## a. no reviewer has a session yet (no sessions folder, no lock file)
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as implementer --item <item> --to <reviewer> --commit <sha> --title "<title>" --body <file>`, where <reviewer> is reviewer or reviewer-2, whichever the operator gives a session; none has one yet.
+## b. reviewer has a session (Claude Code, a live process); reviewer-2 none
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as implementer --item <item> --to reviewer --commit <sha> --title "<title>" --body <file>`. reviewer-2 has no session now: send to it only once the operator gives it one.
+## c. post to reviewer, from an implementer with no binding (HANDOFF_ROLE)
+  out: posted #1 request W1 implementer → reviewer: W1 work @ <sha>
+  out: # exit 0
+## d. post to reviewer-2
+  out: posted #2 request W2 implementer → reviewer-2: W2 work @ <sha>
+  out: # exit 0
+  err: handoff: no session has reviewer-2 now, so this waits until the operator gives one that role; tell the operator.
+## e. note to the operator
+  out: posted #3 note W1 implementer → operator: A question
+  out: # exit 0
+  err: handoff: told the operator: W1: implementer asks you: A question
+## f. reviewer-2 has a session too (Codex, given by command: no host)
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as implementer --item <item> --to <reviewer> --commit <sha> --title "<title>" --body <file>`, where <reviewer> is reviewer or reviewer-2.
+## g. reviewer's process has ended; its binding stays
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as implementer --item <item> --to reviewer-2 --commit <sha> --title "<title>" --body <file>`. reviewer has no session now: send to it only once the operator gives it one.
+## h. note to reviewer
+  out: posted #4 note W1 implementer → reviewer: A note
+  out: # exit 0
+  err: handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+## i. post to reviewer, a new item
+  out: posted #5 request W3 implementer → reviewer: W3 work @ <sha>
+  out: # exit 0
+  err: handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+
+# Part 2: after only
+
+# 2a. a Codex binding given by command has no host, so it counts until a hook records one
+  binding t-rev-2: {"v":1,"role":"reviewer-2","session":"t-rev-2","since":"<time>"}
+## with reviewer-2's binding alone (reviewer has none)
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as implementer --item <item> --to reviewer-2 --commit <sha> --title "<title>" --body <file>`. reviewer has no session now: send to it only once the operator gives it one.
+  binding t-rev-2: {"v":1,"role":"reviewer-2","session":"t-rev-2","host":<pid>,"since":"<time>"}
+## after a SessionStart hook for t-rev-2 whose parent shell has exited (host recorded, now dead)
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as implementer --item <item> --to <reviewer> --commit <sha> --title "<title>" --body <file>`, where <reviewer> is reviewer or reviewer-2, whichever the operator gives a session; none has one yet.
+## while a hook's parent for t-rev-2 is alive (host alive)
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as implementer --item <item> --to reviewer-2 --commit <sha> --title "<title>" --body <file>`. reviewer has no session now: send to it only once the operator gives it one.
+
+# 2b. a listener holding the role's lock counts as a session, with no binding: a real `wait --for reviewer`
+## nothing listens, no binding
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as implementer --item <item> --to <reviewer> --commit <sha> --title "<title>" --body <file>`, where <reviewer> is reviewer or reviewer-2, whichever the operator gives a session; none has one yet.
+  presence: {"v":1,"pid":<pid>,"since":"<time>","how":"wait"}
+## while wait --for reviewer runs
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as implementer --item <item> --to reviewer --commit <sha> --title "<title>" --body <file>`. reviewer-2 has no session now: send to it only once the operator gives it one.
+## note to reviewer while it listens
+  out: posted #1 note W1 implementer → reviewer: A note
+  out: # exit 0
+  wait said: 
+  wait exited 0
+## once the wait has ended (lock file still there, nobody holds it)
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as implementer --item <item> --to <reviewer> --commit <sha> --title "<title>" --body <file>`, where <reviewer> is reviewer or reviewer-2, whichever the operator gives a session; none has one yet.
+## note to reviewer once nothing listens
+  out: posted #2 note W1 implementer → reviewer: Another note
+  out: # exit 0
+  err: handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+
+# 2c. three reviewers: init --roles implementer,r1,r2,r3
+## none has a session
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as implementer --item <item> --to <reviewer> --commit <sha> --title "<title>" --body <file>`, where <reviewer> is r1, r2 or r3, whichever the operator gives a session; none has one yet.
+## r1 has a session
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as implementer --item <item> --to r1 --commit <sha> --title "<title>" --body <file>`. r2 and r3 have no session now: send to one only once the operator gives it one.
+## r1 and r2 have sessions
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as implementer --item <item> --to <reviewer> --commit <sha> --title "<title>" --body <file>`, where <reviewer> is r1 or r2. r3 has no session now: send to it only once the operator gives it one.
+## all three have sessions
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as implementer --item <item> --to <reviewer> --commit <sha> --title "<title>" --body <file>`, where <reviewer> is r1, r2 or r3.
+## r1's and r2's processes have ended
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as implementer --item <item> --to r3 --commit <sha> --title "<title>" --body <file>`. r1 and r2 have no session now: send to one only once the operator gives it one.
+
+# 2d. one reviewer: init --roles implementer,reviewer
+## reviewer has no session
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as implementer --item <item> --to reviewer --commit <sha> --title "<title>" --body <file>`.
+## post to reviewer with no session
+  out: posted #1 request W1 implementer → reviewer: W1 work @ <sha>
+  out: # exit 0
+  err: handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+## reviewer has a session
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as implementer --item <item> --to reviewer --commit <sha> --title "<title>" --body <file>`.
+## post to reviewer with a session
+  out: posted #2 request W2 implementer → reviewer: W2 work @ <sha>
+  out: # exit 0
+
+# 2e. every role reviews: init --roles a,b,c
+## as a, none has a session
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as a --item <item> --to <reviewer> --commit <sha> --title "<title>" --body <file>`, where <reviewer> is b or c, whichever the operator gives a session; none has one yet.
+## as a, b has a session
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as a --item <item> --to b --commit <sha> --title "<title>" --body <file>`. c has no session now: send to it only once the operator gives it one.
+## as b, neither a nor c has one
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as b --item <item> --to <reviewer> --commit <sha> --title "<title>" --body <file>`, where <reviewer> is a or c, whichever the operator gives a session; none has one yet.
+## as c, b has a session
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as c --item <item> --to b --commit <sha> --title "<title>" --body <file>`. a has no session now: send to it only once the operator gives it one.
+
+# 2f. the brief from a SessionStart hook says the same as `brief`
+## hook brief for the implementer's session
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as implementer --item <item> --to reviewer --commit <sha> --title "<title>" --body <file>`. reviewer-2 has no session now: send to it only once the operator gives it one.
+## brief for the implementer's session
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as implementer --item <item> --to reviewer --commit <sha> --title "<title>" --body <file>`. reviewer-2 has no session now: send to it only once the operator gives it one.
+
+# 2g. a reply to an implementer whose process has ended: no line (post and note alone say it, row 89 (b))
+## post W1 to reviewer
+  out: posted #1 request W1 implementer → reviewer: W1 work @ <sha>
+  out: # exit 0
+## claim #1 as reviewer
+  out: posted #2 claim W1 reviewer → -: claimed #1
+  out: # exit 0
+## reply CHANGES to #1, the implementer's process ended
+  out: posted #3 reply W1 reviewer → implementer: CHANGES on #1 @ <sha>
+  out: # exit 0
+## note from reviewer to the implementer, whose process ended
+  out: posted #4 note W1 reviewer → implementer: A note
+  out: # exit 0
+  err: handoff: no session has implementer now, so this waits until the operator gives one that role; tell the operator.
+
+# alerts sent: 2 (to the scratch file only)

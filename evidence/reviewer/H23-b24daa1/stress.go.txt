@@ -1,0 +1,109 @@
+// Stress for H23's wait.Listening (the shared-lock probe) against a starting
+// listener (wait.Listen, LOCK_EX|LOCK_NB with 5 retries of 50 ms). Built in a
+// copy of b24daa1 so the worktree stays as it is.
+package main
+
+import (
+	"errors"
+	"fmt"
+	"os"
+	"sync/atomic"
+	"time"
+
+	"github.com/dre4success/handoff/internal/wait"
+)
+
+func main() {
+	dir, err := os.MkdirTemp("", "h23-stress")
+	if err != nil {
+		panic(err)
+	}
+	defer os.RemoveAll(dir)
+	role := "reviewer"
+	fmt.Printf("no lock file yet: Listening = %v\n", wait.Listening(dir, role))
+	f, err := wait.Listen(dir, role, "wait")
+	if err != nil {
+		panic(err)
+	}
+	f.Close()
+	fmt.Printf("lock file exists, nobody holds it: Listening = %v\n", wait.Listening(dir, role))
+
+	for _, probers := range []int{0, 1, 2, 8, 32} {
+		var stop atomic.Bool
+		var probes, trues, nanos atomic.Int64
+		done := make(chan struct{})
+		for i := 0; i < probers; i++ {
+			go func() {
+				for !stop.Load() {
+					t0 := time.Now()
+					if wait.Listening(dir, role) {
+						trues.Add(1)
+					}
+					nanos.Add(int64(time.Since(t0)))
+					probes.Add(1)
+				}
+				done <- struct{}{}
+			}()
+		}
+		var starts, refused, retried int
+		var slowest time.Duration
+		deadline := time.Now().Add(3 * time.Second)
+		for time.Now().Before(deadline) {
+			t0 := time.Now()
+			f, err := wait.Listen(dir, role, "wait")
+			d := time.Since(t0)
+			starts++
+			if d > slowest {
+				slowest = d
+			}
+			if d >= 50*time.Millisecond {
+				retried++
+			}
+			if err != nil {
+				if errors.Is(err, wait.ErrListening) {
+					refused++
+					continue
+				}
+				panic(err)
+			}
+			time.Sleep(200 * time.Microsecond) // listen for a moment, so probes see it
+			f.Close()
+		}
+		stop.Store(true)
+		for i := 0; i < probers; i++ {
+			<-done
+		}
+		avg := time.Duration(0)
+		if probes.Load() > 0 {
+			avg = time.Duration(nanos.Load() / probes.Load())
+		}
+		fmt.Printf("probers=%2d, 3 s: listener starts=%d, refused (ErrListening)=%d, retried (>=50 ms)=%d, slowest start=%s; probes=%d, said listening=%d, avg probe=%s\n",
+			probers, starts, refused, retried, slowest, probes.Load(), trues.Load(), avg)
+	}
+
+	f, err = wait.Listen(dir, role, "wait")
+	if err != nil {
+		panic(err)
+	}
+	yes := 0
+	for i := 0; i < 10000; i++ {
+		if wait.Listening(dir, role) {
+			yes++
+		}
+	}
+	fmt.Printf("with a listener held: %d of 10000 probes said listening\n", yes)
+	// A second listener while the probes run: refused, as before H23.
+	if _, err := wait.Listen(dir, role, "wait"); !errors.Is(err, wait.ErrListening) {
+		fmt.Printf("a second listener was not refused: %v\n", err)
+	} else {
+		fmt.Printf("a second listener: %v\n", err)
+	}
+	f.Close()
+	yes = 0
+	for i := 0; i < 10000; i++ {
+		if wait.Listening(dir, role) {
+			yes++
+		}
+	}
+	fmt.Printf("with none: %d of 10000 probes said listening\n", yes)
+}

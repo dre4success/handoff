@@ -1,0 +1,28 @@
+# command: go run ./probe (stress.go.txt as probe/main.go in a copy of b24daa1 from git archive), twice
+# date: 2026-10-26 19:35:45 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: b24daa1367ce6978a5844027e1d11825a20f78e8
+
+## run 1
+no lock file yet: Listening = false
+lock file exists, nobody holds it: Listening = false
+probers= 0, 3 s: listener starts=670, refused (ErrListening)=0, retried (>=50 ms)=0, slowest start=10.0215ms; probes=0, said listening=0, avg probe=0s
+probers= 1, 3 s: listener starts=455, refused (ErrListening)=0, retried (>=50 ms)=17, slowest start=58.663625ms; probes=50369, said listening=34773, avg probe=59.338µs
+probers= 2, 3 s: listener starts=355, refused (ErrListening)=0, retried (>=50 ms)=25, slowest start=59.261375ms; probes=91087, said listening=49096, avg probe=65.651µs
+probers= 8, 3 s: listener starts=150, refused (ErrListening)=0, retried (>=50 ms)=25, slowest start=222.174708ms; probes=286330, said listening=101167, avg probe=83.922µs
+probers=32, 3 s: listener starts=41, refused (ErrListening)=4, retried (>=50 ms)=15, slowest start=276.589ms; probes=287572, said listening=64240, avg probe=335.8µs
+with a listener held: 10000 of 10000 probes said listening
+a second listener: already listening: wait for reviewer, pid <pid>, since <time>
+with none: 0 of 10000 probes said listening
+
+## run 2
+no lock file yet: Listening = false
+lock file exists, nobody holds it: Listening = false
+probers= 0, 3 s: listener starts=754, refused (ErrListening)=0, retried (>=50 ms)=0, slowest start=14.256667ms; probes=0, said listening=0, avg probe=0s
+probers= 1, 3 s: listener starts=510, refused (ErrListening)=0, retried (>=50 ms)=17, slowest start=57.752916ms; probes=51459, said listening=37000, avg probe=58.173µs
+probers= 2, 3 s: listener starts=337, refused (ErrListening)=0, retried (>=50 ms)=24, slowest start=111.167709ms; probes=90406, said listening=48166, avg probe=66.231µs
+probers= 8, 3 s: listener starts=195, refused (ErrListening)=0, retried (>=50 ms)=25, slowest start=161.037875ms; probes=282213, said listening=131501, avg probe=85.317µs
+probers=32, 3 s: listener starts=49, refused (ErrListening)=3, retried (>=50 ms)=16, slowest start=329.302042ms; probes=289907, said listening=64180, avg probe=330.764µs
+with a listener held: 10000 of 10000 probes said listening
+a second listener: already listening: wait for reviewer, pid <pid>, since <time>
+with none: 0 of 10000 probes said listening

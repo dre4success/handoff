@@ -1,0 +1,28 @@
+# command: throwaway Claude Code sessions (claude -p --model haiku) given what `handoff settings claude --global` prints, with --settings
+# date: 2026-10-25 23:02:09 UTC
+# by: Opus 5.5 (implementer), on the operator's Mac, 2.1.310 (Claude Code)
+# commit: 7cd892af29c95bba83c55ddf04a2f3c10c4763cb
+
+rules: {'allow': ['Bash(<scratch>/handoff *)'], 'deny': ['Bash(<scratch>/handoff decide *)', 'Edit(//**/.handoff/**)']}
+
+## 1.1: Write into the project's record, permission checks bypassed
+  tool result: <tool_use_error>File is in a directory that is denied by your permission settings.</tool_use_error>
+  last message: DENIED. The Write tool returned "File is in a directory that is denied by your permission settings" for `<scratch>/project/.handoff/probe.txt`. That's a permission rule on the directory, not a problem with the file itself. I tried once, as you asked, and didn't use any other tool.
+  result: <scratch>/project/.handoff/probe.txt does not exist
+
+## 1.2: Write into the record, from a linked worktree, permission checks bypassed
+  tool result: <tool_use_error>File is in a directory that is denied by your permission settings.</tool_use_error>
+  last message: DENIED. The Write call was rejected with "File is in a directory that is denied by your permission settings." The target path is under `.../tmp.CRvnZtrOf5/project/.handoff/`, so a permission rule is blocking that directory. I made one attempt, as you asked, and did not try another path or tool.
+  result: <scratch>/project/.handoff/probe-linked.txt does not exist
+
+## 1.3: Write beside the record (the control), permission checks bypassed
+  tool result: File created successfully at: <scratch>/project/probe.txt (file state is current in your context — no need to Read it back)
+  last message: WRITTEN
+  result: <scratch>/project/probe.txt exists
+
+## 2: the SessionStart brief hook, in a project with a record, a session with no role
+hooks: {'SessionStart': [{'hooks': [{'args': ['hook', 'brief'], 'command': '<scratch>/handoff', 'type': 'command'}]}]}
+  last message: SessionStart:startup hook success: handoff: project hands work between agents through handoff, and this session has no role in it.
+
+## notifications (sent to a file)
+(none)

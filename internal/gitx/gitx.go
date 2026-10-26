@@ -111,6 +111,11 @@ func Parents(dir, commit string) ([]string, error) {
 	return f[1:], nil
 }
 
+// TopLevel returns the root of the worktree that dir is in.
+func TopLevel(dir string) (string, error) {
+	return git(dir, "rev-parse", "--show-toplevel")
+}
+
 // MainBranch guesses the main branch of the repository whose main worktree
 // is dir: main, else master, else the branch that worktree is on, even one
 // with no commit yet.

@@ -1,0 +1,51 @@
+# command: go build ./...; go vet ./...; gofmt -l cmd internal; go list -deps ./... | grep net; go.mod; git log/diff --stat 0f68be51b6e0b4ded2984af705b050c4c536d286..HEAD
+# date: 2026-10-25 23:28:56 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 65e23ba4d49a2837aade533063ea2bdbaa9aa776
+
+## go build: ok
+## go vet: clean
+## gofmt -l cmd internal: []
+## go list -deps ./... matching net: []
+## go.mod: 0 require lines; go 1.25.3
+## the branch's commits on 0f68be51b6e0b4ded2984af705b050c4c536d286 (main at the v0.1.1 release):
+65e23ba test: H21 evidence: live Codex and Claude Code runs on the global settings, before and after, all tests under -race, the sweep
+7cd892a docs: §17 row 87: set up once for every project
+082ac66 docs: README: set up once, then init in each project
+849375b feat: the brief offers hooks for every project; Codex with no hooks ends its turn instead of waiting
+8137bfe feat: settings --global sets up every project at once; init says which CLI is set up
+## base is an ancestor: yes; merge base with main: 0f68be51b6e0b4ded2984af705b050c4c536d286
+## files changed:
+ README.md                                 |  22 +--
+ cmd/handoff/brief.go                      |  41 +++++-
+ cmd/handoff/cmds.go                       |  15 ++-
+ cmd/handoff/main.go                       |   5 +-
+ cmd/handoff/main_test.go                  |   9 ++
+ cmd/handoff/pickup_test.go                | 160 +++++++++++++++++++++-
+ cmd/handoff/session_test.go               |   2 +-
+ cmd/handoff/settings.go                   | 133 +++++++++++++++---
+ cmd/handoff/setup.go                      |  88 ++++++++++++
+ docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md |   1 +
+ evidence/h21/README.md                    |  20 +++
+ evidence/h21/collect.sh                   | 112 ++++++++++++++++
+ evidence/h21/deps-vet-fmt.log             |   9 ++
+ evidence/h21/go-test-race.log             | 188 ++++++++++++++++++++++++++
+ evidence/h21/live-claude.sh               |  69 ++++++++++
+ evidence/h21/live-claude.txt              |  28 ++++
+ evidence/h21/live-codex.sh                |  67 ++++++++++
+ evidence/h21/live-codex.txt               | 124 +++++++++++++++++
+ evidence/h21/names.log                    |  11 ++
+ evidence/h21/outputs.log                  | 215 ++++++++++++++++++++++++++++++
+ internal/gitx/gitx.go                     |   5 +
+ 21 files changed, 1282 insertions(+), 42 deletions(-)
+## the implementer's evidence commit adds only evidence/h21/: 0 other files
+## go test (no race) ./...:
+ok  	github.com/dre4success/handoff/internal/notify	0.389s
+ok  	github.com/dre4success/handoff/internal/record	2.545s
+ok  	github.com/dre4success/handoff/internal/status	0.235s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	0.766s
+
+## go test -count=1 ./cmd/handoff (no race), appended 2026-10-25 23:31:34 UTC:
+ok  	github.com/dre4success/handoff/cmd/handoff	91.879s
+## alerts sent: 0

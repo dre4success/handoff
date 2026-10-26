@@ -80,6 +80,26 @@ func Listen(dir, role, how string) (*os.File, error) {
 	return f, nil
 }
 
+// Listening says whether a process holds role's lock now: a wait, or a CLI's
+// hook. It takes the lock shared, for a moment, to see.
+func Listening(dir, role string) bool {
+	f, err := os.Open(PresencePath(dir, role) + ".lock")
+	if err != nil {
+		return false
+	}
+	defer f.Close()
+	for {
+		err = syscall.Flock(int(f.Fd()), syscall.LOCK_SH|syscall.LOCK_NB)
+		if !errors.Is(err, syscall.EINTR) {
+			break
+		}
+	}
+	if err == nil {
+		syscall.Flock(int(f.Fd()), syscall.LOCK_UN)
+	}
+	return errors.Is(err, syscall.EWOULDBLOCK)
+}
+
 // ReadPresence returns what presence/<role>.json last recorded. It says who
 // listened last, not that they still do: only the lock says that.
 func ReadPresence(dir, role string) (Presence, error) {

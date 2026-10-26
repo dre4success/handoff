@@ -143,6 +143,20 @@ func alive(pid int) bool {
 	return err == nil || errors.Is(err, syscall.EPERM)
 }
 
+// hasSession says whether a session has role, as far as handoff can tell:
+// the operator gave it to one that may still run, or something listens for
+// it now. init makes roles the operator may never give, such as a second
+// reviewer (row 89).
+func (a *app) hasSession(role string) bool {
+	bs, _ := a.bindings()
+	for _, b := range bs {
+		if b.Role == role && b.running() {
+			return true
+		}
+	}
+	return wait.Listening(a.dir, role)
+}
+
 // bound finds s's binding, by its id.
 func (a *app) bound(s session) (binding, bool) {
 	if s.ID == "" {

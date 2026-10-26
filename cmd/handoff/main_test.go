@@ -43,6 +43,15 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		panic(err)
 	}
+	// The CLIs' user settings, which handoff reads to see whether hooks are
+	// set (row 87), are empty folders of the test's own, never the operator's.
+	for _, v := range []string{"CLAUDE_CONFIG_DIR", "CODEX_HOME"} {
+		home := filepath.Join(dir, v)
+		if err := os.Mkdir(home, 0o755); err != nil {
+			panic(err)
+		}
+		os.Setenv(v, home)
+	}
 	bin = filepath.Join(dir, "handoff")
 	args := []string{"build", "-o", bin}
 	if raceBuild {

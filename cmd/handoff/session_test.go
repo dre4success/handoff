@@ -12,6 +12,8 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/dre4success/handoff/internal/wait"
 )
 
 // H12: roles handed to running sessions (proposal §17 row 73). A session is
@@ -82,7 +84,7 @@ func TestH12TwoClaudeSessionsTakeTheRolesTheOperatorGives(t *testing.T) {
 	opus, fable := claude("s-opus", cli(t)), claude("s-fable", cli(t))
 	out := r.as(t, opus, "role", "implementer")
 	if !strings.Contains(out, "You are now implementer in ") || !strings.Contains(out, "handoff brief: you are implementer") ||
-		!strings.Contains(out, "Listening: if this project's settings give your session handoff's hooks") {
+		!strings.Contains(out, "Listening: if your session has handoff's hooks") {
 		t.Fatalf("role implementer:\n%s", out)
 	}
 	r.as(t, fable, "role", "reviewer")
@@ -368,5 +370,73 @@ func TestH12ARoleMovedWhileAListenerStartsStopsIt(t *testing.T) {
 				t.Fatalf("the old %s: exit %d, want %d\n%s", kind, code, want, oldOut.String())
 			}
 		})
+	}
+}
+
+// H23 (row 89): init makes reviewer-2, but not every project gives it a
+// session. The implementer's brief names the reviewers with one, and post
+// and note say when the role they went to has none.
+func TestH23ReviewersWithASession(t *testing.T) {
+	r := newRepo(t)
+	asks := func(t *testing.T) string {
+		t.Helper()
+		b := r.ok(t, "implementer", "brief")
+		for _, l := range strings.Split(b, "\n") {
+			if strings.HasPrefix(l, "To ask for a review") {
+				return l
+			}
+		}
+		t.Fatalf("the brief tells no one how to ask:\n%s", b)
+		return ""
+	}
+	pid, end := cliEnds(t)
+	t.Cleanup(end)
+	r.as(t, claude("s-rev", pid), "role", "reviewer")
+	if l := asks(t); !strings.Contains(l, " --to reviewer --commit <sha> ") ||
+		!strings.HasSuffix(l, "`. reviewer-2 has no session now: send to it only once the operator gives it one.") {
+		t.Errorf("with reviewer alone: %s", l)
+	}
+	r.as(t, codex("t-rev-2"), "role", "reviewer-2")
+	if l := asks(t); !strings.HasSuffix(l, "`, where <reviewer> is reviewer or reviewer-2.") {
+		t.Errorf("with both: %s", l)
+	}
+
+	// Posts and notes to a role with no session say so; to one with a
+	// session, or to the operator, they don't.
+	sends := func(t *testing.T, to string, args ...string) bool {
+		t.Helper()
+		res := r.run(t, "implementer", "", nil, args...)
+		if res.code != 0 {
+			t.Fatalf("handoff %v: exit %d\n%s%s", args, res.code, res.out, res.err)
+		}
+		return strings.Contains(res.err, "handoff: no session has "+to+" now, so this waits until the operator gives one that role; tell the operator.\n")
+	}
+	if sends(t, "reviewer", "post", "--item", "W1", "--to", "reviewer", "--commit", r.commitA, "--title", "W1", "--body", r.body(t, "W1")) ||
+		sends(t, "operator", "note", "--item", "W1", "--to", "operator", "--body", r.body(t, "a question")) {
+		t.Error("told of no session for a role that has one, or for the operator")
+	}
+	end() // reviewer's session ends; its binding stays
+	if l := asks(t); !strings.Contains(l, " --to reviewer-2 --commit <sha> ") || !strings.HasSuffix(l, "`. reviewer has no session now: send to it only once the operator gives it one.") {
+		t.Errorf("once reviewer's session ended: %s", l)
+	}
+	if !sends(t, "reviewer", "note", "--item", "W1", "--to", "reviewer", "--body", r.body(t, "a note")) ||
+		!sends(t, "reviewer", "post", "--item", "W2", "--to", "reviewer", "--commit", r.commitB, "--title", "W2", "--body", r.body(t, "W2")) {
+		t.Error("not told that reviewer has no session")
+	}
+
+	// A role something listens for has a session, whoever gave it.
+	lock, err := wait.Listen(filepath.Join(r.dir, ".handoff"), "reviewer", "wait")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if sends(t, "reviewer", "note", "--item", "W2", "--to", "reviewer", "--body", r.body(t, "another note")) {
+		t.Error("told of no session for a role something listens for")
+	}
+	if l := asks(t); !strings.HasSuffix(l, "`, where <reviewer> is reviewer or reviewer-2.") {
+		t.Errorf("with reviewer listened for: %s", l)
+	}
+	lock.Close()
+	if !sends(t, "reviewer", "note", "--item", "W2", "--to", "reviewer", "--body", r.body(t, "a third note")) {
+		t.Error("not told once nothing listens for reviewer")
 	}
 }

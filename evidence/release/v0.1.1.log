@@ -1,0 +1,35 @@
+# command: the v0.1.1 release: the public commit checked in a plain clone, the push, then go install through the module proxy
+# date: 2026-10-25 22:14:04 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (go1.25.3)
+## clone at v0.1.1: 40ca8db0f05c5de5bf6f03828cd71b4548ef2a0b, tree 9c7bb07c4ecc343091763915cae5fe9fc1dda11e
+## local main tree: 9c7bb07c4ecc343091763915cae5fe9fc1dda11e
+## handoff version: handoff v0.1.1
+## go.mod require lines: 0
+## go vet: clean
+## gofmt -l: [evidence/reviewer/H8-0e4fc73/testdata/stale-recovery-probe_test.go
+evidence/reviewer/H8-8b0735d/testdata/claim-probe_test.go
+evidence/reviewer/H8-8b0735d/testdata/notify-probes_test.go]
+## gofmt -l cmd internal: []. The three above are reviewer probes kept as supplied under evidence/reviewer/, unchanged since v0.1.0 (2226a11), and not built
+## go test -count=1 -race ./...
+ok  	github.com/dre4success/handoff/cmd/handoff	599.363s
+ok  	github.com/dre4success/handoff/internal/awake	1.352s
+ok  	github.com/dre4success/handoff/internal/gitx	1.318s
+ok  	github.com/dre4success/handoff/internal/notify	1.829s
+ok  	github.com/dre4success/handoff/internal/record	6.305s
+ok  	github.com/dre4success/handoff/internal/status	1.278s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	2.445s
+## go test exit: 0
+## alerts sent: 0 (to the test file only)
+## git push origin main v0.1.1, on the operator's decision: 2226a11..40ca8db main, new tag v0.1.1
+## git ls-remote after the push
+40ca8db0f05c5de5bf6f03828cd71b4548ef2a0b	HEAD
+40ca8db0f05c5de5bf6f03828cd71b4548ef2a0b	refs/heads/main
+7dad3b17cbeb6fe472c81d85066906d0d17029fd	refs/tags/v0.1.0
+2226a1194e87d2f1a301a778b2ed51a8a2d72b1e	refs/tags/v0.1.0^{}
+e61a3b2c4542e6ba95793e952e1204c879cb5b80	refs/tags/v0.1.1
+40ca8db0f05c5de5bf6f03828cd71b4548ef2a0b	refs/tags/v0.1.1^{}
+## 2026-10-25 22:25:45 UTC: go install github.com/dre4success/handoff/cmd/handoff@v0.1.1 and @latest, with a scratch GOBIN and module cache
+@v0.1.1: handoff v0.1.1
+@latest: handoff v0.1.1
+## proxy.golang.org list: v0.1.0 v0.1.1 

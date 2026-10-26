@@ -1,0 +1,51 @@
+# command: brief, post and note: built from f773529 (before) and from here (after), as reviewers' sessions come and go
+# date: 2026-10-26 19:23:41 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 31017bca1aea6e76a9aff1c3dc2c12d968472b18
+
+
+## before: init's roles, and no reviewer has a session yet
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as implementer --item <item> --to <reviewer> --commit <sha> --title "<title>" --body <file>`, where <reviewer> is reviewer or reviewer-2.
+## before: reviewer has a session (Claude Code); reviewer-2 has none
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as implementer --item <item> --to <reviewer> --commit <sha> --title "<title>" --body <file>`, where <reviewer> is reviewer or reviewer-2.
+## before: post to reviewer
+posted #1 request W1 implementer → reviewer: W1 work @ c307ef7c2f9b
+# exit 0
+## before: post to reviewer-2
+posted #2 request W2 implementer → reviewer-2: W2 work @ c307ef7c2f9b
+# exit 0
+## before: note to the operator
+posted #3 note W1 implementer → operator: A question
+handoff: told the operator: W1: implementer asks you: A question
+# exit 0
+## before: reviewer-2 has a session too (Codex)
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as implementer --item <item> --to <reviewer> --commit <sha> --title "<title>" --body <file>`, where <reviewer> is reviewer or reviewer-2.
+## before: reviewer's session has ended; its role stays given
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as implementer --item <item> --to <reviewer> --commit <sha> --title "<title>" --body <file>`, where <reviewer> is reviewer or reviewer-2.
+## before: note to reviewer
+posted #4 note W1 implementer → reviewer: A note
+# exit 0
+
+## after: init's roles, and no reviewer has a session yet
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as implementer --item <item> --to <reviewer> --commit <sha> --title "<title>" --body <file>`, where <reviewer> is reviewer or reviewer-2, whichever the operator gives a session; none has one yet.
+## after: reviewer has a session (Claude Code); reviewer-2 has none
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as implementer --item <item> --to reviewer --commit <sha> --title "<title>" --body <file>`. reviewer-2 has no session now: send to it only once the operator gives it one.
+## after: post to reviewer
+posted #1 request W1 implementer → reviewer: W1 work @ 8bde5072f326
+# exit 0
+## after: post to reviewer-2
+posted #2 request W2 implementer → reviewer-2: W2 work @ 8bde5072f326
+handoff: no session has reviewer-2 now, so this waits until the operator gives one that role; tell the operator.
+# exit 0
+## after: note to the operator
+posted #3 note W1 implementer → operator: A question
+handoff: told the operator: W1: implementer asks you: A question
+# exit 0
+## after: reviewer-2 has a session too (Codex)
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as implementer --item <item> --to <reviewer> --commit <sha> --title "<title>" --body <file>`, where <reviewer> is reviewer or reviewer-2.
+## after: reviewer's session has ended; its role stays given
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as implementer --item <item> --to reviewer-2 --commit <sha> --title "<title>" --body <file>`. reviewer has no session now: send to it only once the operator gives it one.
+## after: note to reviewer
+posted #4 note W1 implementer → reviewer: A note
+handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+# exit 0

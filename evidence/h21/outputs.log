@@ -1,0 +1,215 @@
+# command: settings --global, init and each brief's listening line: built from 0f68be5 (before) and from here (after); nothing set up, then what --global prints added
+# date: 2026-10-25 23:10:16 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 7cd892af29c95bba83c55ddf04a2f3c10c4763cb
+
+## before: settings claude --global, outside any project
+handoff settings: flag provided but not defined: -global
+# exit 2
+## before: settings codex --global, outside any project
+handoff settings: flag provided but not defined: -global
+# exit 2
+## after: settings claude --global, outside any project
+Put these settings in <scratch>/claude-home/settings.json, merged with any already there.
+They set up every project at once, and do nothing in a project with no
+.handoff/ or a session with no role. Sessions already running get them
+when they start again.
+In a project with a record, every Claude Code session takes the role you give
+it: tell it, and it runs handoff role <role>. Until then it has none. It gets
+the brief when it starts or is summarised, a hook listens for its work
+whenever its turn ends, and it runs handoff without asking, but never decides,
+nor edits a .handoff/ folder.
+
+{
+  "hooks": {
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "args": [
+              "hook",
+              "notify"
+            ],
+            "command": "handoff",
+            "type": "command"
+          }
+        ],
+        "matcher": "permission_prompt"
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "args": [
+              "hook",
+              "brief"
+            ],
+            "command": "handoff",
+            "type": "command"
+          },
+          {
+            "args": [
+              "hook",
+              "listen"
+            ],
+            "asyncRewake": true,
+            "command": "handoff",
+            "timeout": 86400,
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "args": [
+              "hook",
+              "listen"
+            ],
+            "asyncRewake": true,
+            "command": "handoff",
+            "timeout": 86400,
+            "type": "command"
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(handoff *)"
+    ],
+    "deny": [
+      "Bash(handoff decide *)",
+      "Edit(//**/.handoff/**)"
+    ]
+  }
+}
+# exit 0
+## after: settings codex --global, outside any project
+Put these two files in <scratch>/codex-home/, merged with any already there.
+They set up every project at once, and do nothing in a project with no
+.handoff/ or a session with no role. The next time Codex starts, it asks you
+to review the new hooks: choose Trust all. Sessions already running get them
+when they start again.
+In a project with a record, every Codex session takes the role you give it:
+tell it, and it runs handoff role <role>. Until then it has none, and handoff
+on its own never shows it your decisions. It gets the brief when its first
+turn starts and after a summary. When its turn would end, a hook listens for
+its work and continues it with what arrives. And handoff runs outside Codex's
+sandbox, so its notifications and pop-ups reach you; handoff decide is
+forbidden.
+
+<scratch>/codex-home/hooks.json:
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "exec handoff hook brief",
+            "timeout": 30,
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "command": "exec handoff hook listen",
+            "timeout": 86400,
+            "type": "command"
+          }
+        ]
+      }
+    ]
+  }
+}
+
+<scratch>/codex-home/rules/handoff.rules:
+# handoff writes only under .handoff/ and has no network code (proposal §9).
+prefix_rule(pattern=["handoff"], decision="allow", justification="handoff runs outside the sandbox so that it can notify the operator")
+prefix_rule(pattern=["handoff", "decide"], decision="forbidden", justification="The operator decides, not an agent")
+# exit 0
+handoff settings: --as fixes a role in one project; with --global, each session takes the role you give it
+# exit 2
+## before: init, nothing set up
+Created <scratch>/p-before/.handoff. Git ignores it; nothing else in the project changed.
+Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.
+Main branch: main.
+
+To keep sessions on duty here, run the command for each CLI you use, and do what it prints:
+  Claude Code:  handoff settings claude
+  Codex:        handoff settings codex
+Then give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+# exit 0
+## before: brief, in a Claude Code session
+Listening: run `handoff wait --for reviewer --timeout 25m` (in Claude Code in the background, in Codex in the foreground of your turn). Exit 3: run it again. Exit 4: another session already listens for reviewer. After you handle what it delivers, wait again.
+## before: brief, in a Codex session
+Listening: run `handoff wait --for reviewer --timeout 25m` (in Claude Code in the background, in Codex in the foreground of your turn). Exit 3: run it again. Exit 4: another session already listens for reviewer. After you handle what it delivers, wait again.
+## before: brief, outside a session
+Listening: run `handoff wait --for reviewer --timeout 25m` (in Claude Code in the background, in Codex in the foreground of your turn). Exit 3: run it again. Exit 4: another session already listens for reviewer. After you handle what it delivers, wait again.
+## before: role, in a Claude Code session
+Listening: if this project's settings give your session handoff's hooks, a hook listens for implementer when your turn ends, and you don't run wait. If not, run `handoff wait --for implementer --timeout 25m` (in Claude Code in the background, in Codex in the foreground of your turn). Exit 3: run it again. Exit 4: another session already listens for implementer. After you handle what it delivers, wait again.
+## before: role, in a Codex session
+Listening: if this project's settings give your session handoff's hooks, a hook listens for reviewer-2 when your turn ends, and you don't run wait. If not, run `handoff wait --for reviewer-2 --timeout 25m` (in Claude Code in the background, in Codex in the foreground of your turn). Exit 3: run it again. Exit 4: another session already listens for reviewer-2. After you handle what it delivers, wait again.
+## before: hook brief, as a hook gives it
+Listening: you don't run `handoff wait`. When your turn ends, a hook listens for reviewer and brings you what arrives.
+## after: init, nothing set up
+Created <scratch>/p-after/.handoff. Git ignores it; nothing else in the project changed.
+Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.
+Main branch: main.
+
+handoff's hooks keep sessions on duty. Set them once, for every project:
+  Claude Code:  handoff settings claude --global
+  Codex:        handoff settings codex --global
+For each CLI you use that isn't set up, run its command and do what it prints, or ask one of its sessions to.
+Then give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+# exit 0
+## after: brief, in a Claude Code session
+Listening: Run `handoff wait --for reviewer --timeout 25m` in the background. Exit 3: run it again. Exit 4: another session already listens for reviewer. After you handle what it delivers, wait again. If your session has no handoff hooks, offer to set them up for every project: `handoff settings claude --global` prints them and where they go. With the operator's OK, add them. They work once the operator starts this session again.
+## after: brief, in a Codex session
+Listening: Don't run `handoff wait`: Codex checks on a running command about once a minute, each time with a whole model call, which uses up the operator's plan. Instead, end your turn. If work waits for you, the operator hears of it and tells you. If your session has no handoff hooks, offer to set them up for every project: `handoff settings codex --global` prints them and where they go. With the operator's OK, add them. They work once the operator starts this session again.
+## after: brief, outside a session
+Listening: In Claude Code, run `handoff wait --for reviewer --timeout 25m` in the background. Exit 3: run it again. Exit 4: another session already listens for reviewer. After you handle what it delivers, wait again. In Codex, don't run wait, since each minute of it costs a whole model call: end your turn. If work waits for you, the operator hears of it and tells you. If your session has no handoff hooks, offer to set them up for every project: `handoff settings claude --global` or `handoff settings codex --global` prints them and where they go. With the operator's OK, add them. They work once the operator starts this session again.
+## after: role, in a Claude Code session
+Listening: if your session has handoff's hooks, a hook listens for implementer when your turn ends, and you don't run wait. If not, run `handoff wait --for implementer --timeout 25m` in the background. Exit 3: run it again. Exit 4: another session already listens for implementer. After you handle what it delivers, wait again. If your session has no handoff hooks, offer to set them up for every project: `handoff settings claude --global` prints them and where they go. With the operator's OK, add them. They work once the operator starts this session again.
+## after: role, in a Codex session
+Listening: if your session has handoff's hooks, a hook listens for reviewer-2 when your turn ends, and you don't run wait. If not, don't run `handoff wait`: Codex checks on a running command about once a minute, each time with a whole model call, which uses up the operator's plan. Instead, end your turn. If work waits for you, the operator hears of it and tells you. If your session has no handoff hooks, offer to set them up for every project: `handoff settings codex --global` prints them and where they go. With the operator's OK, add them. They work once the operator starts this session again.
+## after: hook brief, as a hook gives it
+Listening: you don't run `handoff wait`. When your turn ends, a hook listens for reviewer and brings you what arrives.
+## after: what settings --global prints, added as it says
+      68 <scratch>/claude-home/settings.json
+      26 <scratch>/codex-home/hooks.json
+       3 <scratch>/codex-home/rules/handoff.rules
+      97 total
+## after: init, both set up
+Created <scratch>/p-set/.handoff. Git ignores it; nothing else in the project changed.
+Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.
+Main branch: main.
+
+handoff's hooks keep sessions on duty. Set them once, for every project:
+  Claude Code:  set up, in <scratch>/claude-home/settings.json
+  Codex:        set up, in <scratch>/codex-home/hooks.json
+Then give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+# exit 0
+## after: brief, in a Claude Code session
+Listening: Run `handoff wait --for reviewer --timeout 25m` in the background. Exit 3: run it again. Exit 4: another session already listens for reviewer. After you handle what it delivers, wait again.
+## after: brief, in a Codex session
+Listening: Don't run `handoff wait`: Codex checks on a running command about once a minute, each time with a whole model call, which uses up the operator's plan. Instead, end your turn. If work waits for you, the operator hears of it and tells you.
+## after: brief, outside a session
+Listening: In Claude Code, run `handoff wait --for reviewer --timeout 25m` in the background. Exit 3: run it again. Exit 4: another session already listens for reviewer. After you handle what it delivers, wait again. In Codex, don't run wait, since each minute of it costs a whole model call: end your turn. If work waits for you, the operator hears of it and tells you.
+## after: role, in a Claude Code session
+Listening: if your session has handoff's hooks, a hook listens for implementer when your turn ends, and you don't run wait. If not, run `handoff wait --for implementer --timeout 25m` in the background. Exit 3: run it again. Exit 4: another session already listens for implementer. After you handle what it delivers, wait again.
+## after: role, in a Codex session
+Listening: if your session has handoff's hooks, a hook listens for reviewer-2 when your turn ends, and you don't run wait. If not, don't run `handoff wait`: Codex checks on a running command about once a minute, each time with a whole model call, which uses up the operator's plan. Instead, end your turn. If work waits for you, the operator hears of it and tells you.
+## after: hook brief, as a hook gives it
+Listening: you don't run `handoff wait`. When your turn ends, a hook listens for reviewer and brings you what arrives.
+## after: Codex's own check of the rule: show, decide
+{"matchedRules":[{"prefixRuleMatch":{"matchedPrefix":["handoff"],"decision":"allow","justification":"handoff runs outside the sandbox so that it can notify the operator"}}],"decision":"allow"}
+{"matchedRules":[{"prefixRuleMatch":{"matchedPrefix":["handoff"],"decision":"allow","justification":"handoff runs outside the sandbox so that it can notify the operator"}},{"prefixRuleMatch":{"matchedPrefix":["handoff","decide"],"decision":"forbidden","justification":"The operator decides, not an agent"}}],"decision":"forbidden"}

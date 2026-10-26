@@ -1,0 +1,105 @@
+# command: git merge-tree --write-tree main HEAD, objects to a scratch directory; H14's sweep over HEAD, main, the merged tree and the reviewer's evidence folder
+# date: 2026-10-26 19:36:22 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: b24daa1367ce6978a5844027e1d11825a20f78e8
+
+## loose objects in the repository before:
+warning: garbage found: ~/personal/ai-agents/handoff/.git/worktrees/wt-h23/refs
+count: 281
+in-pack: 2629
+## merge-tree of main (254af22339bfdc4f9463c82bdb1bd697d1575244) and HEAD: exit 0
+7fb62a4b4ad2cb6fb809ab7bbd163afca865e19a
+## loose objects in the repository after:
+warning: garbage found: ~/personal/ai-agents/handoff/.git/worktrees/wt-h23/refs
+count: 281
+in-pack: 2629
+## files that differ between main and the merged tree:
+M README.md
+M cmd/handoff/brief.go
+M cmd/handoff/cmds.go
+M cmd/handoff/pickup_test.go
+M cmd/handoff/session.go
+M cmd/handoff/session_test.go
+M docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md
+Only in merged/evidence: h22
+Only in merged/evidence: h23
+M internal/wait/presence.go
+## the merged tree's evidence/h23 and evidence/reviewer folders:
+evidence/h23:
+README.md
+collect.sh
+deps-vet-fmt.log
+go-test-race.log
+names.log
+outputs.log
+
+evidence/reviewer:
+H10a-abe5193
+H10a-d320393
+H10a-ebc04f2
+H10b-1aed043
+H10b-418a0c4
+H11-a249704
+H12-40a3768
+H12-50a8c2d
+H12-589c1cd
+H13-178b7ca
+H14-48eb3b5
+H14-82d98a7
+H15-d336752
+H16-500e00d
+H17-9035715
+H17-cbb09c2
+H18-1c392de
+H18-e832f00
+H19-24ffd67
+H19-63a9d7b
+H21-65e23ba
+H22-f773529
+H5-089a64f
+H5-7c1d0a2
+H6-639ed6f
+H6-c5826e5
+H8-0e4fc73
+H8-12258ba
+H8-2daf1b7
+H8-8b0735d
+H9-86c7088
+H9b-6783e4a
+H9b-f232ee3
+## sweep of HEAD (b24daa1367ce6978a5844027e1d11825a20f78e8)
+620 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder, other than the test's made-up ones: 0 lines, 0 file names
+the other project's name: 0 lines, 0 file names
+the operator's email domains: 0 lines, 0 file names
+## sweep of main (254af22339bfdc4f9463c82bdb1bd697d1575244)
+615 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder, other than the test's made-up ones: 0 lines, 0 file names
+the other project's name: 0 lines, 0 file names
+the operator's email domains: 0 lines, 0 file names
+## sweep of merged (tree 7fb62a4b4ad2cb6fb809ab7bbd163afca865e19a)
+627 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder, other than the test's made-up ones: 0 lines, 0 file names
+the other project's name: 0 lines, 0 file names
+the operator's email domains: 0 lines, 0 file names
+## sweep of the reviewer's evidence folder, ~/personal/ai-agents/handoff/evidence/reviewer/H23-b24daa1
+7 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder, other than the test's made-up ones: 0 lines, 0 file names
+the other project's name: 0 lines, 0 file names
+the operator's email domains: 0 lines, 0 file names
+
+## final sweep of ~/personal/ai-agents/handoff/evidence/reviewer/H23-b24daa1, after README.md, 2026-10-26 19:39:42 UTC
+9 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder, other than the test's made-up ones: 0 lines, 0 file names
+the other project's name: 0 lines, 0 file names
+the operator's email domains: 0 lines, 0 file names

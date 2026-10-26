@@ -1,0 +1,263 @@
+# command: init in 15 setups, built from b6d164e (before) and f773529 (after); user settings from settings --global, project settings from settings, and other shapes
+# date: 2026-10-26 19:14:14 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: f77352941b7d26e221d17c3ba20c0ad726f565e4
+
+settings files made for the probes:
+      68 <scratch>/set/claude/settings.json
+      26 <scratch>/set/codex/hooks.json
+      68 <scratch>/set/proj-claude.json
+      26 <scratch>/set/proj-codex-hooks.json
+     188 total
+user Claude Code Stop hook: handoff
+user Codex Stop hook: exec handoff hook listen
+the no-Stop Codex file's events: ['SessionStart']
+
+# Part 1: the three setups the implementer's evidence covers
+
+## a. nothing set up
+### after:
+Created <scratch>/p2/.handoff. Git ignores it; nothing else in the project changed.
+Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.
+Main branch: main.
+
+handoff's hooks keep sessions on duty. Set them once, for every project:
+  Claude Code:  handoff settings claude --global
+  Codex:        handoff settings codex --global
+For each CLI you use that isn't set up, run its command and do what it prints, or ask one of its sessions to.
+Then give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+# exit 0
+### before (b6d164e): identical, but for the repo's path
+
+## b. Codex alone set up (user)
+### after:
+Created <scratch>/p4/.handoff. Git ignores it; nothing else in the project changed.
+Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.
+Main branch: main.
+
+handoff's hooks keep sessions on duty. Set them once, for every project:
+  Claude Code:  handoff settings claude --global
+  Codex:        set up, in <scratch>/set/codex/hooks.json
+For each CLI you use that isn't set up, run its command and do what it prints, or ask one of its sessions to.
+Then give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+# exit 0
+### before (b6d164e): identical, but for the repo's path
+
+## c. both set up (user)
+### after:
+Created <scratch>/p6/.handoff. Git ignores it; nothing else in the project changed.
+Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.
+Main branch: main.
+
+handoff's hooks keep sessions on duty. Both CLIs have them:
+  Claude Code:  set up, in <scratch>/set/claude/settings.json
+  Codex:        set up, in <scratch>/set/codex/hooks.json
+Give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+# exit 0
+### before (b6d164e), where it differs:
+< handoff's hooks keep sessions on duty. Set them once, for every project:
+> handoff's hooks keep sessions on duty. Both CLIs have them:
+< Then give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+> Give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+
+# Part 2: setups the evidence does not cover
+
+## d. Claude Code alone set up (user)
+### after:
+Created <scratch>/p8/.handoff. Git ignores it; nothing else in the project changed.
+Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.
+Main branch: main.
+
+handoff's hooks keep sessions on duty. Set them once, for every project:
+  Claude Code:  set up, in <scratch>/set/claude/settings.json
+  Codex:        handoff settings codex --global
+For each CLI you use that isn't set up, run its command and do what it prints, or ask one of its sessions to.
+Then give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+# exit 0
+### before (b6d164e): identical, but for the repo's path
+
+## e. both set up in the project's own files (.claude/settings.json, .codex/hooks.json); user settings empty
+### after:
+Created <scratch>/p10/.handoff. Git ignores it; nothing else in the project changed.
+Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.
+Main branch: main.
+
+handoff's hooks keep sessions on duty. Both CLIs have them:
+  Claude Code:  set up, in <scratch>/p10/.claude/settings.json
+  Codex:        set up, in <scratch>/p10/.codex/hooks.json
+Give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+# exit 0
+### before (b6d164e), where it differs:
+< handoff's hooks keep sessions on duty. Set them once, for every project:
+> handoff's hooks keep sessions on duty. Both CLIs have them:
+< Then give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+> Give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+
+## f. Claude Code in the user's settings, Codex in the project's .codex/hooks.json
+### after:
+Created <scratch>/p12/.handoff. Git ignores it; nothing else in the project changed.
+Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.
+Main branch: main.
+
+handoff's hooks keep sessions on duty. Both CLIs have them:
+  Claude Code:  set up, in <scratch>/set/claude/settings.json
+  Codex:        set up, in <scratch>/p12/.codex/hooks.json
+Give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+# exit 0
+### before (b6d164e), where it differs:
+< handoff's hooks keep sessions on duty. Set them once, for every project:
+> handoff's hooks keep sessions on duty. Both CLIs have them:
+< Then give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+> Give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+
+## g. Claude Code in the project's .claude/settings.local.json, Codex in the user's
+### after:
+Created <scratch>/p14/.handoff. Git ignores it; nothing else in the project changed.
+Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.
+Main branch: main.
+
+handoff's hooks keep sessions on duty. Both CLIs have them:
+  Claude Code:  set up, in <scratch>/p14/.claude/settings.local.json
+  Codex:        set up, in <scratch>/set/codex/hooks.json
+Give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+# exit 0
+### before (b6d164e), where it differs:
+< handoff's hooks keep sessions on duty. Set them once, for every project:
+> handoff's hooks keep sessions on duty. Both CLIs have them:
+< Then give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+> Give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+
+## h. both in the user's home (~/.claude, ~/.codex), CLAUDE_CONFIG_DIR and CODEX_HOME unset, HOME at scratch
+### after:
+Created <scratch>/p16/.handoff. Git ignores it; nothing else in the project changed.
+Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.
+Main branch: main.
+
+handoff's hooks keep sessions on duty. Both CLIs have them:
+  Claude Code:  set up, in ~/.claude/settings.json
+  Codex:        set up, in ~/.codex/hooks.json
+Give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+# exit 0
+### before (b6d164e), where it differs:
+< handoff's hooks keep sessions on duty. Set them once, for every project:
+> handoff's hooks keep sessions on duty. Both CLIs have them:
+< Then give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+> Give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+
+## i. both set up (user), init run from a subfolder of the project
+### after:
+Created <scratch>/p18/.handoff. Git ignores it; nothing else in the project changed.
+Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.
+Main branch: main.
+
+handoff's hooks keep sessions on duty. Both CLIs have them:
+  Claude Code:  set up, in <scratch>/set/claude/settings.json
+  Codex:        set up, in <scratch>/set/codex/hooks.json
+Give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+# exit 0
+### before (b6d164e), where it differs:
+< handoff's hooks keep sessions on duty. Set them once, for every project:
+> handoff's hooks keep sessions on duty. Both CLIs have them:
+< Then give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+> Give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+### from sub/dir: the record is at the top level
+
+## j. both set up (user), init --roles a,b --reviewers b
+### after:
+Created <scratch>/p20/.handoff. Git ignores it; nothing else in the project changed.
+Roles: a and b; b reviews.
+Main branch: main.
+
+handoff's hooks keep sessions on duty. Both CLIs have them:
+  Claude Code:  set up, in <scratch>/set/claude/settings.json
+  Codex:        set up, in <scratch>/set/codex/hooks.json
+Give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+# exit 0
+### before (b6d164e), where it differs:
+< handoff's hooks keep sessions on duty. Set them once, for every project:
+> handoff's hooks keep sessions on duty. Both CLIs have them:
+< Then give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+> Give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+
+## k. Claude Code's user settings.json is not JSON ('{'); Codex set up
+### after:
+Created <scratch>/p22/.handoff. Git ignores it; nothing else in the project changed.
+Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.
+Main branch: main.
+
+handoff's hooks keep sessions on duty. Set them once, for every project:
+  Claude Code:  handoff settings claude --global
+  Codex:        set up, in <scratch>/set/codex/hooks.json
+For each CLI you use that isn't set up, run its command and do what it prints, or ask one of its sessions to.
+Then give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+# exit 0
+### before (b6d164e): identical, but for the repo's path
+
+## l. Claude Code's user settings.json has a Stop hook that is not handoff's; Codex set up
+### after:
+Created <scratch>/p24/.handoff. Git ignores it; nothing else in the project changed.
+Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.
+Main branch: main.
+
+handoff's hooks keep sessions on duty. Set them once, for every project:
+  Claude Code:  handoff settings claude --global
+  Codex:        set up, in <scratch>/set/codex/hooks.json
+For each CLI you use that isn't set up, run its command and do what it prints, or ask one of its sessions to.
+Then give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+# exit 0
+### before (b6d164e): identical, but for the repo's path
+
+## m. Claude Code's user Stop hook is command "handoff" with args ["hook","listen"]; Codex set up
+### after:
+Created <scratch>/p26/.handoff. Git ignores it; nothing else in the project changed.
+Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.
+Main branch: main.
+
+handoff's hooks keep sessions on duty. Both CLIs have them:
+  Claude Code:  set up, in <scratch>/set/args/claude/settings.json
+  Codex:        set up, in <scratch>/set/codex/hooks.json
+Give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+# exit 0
+### before (b6d164e), where it differs:
+< handoff's hooks keep sessions on duty. Set them once, for every project:
+> handoff's hooks keep sessions on duty. Both CLIs have them:
+< Then give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+> Give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+
+## n. Codex's user hooks.json has handoff's hooks but no Stop hook; Claude Code set up
+### after:
+Created <scratch>/p28/.handoff. Git ignores it; nothing else in the project changed.
+Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.
+Main branch: main.
+
+handoff's hooks keep sessions on duty. Set them once, for every project:
+  Claude Code:  set up, in <scratch>/set/claude/settings.json
+  Codex:        handoff settings codex --global
+For each CLI you use that isn't set up, run its command and do what it prints, or ask one of its sessions to.
+Then give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+# exit 0
+### before (b6d164e): identical, but for the repo's path
+
+## o. Claude Code set up in both the user's and the project's settings (which file init names)
+### after:
+Created <scratch>/p30/.handoff. Git ignores it; nothing else in the project changed.
+Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.
+Main branch: main.
+
+handoff's hooks keep sessions on duty. Both CLIs have them:
+  Claude Code:  set up, in <scratch>/set/claude/settings.json
+  Codex:        set up, in <scratch>/set/codex/hooks.json
+Give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+# exit 0
+### before (b6d164e), where it differs:
+< handoff's hooks keep sessions on duty. Set them once, for every project:
+> handoff's hooks keep sessions on duty. Both CLIs have them:
+< Then give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+> Give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+
+# Part 3: init a second time, both set up (after only)
+handoff init: <scratch>/p31/.handoff exists; refused
+# exit 2
+
+# tally: after says "Both CLIs have them:" in 9 setups and "Set them once, for every project:" in 6, of 15
+# alerts sent: 0 (to the test file only)
