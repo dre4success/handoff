@@ -222,7 +222,7 @@ func TestH27TellIsNowFyi(t *testing.T) {
 	if n := len(r.snap(t).Entries); n != 0 {
 		t.Fatalf("%d entries after tell, want none", n)
 	}
-	if res := r.h(t, "", "--help"); strings.Contains(res.err, "tell    ") || !strings.Contains(res.err, "decide, fyi, and handoff on its own") {
+	if res := r.h(t, "", "--help"); strings.Contains(res.err, "tell    ") || !strings.Contains(res.err, "decide, fyi, away, back, and handoff on its own") {
 		t.Fatalf("the usage still names tell:\n%s", res.err)
 	}
 }

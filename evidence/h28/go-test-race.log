@@ -1,0 +1,28 @@
+# command: go test -race -count=1 ./...; then the H28 tests, -count=10
+# date: 2026-11-11 10:16:25 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 77a48cb2fa6cda9b1fc6597b83cd6cd4da120567
+
+ok  	github.com/dre4success/handoff/cmd/handoff	410.414s
+ok  	github.com/dre4success/handoff/internal/awake	1.305s
+ok  	github.com/dre4success/handoff/internal/gitx	1.235s
+ok  	github.com/dre4success/handoff/internal/notify	1.378s
+ok  	github.com/dre4success/handoff/internal/record	4.076s
+ok  	github.com/dre4success/handoff/internal/status	1.228s
+ok  	github.com/dre4success/handoff/internal/wait	1.785s
+# passed: 180; failed: 0; exit 0; wall time 417 s
+
+## the H28 tests in that run
+--- PASS: TestH28AwayApprovesOnceEveryReviewerApproves (13.20s)
+--- PASS: TestH28AwayNeedsOneCommit (9.95s)
+--- PASS: TestH28AwayConfirmsWhatItApprovesNow (5.68s)
+--- PASS: TestH28BackEndsTheGoAhead (10.00s)
+--- PASS: TestH28OneApprovalIsEnoughForAnItemSentToOne (8.82s)
+--- PASS: TestH28AwayAndBackAreTheOperatorsAlone (3.47s)
+--- PASS: TestH28GoAheadNeedsEveryReviewerAtOneCommit (0.00s)
+--- PASS: TestH28GoAheadRefusesApprovalsOnTwoCommits (0.00s)
+--- PASS: TestH28GoAheadStartsAndEnds (0.00s)
+
+## the H28 tests, 10 times each under the race detector
+ok  	github.com/dre4success/handoff/cmd/handoff	511.432s
+ok  	github.com/dre4success/handoff/internal/status	1.260s

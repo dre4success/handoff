@@ -1,0 +1,71 @@
+# command: go build ./...; go vet ./...; gofmt -l cmd internal; go.mod requires; go list -deps for net; the commits and diffstat from the base; what the evidence commit touches
+# date: 2026-11-11 10:40:43 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: b63d4307448b58b865c1a39d0722b6c06189f85c
+
+## go build ./...: ok
+## go vet ./...: clean
+## gofmt -l cmd internal: []
+## go.mod require lines: 0
+## packages in go list -deps ./... named net or under net/: 0
+## commits on the base (b8e1c7e):
+b63d430 docs: evidence for H28 round 2
+77a48cb docs: §17 row 98, corrections to row 96 from the H28 review
+e481683 feat: the go-ahead says the one rule it applies, notifies the operator, and names what it approves at once (row 98)
+6b2f241 docs: evidence for H28
+c05f986 docs: README: handoff away and back
+6b148f2 fix: handoff, while away, leaves one blank line before what waits
+e3b85fe docs: §17 row 96, H28 the operator's go-ahead while away
+cda435b feat: handoff away and handoff back; an APPROVE under the go-ahead says so (row 96)
+9d65d47 feat: status: the operator's go-ahead while away approves an item once every live request on it is approved at one commit (row 96)
+## diffstat:
+ README.md                                 |   9 +-
+ cmd/handoff/away_test.go                  | 251 ++++++++++++++++++++++++++++++
+ cmd/handoff/brief.go                      |  18 ++-
+ cmd/handoff/cmds.go                       | 234 +++++++++++++++++++++++++---
+ cmd/handoff/fyi_test.go                   |   2 +-
+ cmd/handoff/main.go                       |   9 +-
+ docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md |   2 +
+ evidence/h28/README.md                    |  13 ++
+ evidence/h28/away.log                     |  93 +++++++++++
+ evidence/h28/collect.sh                   | 232 +++++++++++++++++++++++++++
+ evidence/h28/commits.log                  |  40 +++++
+ evidence/h28/confirm.log                  |  59 +++++++
+ evidence/h28/deps-vet-fmt.log             |  11 ++
+ evidence/h28/go-test-race.log             |  28 ++++
+ evidence/h28/one.log                      |  22 +++
+ evidence/h28/refusals.log                 |  49 ++++++
+ internal/status/away_test.go              | 181 +++++++++++++++++++++
+ internal/status/status.go                 | 207 +++++++++++++++++++++++-
+ internal/wait/wait.go                     |   8 +-
+ 19 files changed, 1431 insertions(+), 37 deletions(-)
+## the implementer's evidence names 77a48cb; what the commit under review adds to it:
+ evidence/h28/README.md        | 11 ++++----
+ evidence/h28/away.log         | 58 +++++++++++++++++++++++++------------------
+ evidence/h28/collect.sh       | 49 ++++++++++++++++++++++++++++++++++--
+ evidence/h28/commits.log      | 31 +++++++++++++----------
+ evidence/h28/confirm.log      | 41 +++++++++++++++++++++++++++---
+ evidence/h28/deps-vet-fmt.log |  6 ++---
+ evidence/h28/go-test-race.log | 35 +++++++++++++-------------
+ evidence/h28/one.log          | 22 ++++++++++++++++
+ evidence/h28/refusals.log     |  4 +--
+ 9 files changed, 188 insertions(+), 69 deletions(-)
+## since round 1 (6b2f241):
+ README.md                                 |  4 +-
+ cmd/handoff/away_test.go                  | 62 +++++++++++++++++-----
+ cmd/handoff/brief.go                      |  6 ++-
+ cmd/handoff/cmds.go                       |  8 ++-
+ docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md |  1 +
+ evidence/h28/README.md                    | 11 ++--
+ evidence/h28/away.log                     | 58 ++++++++++++---------
+ evidence/h28/collect.sh                   | 49 +++++++++++++++++-
+ evidence/h28/commits.log                  | 31 ++++++-----
+ evidence/h28/confirm.log                  | 41 +++++++++++++--
+ evidence/h28/deps-vet-fmt.log             |  6 +--
+ evidence/h28/go-test-race.log             | 35 ++++++-------
+ evidence/h28/one.log                      | 22 ++++++++
+ evidence/h28/refusals.log                 |  4 +-
+ internal/status/away_test.go              | 42 ++++++++++++++-
+ internal/status/status.go                 | 85 ++++++++++++++++++++++++++++---
+ 16 files changed, 371 insertions(+), 94 deletions(-)
+## the worktree is clean: []

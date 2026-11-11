@@ -731,10 +731,10 @@ func (a *app) cmdDecide(args []string) (int, error) {
 
 var verbs = map[string]string{"approve": "Approve", "deny": "Deny"}
 
-// operator checks that the caller may run cmd, decide or fyi, as the operator.
+// operator checks that the caller may run cmd, such as decide, fyi or away, as the operator.
 // With no role given, the caller is the operator; both also need a terminal,
 // which an agent's shell does not have. An agent's role is refused (proposal
-// §17 rows 64, 92, 94).
+// §17 rows 64, 92, 94, 96).
 func (a *app) operator(cmd, as string) error {
 	if callerSession().ID != "" {
 		// Whatever role it claims (row 73).
@@ -776,29 +776,68 @@ func (a *app) operator(cmd, as string) error {
 // raises no alert of its own. The agents act on it and don't reply through
 // handoff (the brief says so).
 func (a *app) cmdFyi(args []string) (int, error) {
-	if len(args) == 1 && (args[0] == "-h" || args[0] == "-help" || args[0] == "--help") {
-		return 0, flag.ErrHelp
+	msg, err := message("fyi", args)
+	if err != nil {
+		return 0, err
 	}
+	if err := a.atOperatorsTerminal("fyi"); err != nil {
+		return 0, err
+	}
+	told, sessions, idle := a.sessions()
+	if len(told) == 0 {
+		return 0, errors.New("no agent has a session now, so no one was told; nothing written")
+	}
+	var warnings []string
+	got, err := a.store.AppendAll(func(snap *record.Snapshot) ([]*record.Entry, error) {
+		warnings = snap.Warnings()
+		return fyis(told, sessions, msg, 0), nil
+	})
+	if err != nil {
+		return 0, err
+	}
+	a.printTold(told, idle, got)
+	a.alert()
+	a.printWarnings(warnings)
+	return exitOK, nil
+}
+
+// message is what the operator typed after fyi or away: the arguments, joined.
+func message(cmd string, args []string) (string, error) {
+	if len(args) == 1 && (args[0] == "-h" || args[0] == "-help" || args[0] == "--help") {
+		return "", flag.ErrHelp
+	}
+	example := map[string]string{"fyi": "Carry on while I'm away.", "away": "Merge when the reviewers approve."}[cmd]
 	if len(args) > 0 && strings.HasPrefix(args[0], "-") {
-		return 0, errors.New(`fyi takes no flags, and a message can't start with -: give the message alone, in quotes, such as handoff fyi "Carry on while I'm away."`)
+		return "", fmt.Errorf(`%s takes no flags, and a message can't start with -: give the message alone, in quotes, such as handoff %s "%s"`, cmd, cmd, example)
 	}
 	msg := strings.TrimSpace(strings.Join(args, " "))
 	if msg == "" {
-		return 0, errors.New(`give the message, in quotes, such as handoff fyi "Carry on while I'm away."`)
+		return "", fmt.Errorf(`give the message, in quotes, such as handoff %s "%s"`, cmd, example)
 	}
 	if len(msg) > maxBody {
-		return 0, fmt.Errorf("the message is over %d bytes", maxBody)
+		return "", fmt.Errorf("the message is over %d bytes", maxBody)
 	}
+	return msg, nil
+}
+
+// atOperatorsTerminal opens the project and checks that the caller is the
+// operator, at a terminal, as decide does.
+func (a *app) atOperatorsTerminal(cmd string) error {
 	if err := a.open(); err != nil {
-		return 0, err
+		return err
 	}
-	if err := a.operator("fyi", ""); err != nil {
-		return 0, err
+	if err := a.operator(cmd, ""); err != nil {
+		return err
 	}
 	if !term.IsTerminal(a.stdin) {
-		return 0, errors.New("fyi needs a terminal on stdin: the operator types it, an agent's shell cannot")
+		return fmt.Errorf("%s needs a terminal on stdin: the operator types it, an agent's shell cannot", cmd)
 	}
-	var told, idle, sessions []string
+	return nil
+}
+
+// sessions lists the roles with a session now, the session each names (row
+// 93), and the roles with none.
+func (a *app) sessions() (told, sessions, idle []string) {
 	for _, r := range a.cfg.Roles {
 		if s, ok := a.holder(r.Name); ok {
 			told, sessions = append(told, r.Name), append(sessions, s)
@@ -806,29 +845,171 @@ func (a *app) cmdFyi(args []string) (int, error) {
 			idle = append(idle, r.Name)
 		}
 	}
-	if len(told) == 0 {
-		return 0, errors.New("no agent has a session now, so no one was told; nothing written")
+	return told, sessions, idle
+}
+
+// fyis is one fyi from the operator to each role told, naming its session.
+func fyis(told, sessions []string, body string, re int64) []*record.Entry {
+	es := make([]*record.Entry, len(told))
+	for i, r := range told {
+		es[i] = &record.Entry{Kind: "fyi", From: status.Operator, To: r, Session: sessions[i], Re: re, Body: body}
 	}
+	return es
+}
+
+// printTold says which roles the fyis in got reached, and which have no
+// session.
+func (a *app) printTold(told, idle []string, got []record.Entry) {
+	var ids []string
+	for _, e := range got {
+		if e.Kind == "fyi" {
+			ids = append(ids, fmt.Sprintf("#%d", e.ID))
+		}
+	}
+	if len(told) > 0 {
+		fmt.Fprintf(a.stdout, "told %s (%s)\n", listOf(told, "and"), strings.Join(ids, ", "))
+	}
+	if len(idle) > 0 {
+		fmt.Fprintf(a.stdout, "not told, no session: %s\n", strings.Join(idle, ", "))
+	}
+}
+
+// cmdAway is the operator going away with a go-ahead, such as "merge when
+// both reviewers approve" (row 96). It records the go-ahead, an away entry,
+// and tells it to every agent with a session as an fyi, all in one write.
+// Until handoff back, an item is approved under the go-ahead once every
+// live request on it is approved at one commit; what is approved already is
+// approved under it at once, so the operator confirms that first. An
+// approval is still a reviewer's alone: the go-ahead is the operator's
+// decision, given in advance, and a request no reviewer approved is never
+// approved by it.
+func (a *app) cmdAway(args []string) (int, error) {
+	msg, err := message("away", args)
+	if err != nil {
+		return 0, err
+	}
+	if err := a.atOperatorsTerminal("away"); err != nil {
+		return 0, err
+	}
+	snap, err := a.store.Load()
+	if err != nil {
+		return 0, err
+	}
+	a.warn(snap)
+	now := approvedByAway(snap)
+	if len(now) > 0 {
+		fmt.Fprintf(a.stderr, "Your go-ahead approves now: %s. Go ahead? [y/N] ", approvedList(now))
+		line, _ := bufio.NewReader(a.stdin).ReadString('\n')
+		if ans := strings.ToLower(strings.TrimSpace(line)); ans != "y" && ans != "yes" {
+			return 0, errors.New("not confirmed; nothing written")
+		}
+	}
+	told, sessions, idle := a.sessions()
 	var warnings []string
 	got, err := a.store.AppendAll(func(snap *record.Snapshot) ([]*record.Entry, error) {
 		warnings = snap.Warnings()
-		es := make([]*record.Entry, len(told))
-		for i, r := range told {
-			es[i] = &record.Entry{Kind: "fyi", From: status.Operator, To: r, Session: sessions[i], Body: msg}
+		if again := approvedByAway(snap); approvedList(again) != approvedList(now) {
+			return nil, errors.New("what your go-ahead approves now changed while you were asked; nothing written; run it again")
 		}
-		return es, nil
+		id := snap.NextID()
+		body := fmt.Sprintf("%s\n\nThis is the operator's go-ahead while away (#%d). %s", msg, id, goAheadRule)
+		if len(now) > 0 {
+			body += " Approved under it now: " + approvedList(now) + "."
+		}
+		away := &record.Entry{Kind: "away", From: status.Operator, Body: msg}
+		return append([]*record.Entry{away}, fyis(told, sessions, body, id)...), nil
 	})
 	if err != nil {
 		return 0, err
 	}
-	ids := make([]string, len(got))
-	for i, e := range got {
-		ids[i] = fmt.Sprintf("#%d", e.ID)
+	fmt.Fprintf(a.stdout, "away (#%d): your go-ahead stands until you run handoff back\n", got[0].ID)
+	// The tool applies one rule, whatever the words say, so the operator
+	// reads it here, as the go-ahead is given (row 98).
+	fmt.Fprintf(a.stdout, "%s handoff doesn't read your words: to tell the agents something without approving anything, use handoff fyi.\n", goAheadRule)
+	if len(now) > 0 {
+		fmt.Fprintf(a.stdout, "approved under it now: %s\n", approvedList(now))
 	}
-	fmt.Fprintf(a.stdout, "told %s (%s)\n", listOf(told, "and"), strings.Join(ids, ", "))
-	if len(idle) > 0 {
-		fmt.Fprintf(a.stdout, "not told, no session: %s\n", strings.Join(idle, ", "))
+	a.printTold(told, idle, got)
+	if len(told) == 0 {
+		fmt.Fprintln(a.stdout, "no agent has a session now; each session's brief shows your go-ahead when it starts")
 	}
+	a.alert()
+	a.printWarnings(warnings)
+	return exitOK, nil
+}
+
+// goAheadRule is what a go-ahead approves, as status applies it (row 96).
+const goAheadRule = "Under it, an item is approved once every reviewer it was sent to approves the same commit; one approval is enough for an item sent to one reviewer."
+
+// approvedByAway lists the requests an away entry written now would approve.
+func approvedByAway(snap *record.Snapshot) []*status.Request {
+	id := snap.NextID()
+	es := append(append([]record.Entry(nil), snap.Entries...), record.Entry{Kind: "away", ID: id, From: status.Operator})
+	return status.Compute(es).ApprovedSince(id)
+}
+
+// approvedList names approved requests by item, such as "H30 (#140, #141)".
+func approvedList(rs []*status.Request) string {
+	var items []string
+	ids := map[string][]string{}
+	for _, r := range rs {
+		item := r.Entry.Item
+		if _, ok := ids[item]; !ok {
+			items = append(items, item)
+		}
+		ids[item] = append(ids[item], fmt.Sprintf("#%d", r.Entry.ID))
+	}
+	parts := make([]string, len(items))
+	for i, item := range items {
+		parts[i] = fmt.Sprintf("%s (%s)", item, strings.Join(ids[item], ", "))
+	}
+	return strings.Join(parts, ", ")
+}
+
+// cmdBack ends the operator's go-ahead (row 96): a back entry, and an fyi
+// to every agent with a session that it has ended, in one write. It says
+// what was approved under the go-ahead, and what waits for the operator.
+func (a *app) cmdBack(args []string) (int, error) {
+	if len(args) == 1 && (args[0] == "-h" || args[0] == "-help" || args[0] == "--help") {
+		return 0, flag.ErrHelp
+	}
+	if len(args) > 0 {
+		return 0, errors.New("back takes nothing: run handoff back")
+	}
+	if err := a.atOperatorsTerminal("back"); err != nil {
+		return 0, err
+	}
+	told, sessions, idle := a.sessions()
+	var warnings []string
+	var away int64
+	var approved []*status.Request
+	var waiting int
+	got, err := a.store.AppendAll(func(snap *record.Snapshot) ([]*record.Entry, error) {
+		warnings = snap.Warnings()
+		st := status.Compute(snap.Entries)
+		if st.Away == nil {
+			return nil, errors.New("you aren't away; nothing written")
+		}
+		away = st.Away.ID
+		approved = st.ApprovedSince(st.AwaySince.ID)
+		waiting = len(st.Inbox(status.Operator).AwaitingOperator)
+		body := fmt.Sprintf("The operator is back: the go-ahead of #%d has ended. On an APPROVE, wait for the operator's decision again.", away)
+		back := &record.Entry{Kind: "back", From: status.Operator, Re: away, Body: "Back."}
+		return append([]*record.Entry{back}, fyis(told, sessions, body, away)...), nil
+	})
+	if err != nil {
+		return 0, err
+	}
+	fmt.Fprintf(a.stdout, "back (#%d): the go-ahead of #%d has ended\n", got[0].ID, away)
+	if len(approved) > 0 {
+		fmt.Fprintf(a.stdout, "approved under it while you were away: %s\n", approvedList(approved))
+	} else {
+		fmt.Fprintln(a.stdout, "nothing was approved under it")
+	}
+	if waiting > 0 {
+		fmt.Fprintf(a.stdout, "waiting for your decision: %d; run handoff to decide\n", waiting)
+	}
+	a.printTold(told, idle, got)
 	a.alert()
 	a.printWarnings(warnings)
 	return exitOK, nil
@@ -928,6 +1109,12 @@ func (a *app) cmdHome() (int, error) {
 	a.warn(snap)
 	st := status.Compute(snap.Entries)
 	waiting := st.Inbox(status.Operator).AwaitingOperator
+	if g := st.Away; g != nil {
+		fmt.Fprintf(a.stdout, "You're away (#%d, since %s), with this go-ahead: %s\nRun handoff back to end it.\n", g.ID, g.TS, firstLine(g.Body))
+		if len(waiting) == 0 {
+			fmt.Fprintln(a.stdout)
+		}
+	}
 	if len(waiting) == 0 {
 		fmt.Fprintln(a.stdout, "Nothing needs your decision.")
 	}
@@ -1192,6 +1379,9 @@ func (a *app) cmdShow(args []string) (int, error) {
 	idField("re", e.Re)
 	idField("supersedes", e.Supersedes)
 	field("verdict", e.Verdict)
+	if g, ok := status.Compute(snap.Entries).UnderGoAhead(*e); ok {
+		field("approved under", fmt.Sprintf("#%d, the operator's go-ahead while away: that is the operator's approve", g.ID))
+	}
 	field("decision", e.Decision)
 	field("key", e.Key)
 	field("session", e.Session)

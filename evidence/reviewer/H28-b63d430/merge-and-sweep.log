@@ -1,0 +1,80 @@
+# command: git merge-tree --write-tree main <commit>, objects to a scratch directory; the name sweep over main, the commit, the merged tree and the reviewer's evidence folder
+# date: 2026-11-11 10:45:55 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: b63d4307448b58b865c1a39d0722b6c06189f85c
+
+## main is 90461565261f9df3436709f1723c82446f985676; the request's base is b8e1c7e6f4fc2811bc1900ef62e8fbacf0e89aa5; commits on main since the base:
+9046156 docs(channel): board: H28 round 2 in review (#155)
+2d3154d docs: the reviewer's H28 CHANGES evidence for 6b2f241, as supplied (reply #151)
+ca1dd47 docs: evidence for H29's push to the public repository
+b2631db docs(channel): board: H29 done, merged
+e57e137 docs(channel): board: H28 in review (#149)
+7fc8e6c docs: H29 the public CLAUDE.md says less; a shorter README (merge h29-public-docs)
+5764945 docs(channel): board: H29 approved, awaiting the operator (#147)
+e07c85d docs: the reviewer's H29 APPROVE evidence for b8e1c7e, as supplied (reply #147)
+9acf443 docs(channel): board: H29 round 2 in review (#145)
+1262b18 docs: the reviewer's H29 CHANGES evidence for 0ae44e4, as supplied (reply #141)
+8c8d591 docs(channel): board: H29 in review (#139)
+ evidence/reviewer/H29-b8e1c7e/sweep.sh             |  52 ++
+ 31 files changed, 2872 insertions(+)
+## loose objects in the repository before: 120
+## merge-tree of main and the commit: exit 0
+7c3696d89b0363620a823ad26a846a7ea8147ce4
+## loose objects in the repository after: 120
+## files that differ between main and the merged tree:
+Files main/README.md and merged/README.md differ
+Only in merged/cmd/handoff: away_test.go
+Files main/cmd/handoff/brief.go and merged/cmd/handoff/brief.go differ
+Files main/cmd/handoff/cmds.go and merged/cmd/handoff/cmds.go differ
+Files main/cmd/handoff/fyi_test.go and merged/cmd/handoff/fyi_test.go differ
+Files main/cmd/handoff/main.go and merged/cmd/handoff/main.go differ
+Files main/docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md and merged/docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md differ
+Only in merged/evidence: h28
+Only in merged/internal/status: away_test.go
+Files main/internal/status/status.go and merged/internal/status/status.go differ
+Files main/internal/wait/wait.go and merged/internal/wait/wait.go differ
+## files that differ between the commit and the merged tree:
+Files commit/docs/CHANNEL.md and merged/docs/CHANNEL.md differ
+Only in merged/evidence/release: h29-docs.log
+Only in merged/evidence/reviewer: H28-6b2f241
+Only in merged/evidence/reviewer: H29-0ae44e4
+Only in merged/evidence/reviewer: H29-b8e1c7e
+
+## sweep of main
+758 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder: 2 lines, 0 file names
+the names of the operator's other projects (the reviewer's list): 0 lines, 0 file names
+an email address: 36 lines, 0 file names
+
+## sweep of commit
+739 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder: 2 lines, 0 file names
+the names of the operator's other projects (the reviewer's list): 0 lines, 0 file names
+an email address: 36 lines, 0 file names
+
+## sweep of merged
+769 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder: 2 lines, 0 file names
+the names of the operator's other projects (the reviewer's list): 0 lines, 0 file names
+an email address: 36 lines, 0 file names
+
+## added lines in git diff b8e1c7e <commit> that match any pattern:
+the operator's name, as a word, in a file name or inside an identifier: 0 lines
+the operator's account name, other than in the module path: 0 lines
+a path under a home folder: 0 lines
+the names of the operator's other projects (the reviewer's list): 0 lines
+an email address: 0 lines
+
+## sweep of the reviewer's evidence folder
+8 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder: 0 lines, 0 file names
+the names of the operator's other projects (the reviewer's list): 0 lines, 0 file names
+an email address: 0 lines, 0 file names

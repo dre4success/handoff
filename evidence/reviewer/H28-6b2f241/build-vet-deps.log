@@ -1,0 +1,48 @@
+# command: go build ./...; go vet ./...; gofmt -l cmd internal; go.mod requires; go list -deps for net; the commits and diffstat from the base; what the evidence commit touches
+# date: 2026-11-11 10:03:10 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 6b2f241c1dd94ebb9b95e0d0c3632cb99f401fba
+
+## go build ./...: ok
+## go vet ./...: clean
+## gofmt -l cmd internal: []
+## go.mod require lines: 0
+## packages in go list -deps ./... named net or under net/: 0
+## commits on the base (b8e1c7e):
+6b2f241 docs: evidence for H28
+c05f986 docs: README: handoff away and back
+6b148f2 fix: handoff, while away, leaves one blank line before what waits
+e3b85fe docs: §17 row 96, H28 the operator's go-ahead while away
+cda435b feat: handoff away and handoff back; an APPROVE under the go-ahead says so (row 96)
+9d65d47 feat: status: the operator's go-ahead while away approves an item once every live request on it is approved at one commit (row 96)
+## diffstat:
+ README.md                                 |   9 +-
+ cmd/handoff/away_test.go                  | 213 ++++++++++++++++++++++++++++
+ cmd/handoff/brief.go                      |  14 +-
+ cmd/handoff/cmds.go                       | 228 +++++++++++++++++++++++++++---
+ cmd/handoff/fyi_test.go                   |   2 +-
+ cmd/handoff/main.go                       |   9 +-
+ docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md |   1 +
+ evidence/h28/README.md                    |  12 ++
+ evidence/h28/away.log                     |  83 +++++++++++
+ evidence/h28/collect.sh                   | 187 ++++++++++++++++++++++++
+ evidence/h28/commits.log                  |  35 +++++
+ evidence/h28/confirm.log                  |  24 ++++
+ evidence/h28/deps-vet-fmt.log             |  11 ++
+ evidence/h28/go-test-race.log             |  27 ++++
+ evidence/h28/refusals.log                 |  49 +++++++
+ internal/status/away_test.go              | 141 ++++++++++++++++++
+ internal/status/status.go                 | 138 +++++++++++++++++-
+ internal/wait/wait.go                     |   8 +-
+ 18 files changed, 1154 insertions(+), 37 deletions(-)
+## the implementer's evidence names c05f986; what the commit under review adds to it:
+ evidence/h28/README.md        |  12 +++
+ evidence/h28/away.log         |  83 +++++++++++++++++++
+ evidence/h28/collect.sh       | 187 ++++++++++++++++++++++++++++++++++++++++++
+ evidence/h28/commits.log      |  35 ++++++++
+ evidence/h28/confirm.log      |  24 ++++++
+ evidence/h28/deps-vet-fmt.log |  11 +++
+ evidence/h28/go-test-race.log |  27 ++++++
+ evidence/h28/refusals.log     |  49 +++++++++++
+ 8 files changed, 428 insertions(+)
+## the worktree is clean: []

@@ -35,6 +35,11 @@ const usage = `usage: handoff [command] [flags]
   decide  <item|id> --approve|--deny [--note text | --body file]   (the operator, at a terminal)
   fyi     "<message>"           (the operator, at a terminal) tell every agent with a session
           at once, such as that you're away; they act on it and don't reply
+  away    "<go-ahead>"          (the operator, at a terminal) go away, approving in advance
+          each item once every reviewer asked approves it at one commit;
+          every agent with a session is told
+  back                          (the operator, at a terminal) end the go-ahead; says what
+          it approved
   inbox   [--for role] [--quiet]
   wait    [--for role] [--timeout 25m] [--emit]
   show    <id>
@@ -50,7 +55,7 @@ const usage = `usage: handoff [command] [flags]
 
 The caller's role comes from --as <role>, HANDOFF_ROLE, or the role the operator gave
 its session (handoff role). Those given must agree. --body - reads stdin.
-decide, fyi, and handoff on its own, need no role: with none, outside an agent's
+decide, fyi, away, back, and handoff on its own, need no role: with none, outside an agent's
 session, the caller is the operator.
 
 Exit codes: 0 done; 1 inbox --quiet: something waits; 2 refused or failed;
@@ -113,7 +118,7 @@ func run(args []string, stdin *os.File, stdout, stderr io.Writer) int {
 	a := &app{name: args[0], stdin: stdin, stdout: stdout, stderr: stderr, cwd: cwd}
 	cmds := map[string]func([]string) (int, error){
 		"init": a.cmdInit, "post": a.cmdPost, "claim": a.cmdClaim, "reply": a.cmdReply,
-		"note": a.cmdNote, "decide": a.cmdDecide, "fyi": a.cmdFyi, "inbox": a.cmdInbox, "wait": a.cmdWait,
+		"note": a.cmdNote, "decide": a.cmdDecide, "fyi": a.cmdFyi, "away": a.cmdAway, "back": a.cmdBack, "inbox": a.cmdInbox, "wait": a.cmdWait,
 		"show": a.cmdShow, "repair": a.cmdRepair, popupCmd: a.cmdPopup,
 		"brief": a.cmdBrief, "hook": a.cmdHook, "settings": a.cmdSettings, "role": a.cmdRole,
 		"roles": a.cmdRoles,

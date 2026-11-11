@@ -1,0 +1,49 @@
+# command: handoff away's and back's refusals; the usage
+# date: 2026-11-11 10:16:25 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 77a48cb2fa6cda9b1fc6597b83cd6cd4da120567
+
+
+## away, no terminal
+handoff away: away needs a terminal on stdin: the operator types it, an agent's shell cannot
+# exit 2
+
+## away, an agent's role
+handoff away: away is for the operator; the caller's role is implementer
+# exit 2
+
+## away, in the implementer's session
+handoff away: away is the operator's, in a terminal of the operator's own, never in an agent's session
+# exit 2
+
+## away, no message
+handoff away: give the message, in quotes, such as handoff away "Merge when the reviewers approve."
+# exit 2
+
+## away, a flag
+handoff away: away takes no flags, and a message can't start with -: give the message alone, in quotes, such as handoff away "Merge when the reviewers approve."
+# exit 2
+
+## back, no terminal
+handoff back: back needs a terminal on stdin: the operator types it, an agent's shell cannot
+# exit 2
+
+## back, in the implementer's session
+handoff back: back is the operator's, in a terminal of the operator's own, never in an agent's session
+# exit 2
+
+## back, with words
+handoff back: back takes nothing: run handoff back
+# exit 2
+
+## back at a terminal, not away
+handoff back: you aren't away; nothing written
+# exit 2
+
+## lines in the record after these: 0
+
+## handoff --help: the lines for away and back
+14:          at once, such as that you're away; they act on it and don't reply
+15:  away    "<go-ahead>"          (the operator, at a terminal) go away, approving in advance
+18:  back                          (the operator, at a terminal) end the go-ahead; says what
+35:decide, fyi, away, back, and handoff on its own, need no role: with none, outside an agent's

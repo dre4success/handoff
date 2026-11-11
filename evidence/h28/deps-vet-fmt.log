@@ -1,0 +1,11 @@
+# command: added lines with a home path or an email address; go.mod requires; go list -deps for net; go vet ./...; gofmt -l cmd internal
+# date: 2026-11-11 10:31:54 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 77a48cb2fa6cda9b1fc6597b83cd6cd4da120567
+
+## added lines in git diff b8e1c7e matching /Users/, /home/ or an email address: 3
+## the same in evidence/h28's other logs as collected: 0
+## go.mod require lines: 0
+## net packages in go list -deps ./...: 0
+## go vet: clean
+## gofmt -l cmd internal: []

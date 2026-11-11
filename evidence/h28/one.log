@@ -1,0 +1,22 @@
+# command: away "Merge when both reviewers approve." with both reviewers in session; W1 sent to reviewer alone
+# date: 2026-11-11 10:16:25 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 77a48cb2fa6cda9b1fc6597b83cd6cd4da120567
+
+away (#1): your go-ahead stands until you run handoff back
+Under it, an item is approved once every reviewer it was sent to approves the same commit; one approval is enough for an item sent to one reviewer. handoff doesn't read your words: to tell the agents something without approving anything, use handoff fyi.
+told implementer, reviewer and reviewer-2 (#2, #3, #4)
+handoff: told the operator: Your go-ahead is recorded (#1): Merge when both reviewers approve. Until you run handoff back, items are approved without asking you.
+# exit 0
+posted #5 request W1 implementer → reviewer: W1 work @ 97679cd852ca
+posted #6 reply W1 reviewer → implementer: APPROVE on #5 @ 97679cd852ca
+handoff: told the operator: W1: approved under your go-ahead #1, by reviewer (#5).
+## alerts sent so far: 2
+  one: Your go-ahead is recorded (#1): Merge when both reviewers approve. Until you run handoff back, items are approved without asking you.
+  one: W1: approved under your go-ahead #1, by reviewer (#5).
+
+## $ handoff back
+back (#7): the go-ahead of #1 has ended
+approved under it while you were away: W1 (#5)
+told implementer, reviewer and reviewer-2 (#8, #9, #10)
+# exit 0

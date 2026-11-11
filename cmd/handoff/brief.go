@@ -56,6 +56,7 @@ func (a *app) writeBrief(w io.Writer, role string, how listening) error {
 	if err != nil {
 		return err
 	}
+	st := status.Compute(snap.Entries)
 	h := shellQuote(selfCommand())
 	project := filepath.Base(filepath.Dir(a.dir))
 	var others, reviewers, implementers []string
@@ -80,6 +81,15 @@ func (a *app) writeBrief(w io.Writer, role string, how listening) error {
 		role, project, strings.Join(others, ", "))
 	if allReview {
 		fmt.Fprintf(w, "%s of you can implement or review; the operator says who does which, per task.\n", map[bool]string{true: "Either", false: "Each"}[len(others) == 1])
+	}
+	if g := st.Away; g != nil {
+		// A session started while the operator is away learns of the
+		// go-ahead here, since only sessions running then were told (row 96).
+		fmt.Fprintf(w, "The operator is away (#%d, since %s). Their go-ahead: \"%s\" Read it all with `%s show %d`.", g.ID, g.TS, firstLine(g.Body), h, g.ID)
+		if done := st.ApprovedSince(st.AwaySince.ID); len(done) > 0 {
+			fmt.Fprintf(w, " Approved under it so far: %s.", approvedList(done))
+		}
+		fmt.Fprintln(w)
 	}
 	fmt.Fprintln(w)
 	// With no hooks, a Claude Code session waits in the background. Codex
@@ -119,7 +129,12 @@ func (a *app) writeBrief(w io.Writer, role string, how listening) error {
 		fmt.Fprintf(w, "- A request to you: `%s claim --as %s <id>`, review exactly the commit it names in a temporary worktree, then `%s reply --as %s <id> --verdict APPROVE|CHANGES|QUESTION --commit <that sha> --body <file>`.\n", h, role, h, role)
 	}
 	fmt.Fprintf(w, "- A reply to your request: on CHANGES or QUESTION, fix or answer, then post again (`%s post --as %s ... --supersedes <id>`). On APPROVE, the operator decides; wait for the decision.\n", h, role)
-	fmt.Fprintf(w, "- A decision from the operator: act on it. Merge only on approve.\n")
+	if asks {
+		// The go-ahead is the operator's decision, given in advance; the
+		// approval is still the reviewers' (row 96).
+		fmt.Fprintf(w, "- While the operator is away with a go-ahead, the APPROVE that completes an item arrives saying it \"is approved under the operator's go-ahead\". That is the operator's approve: act on it as on a decision to approve. It needs every live request on the item approved at one commit, so after a fix for one reviewer, ask each reviewer again.\n")
+	}
+	fmt.Fprintf(w, "- A decision from the operator: act on it. Merge only on approve, or on an approval under the operator's go-ahead.\n")
 	// An fyi is what the operator would otherwise type into each session, so
 	// it is taken as that, no more and no less. It asks for no answer through
 	// handoff, which would only reach the operator as an alert; the operator
@@ -174,7 +189,6 @@ func (a *app) writeBrief(w io.Writer, role string, how listening) error {
 	fmt.Fprintf(w, "To ask the operator about an item: `%s note --as %s --to operator --item <item> --title \"<question>\" --body <file>`.\n", h, role)
 	fmt.Fprintf(w, "Rules: never edit .handoff/ by hand. Never merge, push or deploy without the operator's decision. A claim is not an approval.\n")
 	fmt.Fprintf(w, "\nWaiting for you now (inbox for %s):\n", role)
-	st := status.Compute(snap.Entries)
 	a.printInbox(w, st, st.Inbox(role))
 	return nil
 }

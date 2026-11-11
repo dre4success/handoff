@@ -1,0 +1,40 @@
+# command: away; reviewer approves A, reviewer-2 asks for changes, approves the fix at B: not covered
+# date: 2026-11-11 10:16:17 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 77a48cb2fa6cda9b1fc6597b83cd6cd4da120567
+
+away (#1): your go-ahead stands until you run handoff back
+Under it, an item is approved once every reviewer it was sent to approves the same commit; one approval is enough for an item sent to one reviewer. handoff doesn't read your words: to tell the agents something without approving anything, use handoff fyi.
+not told, no session: implementer, reviewer, reviewer-2
+no agent has a session now; each session's brief shows your go-ahead when it starts
+handoff: told the operator: Your go-ahead is recorded (#1): Merge when approved. Until you run handoff back, items are approved without asking you.
+# exit 0
+## reviewer approves #2 at A
+posted #4 reply W1 reviewer → implementer: APPROVE on #2 @ ea2a436ae302
+## alerts sent so far: 1
+  commits: Your go-ahead is recorded (#1): Merge when approved. Until you run handoff back, items are approved without asking you.
+## reviewer-2 asks for changes on #3
+posted #5 reply W1 reviewer-2 → implementer: CHANGES on #3 @ ea2a436ae302
+## alerts sent so far: 1
+  commits: Your go-ahead is recorded (#1): Merge when approved. Until you run handoff back, items are approved without asking you.
+## the fix, to reviewer-2 alone at B (#6); reviewer-2 approves it
+posted #7 reply W1 reviewer-2 → implementer: APPROVE on #6 @ 31910b9ee712
+handoff: told the operator: W1: reviewer approved #2, but the approvals on W1 name different commits, so your go-ahead doesn't cover it. Your decision.
+handoff: told the operator: W1: reviewer-2 approved #6, but the approvals on W1 name different commits, so your go-ahead doesn't cover it. Your decision.
+## alerts sent so far: 3
+  commits: Your go-ahead is recorded (#1): Merge when approved. Until you run handoff back, items are approved without asking you.
+  commits: W1: reviewer approved #2, but the approvals on W1 name different commits, so your go-ahead doesn't cover it. Your decision.
+  commits: W1: reviewer-2 approved #6, but the approvals on W1 name different commits, so your go-ahead doesn't cover it. Your decision.
+
+## handoff, in the operator's terminal (no answer given)
+You're away (#1, since 2026-11-11T10:16:17Z), with this go-ahead: Merge when approved.
+Run handoff back to end it.
+
+#2 request W1 implementer → reviewer: W1 work @ ea2a436ae302
+  #4 reply W1 reviewer → implementer: APPROVE on #2 @ ea2a436ae302
+
+#6 request W1 implementer → reviewer-2: W1 fixed @ 31910b9ee712 (supersedes #3)
+  #7 reply W1 reviewer-2 → implementer: APPROVE on #6 @ 31910b9ee712
+
+Run handoff in a terminal to decide.
+# exit 0

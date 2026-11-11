@@ -32,7 +32,12 @@ type Request struct {
 	Verdict      *record.Entry // the latest reply from the addressee while the request was live
 	SupersededBy int64
 	Decision     *record.Entry
-	Last         record.Entry // the latest entry that moved the request or showed life on it
+	// GoAhead is the operator's away entry this request was approved under,
+	// with no decision of its own, and CoveredAt the entry that completed
+	// it: an APPROVE, or the away entry itself (row 96).
+	GoAhead   *record.Entry
+	CoveredAt int64
+	Last      record.Entry // the latest entry that moved the request or showed life on it
 }
 
 func (r *Request) live() bool { return r.State != Superseded && r.State != Decided }
@@ -47,9 +52,13 @@ type Target struct {
 
 type Status struct {
 	Requests []*Request
-	requests map[int64]*Request
-	replies  map[int64]*Request // reply id -> its request
-	operator []*Target          // entries addressed to the operator, in order
+	// Away is the operator's go-ahead while away: the latest away entry with
+	// no back after it, or nil. AwaySince is the first away entry since the
+	// last back, where this spell away began (row 96).
+	Away, AwaySince *record.Entry
+	requests        map[int64]*Request
+	replies         map[int64]*Request // reply id -> its request
+	operator        []*Target          // entries addressed to the operator, in order
 }
 
 // Compute replays the entries in order.
@@ -80,6 +89,9 @@ func Compute(entries []record.Entry) *Status {
 			r.Verdict, r.Last = &entries[i], e
 			if e.Verdict == "APPROVE" {
 				r.State = AwaitingOperator
+				if s.Away != nil {
+					s.cover(r.Entry.Item, e.ID)
+				}
 			} else {
 				r.State = Answered
 			}
@@ -95,6 +107,24 @@ func Compute(entries []record.Entry) *Status {
 			}
 			if e.To == Operator {
 				s.operator = append(s.operator, &Target{Entry: e})
+			}
+		case "away":
+			// Only the operator's command writes these; an entry of the kind
+			// from anyone else is recorded and changes nothing.
+			if e.From != Operator {
+				continue
+			}
+			if s.Away == nil {
+				s.AwaySince = &entries[i]
+			}
+			s.Away = &entries[i]
+			// What is approved already is approved under the go-ahead now.
+			for _, item := range s.awaitingItems() {
+				s.cover(item, e.ID)
+			}
+		case "back":
+			if e.From == Operator {
+				s.Away, s.AwaySince = nil, nil
 			}
 		case "decision":
 			t, err := s.Decidable(e.Re)
@@ -113,6 +143,109 @@ func Compute(entries []record.Entry) *Status {
 		}
 	}
 	return s
+}
+
+// cover approves an item under the operator's go-ahead when every live
+// request on it is approved, all at one commit: two reviewers asked means
+// both approve the commit that is merged. Otherwise the item waits as it
+// would without the go-ahead (row 96).
+func (s *Status) cover(item string, at int64) {
+	live := s.liveOn(item)
+	if len(live) == 0 {
+		return
+	}
+	for _, r := range live {
+		if r.State != AwaitingOperator || r.Entry.Commit != live[0].Entry.Commit {
+			return
+		}
+	}
+	for _, r := range live {
+		r.State, r.GoAhead, r.CoveredAt = Decided, s.Away, at
+	}
+}
+
+// liveOn lists the live requests on an item.
+func (s *Status) liveOn(item string) []*Request {
+	var live []*Request
+	for _, r := range s.Requests {
+		if r.Entry.Item == item && r.live() {
+			live = append(live, r)
+		}
+	}
+	return live
+}
+
+// awaitingItems lists, once each and in order, the items with a request
+// awaiting the operator.
+func (s *Status) awaitingItems() []string {
+	var items []string
+	seen := map[string]bool{}
+	for _, r := range s.Requests {
+		if r.State == AwaitingOperator && !seen[r.Entry.Item] {
+			seen[r.Entry.Item] = true
+			items = append(items, r.Entry.Item)
+		}
+	}
+	return items
+}
+
+// stillReviewed reports whether a live request on the item still waits for
+// a verdict or for its requester's response, so that the go-ahead may yet
+// cover the item.
+func (s *Status) stillReviewed(item string) bool {
+	for _, r := range s.liveOn(item) {
+		if r.State == Open || r.State == Claimed || r.State == Answered {
+			return true
+		}
+	}
+	return false
+}
+
+// UnderGoAhead returns the go-ahead an APPROVE's request was approved under,
+// if it was, and this reply is the one that stands on it.
+func (s *Status) UnderGoAhead(e record.Entry) (*record.Entry, bool) {
+	r, ok := s.replies[e.ID]
+	if !ok || r.GoAhead == nil || r.Verdict == nil || r.Verdict.ID != e.ID {
+		return nil, false
+	}
+	return r.GoAhead, true
+}
+
+// GoAheadNote is the line wait and show add to an APPROVE whose item is
+// approved under the operator's go-ahead, or to the operator's fyi about a
+// go-ahead that approved items the moment it was given; else "".
+func (s *Status) GoAheadNote(e record.Entry) string {
+	if e.Kind == "fyi" && e.From == Operator && e.Re != 0 {
+		var items []string
+		seen := map[string]bool{}
+		for _, r := range s.Requests {
+			if r.CoveredAt == e.Re && r.GoAhead != nil && r.GoAhead.ID == e.Re && !seen[r.Entry.Item] {
+				seen[r.Entry.Item] = true
+				items = append(items, orDash(r.Entry.Item))
+			}
+		}
+		if len(items) == 0 {
+			return ""
+		}
+		return fmt.Sprintf("%s approved under the operator's go-ahead #%d as it was given: that is the operator's approve", strings.Join(items, ", "), e.Re)
+	}
+	g, ok := s.UnderGoAhead(e)
+	if !ok {
+		return ""
+	}
+	return fmt.Sprintf("%s is approved under the operator's go-ahead #%d: that is the operator's approve", orDash(e.Item), g.ID)
+}
+
+// ApprovedSince lists the requests approved under a go-ahead from the away
+// entry since on, in order.
+func (s *Status) ApprovedSince(since int64) []*Request {
+	var out []*Request
+	for _, r := range s.Requests {
+		if r.GoAhead != nil && r.GoAhead.ID >= since {
+			out = append(out, r)
+		}
+	}
+	return out
 }
 
 func (s *Status) Request(id int64) (*Request, bool) {
@@ -239,6 +372,10 @@ const (
 	// Trouble: handoff itself needs the operator, such as a session that cannot
 	// listen for its work (proposal §17 row 67).
 	Trouble AlertKind = "trouble"
+	// GoAhead: what the operator's go-ahead does while they are away, for
+	// them to see, with nothing to decide: that it was recorded, and each item
+	// approved under it, with who approved (row 98).
+	GoAhead AlertKind = "go-ahead"
 )
 
 // Alert is something the operator should hear about. The key names the exact
@@ -266,8 +403,18 @@ func (s *Status) Alerts(now time.Time, quiet time.Duration) []Alert {
 	for _, r := range s.Requests {
 		item, id := orDash(r.Entry.Item), r.Entry.ID
 		if r.State == AwaitingOperator {
-			out = append(out, Alert{Decide, fmt.Sprintf("decide-%d-%d", id, r.Verdict.ID),
-				fmt.Sprintf("%s: %s approved #%d. Your decision.", item, r.Entry.To, id), id})
+			switch {
+			case s.Away == nil:
+				out = append(out, Alert{Decide, fmt.Sprintf("decide-%d-%d", id, r.Verdict.ID),
+					fmt.Sprintf("%s: %s approved #%d. Your decision.", item, r.Entry.To, id), id})
+			case !s.stillReviewed(r.Entry.Item):
+				// Away, an approval waits quietly while the item's other
+				// requests are reviewed. Once none is, and the go-ahead still
+				// doesn't cover the item, the approvals name different
+				// commits, and only the operator can decide (row 96).
+				out = append(out, Alert{Decide, fmt.Sprintf("decide-%d-%d", id, r.Verdict.ID),
+					fmt.Sprintf("%s: %s approved #%d, but the approvals on %s name different commits, so your go-ahead doesn't cover it. Your decision.", item, r.Entry.To, id, item), id})
+			}
 			continue
 		}
 		if !r.live() {
@@ -289,6 +436,7 @@ func (s *Status) Alerts(now time.Time, quiet time.Duration) []Alert {
 		}
 		out = append(out, Alert{Quiet, fmt.Sprintf("quiet-%d-%d", id, r.Last.ID), text, 0})
 	}
+	out = append(out, s.goAheadAlerts()...)
 	for _, o := range s.operator {
 		if o.Decision == nil {
 			what := firstLine(o.Entry.Title)
@@ -300,6 +448,53 @@ func (s *Status) Alerts(now time.Time, quiet time.Duration) []Alert {
 		}
 	}
 	return out
+}
+
+// goAheadAlerts are the go-ahead's notifications, while it stands: one that
+// it is recorded, and one for each item approved under it, naming the
+// reviewers whose approvals did it. They are sent once each, as every alert
+// is, from the command that wrote the entry.
+func (s *Status) goAheadAlerts() []Alert {
+	g := s.Away
+	if g == nil {
+		return nil
+	}
+	out := []Alert{{GoAhead, fmt.Sprintf("away-%d", g.ID),
+		fmt.Sprintf("Your go-ahead is recorded (#%d): %s Until you run handoff back, items are approved without asking you.", g.ID, firstLine(g.Body)), 0}}
+	type group struct {
+		item, key       string
+		ahead           int64
+		reviewers, reqs []string
+	}
+	var groups []*group
+	byKey := map[string]*group{}
+	for _, r := range s.ApprovedSince(s.AwaySince.ID) {
+		// Keys are file names of digits, letters a to z and dashes, so an
+		// item's name, such as W1, is not in one; the entry that completed
+		// it and the item's first request name the approval.
+		at := fmt.Sprintf("%d-%s", r.CoveredAt, r.Entry.Item)
+		gr, ok := byKey[at]
+		if !ok {
+			gr = &group{item: orDash(r.Entry.Item), key: fmt.Sprintf("go-ahead-%d-%d", r.CoveredAt, r.Entry.ID), ahead: r.GoAhead.ID}
+			byKey[at] = gr
+			groups = append(groups, gr)
+		}
+		gr.reviewers = append(gr.reviewers, r.Entry.To)
+		gr.reqs = append(gr.reqs, fmt.Sprintf("#%d", r.Entry.ID))
+	}
+	for _, gr := range groups {
+		out = append(out, Alert{GoAhead, gr.key, fmt.Sprintf("%s: approved under your go-ahead #%d, by %s (%s).",
+			gr.item, gr.ahead, and(gr.reviewers), strings.Join(gr.reqs, ", ")), 0})
+	}
+	return out
+}
+
+// and joins names as a sentence does: "a", "a and b", "a, b and c".
+func and(names []string) string {
+	if len(names) < 2 {
+		return strings.Join(names, "")
+	}
+	return strings.Join(names[:len(names)-1], ", ") + " and " + names[len(names)-1]
 }
 
 func age(d time.Duration) string {

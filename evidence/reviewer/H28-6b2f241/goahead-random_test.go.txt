@@ -1,0 +1,212 @@
+package status
+
+// The reviewer's test for H28, not part of the commit. It replays random
+// records, entry by entry, and checks after each entry what request #149
+// asks about: that nothing is ever approved under the operator's go-ahead
+// unless every live request on its item has its reviewer's APPROVE, all at
+// one commit, while a go-ahead from the operator stands. Run in a second
+// worktree as internal/status/zz_reviewer_h28_test.go.
+
+import (
+	"fmt"
+	"math/rand"
+	"testing"
+	"time"
+
+	"github.com/dre4success/handoff/internal/record"
+)
+
+func TestReviewerGoAheadNeverApprovesAlone(t *testing.T) {
+	const runs, steps = 30000, 45
+	items := []string{"W1", "W2"}
+	reviewers := []string{"reviewer", "reviewer-2"}
+	commits := []string{"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}
+	verdicts := []string{"APPROVE", "APPROVE", "CHANGES", "QUESTION"}
+	var covered, coveredByAway, coveredTwo, awaitingQuiet, alertsAway, ignoredAway int
+	for run := 0; run < runs; run++ {
+		rng := rand.New(rand.NewSource(int64(run) + 1))
+		var es []record.Entry
+		add := func(e record.Entry) {
+			e.V, e.ID, e.TS = 1, int64(len(es)+1), "2026-11-11T00:00:00Z"
+			es = append(es, e)
+		}
+		prev := Compute(nil)
+		for step := 0; step < steps; step++ {
+			var reqs []record.Entry
+			for _, e := range es {
+				if e.Kind == "request" {
+					reqs = append(reqs, e)
+				}
+			}
+			pick := func() (record.Entry, bool) {
+				if len(reqs) == 0 {
+					return record.Entry{}, false
+				}
+				return reqs[rng.Intn(len(reqs))], true
+			}
+			switch n := rng.Intn(100); {
+			case n < 22:
+				e := record.Entry{Kind: "request", Item: items[rng.Intn(2)], From: "implementer", To: reviewers[rng.Intn(2)], Commit: commits[rng.Intn(2)]}
+				// As the CLI asks: a new request on an item and pair with a
+				// live one supersedes it. One time in five it doesn't, which
+				// the CLI refuses and Compute must still survive.
+				if r, ok := prev.Live(e.Item, e.From, e.To); ok && rng.Intn(5) > 0 {
+					e.Supersedes = r.Entry.ID
+				}
+				add(e)
+			case n < 30:
+				if r, ok := pick(); ok {
+					add(record.Entry{Kind: "claim", Item: r.Item, From: r.To, Re: r.ID})
+				}
+			case n < 62:
+				if r, ok := pick(); ok {
+					from := r.To
+					if rng.Intn(12) == 0 {
+						from = reviewers[rng.Intn(2)] // sometimes not the one asked
+					}
+					// The CLI refuses a reply for another commit, so a reply names the request's.
+					add(record.Entry{Kind: "reply", Item: r.Item, From: from, To: r.From, Re: r.ID, Verdict: verdicts[rng.Intn(len(verdicts))], Commit: r.Commit})
+				}
+			case n < 68:
+				if r, ok := pick(); ok {
+					if pr, ok := prev.Request(r.ID); ok && pr.Verdict != nil {
+						to := r.To
+						if rng.Intn(4) == 0 {
+							to = Operator
+						}
+						add(record.Entry{Kind: "note", Item: r.Item, From: r.From, To: to, Re: pr.Verdict.ID})
+					}
+				}
+			case n < 80:
+				from := Operator
+				if rng.Intn(6) == 0 {
+					from = "implementer" // an away entry not from the operator
+				}
+				add(record.Entry{Kind: "away", From: from, Body: "go"})
+			case n < 88:
+				from := Operator
+				if rng.Intn(6) == 0 {
+					from = "reviewer"
+				}
+				add(record.Entry{Kind: "back", From: from})
+			case n < 96:
+				if r, ok := pick(); ok {
+					re := r.ID
+					if pr, ok := prev.Request(r.ID); ok && pr.Verdict != nil && rng.Intn(2) == 0 {
+						re = pr.Verdict.ID
+					}
+					add(record.Entry{Kind: "decision", Item: r.Item, From: Operator, To: r.From, Re: re, Decision: []string{"approve", "deny"}[rng.Intn(2)]})
+				}
+			default:
+				add(record.Entry{Kind: "fyi", From: Operator, To: "implementer", Body: "x"})
+			}
+			if len(es) == 0 {
+				continue
+			}
+			last := es[len(es)-1]
+			now := Compute(es)
+			fail := func(format string, a ...any) {
+				t.Helper()
+				for _, e := range es {
+					t.Logf("#%d %s %s %s→%s re #%d sup #%d %s %s %.4s", e.ID, e.Kind, e.Item, e.From, e.To, e.Re, e.Supersedes, e.Verdict, e.Decision, e.Commit)
+				}
+				t.Fatalf("run %d, after #%d: %s", run, last.ID, fmt.Sprintf(format, a...))
+			}
+			if last.Kind == "away" && last.From != Operator && (now.Away != nil) != (prev.Away != nil) {
+				fail("an away entry from %s changed whether the operator is away", last.From)
+			}
+			if last.Kind == "away" && last.From != Operator {
+				ignoredAway++
+			}
+			for _, r := range now.Requests {
+				before, had := prev.Request(r.Entry.ID)
+				// Decided means decided by a decision or under a go-ahead, never both, and stays so.
+				if (r.State == Decided) != (r.Decision != nil || r.GoAhead != nil) || (r.Decision != nil && r.GoAhead != nil) {
+					fail("#%d is %s with decision %v and go-ahead %v", r.Entry.ID, r.State, r.Decision != nil, r.GoAhead != nil)
+				}
+				if had && before.State == Decided {
+					if r.State != Decided || (before.GoAhead == nil) != (r.GoAhead == nil) || (before.GoAhead != nil && before.GoAhead.ID != r.GoAhead.ID) || (before.Decision == nil) != (r.Decision == nil) {
+						fail("#%d was decided and changed", r.Entry.ID)
+					}
+				}
+				if r.GoAhead == nil {
+					continue
+				}
+				g := r.GoAhead
+				if g.Kind != "away" || g.From != Operator {
+					fail("#%d is approved under #%d, a %s from %s", r.Entry.ID, g.ID, g.Kind, g.From)
+				}
+				if r.Verdict == nil || r.Verdict.Verdict != "APPROVE" || r.Verdict.From != r.Entry.To || r.Verdict.Commit != r.Entry.Commit {
+					fail("#%d is approved under the go-ahead without its reviewer's APPROVE at its commit: %+v", r.Entry.ID, r.Verdict)
+				}
+				if had && before.GoAhead != nil {
+					continue
+				}
+				// Approved under the go-ahead by this very entry.
+				covered++
+				if now.Away == nil || now.Away.ID != g.ID {
+					fail("#%d was approved under #%d, which does not stand", r.Entry.ID, g.ID)
+				}
+				switch {
+				case last.Kind == "away" && last.From == Operator:
+					coveredByAway++
+				case last.Kind == "reply" && last.Verdict == "APPROVE":
+					if lr, ok := now.Request(last.Re); !ok || lr.Entry.Item != r.Entry.Item || last.From != lr.Entry.To {
+						fail("#%d was approved under the go-ahead by a reply that is not its item's reviewer's", r.Entry.ID)
+					}
+				default:
+					fail("#%d was approved under the go-ahead by a %s", r.Entry.ID, last.Kind)
+				}
+				// Every request that was live on the item just before is
+				// approved with it, at the same commit, and none is left live.
+				n := 0
+				for _, x := range prev.Requests {
+					if x.Entry.Item != r.Entry.Item || !x.live() {
+						continue
+					}
+					n++
+					nx, _ := now.Request(x.Entry.ID)
+					if nx.GoAhead == nil || nx.GoAhead.ID != g.ID || nx.Entry.Commit != r.Entry.Commit {
+						fail("#%d was approved under the go-ahead while #%d on %s was live and is %s at %.4s", r.Entry.ID, x.Entry.ID, x.Entry.Item, nx.State, nx.Entry.Commit)
+					}
+				}
+				if n > 1 {
+					coveredTwo++
+				}
+				for _, x := range now.Requests {
+					if x.Entry.Item == r.Entry.Item && x.live() {
+						fail("#%d was approved under the go-ahead and #%d on %s is still live", r.Entry.ID, x.Entry.ID, x.Entry.Item)
+					}
+				}
+			}
+			// A request awaiting the operator is never left without an alert,
+			// unless a go-ahead stands and a request on its item is still in review.
+			alerted := map[int64]bool{}
+			for _, a := range now.Alerts(time.Now(), time.Hour) {
+				if a.Kind == Decide {
+					alerted[a.Target] = true
+				}
+			}
+			for _, r := range now.Requests {
+				if r.State != AwaitingOperator {
+					if alerted[r.Entry.ID] {
+						fail("#%d is %s and the operator is asked to decide it", r.Entry.ID, r.State)
+					}
+					continue
+				}
+				quiet := now.Away != nil && now.stillReviewed(r.Entry.Item)
+				if alerted[r.Entry.ID] == quiet {
+					fail("#%d awaits the operator; alerted %v; away %v; still in review %v", r.Entry.ID, alerted[r.Entry.ID], now.Away != nil, now.stillReviewed(r.Entry.Item))
+				}
+				if quiet {
+					awaitingQuiet++
+				} else if now.Away != nil {
+					alertsAway++
+				}
+			}
+			prev = now
+		}
+	}
+	t.Logf("%d records of up to %d entries: %d requests approved under a go-ahead (%d by an away entry, %d together with another request); %d times an approval waited quietly; %d times one alerted while away; %d away entries not from the operator, all ignored",
+		runs, steps, covered, coveredByAway, coveredTwo, awaitingQuiet, alertsAway, ignoredAway)
+}

@@ -181,7 +181,13 @@ func Run(store *record.Store, o Options) (int, error) {
 					}
 					continue
 				}
-				if _, err := fmt.Fprintln(o.Out, status.Summary(e)); err != nil {
+				line := status.Summary(e)
+				// An APPROVE that completes an item while the operator is away
+				// says so: that is the operator's approve (row 96).
+				if note := st.GoAheadNote(e); note != "" {
+					line += "\n  " + note
+				}
+				if _, err := fmt.Fprintln(o.Out, line); err != nil {
 					return 0, fmt.Errorf("printing #%d: %w", e.ID, err)
 				}
 				if f, ok := o.Out.(interface{ Sync() error }); ok {

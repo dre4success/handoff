@@ -1,0 +1,13 @@
+# H28 evidence: the operator's go-ahead while away (§17 row 96)
+
+Collected again by `collect.sh` at `77a48cb`, for round 2, on the operator's Mac, 2026-11-11, by Opus 5.5 (implementer). Each log starts with its command, date, who ran it and the commit. Each scenario runs in a scratch project with a scratch home folder; sessions are `handoff role` with a sleep for each CLI's process; the operator's notifications go to a scratch file, and each log lists them: since round 2 (row 98), the plain ones for the go-ahead too.
+
+| File | What it shows |
+|---|---|
+| `away.log` | `away` with three sessions: one write, the away entry and three fyis naming their sessions. `away` prints the rule it applies; the operator is told the go-ahead is recorded. W1 to both reviewers at one commit: nothing more after the first approval, and after the second one plain notification naming both reviewers, with no decision asked. The implementer's hook listen brings both APPROVEs, each with the line that W1 is approved under the go-ahead; `show` says so; `handoff` shows the go-ahead and nothing to decide; `decide W1` is refused; the brief's lines. `back`: what was approved, three fyis. After it, an approval alerts as before; `back` again is refused |
+| `commits.log` | Away with no session: the go-ahead is still written. reviewer approves at A, reviewer-2 asks for changes, approves the fix at B: no alert until then, then one for each approval, saying the commits differ; `handoff` lists both |
+| `confirm.log` | W1 approved before `away`: `away` names it and asks. n writes nothing; y approves it, says so, and the operator is told. Then, with the implementer's session, whose listener had W1's APPROVE before the go-ahead: the fyi it brings names W1 as approved as the go-ahead was given, and the brief lists it |
+| `one.log` | The reviewer's K1: "Merge when both reviewers approve." with both reviewers in session, W1 sent to reviewer alone. `away` prints the rule; one approval approves W1; the notification names the one reviewer; `back` lists it |
+| `refusals.log` | `away` and `back` refused with no terminal, for an agent's role, in an agent's session, with no message or a flag, with words after `back`, and `back` when not away; nothing written; the usage |
+| `go-test-race.log` | Every test under the race detector: 180 pass, 0 fail. The H28 tests 10 times each under the race detector |
+| `deps-vet-fmt.log` | No home path or email address added (the 3 added lines it counts are `collect.sh`'s own: its scratch home folder and its search pattern); no dependencies, no `net`; vet and gofmt clean |

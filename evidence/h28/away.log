@@ -1,0 +1,93 @@
+# command: handoff away, two reviewers approving one commit, the implementer's hook listen, show, handoff, brief, back, and an approval after back
+# date: 2026-11-11 10:16:16 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 77a48cb2fa6cda9b1fc6597b83cd6cd4da120567
+
+## $ handoff away "Merge when the reviewers approve."
+away (#1): your go-ahead stands until you run handoff back
+Under it, an item is approved once every reviewer it was sent to approves the same commit; one approval is enough for an item sent to one reviewer. handoff doesn't read your words: to tell the agents something without approving anything, use handoff fyi.
+told implementer, reviewer and reviewer-2 (#2, #3, #4)
+handoff: told the operator: Your go-ahead is recorded (#1): Merge when the reviewers approve. Until you run handoff back, items are approved without asking you.
+# exit 0
+## alerts sent so far: 1
+  away: Your go-ahead is recorded (#1): Merge when the reviewers approve. Until you run handoff back, items are approved without asking you.
+
+## the record so far
+{"v":1,"id":1,"ts":"2026-11-11T10:16:17Z","kind":"away","from":"operator","body":"Merge when the reviewers approve.","prev":"genesis"}
+{"v":1,"id":2,"ts":"2026-11-11T10:16:17Z","kind":"fyi","from":"operator","to":"implementer","re":1,"session":"s-impl","body":"Merge when the reviewers approve.\n\nThis is the operator's go-ahead while away (#1). Under it, an item is approved once every reviewer it was sent to approves the same commit; one approval is enough for an item sent to one reviewer.","prev":"<hash>"}
+{"v":1,"id":3,"ts":"2026-11-11T10:16:17Z","kind":"fyi","from":"operator","to":"reviewer","re":1,"session":"s-rev","body":"Merge when the reviewers approve.\n\nThis is the operator's go-ahead while away (#1). Under it, an item is approved once every reviewer it was sent to approves the same commit; one approval is enough for an item sent to one reviewer.","prev":"<hash>"}
+{"v":1,"id":4,"ts":"2026-11-11T10:16:17Z","kind":"fyi","from":"operator","to":"reviewer-2","re":1,"session":"s-rev-2","body":"Merge when the reviewers approve.\n\nThis is the operator's go-ahead while away (#1). Under it, an item is approved once every reviewer it was sent to approves the same commit; one approval is enough for an item sent to one reviewer.","prev":"<hash>"}
+
+## the implementer posts W1 at A to reviewer and reviewer-2
+posted #5 request W1 implementer → reviewer: W1 work @ 38f92e70244b
+posted #6 request W1 implementer → reviewer-2: W1 work @ 38f92e70244b
+
+## reviewer approves #5
+posted #7 reply W1 reviewer → implementer: APPROVE on #5 @ 38f92e70244b
+## alerts sent so far: 1
+  away: Your go-ahead is recorded (#1): Merge when the reviewers approve. Until you run handoff back, items are approved without asking you.
+
+## reviewer-2 approves #6
+posted #8 reply W1 reviewer-2 → implementer: APPROVE on #6 @ 38f92e70244b
+handoff: told the operator: W1: approved under your go-ahead #1, by reviewer and reviewer-2 (#5, #6).
+## alerts sent so far: 2
+  away: Your go-ahead is recorded (#1): Merge when the reviewers approve. Until you run handoff back, items are approved without asking you.
+  away: W1: approved under your go-ahead #1, by reviewer and reviewer-2 (#5, #6).
+
+## the implementer's hook listen, as at the end of its turn
+handoff: new for implementer:
+#2 fyi - operator → implementer: Merge when the reviewers approve. (re #1)
+#7 reply W1 reviewer → implementer: APPROVE on #5 @ 38f92e70244b
+  W1 is approved under the operator's go-ahead #1: that is the operator's approve
+#8 reply W1 reviewer-2 → implementer: APPROVE on #6 @ 38f92e70244b
+  W1 is approved under the operator's go-ahead #1: that is the operator's approve
+Read each with `handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit 2 (2 wakes the session)
+
+## handoff show 8
+#8 reply W1
+from: reviewer-2 → implementer
+ts: 2026-11-11T10:16:17Z
+commit: 38f92e70244bfcbcf793b0012f4c9e9c9e11bb8e
+re: #6
+verdict: APPROVE
+approved under: #1, the operator's go-ahead while away: that is the operator's approve
+prev: 48eaac1921a18d08d77a3093017bc9b0e6c21eaff7ab205313a5760b28427787
+---
+ok
+
+## handoff, in the operator's terminal
+You're away (#1, since 2026-11-11T10:16:17Z), with this go-ahead: Merge when the reviewers approve.
+Run handoff back to end it.
+
+Nothing needs your decision.
+# exit 0
+
+## handoff decide W1 --approve
+handoff decide: nothing on W1 awaits the operator
+# exit 2
+
+## the implementer's brief: its go-ahead lines
+handoff brief: you are implementer in away. You and reviewer, reviewer-2 hand work to each other through handoff. The operator decides.
+The operator is away (#1, since 2026-11-11T10:16:17Z). Their go-ahead: "Merge when the reviewers approve." Read it all with `handoff show 1`. Approved under it so far: W1 (#5, #6).
+- While the operator is away with a go-ahead, the APPROVE that completes an item arrives saying it "is approved under the operator's go-ahead". That is the operator's approve: act on it as on a decision to approve. It needs every live request on the item approved at one commit, so after a fix for one reviewer, ask each reviewer again.
+- A decision from the operator: act on it. Merge only on approve, or on an approval under the operator's go-ahead.
+
+## $ handoff back
+back (#9): the go-ahead of #1 has ended
+approved under it while you were away: W1 (#5, #6)
+told implementer, reviewer and reviewer-2 (#10, #11, #12)
+# exit 0
+
+## after back: W2 posted and approved
+posted #13 request W2 implementer → reviewer: W2 work @ c4236f629b3b
+posted #14 reply W2 reviewer → implementer: APPROVE on #13 @ c4236f629b3b
+handoff: told the operator: W2: reviewer approved #13. Your decision.
+## alerts sent so far: 3
+  away: Your go-ahead is recorded (#1): Merge when the reviewers approve. Until you run handoff back, items are approved without asking you.
+  away: W1: approved under your go-ahead #1, by reviewer and reviewer-2 (#5, #6).
+  away: W2: reviewer approved #13. Your decision.
+
+## $ handoff back, again
+handoff back: you aren't away; nothing written
+# exit 2

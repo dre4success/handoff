@@ -1,0 +1,57 @@
+# command: go test -race -count=1 -v ./... (no -timeout); the test names at the base and here; the H28 tests, -count=5; the reviewer's own randomized test
+# date: 2026-11-11 10:03:11 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 6b2f241c1dd94ebb9b95e0d0c3632cb99f401fba
+
+# (the run was started at 2026-11-11 09:45:45 local time, in this worktree, and its output read here)
+ok  	github.com/dre4success/handoff/cmd/handoff	382.001s
+ok  	github.com/dre4success/handoff/internal/awake	1.297s
+ok  	github.com/dre4success/handoff/internal/gitx	1.208s
+ok  	github.com/dre4success/handoff/internal/notify	1.358s
+ok  	github.com/dre4success/handoff/internal/record	3.616s
+ok  	github.com/dre4success/handoff/internal/status	1.216s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	1.734s
+# passed: 179; failed: 0; skipped: 2; data races: 0
+
+## the H28 tests in that run
+--- PASS: TestH28AwayApprovesOnceEveryReviewerApproves (12.80s)
+--- PASS: TestH28AwayNeedsOneCommit (9.65s)
+--- PASS: TestH28AwayConfirmsWhatItApprovesNow (5.48s)
+--- PASS: TestH28BackEndsTheGoAhead (9.66s)
+--- PASS: TestH28AwayAndBackAreTheOperatorsAlone (3.52s)
+--- PASS: TestH28GoAheadNeedsEveryReviewerAtOneCommit (0.00s)
+--- PASS: TestH28GoAheadRefusesApprovalsOnTwoCommits (0.00s)
+--- PASS: TestH28GoAheadStartsAndEnds (0.00s)
+
+## the tests' names at the base that are not here, and here that are not at the base
+> TestH28AwayAndBackAreTheOperatorsAlone
+> TestH28AwayApprovesOnceEveryReviewerApproves
+> TestH28AwayConfirmsWhatItApprovesNow
+> TestH28AwayNeedsOneCommit
+> TestH28BackEndsTheGoAhead
+> TestH28GoAheadNeedsEveryReviewerAtOneCommit
+> TestH28GoAheadRefusesApprovalsOnTwoCommits
+> TestH28GoAheadStartsAndEnds
+# tests at the base: 173; here: 181
+
+## the H28 tests, 5 times each under the race detector
+   5 --- PASS: TestH28AwayAndBackAreTheOperatorsAlone
+   5 --- PASS: TestH28AwayApprovesOnceEveryReviewerApproves
+   5 --- PASS: TestH28AwayConfirmsWhatItApprovesNow
+   5 --- PASS: TestH28AwayNeedsOneCommit
+   5 --- PASS: TestH28BackEndsTheGoAhead
+   5 --- PASS: TestH28GoAheadNeedsEveryReviewerAtOneCommit
+   5 --- PASS: TestH28GoAheadRefusesApprovalsOnTwoCommits
+   5 --- PASS: TestH28GoAheadStartsAndEnds
+   1 ok  	github.com/dre4success/handoff/cmd/handoff
+   1 ok  	github.com/dre4success/handoff/internal/status
+
+## the reviewer's test (goahead-random_test.go.txt), in a second worktree at the same commit
+6b2f241c1dd94ebb9b95e0d0c3632cb99f401fba
+?? internal/status/zz_reviewer_h28_test.go
+=== RUN   TestReviewerGoAheadNeverApprovesAlone
+    zz_reviewer_h28_test.go:210: 30000 records of up to 45 entries: 29399 requests approved under a go-ahead (7342 by an away entry, 4221 together with another request); 238579 times an approval waited quietly; 19093 times one alerted while away; 30590 away entries not from the operator, all ignored
+--- PASS: TestReviewerGoAheadNeverApprovesAlone (6.83s)
+PASS
+ok  	github.com/dre4success/handoff/internal/status	7.155s

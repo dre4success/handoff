@@ -1,0 +1,841 @@
+# command: the reviewer's probes for H28 round 2, handoff away and back; see each heading
+# date: 2026-11-11 10:40:10 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: b63d4307448b58b865c1a39d0722b6c06189f85c
+
+## K1. The README's own go-ahead, "Merge when both reviewers approve.", and an item sent to one reviewer
+# a scratch project; sessions: implementer reviewer reviewer-2
+
+$ [terminal] handoff away Merge when both reviewers approve.
+away (#1): your go-ahead stands until you run handoff back
+Under it, an item is approved once every reviewer it was sent to approves the same commit; one approval is enough for an item sent to one reviewer. handoff doesn't read your words: to tell the agents something without approving anything, use handoff fyi.
+told implementer, reviewer and reviewer-2 (#2, #3, #4)
+handoff: told the operator: Your go-ahead is recorded (#1): Merge when both reviewers approve. Until you run handoff back, items are approved without asking you.
+# exit 0
+
+# the implementer's brief on whom to ask, with both reviewers in session:
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as implementer --item <item> --to <reviewer> --commit <sha> --title "<title>" --body <file>`, where <reviewer> is reviewer or reviewer-2.
+
+$ [implementer's session] handoff post --item W1 --to reviewer --commit <sha> --title W1 work --body <scratch>/body.md
+posted #5 request W1 implementer → reviewer: W1 work @ <sha12>
+# exit 0
+
+$ [reviewer's session] handoff reply 5 --verdict APPROVE --commit <sha> --body <scratch>/body.md
+posted #6 reply W1 reviewer → implementer: APPROVE on #5 @ <sha12>
+handoff: told the operator: W1: approved under your go-ahead #1, by reviewer (#5).
+# exit 0
+# alerts sent so far: 2
+#   k1: Your go-ahead is recorded (#1): Merge when both reviewers approve. Until you run handoff back, items are approved without asking you.
+#   k1: W1: approved under your go-ahead #1, by reviewer (#5).
+
+$ [implementer's session, at the end of its turn] handoff hook listen
+handoff: new for implementer:
+#2 fyi - operator → implementer: Merge when both reviewers approve. (re #1)
+#6 reply W1 reviewer → implementer: APPROVE on #5 @ <sha12>
+  W1 is approved under the operator's go-ahead #1: that is the operator's approve
+Read each with `handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit 2
+
+$ handoff show 6
+#6 reply W1
+from: reviewer → implementer
+ts: <ts>
+commit: <sha>
+re: #5
+verdict: APPROVE
+approved under: #1, the operator's go-ahead while away: that is the operator's approve
+prev: <hash>
+---
+ok
+# exit 0
+
+# each request's state, from the inboxes:
+
+## K2. The same go-ahead; the second reviewer is asked after the first has approved
+# (W1 above is approved. Now the implementer sends W1, the same commit, to reviewer-2.)
+
+$ [implementer's session] handoff post --item W1 --to reviewer-2 --commit <sha> --title W1 work --body <scratch>/body.md
+posted #7 request W1 implementer → reviewer-2: W1 work @ <sha12>
+# exit 0
+
+# each request's state, from the inboxes:
+#   reviewer-2: needs my review:   #7 request W1 implementer → reviewer-2: W1 work @ <sha12>
+
+$ [reviewer-2's session] handoff reply 7 --verdict CHANGES --commit <sha> --body <scratch>/body.md
+posted #8 reply W1 reviewer-2 → implementer: CHANGES on #7 @ <sha12>
+# exit 0
+# alerts sent so far: 2
+#   k1: Your go-ahead is recorded (#1): Merge when both reviewers approve. Until you run handoff back, items are approved without asking you.
+#   k1: W1: approved under your go-ahead #1, by reviewer (#5).
+
+$ [implementer's session, at the end of its turn] handoff hook listen
+handoff: new for implementer:
+#8 reply W1 reviewer-2 → implementer: CHANGES on #7 @ <sha12>
+Read each with `handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit 2
+
+# each request's state, from the inboxes:
+#   implementer: needs my response:   #7 request W1 implementer → reviewer-2: W1 work @ <sha12>
+
+$ [terminal] handoff back
+back (#9): the go-ahead of #1 has ended
+approved under it while you were away: W1 (#5)
+told implementer, reviewer and reviewer-2 (#10, #11, #12)
+# exit 0
+
+## K3. A reviewer takes its approval back before the item is complete
+# a scratch project; sessions: implementer reviewer reviewer-2
+
+$ [terminal] handoff away Merge when both reviewers approve.
+away (#1): your go-ahead stands until you run handoff back
+Under it, an item is approved once every reviewer it was sent to approves the same commit; one approval is enough for an item sent to one reviewer. handoff doesn't read your words: to tell the agents something without approving anything, use handoff fyi.
+told implementer, reviewer and reviewer-2 (#2, #3, #4)
+handoff: told the operator: Your go-ahead is recorded (#1): Merge when both reviewers approve. Until you run handoff back, items are approved without asking you.
+# exit 0
+
+$ [implementer's session] handoff post --item W3 --to reviewer --commit <sha> --title W3 work --body <scratch>/body.md
+posted #5 request W3 implementer → reviewer: W3 work @ <sha12>
+# exit 0
+
+$ [implementer's session] handoff post --item W3 --to reviewer-2 --commit <sha> --title W3 work --body <scratch>/body.md
+posted #6 request W3 implementer → reviewer-2: W3 work @ <sha12>
+# exit 0
+
+$ [reviewer's session] handoff reply 5 --verdict APPROVE --commit <sha> --body <scratch>/body.md
+posted #7 reply W3 reviewer → implementer: APPROVE on #5 @ <sha12>
+# exit 0
+
+$ [reviewer's session] handoff reply 5 --verdict CHANGES --commit <sha> --body <scratch>/body.md
+posted #8 reply W3 reviewer → implementer: CHANGES on #5 @ <sha12>
+# exit 0
+
+$ [reviewer-2's session] handoff reply 6 --verdict APPROVE --commit <sha> --body <scratch>/body.md
+posted #9 reply W3 reviewer-2 → implementer: APPROVE on #6 @ <sha12>
+# exit 0
+# alerts sent so far: 1
+#   k2: Your go-ahead is recorded (#1): Merge when both reviewers approve. Until you run handoff back, items are approved without asking you.
+
+# each request's state, from the inboxes:
+#   implementer: awaiting the operator:   #6 request W3 implementer → reviewer-2: W3 work @ <sha12>
+#   implementer: needs my response:   #5 request W3 implementer → reviewer: W3 work @ <sha12>
+#   operator: awaiting the operator:   #6 request W3 implementer → reviewer-2: W3 work @ <sha12>
+#   reviewer-2: awaiting the operator:   #6 request W3 implementer → reviewer-2: W3 work @ <sha12>
+#   reviewer: awaiting the operator:   #6 request W3 implementer → reviewer-2: W3 work @ <sha12>
+
+$ [implementer's session, at the end of its turn] handoff hook listen
+handoff: new for implementer:
+#2 fyi - operator → implementer: Merge when both reviewers approve. (re #1)
+#7 reply W3 reviewer → implementer: APPROVE on #5 @ <sha12>
+#8 reply W3 reviewer → implementer: CHANGES on #5 @ <sha12>
+#9 reply W3 reviewer-2 → implementer: APPROVE on #6 @ <sha12>
+Read each with `handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit 2
+
+$ [terminal] handoff back
+back (#10): the go-ahead of #1 has ended
+nothing was approved under it
+waiting for your decision: 1; run handoff to decide
+told implementer, reviewer and reviewer-2 (#11, #12, #13)
+handoff: told the operator: W3: reviewer-2 approved #6. Your decision.
+# exit 0
+
+## K4. A fix for one reviewer: approvals at two commits, then each reviewer asked again
+# a scratch project; sessions: implementer reviewer reviewer-2
+
+$ [terminal] handoff away Merge when both reviewers approve.
+away (#1): your go-ahead stands until you run handoff back
+Under it, an item is approved once every reviewer it was sent to approves the same commit; one approval is enough for an item sent to one reviewer. handoff doesn't read your words: to tell the agents something without approving anything, use handoff fyi.
+told implementer, reviewer and reviewer-2 (#2, #3, #4)
+handoff: told the operator: Your go-ahead is recorded (#1): Merge when both reviewers approve. Until you run handoff back, items are approved without asking you.
+# exit 0
+
+$ [implementer's session] handoff post --item W4 --to reviewer --commit <sha> --title W4 work --body <scratch>/body.md
+posted #5 request W4 implementer → reviewer: W4 work @ <sha12>
+# exit 0
+
+$ [implementer's session] handoff post --item W4 --to reviewer-2 --commit <sha> --title W4 work --body <scratch>/body.md
+posted #6 request W4 implementer → reviewer-2: W4 work @ <sha12>
+# exit 0
+
+$ [reviewer's session] handoff reply 5 --verdict APPROVE --commit <sha> --body <scratch>/body.md
+posted #7 reply W4 reviewer → implementer: APPROVE on #5 @ <sha12>
+# exit 0
+
+$ [reviewer-2's session] handoff reply 6 --verdict CHANGES --commit <sha> --body <scratch>/body.md
+posted #8 reply W4 reviewer-2 → implementer: CHANGES on #6 @ <sha12>
+# exit 0
+# alerts sent so far: 1
+#   k3: Your go-ahead is recorded (#1): Merge when both reviewers approve. Until you run handoff back, items are approved without asking you.
+
+$ [implementer's session] handoff post --item W4 --to reviewer-2 --commit <sha> --title W4 work --body <scratch>/body.md --supersedes 6
+posted #9 request W4 implementer → reviewer-2: W4 work @ <sha12> (supersedes #6)
+# exit 0
+
+$ [reviewer-2's session] handoff reply 9 --verdict APPROVE --commit <sha> --body <scratch>/body.md
+posted #10 reply W4 reviewer-2 → implementer: APPROVE on #9 @ <sha12>
+handoff: told the operator: W4: reviewer approved #5, but the approvals on W4 name different commits, so your go-ahead doesn't cover it. Your decision.
+handoff: told the operator: W4: reviewer-2 approved #9, but the approvals on W4 name different commits, so your go-ahead doesn't cover it. Your decision.
+# exit 0
+# alerts sent so far: 3
+#   k3: Your go-ahead is recorded (#1): Merge when both reviewers approve. Until you run handoff back, items are approved without asking you.
+#   k3: W4: reviewer approved #5, but the approvals on W4 name different commits, so your go-ahead doesn't cover it. Your decision.
+#   k3: W4: reviewer-2 approved #9, but the approvals on W4 name different commits, so your go-ahead doesn't cover it. Your decision.
+
+$ handoff   (no terminal: what the operator would see)
+You're away (#1, since <ts>), with this go-ahead: Merge when both reviewers approve.
+Run handoff back to end it.
+
+#5 request W4 implementer → reviewer: W4 work @ <sha12>
+  #7 reply W4 reviewer → implementer: APPROVE on #5 @ <sha12>
+
+#9 request W4 implementer → reviewer-2: W4 work @ <sha12> (supersedes #6)
+  #10 reply W4 reviewer-2 → implementer: APPROVE on #9 @ <sha12>
+
+Run handoff in a terminal to decide.
+
+# the implementer now does as its brief says, and asks the first reviewer again at the fix:
+
+$ [implementer's session] handoff post --item W4 --to reviewer --commit <sha> --title W4 work --body <scratch>/body.md --supersedes 5
+posted #11 request W4 implementer → reviewer: W4 work @ <sha12> (supersedes #5)
+# exit 0
+
+$ [reviewer's session] handoff reply 11 --verdict APPROVE --commit <sha> --body <scratch>/body.md
+posted #12 reply W4 reviewer → implementer: APPROVE on #11 @ <sha12>
+handoff: told the operator: W4: approved under your go-ahead #1, by reviewer-2 and reviewer (#9, #11).
+# exit 0
+# alerts sent so far: 4
+#   k3: Your go-ahead is recorded (#1): Merge when both reviewers approve. Until you run handoff back, items are approved without asking you.
+#   k3: W4: reviewer approved #5, but the approvals on W4 name different commits, so your go-ahead doesn't cover it. Your decision.
+#   k3: W4: reviewer-2 approved #9, but the approvals on W4 name different commits, so your go-ahead doesn't cover it. Your decision.
+#   k3: W4: approved under your go-ahead #1, by reviewer-2 and reviewer (#9, #11).
+
+$ [implementer's session, at the end of its turn] handoff hook listen
+handoff: new for implementer:
+#2 fyi - operator → implementer: Merge when both reviewers approve. (re #1)
+#7 reply W4 reviewer → implementer: APPROVE on #5 @ <sha12>
+#8 reply W4 reviewer-2 → implementer: CHANGES on #6 @ <sha12>
+#10 reply W4 reviewer-2 → implementer: APPROVE on #9 @ <sha12>
+  W4 is approved under the operator's go-ahead #1: that is the operator's approve
+#12 reply W4 reviewer → implementer: APPROVE on #11 @ <sha12>
+  W4 is approved under the operator's go-ahead #1: that is the operator's approve
+Read each with `handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit 2
+
+$ handoff   (no terminal)
+You're away (#1, since <ts>), with this go-ahead: Merge when both reviewers approve.
+Run handoff back to end it.
+
+Nothing needs your decision.
+
+# each request's state, from the inboxes:
+
+# the two pop-ups raised above are for #5 and #9. A click on one of them now:
+
+$ [terminal] handoff decide 9 --deny
+handoff decide: request #9 is decided, not awaiting the operator
+# exit 2
+
+$ [terminal] handoff back
+back (#13): the go-ahead of #1 has ended
+approved under it while you were away: W4 (#9, #11)
+told implementer, reviewer and reviewer-2 (#14, #15, #16)
+# exit 0
+
+## K5. away when something is approved already, and the set changes while the operator is asked
+# a scratch project; sessions: implementer reviewer
+
+$ [implementer's session] handoff post --item W5 --to reviewer --commit <sha> --title W5 work --body <scratch>/body.md
+posted #1 request W5 implementer → reviewer: W5 work @ <sha12>
+# exit 0
+
+$ [implementer's session] handoff post --item W6 --to reviewer --commit <sha> --title W6 work --body <scratch>/body.md
+posted #2 request W6 implementer → reviewer: W6 work @ <sha12>
+# exit 0
+
+$ [reviewer's session] handoff reply 1 --verdict APPROVE --commit <sha> --body <scratch>/body.md
+posted #3 reply W5 reviewer → implementer: APPROVE on #1 @ <sha12>
+handoff: told the operator: W5: reviewer approved #1. Your decision.
+# exit 0
+# alerts sent so far: 1
+#   k4: W5: reviewer approved #1. Your decision.
+
+# away is started; while its question is up (the answer comes a second later), W6 is approved too:
+
+$ [terminal] handoff away Merge when the reviewer approves.   (answering y)
+Your go-ahead approves now: W5 (#1). Go ahead? [y/N] y
+handoff away: what your go-ahead approves now changed while you were asked; nothing written; run it again
+# exit 2
+# the late approval said: posted #4 reply W6 reviewer → implementer: APPROVE on #2 @ <sha12> handoff: told the operator: W6: reviewer approved #2. Your decision. 
+# lines in the record: 4; of kind away: 0
+
+$ [terminal] handoff away Merge when the reviewer approves.   (answering n)
+Your go-ahead approves now: W5 (#1), W6 (#2). Go ahead? [y/N] n
+handoff away: not confirmed; nothing written
+# exit 2
+# of kind away: 0
+
+$ [terminal] handoff away Merge when the reviewer approves.   (answering y)
+Your go-ahead approves now: W5 (#1), W6 (#2). Go ahead? [y/N] y
+away (#5): your go-ahead stands until you run handoff back
+Under it, an item is approved once every reviewer it was sent to approves the same commit; one approval is enough for an item sent to one reviewer. handoff doesn't read your words: to tell the agents something without approving anything, use handoff fyi.
+approved under it now: W5 (#1), W6 (#2)
+told implementer and reviewer (#6, #7)
+not told, no session: reviewer-2
+handoff: told the operator: Your go-ahead is recorded (#5): Merge when the reviewer approves. Until you run handoff back, items are approved without asking you.
+handoff: told the operator: W5: approved under your go-ahead #5, by reviewer (#1).
+handoff: told the operator: W6: approved under your go-ahead #5, by reviewer (#2).
+# exit 0
+
+# what the implementer is given: the two APPROVEs came before the go-ahead, so they carry no line; the fyi's first line; and the fyi in full
+
+$ [implementer's session, at the end of its turn] handoff hook listen
+handoff: new for implementer:
+#3 reply W5 reviewer → implementer: APPROVE on #1 @ <sha12>
+  W5 is approved under the operator's go-ahead #5: that is the operator's approve
+#4 reply W6 reviewer → implementer: APPROVE on #2 @ <sha12>
+  W6 is approved under the operator's go-ahead #5: that is the operator's approve
+#6 fyi - operator → implementer: Merge when the reviewer approves. (re #5)
+  W5, W6 approved under the operator's go-ahead #5 as it was given: that is the operator's approve
+Read each with `handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit 2
+
+$ handoff show 6
+#6 fyi
+from: operator → implementer
+ts: <ts>
+re: #5
+session: s-implementer
+prev: <hash>
+---
+Merge when the reviewer approves.
+
+This is the operator's go-ahead while away (#5). Under it, an item is approved once every reviewer it was sent to approves the same commit; one approval is enough for an item sent to one reviewer. Approved under it now: W5 (#1), W6 (#2).
+# exit 0
+
+$ handoff show 3
+#3 reply W5
+from: reviewer → implementer
+ts: <ts>
+commit: <sha>
+re: #1
+verdict: APPROVE
+approved under: #5, the operator's go-ahead while away: that is the operator's approve
+prev: <hash>
+---
+ok
+# exit 0
+
+# a session that starts now, as implementer, with no fyi to it: what its brief says of W5 and W6
+2:The operator is away (#5, since <ts>). Their go-ahead: "Merge when the reviewer approves." Read it all with `handoff show 5`. Approved under it so far: W5 (#1), W6 (#2).
+8:- While the operator is away with a go-ahead, the APPROVE that completes an item arrives saying it "is approved under the operator's go-ahead". That is the operator's approve: act on it as on a decision to approve. It needs every live request on the item approved at one commit, so after a fix for one reviewer, ask each reviewer again.
+9:- A decision from the operator: act on it. Merge only on approve, or on an approval under the operator's go-ahead.
+20:  (none)
+23:  (none)
+26:  (none)
+28:awaiting the operator:
+29:  (none)
+32:  (none)
+
+$ [terminal] handoff back
+back (#8): the go-ahead of #5 has ended
+approved under it while you were away: W5 (#1), W6 (#2)
+told implementer and reviewer (#9, #10)
+not told, no session: reviewer-2
+# exit 0
+
+## K6. back while an approval waits quietly for the other reviewer; away twice; back twice
+# a scratch project; sessions: implementer reviewer reviewer-2
+
+$ [terminal] handoff away First words.
+away (#1): your go-ahead stands until you run handoff back
+Under it, an item is approved once every reviewer it was sent to approves the same commit; one approval is enough for an item sent to one reviewer. handoff doesn't read your words: to tell the agents something without approving anything, use handoff fyi.
+told implementer, reviewer and reviewer-2 (#2, #3, #4)
+handoff: told the operator: Your go-ahead is recorded (#1): First words. Until you run handoff back, items are approved without asking you.
+# exit 0
+
+$ [implementer's session] handoff post --item W7 --to reviewer --commit <sha> --title W7 work --body <scratch>/body.md
+posted #5 request W7 implementer → reviewer: W7 work @ <sha12>
+# exit 0
+
+$ [implementer's session] handoff post --item W7 --to reviewer-2 --commit <sha> --title W7 work --body <scratch>/body.md
+posted #6 request W7 implementer → reviewer-2: W7 work @ <sha12>
+# exit 0
+
+$ [reviewer's session] handoff reply 5 --verdict APPROVE --commit <sha> --body <scratch>/body.md
+posted #7 reply W7 reviewer → implementer: APPROVE on #5 @ <sha12>
+# exit 0
+# alerts sent so far: 1
+#   k5: Your go-ahead is recorded (#1): First words. Until you run handoff back, items are approved without asking you.
+
+$ [terminal] handoff away Second words, on a second line too. More.
+away (#8): your go-ahead stands until you run handoff back
+Under it, an item is approved once every reviewer it was sent to approves the same commit; one approval is enough for an item sent to one reviewer. handoff doesn't read your words: to tell the agents something without approving anything, use handoff fyi.
+told implementer, reviewer and reviewer-2 (#9, #10, #11)
+handoff: told the operator: Your go-ahead is recorded (#8): Second words, on a second line too. More. Until you run handoff back, items are approved without asking you.
+# exit 0
+
+$ handoff   (no terminal)
+You're away (#8, since <ts>), with this go-ahead: Second words, on a second line too. More.
+Run handoff back to end it.
+
+#5 request W7 implementer → reviewer: W7 work @ <sha12>
+  #7 reply W7 reviewer → implementer: APPROVE on #5 @ <sha12>
+
+Run handoff in a terminal to decide.
+
+$ [terminal] handoff back
+back (#12): the go-ahead of #8 has ended
+nothing was approved under it
+waiting for your decision: 1; run handoff to decide
+told implementer, reviewer and reviewer-2 (#13, #14, #15)
+handoff: told the operator: W7: reviewer approved #5. Your decision.
+# exit 0
+# alerts sent so far: 3
+#   k5: Your go-ahead is recorded (#1): First words. Until you run handoff back, items are approved without asking you.
+#   k5: Your go-ahead is recorded (#8): Second words, on a second line too. More. Until you run handoff back, items are approved without asking you.
+#   k5: W7: reviewer approved #5. Your decision.
+
+$ [terminal] handoff back
+handoff back: you aren't away; nothing written
+# exit 2
+
+# reviewer-2 approves after back:
+
+$ [reviewer-2's session] handoff reply 6 --verdict APPROVE --commit <sha> --body <scratch>/body.md
+posted #16 reply W7 reviewer-2 → implementer: APPROVE on #6 @ <sha12>
+handoff: told the operator: W7: reviewer-2 approved #6. Your decision.
+# exit 0
+# alerts sent so far: 4
+#   k5: Your go-ahead is recorded (#1): First words. Until you run handoff back, items are approved without asking you.
+#   k5: Your go-ahead is recorded (#8): Second words, on a second line too. More. Until you run handoff back, items are approved without asking you.
+#   k5: W7: reviewer approved #5. Your decision.
+#   k5: W7: reviewer-2 approved #6. Your decision.
+
+# each request's state, from the inboxes:
+#   implementer: awaiting the operator:   #5 request W7 implementer → reviewer: W7 work @ <sha12>
+#   implementer: awaiting the operator:   #6 request W7 implementer → reviewer-2: W7 work @ <sha12>
+#   operator: awaiting the operator:   #5 request W7 implementer → reviewer: W7 work @ <sha12>
+#   operator: awaiting the operator:   #6 request W7 implementer → reviewer-2: W7 work @ <sha12>
+#   reviewer-2: awaiting the operator:   #5 request W7 implementer → reviewer: W7 work @ <sha12>
+#   reviewer-2: awaiting the operator:   #6 request W7 implementer → reviewer-2: W7 work @ <sha12>
+#   reviewer: awaiting the operator:   #5 request W7 implementer → reviewer: W7 work @ <sha12>
+#   reviewer: awaiting the operator:   #6 request W7 implementer → reviewer-2: W7 work @ <sha12>
+
+## K7. No session when the go-ahead is given; sessions that start later
+# a scratch project; sessions: none
+
+$ [terminal] handoff away Merge when the reviewer approves. Don't push.
+away (#1): your go-ahead stands until you run handoff back
+Under it, an item is approved once every reviewer it was sent to approves the same commit; one approval is enough for an item sent to one reviewer. handoff doesn't read your words: to tell the agents something without approving anything, use handoff fyi.
+not told, no session: implementer, reviewer, reviewer-2
+no agent has a session now; each session's brief shows your go-ahead when it starts
+handoff: told the operator: Your go-ahead is recorded (#1): Merge when the reviewer approves. Don't push. Until you run handoff back, items are approved without asking you.
+# exit 0
+
+# the brief each new session gets (its second line), and what its first listen brings:
+The operator is away (#1, since <ts>). Their go-ahead: "Merge when the reviewer approves. Don't push." Read it all with `handoff show 1`.
+
+$ [implementer's session, at the end of its turn] handoff hook listen
+handoff: nothing new for implementer in 2s. Just end your turn; listening starts again when it ends.
+# exit 2
+
+$ [implementer's session] handoff post --item W8 --to reviewer --commit <sha> --title W8 work --body <scratch>/body.md
+posted #2 request W8 implementer → reviewer: W8 work @ <sha12>
+# exit 0
+
+$ [reviewer's session] handoff reply 2 --verdict APPROVE --commit <sha> --body <scratch>/body.md
+posted #3 reply W8 reviewer → implementer: APPROVE on #2 @ <sha12>
+handoff: told the operator: W8: approved under your go-ahead #1, by reviewer (#2).
+# exit 0
+# alerts sent so far: 2
+#   k6: Your go-ahead is recorded (#1): Merge when the reviewer approves. Don't push. Until you run handoff back, items are approved without asking you.
+#   k6: W8: approved under your go-ahead #1, by reviewer (#2).
+
+$ [implementer's session, at the end of its turn] handoff hook listen
+handoff: new for implementer:
+#3 reply W8 reviewer → implementer: APPROVE on #2 @ <sha12>
+  W8 is approved under the operator's go-ahead #1: that is the operator's approve
+Read each with `handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit 2
+
+$ [terminal] handoff back
+back (#4): the go-ahead of #1 has ended
+approved under it while you were away: W8 (#2)
+told implementer and reviewer (#5, #6)
+not told, no session: reviewer-2
+# exit 0
+
+## K8. A go-ahead whose words say not to merge
+# a scratch project; sessions: implementer reviewer
+
+$ [terminal] handoff away Do not merge anything while I'm away. Review only.
+away (#1): your go-ahead stands until you run handoff back
+Under it, an item is approved once every reviewer it was sent to approves the same commit; one approval is enough for an item sent to one reviewer. handoff doesn't read your words: to tell the agents something without approving anything, use handoff fyi.
+told implementer and reviewer (#2, #3)
+not told, no session: reviewer-2
+handoff: told the operator: Your go-ahead is recorded (#1): Do not merge anything while I'm away. Review only. Until you run handoff back, items are approved without asking you.
+# exit 0
+
+$ [implementer's session] handoff post --item W9 --to reviewer --commit <sha> --title W9 work --body <scratch>/body.md
+posted #4 request W9 implementer → reviewer: W9 work @ <sha12>
+# exit 0
+
+$ [reviewer's session] handoff reply 4 --verdict APPROVE --commit <sha> --body <scratch>/body.md
+posted #5 reply W9 reviewer → implementer: APPROVE on #4 @ <sha12>
+handoff: told the operator: W9: approved under your go-ahead #1, by reviewer (#4).
+# exit 0
+# alerts sent so far: 2
+#   k7: Your go-ahead is recorded (#1): Do not merge anything while I'm away. Review only. Until you run handoff back, items are approved without asking you.
+#   k7: W9: approved under your go-ahead #1, by reviewer (#4).
+
+$ [implementer's session, at the end of its turn] handoff hook listen
+handoff: new for implementer:
+#2 fyi - operator → implementer: Do not merge anything while I'm away. Review only. (re #1)
+#5 reply W9 reviewer → implementer: APPROVE on #4 @ <sha12>
+  W9 is approved under the operator's go-ahead #1: that is the operator's approve
+Read each with `handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit 2
+
+$ [terminal] handoff back
+back (#6): the go-ahead of #1 has ended
+approved under it while you were away: W9 (#4)
+told implementer and reviewer (#7, #8)
+not told, no session: reviewer-2
+# exit 0
+
+## K9. Who can give the go-ahead
+# a scratch project; sessions: implementer reviewer
+
+$ [implementer's session] handoff away Merge everything.
+handoff away: away is the operator's, in a terminal of the operator's own, never in an agent's session
+# exit 2
+
+$ handoff away Merge everything.
+handoff away: away needs a terminal on stdin: the operator types it, an agent's shell cannot
+# exit 2
+
+$ env HANDOFF_ROLE=operator handoff away Merge everything.
+handoff away: away needs a terminal on stdin: the operator types it, an agent's shell cannot
+# exit 2
+
+$ env HANDOFF_ROLE=reviewer handoff back
+handoff back: back is for the operator; the caller's role is reviewer
+# exit 2
+# lines in the record after these: 0
+
+# the way round the guard that decide and fyi have (H26, P3b): a shell in the implementer's session drops its session's variables and wraps the command in script(1)
+$ [implementer's session] env -u CLAUDE_CODE_SESSION_ID -u CLAUDE_PID script -q /dev/null handoff away "Merge everything."
+away (#1): your go-ahead stands until you run handoff back
+Under it, an item is approved once every reviewer it was sent to approves the same commit; one approval is enough for an item sent to one reviewer. handoff doesn't read your words: to tell the agents something without approving anything, use handoff fyi.
+told implementer and reviewer (#2, #3)
+not told, no session: reviewer-2
+handoff: told the operator: Your go-ahead is recorded (#1): Merge everything. Until you run handoff back, items are approved without asking you.
+
+$ [implementer's session] handoff post --item W10 --to reviewer --commit <sha> --title W10 work --body <scratch>/body.md
+posted #4 request W10 implementer → reviewer: W10 work @ <sha12>
+# exit 0
+
+$ [reviewer's session] handoff reply 4 --verdict APPROVE --commit <sha> --body <scratch>/body.md
+posted #5 reply W10 reviewer → implementer: APPROVE on #4 @ <sha12>
+handoff: told the operator: W10: approved under your go-ahead #1, by reviewer (#4).
+# exit 0
+# alerts sent so far: 2
+#   k8: Your go-ahead is recorded (#1): Merge everything. Until you run handoff back, items are approved without asking you.
+#   k8: W10: approved under your go-ahead #1, by reviewer (#4).
+
+$ [implementer's session, at the end of its turn] handoff hook listen
+handoff: new for implementer:
+#2 fyi - operator → implementer: Merge everything. (re #1)
+#5 reply W10 reviewer → implementer: APPROVE on #4 @ <sha12>
+  W10 is approved under the operator's go-ahead #1: that is the operator's approve
+Read each with `handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit 2
+
+## K10. An older build (the code of v0.1.3) on the same record, while the go-ahead stands
+# (the record of K9: W10 is approved under the go-ahead)
+
+$ handoff-v0.1.3   (no terminal)
+
+#4 request W10 implementer → reviewer: W10 work @ <sha12>
+  #5 reply W10 reviewer → implementer: APPROVE on #4 @ <sha12>
+
+Run handoff in a terminal to decide.
+
+$ [terminal] handoff-v0.1.3 decide W10 --deny   (answering y)
+
+#4 request W10 implementer → reviewer: W10 work @ <sha12>
+  #5 reply W10 reviewer → implementer: APPROVE on #4 @ <sha12>
+Deny W10 (#4)? [y/N] y
+posted #6 decision W10 operator → implementer: deny #4
+
+# and this build, after that:
+$ handoff   (no terminal)
+You're away (#1, since <ts>), with this go-ahead: Merge everything.
+Run handoff back to end it.
+
+Nothing needs your decision.
+
+$ handoff show 5
+#5 reply W10
+from: reviewer → implementer
+ts: <ts>
+commit: <sha>
+re: #4
+verdict: APPROVE
+approved under: #1, the operator's go-ahead while away: that is the operator's approve
+prev: <hash>
+---
+ok
+# exit 0
+
+# each request's state, from the inboxes:
+
+$ [terminal] handoff back
+back (#7): the go-ahead of #1 has ended
+approved under it while you were away: W10 (#4)
+told implementer and reviewer (#8, #9)
+not told, no session: reviewer-2
+# exit 0
+
+# alerts sent in K10's project: 
+# alerts sent so far: 2
+#   k8: Your go-ahead is recorded (#1): Merge everything. Until you run handoff back, items are approved without asking you.
+#   k8: W10: approved under your go-ahead #1, by reviewer (#4).
+
+## K11. A question to the operator while away: the go-ahead decides no note
+# a scratch project; sessions: implementer reviewer
+
+$ [terminal] handoff away Merge when the reviewer approves.
+away (#1): your go-ahead stands until you run handoff back
+Under it, an item is approved once every reviewer it was sent to approves the same commit; one approval is enough for an item sent to one reviewer. handoff doesn't read your words: to tell the agents something without approving anything, use handoff fyi.
+told implementer and reviewer (#2, #3)
+not told, no session: reviewer-2
+handoff: told the operator: Your go-ahead is recorded (#1): Merge when the reviewer approves. Until you run handoff back, items are approved without asking you.
+# exit 0
+
+$ [implementer's session] handoff note --to operator --item W11 --title May I add a dependency? --body <scratch>/body.md
+posted #4 note W11 implementer → operator: May I add a dependency?
+handoff: told the operator: W11: implementer asks you: May I add a dependency?
+# exit 0
+# alerts sent so far: 2
+#   k9: Your go-ahead is recorded (#1): Merge when the reviewer approves. Until you run handoff back, items are approved without asking you.
+#   k9: W11: implementer asks you: May I add a dependency?
+
+$ handoff   (no terminal)
+You're away (#1, since <ts>), with this go-ahead: Merge when the reviewer approves.
+Run handoff back to end it.
+
+#4 note W11 implementer → operator: May I add a dependency?
+  | Yes or no.
+
+Run handoff in a terminal to decide.
+
+$ [terminal] handoff decide 4 --deny --note No.   (answering y)
+
+#4 note W11 implementer → operator: May I add a dependency?
+  | Yes or no.
+Deny W11 (#4)? [y/N] y
+posted #5 decision W11 operator → implementer: deny #4
+# exit 0
+
+$ [implementer's session, at the end of its turn] handoff hook listen
+handoff: new for implementer:
+#2 fyi - operator → implementer: Merge when the reviewer approves. (re #1)
+#5 decision W11 operator → implementer: deny #4
+Read each with `handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit 2
+
+$ [terminal] handoff back
+back (#6): the go-ahead of #1 has ended
+nothing was approved under it
+told implementer and reviewer (#7, #8)
+not told, no session: reviewer-2
+# exit 0
+
+## K12. The notifications: plain, never a pop-up, and once each
+# Here pop-ups go to a second scratch file, as a click-less pop-up would go to the screen, so the two kinds can be told apart.
+# a scratch project; sessions: implementer reviewer reviewer-2
+
+$ [terminal] handoff away Merge when the reviewers approve.
+away (#1): your go-ahead stands until you run handoff back
+Under it, an item is approved once every reviewer it was sent to approves the same commit; one approval is enough for an item sent to one reviewer. handoff doesn't read your words: to tell the agents something without approving anything, use handoff fyi.
+told implementer, reviewer and reviewer-2 (#2, #3, #4)
+handoff: told the operator: Your go-ahead is recorded (#1): Merge when the reviewers approve. Until you run handoff back, items are approved without asking you.
+# exit 0
+# alerts sent so far: 1
+#   k10: Your go-ahead is recorded (#1): Merge when the reviewers approve. Until you run handoff back, items are approved without asking you.
+# pop-ups raised so far: 0
+
+$ [implementer's session] handoff post --item W12 --to reviewer --commit <sha> --title W12 work --body <scratch>/body.md
+posted #5 request W12 implementer → reviewer: W12 work @ <sha12>
+# exit 0
+
+$ [implementer's session] handoff post --item W12 --to reviewer-2 --commit <sha> --title W12 work --body <scratch>/body.md
+posted #6 request W12 implementer → reviewer-2: W12 work @ <sha12>
+# exit 0
+
+$ [implementer's session] handoff post --item W13 --to reviewer --commit <sha> --title W13 work --body <scratch>/body.md
+posted #7 request W13 implementer → reviewer: W13 work @ <sha12>
+# exit 0
+
+$ [reviewer's session] handoff reply 5 --verdict APPROVE --commit <sha> --body <scratch>/body.md
+posted #8 reply W12 reviewer → implementer: APPROVE on #5 @ <sha12>
+# exit 0
+# one of two has approved W12:
+# alerts sent so far: 1
+#   k10: Your go-ahead is recorded (#1): Merge when the reviewers approve. Until you run handoff back, items are approved without asking you.
+# pop-ups raised so far: 0
+
+$ [reviewer-2's session] handoff reply 6 --verdict APPROVE --commit <sha> --body <scratch>/body.md
+posted #9 reply W12 reviewer-2 → implementer: APPROVE on #6 @ <sha12>
+handoff: told the operator: W12: approved under your go-ahead #1, by reviewer and reviewer-2 (#5, #6).
+# exit 0
+
+$ [reviewer's session] handoff reply 7 --verdict APPROVE --commit <sha> --body <scratch>/body.md
+posted #10 reply W13 reviewer → implementer: APPROVE on #7 @ <sha12>
+handoff: told the operator: W13: approved under your go-ahead #1, by reviewer (#7).
+# exit 0
+# alerts sent so far: 3
+#   k10: Your go-ahead is recorded (#1): Merge when the reviewers approve. Until you run handoff back, items are approved without asking you.
+#   k10: W12: approved under your go-ahead #1, by reviewer and reviewer-2 (#5, #6).
+#   k10: W13: approved under your go-ahead #1, by reviewer (#7).
+# pop-ups raised so far: 0
+
+# every command and listener that looks for alerts, run again and again:
+
+$ [reviewer-2's session] handoff note --item W13 --to implementer --title a note, which looks for alerts too --body <scratch>/body.md
+posted #11 note W13 reviewer-2 → implementer: a note, which looks for alerts too
+# exit 0
+# alerts sent so far: 3
+#   k10: Your go-ahead is recorded (#1): Merge when the reviewers approve. Until you run handoff back, items are approved without asking you.
+#   k10: W12: approved under your go-ahead #1, by reviewer and reviewer-2 (#5, #6).
+#   k10: W13: approved under your go-ahead #1, by reviewer (#7).
+# pop-ups raised so far: 0
+# the markers that record what was sent: away-1 away-1.lock go-ahead-10-7 go-ahead-10-7.lock go-ahead-9-5 go-ahead-9-5.lock 
+
+$ handoff   (no terminal)
+You're away (#1, since <ts>), with this go-ahead: Merge when the reviewers approve.
+Run handoff back to end it.
+
+Nothing needs your decision.
+
+# a second go-ahead in the same spell away: its own notice, and none again for W12 or W13
+
+$ [terminal] handoff away Second words.
+away (#12): your go-ahead stands until you run handoff back
+Under it, an item is approved once every reviewer it was sent to approves the same commit; one approval is enough for an item sent to one reviewer. handoff doesn't read your words: to tell the agents something without approving anything, use handoff fyi.
+told implementer, reviewer and reviewer-2 (#13, #14, #15)
+handoff: told the operator: Your go-ahead is recorded (#12): Second words. Until you run handoff back, items are approved without asking you.
+# exit 0
+# alerts sent so far: 4
+#   k10: Your go-ahead is recorded (#1): Merge when the reviewers approve. Until you run handoff back, items are approved without asking you.
+#   k10: W12: approved under your go-ahead #1, by reviewer and reviewer-2 (#5, #6).
+#   k10: W13: approved under your go-ahead #1, by reviewer (#7).
+#   k10: Your go-ahead is recorded (#12): Second words. Until you run handoff back, items are approved without asking you.
+# pop-ups raised so far: 0
+
+$ [terminal] handoff back
+back (#16): the go-ahead of #12 has ended
+approved under it while you were away: W12 (#5, #6), W13 (#7)
+told implementer, reviewer and reviewer-2 (#17, #18, #19)
+# exit 0
+
+# after back, an approval asks as before, in a pop-up:
+
+$ [implementer's session] handoff post --item W14 --to reviewer --commit <sha> --title W14 work --body <scratch>/body.md
+posted #20 request W14 implementer → reviewer: W14 work @ <sha12>
+# exit 0
+
+$ [reviewer's session] handoff reply 20 --verdict APPROVE --commit <sha> --body <scratch>/body.md
+posted #21 reply W14 reviewer → implementer: APPROVE on #20 @ <sha12>
+handoff: asking the operator in a pop-up: W14: reviewer approved #20. Your decision.
+# exit 0
+# alerts sent so far: 4
+#   k10: Your go-ahead is recorded (#1): Merge when the reviewers approve. Until you run handoff back, items are approved without asking you.
+#   k10: W12: approved under your go-ahead #1, by reviewer and reviewer-2 (#5, #6).
+#   k10: W13: approved under your go-ahead #1, by reviewer (#7).
+#   k10: Your go-ahead is recorded (#12): Second words. Until you run handoff back, items are approved without asking you.
+# pop-ups raised so far: 1
+#   handoff: k10 | W14: reviewer approved #20. /  / W14 work /  / Later keeps it waiting: run handoff in the project to decide there. | Later,Deny,Approve
+
+## K13. An item approved by the away entry itself: what each agent is given, then and at back
+# a scratch project; sessions: implementer reviewer
+
+$ [implementer's session] handoff post --item W15 --to reviewer --commit <sha> --title W15 work --body <scratch>/body.md
+posted #1 request W15 implementer → reviewer: W15 work @ <sha12>
+# exit 0
+
+$ [reviewer's session] handoff reply 1 --verdict APPROVE --commit <sha> --body <scratch>/body.md
+posted #2 reply W15 reviewer → implementer: APPROVE on #1 @ <sha12>
+handoff: told the operator: W15: reviewer approved #1. Your decision.
+# exit 0
+
+$ [implementer's session, at the end of its turn] handoff hook listen
+handoff: new for implementer:
+#2 reply W15 reviewer → implementer: APPROVE on #1 @ <sha12>
+Read each with `handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit 2
+
+$ [terminal] handoff away Merge when the reviewer approves.   (answering y)
+Your go-ahead approves now: W15 (#1). Go ahead? [y/N] y
+away (#3): your go-ahead stands until you run handoff back
+Under it, an item is approved once every reviewer it was sent to approves the same commit; one approval is enough for an item sent to one reviewer. handoff doesn't read your words: to tell the agents something without approving anything, use handoff fyi.
+approved under it now: W15 (#1)
+told implementer and reviewer (#4, #5)
+not told, no session: reviewer-2
+handoff: told the operator: Your go-ahead is recorded (#3): Merge when the reviewer approves. Until you run handoff back, items are approved without asking you.
+handoff: told the operator: W15: approved under your go-ahead #3, by reviewer (#1).
+# exit 0
+# alerts sent so far: 3
+#   k11: W15: reviewer approved #1. Your decision.
+#   k11: Your go-ahead is recorded (#3): Merge when the reviewer approves. Until you run handoff back, items are approved without asking you.
+#   k11: W15: approved under your go-ahead #3, by reviewer (#1).
+
+$ [implementer's session, at the end of its turn] handoff hook listen
+handoff: new for implementer:
+#4 fyi - operator → implementer: Merge when the reviewer approves. (re #3)
+  W15 approved under the operator's go-ahead #3 as it was given: that is the operator's approve
+Read each with `handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit 2
+
+$ [reviewer's session, at the end of its turn] handoff hook listen
+handoff: new for reviewer:
+#1 request W15 implementer → reviewer: W15 work @ <sha12>
+#5 fyi - operator → reviewer: Merge when the reviewer approves. (re #3)
+  W15 approved under the operator's go-ahead #3 as it was given: that is the operator's approve
+Read each with `handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit 2
+
+$ handoff show 4
+#4 fyi
+from: operator → implementer
+ts: <ts>
+re: #3
+session: s-implementer
+prev: <hash>
+---
+Merge when the reviewer approves.
+
+This is the operator's go-ahead while away (#3). Under it, an item is approved once every reviewer it was sent to approves the same commit; one approval is enough for an item sent to one reviewer. Approved under it now: W15 (#1).
+# exit 0
+
+# a session that starts now, as implementer: its brief's line on the go-ahead
+The operator is away (#3, since <ts>). Their go-ahead: "Merge when the reviewer approves." Read it all with `handoff show 3`. Approved under it so far: W15 (#1).
+
+$ [terminal] handoff back
+back (#6): the go-ahead of #3 has ended
+approved under it while you were away: W15 (#1)
+told implementer and reviewer (#7, #8)
+not told, no session: reviewer-2
+# exit 0
+
+$ [implementer's session, at the end of its turn] handoff hook listen
+handoff: new for implementer:
+#7 fyi - operator → implementer: The operator is back: the go-ahead of #3 has ended. On an APPROVE, wait for the… (re #3)
+  W15 approved under the operator's go-ahead #3 as it was given: that is the operator's approve
+Read each with `handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit 2
+# alerts sent so far: 3
+#   k11: W15: reviewer approved #1. Your decision.
+#   k11: Your go-ahead is recorded (#3): Merge when the reviewer approves. Until you run handoff back, items are approved without asking you.
+#   k11: W15: approved under your go-ahead #3, by reviewer (#1).

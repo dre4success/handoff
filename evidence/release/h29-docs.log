@@ -1,0 +1,54 @@
+# command: H29 to the public repository, no new version: the public commit checked in a plain clone, then the push
+# date: 2026-11-11 09:52:23 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (go1.25.3)
+## clone at c1ccfcbe35a2d60aa4f103cc5d481b7ff7fdabc2, tree 4994e5158e16209d1b2ffb0122c9fab3cbf3b2e9
+## local main tree: 4994e5158e16209d1b2ffb0122c9fab3cbf3b2e9
+## files changed from v0.1.3 (78b6ea0) outside evidence/ and docs/:
+CLAUDE.md                      |  30 +++-------
+README.md                      | 121 ++++++++++-------------------------------
+internal/notify/notify_test.go |   6 +-
+3 files changed, 40 insertions(+), 117 deletions(-)
+## go.mod require lines: 0
+## go vet: clean
+## gofmt -l cmd internal: []
+## go test -count=1 ./... (the same tree passed every test under -race on local main)
+ok  	github.com/dre4success/handoff/cmd/handoff	70.375s
+ok  	github.com/dre4success/handoff/internal/awake	0.466s
+ok  	github.com/dre4success/handoff/internal/gitx	0.397s
+ok  	github.com/dre4success/handoff/internal/notify	0.549s
+ok  	github.com/dre4success/handoff/internal/record	2.074s
+ok  	github.com/dre4success/handoff/internal/status	0.205s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	0.745s
+## go test exit: 0
+## the name sweep, v0.1.3's tree (4d38bae) against this one (main); the patterns stay outside the repository
+## 4d38bae: 719 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder: 20 lines, 0 file names
+the names of the operator's other projects: 3 lines, 0 file names
+an email address or mail domain: 36 lines, 0 file names
+the operator's server: 0 lines, 0 file names
+## main: 748 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder: 27 lines, 0 file names
+the names of the operator's other projects: 0 lines, 0 file names
+an email address or mail domain: 36 lines, 0 file names
+the operator's server: 0 lines, 0 file names
+## added lines in git diff 4d38bae main that match:
+the operator's name, as a word, in a file name or inside an identifier: 0 added lines
+the operator's account name, other than in the module path: 0 added lines
+a path under a home folder: 7 added lines
+the names of the operator's other projects: 0 added lines
+an email address or mail domain: 0 added lines
+the operator's server: 0 added lines
+# every added line that matches is a scratch home folder or a search pattern's own text
+## the lines CLAUDE.md drops (16), found in any file of this tree: 0
+## alerts sent: 0 (to the test file only)
+## git push origin main, on the operator's decision (H29, #148): 78b6ea0..c1ccfcb main; no tag, as nothing under cmd/ or internal/ but a test changed, so @latest stays v0.1.3
+## git ls-remote after the push
+c1ccfcbe35a2d60aa4f103cc5d481b7ff7fdabc2	HEAD
+c1ccfcbe35a2d60aa4f103cc5d481b7ff7fdabc2	refs/heads/main
+5a3c744d75ec21f316627f1262c3caeeca53eae3	refs/tags/v0.1.3
+78b6ea05f43e3f6a6fe210c587b3c3c312fb6c54	refs/tags/v0.1.3^{}

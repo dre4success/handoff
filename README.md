@@ -30,13 +30,15 @@ Choose **Approve**, **Deny** or **Later** in the pop-up, or run `handoff` in the
 
 ## While you're away
 
-Run this in your own terminal, in the project:
+Leave a go-ahead, in your own terminal in the project:
 
 ```
-handoff fyi "Carry on while I'm away."
+handoff away "Merge when the reviewers approve."
 ```
 
-Every agent with a session gets it and acts on it, and none replies through handoff.
+Every agent with a session is told. Until you run `handoff back`, an item is approved for you once every reviewer it went to approves the same commit. There's no pop-up, just a notification saying who approved it. That is the one rule: handoff doesn't read your words, and one approval is enough for an item sent to one reviewer. If they approve different commits, the pop-up asks you. `handoff back` lists what was approved.
+
+To tell every agent something without a go-ahead, use `handoff fyi "Carry on."`. They act on it, and none replies through handoff.
 
 ## Good to know
 
@@ -59,6 +61,7 @@ Every agent with a session gets it and acts on it, and none replies through hand
 | `post`, `claim`, `reply`, `note` | Ask for a review, take one on, give a verdict, say anything else |
 | `decide <item>` | Approve or deny, at a terminal |
 | `fyi "<message>"` | Tell every agent at once, at a terminal |
+| `away "<go-ahead>"`, `back` | Approve in advance while you're away, and stop |
 | `inbox`, `wait`, `show <id>`, `brief` | Read what's waiting |
 | `repair` | Fixes the record after a crash |
 | `version` | The version installed |

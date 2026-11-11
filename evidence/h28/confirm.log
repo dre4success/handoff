@@ -1,0 +1,59 @@
+# command: handoff away with W1 approved already: answered n, then y
+# date: 2026-11-11 10:16:18 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 77a48cb2fa6cda9b1fc6597b83cd6cd4da120567
+
+handoff: told the operator: W1: reviewer approved #1. Your decision.
+## lines in the record: 2
+## answered n
+Your go-ahead approves now: W1 (#1). Go ahead? [y/N] n
+handoff away: not confirmed; nothing written
+# exit 2; lines in the record: 2
+## answered y
+Your go-ahead approves now: W1 (#1). Go ahead? [y/N] y
+away (#3): your go-ahead stands until you run handoff back
+Under it, an item is approved once every reviewer it was sent to approves the same commit; one approval is enough for an item sent to one reviewer. handoff doesn't read your words: to tell the agents something without approving anything, use handoff fyi.
+approved under it now: W1 (#1)
+not told, no session: implementer, reviewer, reviewer-2
+no agent has a session now; each session's brief shows your go-ahead when it starts
+handoff: told the operator: Your go-ahead is recorded (#3): Merge when approved. Until you run handoff back, items are approved without asking you.
+handoff: told the operator: W1: approved under your go-ahead #3, by reviewer (#1).
+# exit 0; lines in the record: 3
+## alerts sent so far: 3
+  confirm: W1: reviewer approved #1. Your decision.
+  confirm: Your go-ahead is recorded (#3): Merge when approved. Until you run handoff back, items are approved without asking you.
+  confirm: W1: approved under your go-ahead #3, by reviewer (#1).
+
+## handoff, in the operator's terminal
+You're away (#3, since 2026-11-11T10:16:21Z), with this go-ahead: Merge when approved.
+Run handoff back to end it.
+
+Nothing needs your decision.
+
+## a fresh project: the implementer has a session and has had W1's APPROVE; then away approves W1, and the listener brings the fyi naming it
+handoff: new for implementer:
+#2 reply W1 reviewer → implementer: APPROVE on #1 @ 8a5835f1b488
+Read each with `handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit 2
+Your go-ahead approves now: W1 (#1). Go ahead? [y/N] y
+away (#3): your go-ahead stands until you run handoff back
+Under it, an item is approved once every reviewer it was sent to approves the same commit; one approval is enough for an item sent to one reviewer. handoff doesn't read your words: to tell the agents something without approving anything, use handoff fyi.
+approved under it now: W1 (#1)
+told implementer (#4)
+not told, no session: reviewer, reviewer-2
+handoff: told the operator: Your go-ahead is recorded (#3): Merge when approved. Until you run handoff back, items are approved without asking you.
+handoff: told the operator: W1: approved under your go-ahead #3, by reviewer (#1).
+# exit 0
+## alerts sent so far: 3
+  confirm2: W1: reviewer approved #1. Your decision.
+  confirm2: Your go-ahead is recorded (#3): Merge when approved. Until you run handoff back, items are approved without asking you.
+  confirm2: W1: approved under your go-ahead #3, by reviewer (#1).
+handoff: new for implementer:
+#4 fyi - operator → implementer: Merge when approved. (re #3)
+  W1 approved under the operator's go-ahead #3 as it was given: that is the operator's approve
+Read each with `handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit 2
+
+## the implementer's brief: its first lines
+handoff brief: you are implementer in confirm2. You and reviewer, reviewer-2 hand work to each other through handoff. The operator decides.
+The operator is away (#3, since 2026-11-11T10:16:23Z). Their go-ahead: "Merge when approved." Read it all with `handoff show 3`. Approved under it so far: W1 (#1).
