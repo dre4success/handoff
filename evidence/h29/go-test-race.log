@@ -1,0 +1,16 @@
+# command: go test -race -count=1 ./...
+# date: 2026-11-11 09:16:59 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 902e36ed7b31439c80a60ff730aaf08127bb9109
+
+ok  	github.com/dre4success/handoff/cmd/handoff	348.585s
+ok  	github.com/dre4success/handoff/internal/awake	1.299s
+ok  	github.com/dre4success/handoff/internal/gitx	1.209s
+ok  	github.com/dre4success/handoff/internal/notify	1.379s
+ok  	github.com/dre4success/handoff/internal/record	3.499s
+ok  	github.com/dre4success/handoff/internal/status	1.219s
+ok  	github.com/dre4success/handoff/internal/wait	1.772s
+# passed: 171; failed: 0; exit 0; wall time 353 s
+
+## the notify test
+--- PASS: TestEachAlertIsSentOnce (0.01s)

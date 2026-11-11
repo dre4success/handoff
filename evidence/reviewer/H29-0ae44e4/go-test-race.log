@@ -1,0 +1,39 @@
+# command: go test -race -count=1 -v ./... (no -timeout); the test names at the base and here; the notify tests, -count=5
+# date: 2026-11-11 09:14:23 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 0ae44e40183220fd19d7e9be64a13616e41e7a71
+
+# (the run was started at 2026-11-11 09:02:49 local time, in this worktree, and its output read here)
+ok  	github.com/dre4success/handoff/cmd/handoff	345.651s
+ok  	github.com/dre4success/handoff/internal/awake	1.298s
+ok  	github.com/dre4success/handoff/internal/gitx	1.218s
+ok  	github.com/dre4success/handoff/internal/notify	1.362s
+ok  	github.com/dre4success/handoff/internal/record	3.521s
+ok  	github.com/dre4success/handoff/internal/status	1.217s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	1.758s
+# passed: 171; failed: 0; skipped: 2; data races: 0
+
+## the test the commit changes, in that run
+--- PASS: TestEachAlertIsSentOnce (0.01s)
+
+## the tests' names at the base that are not here, and here that are not at the base
+(none)
+# tests at the base: 173; here: 173
+
+## internal/notify's tests, 5 times each under the race detector
+   5 --- PASS: TestALockedAlertIsLeftToItsHolder
+   5 --- PASS: TestANewKeyIsANewAlert
+   5 --- PASS: TestDecideAlertIsHandedToAsk
+   5 --- PASS: TestEachAlertIsSentOnce
+   5 --- PASS: TestFailedSendIsRetriedByTheNextProcess
+   5 --- PASS: TestKilledSendersLockIsReleased
+   5 --- PASS: TestLastingFailureBacksOff
+   5 --- PASS: TestMarkerFailureRecoversInTheSameProcess
+   5 --- PASS: TestMarkersStayInsideTheRecord
+   5 --- PASS: TestSandboxedProcessLeavesAlertsToOthers
+   5 --- PASS: TestSenderPausedBeforeMarkingIsNotDuplicated
+   5 --- PASS: TestTwoProcessesRacingSendOnce
+   5 --- PASS: TestUnsafeKeyIsNotSent
+   5 --- SKIP: TestHelperHoldLock
+   1 ok  	github.com/dre4success/handoff/internal/notify	1.365s

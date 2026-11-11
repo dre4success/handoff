@@ -1,0 +1,49 @@
+# command: go build ./...; go vet ./...; gofmt -l cmd internal; go.mod requires; go list -deps for net; the commits and diffstat from the base; what the evidence commit touches; the tool built at the base and here, compared
+# date: 2026-11-11 09:14:22 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 0ae44e40183220fd19d7e9be64a13616e41e7a71
+
+## go build ./...: ok
+## go vet ./...: clean
+## gofmt -l cmd internal: []
+## go.mod require lines: 0
+## packages in go list -deps ./... named net or under net/: 0
+## commits on the base (70630c4):
+0ae44e4 docs: evidence for H29
+2059013 docs: §17 row 95, H29 the public CLAUDE.md and README
+1a800c0 test: the notify test's project is demo
+d3a9545 docs: a shorter README
+d892f25 docs: CLAUDE.md keeps only the rules an agent here follows
+## diffstat:
+ CLAUDE.md                                 |  30 ++-----
+ README.md                                 | 121 +++++++-------------------
+ docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md |   1 +
+ evidence/h29/README.md                    |  11 +++
+ evidence/h29/collect.sh                   | 130 ++++++++++++++++++++++++++++
+ evidence/h29/deps-vet-fmt.log             |  12 +++
+ evidence/h29/docs.log                     |  63 ++++++++++++++
+ evidence/h29/go-test-race.log             |  16 ++++
+ evidence/h29/readme.log                   | 135 ++++++++++++++++++++++++++++++
+ evidence/h29/sweep.log                    |  26 ++++++
+ evidence/h29/sweep.py                     |  42 ++++++++++
+ internal/notify/notify_test.go            |   6 +-
+ 12 files changed, 476 insertions(+), 117 deletions(-)
+## the implementer's evidence names 2059013; what the commit under review adds to it:
+ evidence/h29/README.md        |  11 ++++
+ evidence/h29/collect.sh       | 130 ++++++++++++++++++++++++++++++++++++++++
+ evidence/h29/deps-vet-fmt.log |  12 ++++
+ evidence/h29/docs.log         |  63 ++++++++++++++++++++
+ evidence/h29/go-test-race.log |  16 +++++
+ evidence/h29/readme.log       | 135 ++++++++++++++++++++++++++++++++++++++++++
+ evidence/h29/sweep.log        |  26 ++++++++
+ evidence/h29/sweep.py         |  42 +++++++++++++
+ 8 files changed, 435 insertions(+)
+## the worktree is clean: []
+
+## No code changes? Files under cmd, internal and go.mod that differ from the base, tests aside:
+(none)
+## handoff built at the base and here (go build -trimpath -buildvcs=false), sha256:
+base: dbb3b2d823679c78591064c5224836896b5b3d3a0c4366784d8a30e2923a4a76
+here: dbb3b2d823679c78591064c5224836896b5b3d3a0c4366784d8a30e2923a4a76
+## the two are the same, byte for byte
+## line counts: README.md 135 at the base, 72 here; CLAUDE.md 36 and 22

@@ -41,12 +41,12 @@ func TestEachAlertIsSentOnce(t *testing.T) {
 	path := sink(t)
 	dir := t.TempDir()
 	var errb bytes.Buffer
-	n := New(dir, "sela", &errb)
+	n := New(dir, "demo", &errb)
 	n.Send([]status.Alert{quietAlert})
 	n.Send([]status.Alert{quietAlert})
-	New(dir, "sela", &errb).Send([]status.Alert{quietAlert}) // another process, later
+	New(dir, "demo", &errb).Send([]status.Alert{quietAlert}) // another process, later
 	got := sent(t, path)
-	if len(got) != 1 || got[0] != "sela: "+quietAlert.Text {
+	if len(got) != 1 || got[0] != "demo: "+quietAlert.Text {
 		t.Fatalf("sent %q; want the alert once, titled with the project", got)
 	}
 	if !strings.Contains(errb.String(), "told the operator: "+quietAlert.Text) {

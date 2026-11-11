@@ -1,0 +1,19 @@
+# command: for each thing CLAUDE.md drops, the lines that still say it in the tree at this commit, by folder; the lines evidence/h29/docs.log repeats
+# date: 2026-11-11 09:15:43 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the operator's Mac
+# commit: 0ae44e40183220fd19d7e9be64a13616e41e7a71
+
+## 728 tracked files
+the models named for each role: 6 lines (docs/CHANNEL.md 2, docs/prompts/ 3, evidence/h29/docs.log 1)
+any of the three models, by name: 527 lines (cmd/ 14, docs/ 1, docs/CHANNEL.md 77, docs/prompts/ 6, docs/proposals/ 22, docs/reviews/ 9, evidence/ 388, evidence/h29/ 6, evidence/h29/docs.log 2, internal/ 2)
+the date the roles were decided: 116 lines (cmd/ 1, docs/CHANNEL.md 25, docs/prompts/ 3, docs/proposals/ 4, docs/reviews/ 10, evidence/ 67, evidence/h29/docs.log 1, internal/ 5)
+D1 to D13 standing as working decisions: 5 lines (docs/CHANNEL.md 3, docs/proposals/ 1, evidence/h29/docs.log 1)
+the earlier experiment, by name: 14 lines (docs/ 1, docs/proposals/ 5, docs/reviews/ 4, evidence/ 3, evidence/h29/docs.log 1)
+the rule about that experiment's code: 3 lines (docs/ 1, docs/proposals/ 1, evidence/h29/docs.log 1)
+the trial project and its plan: 30 lines (docs/CHANNEL.md 5, docs/prompts/ 1, docs/proposals/ 8, docs/reviews/ 9, evidence/ 6, evidence/h29/docs.log 1)
+how the roles came to be decided: 5 lines (docs/CHANNEL.md 3, docs/reviews/ 1, evidence/h29/docs.log 1)
+
+## lines H29 removes from CLAUDE.md or rewrites, blank ones aside: 16
+## of those, lines that evidence/h29/docs.log repeats word for word: 16
+## docs.log is new in this commit: [A	evidence/h29/docs.log]
+## the README's More section points to: `docs/proposals/` `docs/CHANNEL.md` `docs/prompts/` `docs/` 

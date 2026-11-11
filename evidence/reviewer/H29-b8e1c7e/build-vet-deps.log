@@ -1,0 +1,63 @@
+# command: go build ./...; go vet ./...; gofmt -l cmd internal; go.mod requires; go list -deps for net; the commits and diffstat from the base; what the evidence commit touches; the tool built at the base and here, compared
+# date: 2026-11-11 09:29:56 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: b8e1c7e6f4fc2811bc1900ef62e8fbacf0e89aa5
+
+## go build ./...: ok
+## go vet ./...: clean
+## gofmt -l cmd internal: []
+## go.mod require lines: 0
+## packages in go list -deps ./... named net or under net/: 0
+## commits on the base (70630c4):
+b8e1c7e docs: evidence for H29 round 2
+902e36e docs: §17 row 97, corrections to row 95 from the H29 review
+a72962d docs: README: docs/prompts/ holds the prompts handoff was built with
+0ae44e4 docs: evidence for H29
+2059013 docs: §17 row 95, H29 the public CLAUDE.md and README
+1a800c0 test: the notify test's project is demo
+d3a9545 docs: a shorter README
+d892f25 docs: CLAUDE.md keeps only the rules an agent here follows
+## diffstat:
+ CLAUDE.md                                 |  30 ++-----
+ README.md                                 | 121 +++++++-------------------
+ docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md |   2 +
+ evidence/h29/README.md                    |  11 +++
+ evidence/h29/collect.sh                   | 137 ++++++++++++++++++++++++++++++
+ evidence/h29/deps-vet-fmt.log             |  13 +++
+ evidence/h29/docs.log                     |  27 ++++++
+ evidence/h29/go-test-race.log             |  16 ++++
+ evidence/h29/readme.log                   | 135 +++++++++++++++++++++++++++++
+ evidence/h29/sweep.log                    |  26 ++++++
+ evidence/h29/sweep.py                     |  42 +++++++++
+ internal/notify/notify_test.go            |   6 +-
+ 12 files changed, 449 insertions(+), 117 deletions(-)
+## the implementer's evidence names 902e36e; what the commit under review adds to it:
+ evidence/h29/README.md        |  6 ++--
+ evidence/h29/collect.sh       | 13 ++++++--
+ evidence/h29/deps-vet-fmt.log |  7 ++--
+ evidence/h29/docs.log         | 76 ++++++++++++-------------------------------
+ evidence/h29/go-test-race.log | 20 ++++++------
+ evidence/h29/readme.log       |  6 ++--
+ evidence/h29/sweep.log        | 10 +++---
+ 7 files changed, 55 insertions(+), 83 deletions(-)
+## since round 1 (0ae44e4):
+ README.md                                 |  2 +-
+ docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md |  1 +
+ evidence/h29/README.md                    |  6 +--
+ evidence/h29/collect.sh                   | 13 ++++--
+ evidence/h29/deps-vet-fmt.log             |  7 +--
+ evidence/h29/docs.log                     | 76 ++++++++-----------------------
+ evidence/h29/go-test-race.log             | 20 ++++----
+ evidence/h29/readme.log                   |  6 +--
+ evidence/h29/sweep.log                    | 10 ++--
+ 9 files changed, 57 insertions(+), 84 deletions(-)
+## files under cmd, internal and go.mod that differ from round 1: []
+## the worktree is clean: []
+
+## No code changes? Files under cmd, internal and go.mod that differ from the base, tests aside:
+(none)
+## handoff built at the base and here (go build -trimpath -buildvcs=false), sha256:
+base: dbb3b2d823679c78591064c5224836896b5b3d3a0c4366784d8a30e2923a4a76
+here: dbb3b2d823679c78591064c5224836896b5b3d3a0c4366784d8a30e2923a4a76
+## the two are the same, byte for byte
+## line counts: README.md 135 at the base, 72 here; CLAUDE.md 36 and 22

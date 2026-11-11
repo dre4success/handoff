@@ -1,0 +1,26 @@
+# command: the name sweep of every tracked file, 70630c4 against HEAD
+# date: 2026-11-11 09:16:48 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 902e36ed7b31439c80a60ff730aaf08127bb9109
+
+## 70630c4: 720 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder: 21 lines, 0 file names
+the names of the operator's other projects: 3 lines, 0 file names
+an email address or mail domain: 36 lines, 0 file names
+the operator's server: 0 lines, 0 file names
+## HEAD: 728 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder: 25 lines, 0 file names
+the names of the operator's other projects: 0 lines, 0 file names
+an email address or mail domain: 36 lines, 0 file names
+the operator's server: 0 lines, 0 file names
+## added lines in git diff 70630c4 HEAD that match:
+the operator's name, as a word, in a file name or inside an identifier: 0 added lines
+the operator's account name, other than in the module path: 0 added lines
+a path under a home folder: 4 added lines
+the names of the operator's other projects: 0 added lines
+an email address or mail domain: 0 added lines
+the operator's server: 0 added lines

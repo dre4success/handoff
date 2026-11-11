@@ -1,0 +1,135 @@
+# command: the README's commands against handoff --help; its quick start in a scratch project
+# date: 2026-11-11 09:16:47 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 902e36ed7b31439c80a60ff730aaf08127bb9109
+
+## each command in the README's table, and whether the usage lists it
+brief: listed
+claim: listed
+decide: listed
+fyi: listed
+inbox: listed
+init: listed
+note: listed
+post: listed
+repair: listed
+reply: listed
+role: listed
+roles: listed
+settings: listed
+show: listed
+version: listed
+wait: listed
+
+## $ handoff settings claude --global (its first lines)
+Put these settings in ~/.claude/settings.json, merged with any already there.
+They set up every project at once, and do nothing in a project with no
+.handoff/ or a session with no role. Sessions already running get them
+when they start again.
+
+## $ handoff settings codex --global (its first lines)
+Put these two files in ~/.codex/, merged with any already there.
+They set up every project at once, and do nothing in a project with no
+.handoff/ or a session with no role. The next time Codex starts, it asks you
+to review the new hooks: choose Trust all. Sessions already running get them
+
+## $ handoff init, in a fresh project (made here by the collector)
+Created <scratch>/quick/.handoff. Git ignores it; nothing else in the project changed.
+Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.
+Main branch: main.
+
+handoff's hooks keep sessions on duty. Set them once, for every project:
+  Claude Code:  handoff settings claude --global
+  Codex:        handoff settings codex --global
+For each CLI you use that isn't set up, run its command and do what it prints, or ask one of its sessions to.
+Then give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+# exit 0
+## git status --short --ignored: !! .handoff/ 
+## .handoff/config.json
+{
+  "v": 1,
+  "roles": [
+    {
+      "name": "implementer",
+      "reviews": false
+    },
+    {
+      "name": "reviewer",
+      "reviews": true
+    },
+    {
+      "name": "reviewer-2",
+      "reviews": true
+    }
+  ],
+  "main": "main",
+  "quiet_after": "30m"
+}
+
+## a Claude Code session told "you're the implementer" runs: handoff role implementer
+You are now implementer in quick.
+
+handoff brief: you are implementer in quick. You and reviewer, reviewer-2 hand work to each other through handoff. The operator decides.
+
+Listening: if your session has handoff's hooks, a hook listens for implementer when your turn ends, and you don't run wait. If not, run `handoff wait --for implementer --timeout 25m` in the background. Exit 3: run it again. Exit 4: another session already listens for implementer. After you handle what it delivers, wait again. If your session has no handoff hooks, offer to set them up for every project: `handoff settings claude --global` prints them and where they go. With the operator's OK, add them. They work once the operator starts this session again.
+
+When something arrives, read it with `handoff show <id>`, then:
+- A reply to your request: on CHANGES or QUESTION, fix or answer, then post again (`handoff post --as implementer ... --supersedes <id>`). On APPROVE, the operator decides; wait for the decision.
+- A decision from the operator: act on it. Merge only on approve.
+- An fyi from the operator, to every agent with a session: take it as the operator's word, as if said in this session, and act on it. Don't answer it through handoff; anything to say, say in this session.
+- A note to you: answer with `handoff note --as implementer --to <role> --re <id> --body <file>`. If it has findings on work you haven't asked about, fix them, then ask for a review.
+
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as implementer --item <item> --to <reviewer> --commit <sha> --title "<title>" --body <file>`, where <reviewer> is reviewer or reviewer-2, whichever the operator gives a session; none has one yet.
+To ask the operator about an item: `handoff note --as implementer --to operator --item <item> --title "<question>" --body <file>`.
+Rules: never edit .handoff/ by hand. Never merge, push or deploy without the operator's decision. A claim is not an approval.
+
+Waiting for you now (inbox for implementer):
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+# exit 0
+
+## $ handoff brief, in the implementer's session (first line)
+handoff brief: you are implementer in quick. You and reviewer, reviewer-2 hand work to each other through handoff. The operator decides.
+
+## $ handoff fyi "Carry on while I'm away.", at a terminal
+told implementer and reviewer (#1, #2)
+not told, no session: reviewer-2
+# exit 0
+
+## $ handoff roles add reviewer-3
+Added reviewer-3.
+Roles: implementer, reviewer, reviewer-2 and reviewer-3; reviewer, reviewer-2 and reviewer-3 review.
+Give a session a role by telling it; it runs handoff role <role>.
+# exit 0
+
+## $ handoff (with nothing waiting)
+Nothing needs your decision.
+# exit 0
+
+## $ handoff version
+handoff v0.0.0-20261111091629-902e36ed7b31+dirty
+
+## $ handoff init --roles a,b, in a fresh project
+Created <scratch>/roles/.handoff. Git ignores it; nothing else in the project changed.
+Roles: a and b. Either can implement or review.
+Main branch: main.
+
+handoff's hooks keep sessions on duty. Set them once, for every project:
+  Claude Code:  handoff settings claude --global
+  Codex:        handoff settings codex --global
+For each CLI you use that isn't set up, run its command and do what it prints, or ask one of its sessions to.
+Then give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+# exit 0

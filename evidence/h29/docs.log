@@ -1,0 +1,27 @@
+# command: the lengths of CLAUDE.md and the README before and after, and what CLAUDE.md drops, in row 95's words
+# date: 2026-11-11 09:16:48 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 902e36ed7b31439c80a60ff730aaf08127bb9109
+
+## git diff --numstat 70630c4 -- CLAUDE.md README.md (added, removed, file)
+8	22	CLAUDE.md
+29	92	README.md
+## CLAUDE.md drops: the decisions of 2026-10-09 (the models, the dates, D1 to D13 standing), the lineage, the trial plan, and the sentence on Source and Inferred reasoning; the rest of its rules stay
+## lines of CLAUDE.md here that are not at 70630c4, word for word: 8
+
+## README.md lines: 135 at 70630c4, 72 here
+## CLAUDE.md lines: 36 at 70630c4, 22 here
+## files changed since 70630c4:
+CLAUDE.md                                 |  30 ++-----
+README.md                                 | 121 +++++++-------------------
+docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md |   2 +
+evidence/h29/README.md                    |  11 +++
+evidence/h29/collect.sh                   | 137 ++++++++++++++++++++++++++++++
+evidence/h29/deps-vet-fmt.log             |  12 +++
+evidence/h29/docs.log                     |  14 +++
+evidence/h29/go-test-race.log             |  16 ++++
+evidence/h29/readme.log                   | 135 +++++++++++++++++++++++++++++
+evidence/h29/sweep.log                    |  26 ++++++
+evidence/h29/sweep.py                     |  42 +++++++++
+internal/notify/notify_test.go            |   6 +-
+12 files changed, 435 insertions(+), 117 deletions(-)
