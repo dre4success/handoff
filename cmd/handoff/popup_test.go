@@ -73,6 +73,7 @@ func (r *repo) marked(key string) bool {
 }
 
 func TestH9bApproveClickDecides(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	req := r.approved(t, "W1")
 	al := r.decideAlert(t)
@@ -93,6 +94,7 @@ func TestH9bApproveClickDecides(t *testing.T) {
 }
 
 func TestH9bDenyAsksWhy(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	req := r.approved(t, "W1")
 	al := r.decideAlert(t)
@@ -112,6 +114,7 @@ func TestH9bDenyAsksWhy(t *testing.T) {
 // Cancel on the second dialog takes the deny back, as does leaving it
 // unanswered until it gives up.
 func TestH9bDenyThenCancelWritesNothing(t *testing.T) {
+	t.Parallel()
 	for _, c := range []click{{button: "Cancel"}, {gaveUp: true}} {
 		r := newRepo(t)
 		req := r.approved(t, "W1")
@@ -132,6 +135,7 @@ func TestH9bDenyThenCancelWritesNothing(t *testing.T) {
 // Later, or no click before the dialog gives up: nothing is written, the
 // pop-up is not shown again, and handoff in the project still lists it.
 func TestH9bLaterAndGivingUpWriteNothing(t *testing.T) {
+	t.Parallel()
 	for _, c := range []click{{button: "Later"}, {gaveUp: true}} {
 		r := newRepo(t)
 		req := r.approved(t, "W1")
@@ -157,6 +161,7 @@ func TestH9bLaterAndGivingUpWriteNothing(t *testing.T) {
 
 // A dialog that cannot be shown leaves the alert unmarked, for another try.
 func TestH9bDialogFailureLeavesTheAlert(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	req := r.approved(t, "W1")
 	al := r.decideAlert(t)
@@ -171,6 +176,7 @@ func TestH9bDialogFailureLeavesTheAlert(t *testing.T) {
 
 // Decided at a terminal before the pop-up came up: it is not shown.
 func TestH9bDecidedMeanwhileIsNotAsked(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	req := r.approved(t, "W1")
 	al := r.decideAlert(t)
@@ -221,6 +227,7 @@ func TestH9bClickAfterATerminalDecisionIsRefused(t *testing.T) {
 }
 
 func TestH9bNoteToTheOperator(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	note := idOf(t, r.ok(t, "implementer", "note", "--item", "W2", "--to", "operator", "--title", "May I deploy?", "--body", r.body(t, "to staging\nafter the merge")))
 	al := r.decideAlert(t)
@@ -238,6 +245,7 @@ func TestH9bNoteToTheOperator(t *testing.T) {
 
 // The helper runs only with the alert's lock on descriptor 3, held by it.
 func TestH9bHelperNeedsTheLock(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	r.approved(t, "W1")
 	al := r.decideAlert(t)
@@ -356,6 +364,7 @@ func TestH9bPopupAcrossProcesses(t *testing.T) {
 // running it, so nothing appears on screen. A real click is in
 // evidence/h9b/live-popup.txt.
 func TestH9bDialogScriptsCompile(t *testing.T) {
+	t.Parallel()
 	if runtime.GOOS != "darwin" {
 		t.Skip("osacompile is macOS's")
 	}

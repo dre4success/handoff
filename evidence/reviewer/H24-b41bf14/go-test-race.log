@@ -1,0 +1,254 @@
+# command: four runs in the worktree, HANDOFF_TEST_NOTIFY and HANDOFF_TEST_AWAKE to scratch files (runs.sh, below): run 1 alone, go test -count=1 -race -v ./... with no -timeout (the default 10 minutes); runs 2 and 3 at once, run 2 the same command in the worktree, run 3 in a git-archive copy with -shuffle=on -parallel 32 -timeout 30m; then the two changed tests, -race -count=10. The full outputs stayed in the scratchpad; one line per test for run 1, the package lines for all
+# date: 2026-10-26 22:43:18 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, 8 cores, go1.25.3, 2.55.0)
+# commit: b41bf149639418fd20a9d6a139fbdea74ce642f6
+
+## run1: 163 pass, 0 fail, 0 data race warnings, 0 timeouts
+start 2026-10-26 22:25:38 UTC
+exit 0 wall 420 s
+end 2026-10-26 22:32:38 UTC
+ok  	github.com/dre4success/handoff/cmd/handoff	415.884s
+ok  	github.com/dre4success/handoff/internal/awake	1.736s
+ok  	github.com/dre4success/handoff/internal/gitx	1.620s
+ok  	github.com/dre4success/handoff/internal/notify	1.640s
+ok  	github.com/dre4success/handoff/internal/record	7.425s
+ok  	github.com/dre4success/handoff/internal/status	1.371s
+ok  	github.com/dre4success/handoff/internal/wait	2.391s
+### run1, one line per test
+--- PASS: TestH8QuietAfterSetting (3.48s)
+--- PASS: TestH8QuietClaimTellsTheOperatorOnce (9.86s)
+--- PASS: TestH8InboxShowsWhatWentQuiet (5.42s)
+--- PASS: TestH8ClaimingAgainWritesNothingAndTellsOnce (7.14s)
+--- PASS: TestH13ListenersHoldOffSleepWhileAMoveIsOwed (6.49s)
+--- PASS: TestH10bTheRoleKeepsBareHandoffFromTheOperatorsQuestion (6.90s)
+--- PASS: TestH9DecideByItemWithNoRole (4.95s)
+--- PASS: TestH9DenyWithANote (4.99s)
+--- PASS: TestH9NotConfirmedWritesNothing (3.95s)
+--- PASS: TestH9ItemWithTwoEntriesNeedsTheId (7.08s)
+--- PASS: TestH9HandoffOnItsOwnAsksAboutEach (8.20s)
+--- PASS: TestH9DecideRefusals (4.18s)
+--- PASS: TestH10SecondWaitForARoleExits (4.53s)
+--- PASS: TestH10HookListenWakesTheSession (4.16s)
+--- PASS: TestH10HookListenLeavesItToTheListener (2.93s)
+--- PASS: TestH10HookListenStopsWithItsSession (5.16s)
+--- PASS: TestH10HooksOffDuty (11.09s)
+--- PASS: TestH10ListenTroubleIsToldOnce (4.62s)
+--- PASS: TestH10SettingsClaude (3.67s)
+--- PASS: TestH10ResumedOrphanLeavesTheEntry (5.21s)
+    main_test.go:280: 50 processes x 20 posts: 1000 entries, ids 1..1000, chain intact
+--- PASS: TestCheck1FiftyProcessesTwentyPostsEach (111.96s)
+--- PASS: TestDecideWithATerminal (6.91s)
+    main_test.go:566: wait woke 1.541s after the post returned
+--- PASS: TestCheck8WaitWakesWithinTwoSeconds (4.39s)
+--- PASS: TestCheck13NextWaitDeliversAtOnce (5.96s)
+--- PASS: TestCheck19InterruptedWait (5.32s)
+--- PASS: TestH5ForgedLineDuringAnEmittingWait (6.56s)
+--- PASS: TestH6EditedLastLineIsWithheld (5.91s)
+--- PASS: TestH21BriefOffersHooks (12.12s)
+--- PASS: TestH21SettingsGlobal (6.89s)
+--- PASS: TestH21CodexWithNoHooksDoesNotWait (4.51s)
+--- PASS: TestH9bClickAfterATerminalDecisionIsRefused (3.73s)
+--- PASS: TestH9bPopupAcrossProcesses (7.26s)
+--- PASS: TestH12TwoClaudeSessionsTakeTheRolesTheOperatorGives (8.76s)
+--- PASS: TestH12ARoleMovesAndTheOldListenerStops (6.98s)
+--- PASS: TestH12ARoleOutlivesClearAndResume (7.04s)
+--- PASS: TestH12AWaitStopsWhenItsRoleMoves (7.16s)
+--- PASS: TestH16AStartTakesNoRole (7.84s)
+--- PASS: TestH12AnAgentSessionNeverAnswersForTheOperator (8.07s)
+--- PASS: TestH12RoleRefusals (1.70s)
+--- PASS: TestH12ARoleMovedWhileAListenerStartsStopsIt (16.88s)
+--- PASS: TestH23ReviewersWithASession (14.32s)
+--- PASS: TestH8InitSetsQuietAfter (1.68s)
+--- PASS: TestH9bNoteToTheOperator (2.70s)
+--- PASS: TestH19BriefSaysWhoCommitsAndWhereFindingsGo (3.84s)
+--- PASS: TestH9bDenyAsksWhy (3.82s)
+--- PASS: TestCheck2SamePostTwice (5.50s)
+--- PASS: TestH6CutThenPostKilledAfterSyncIsRecoverable (6.17s)
+--- PASS: TestH18OutsideGitSaysRunGitInit (1.25s)
+--- PASS: TestH18InitNamesEachCLI (3.44s)
+--- PASS: TestCheck16Roles (5.04s)
+--- PASS: TestH19FirstCommitNeedsNoBase (10.97s)
+--- PASS: TestPostChecksCommitsBranchAndParents (4.53s)
+--- PASS: TestH5LinkedEscalationIsNotAnAnswer (12.55s)
+--- PASS: TestH11BriefCommandsRunForClaudeAndCodex (12.62s)
+--- PASS: TestH16RolesAddRefuses (1.92s)
+--- PASS: TestH9bDialogScriptsCompile (0.56s)
+--- PASS: TestH12ACodexThreadKeepsItsRoleAlone (7.86s)
+--- PASS: TestH11BriefTellsTheImplementerHowToAsk (9.08s)
+--- PASS: TestH9HandoffOnItsOwnWithoutATerminal (5.26s)
+--- PASS: TestCheck4EditedMiddleLineStopsPosting (5.87s)
+--- PASS: TestQuestionAnsweredByANote (15.97s)
+--- PASS: TestH10APathWithSpaces (6.28s)
+--- PASS: TestH9bHelperNeedsTheLock (3.87s)
+--- PASS: TestCheck5ReplyRefusals (8.77s)
+--- PASS: TestRow51KilledAfterSyncIsAnAdvisory (4.83s)
+--- PASS: TestH10HookNotify (4.74s)
+--- PASS: TestH10SettingsInALinkedWorktree (3.02s)
+--- PASS: TestH9bDecidedMeanwhileIsNotAsked (4.14s)
+--- PASS: TestInitRefusesASecondTime (1.37s)
+--- PASS: TestH9HandoffOnItsOwnOutsideAProject (0.03s)
+--- PASS: TestCheck6SecondRevision (9.73s)
+--- PASS: TestH9bDialogFailureLeavesTheAlert (3.97s)
+--- PASS: TestCheck18RetryAfterLostReceipt (5.33s)
+--- PASS: TestH17VersionNamesTheBuild (2.06s)
+--- PASS: TestLinkedWorktreeUsesTheSameRecord (2.63s)
+--- PASS: TestH18AMissingRepositoryGetsNoHint (0.10s)
+--- PASS: TestH10bShellQuote (0.00s)
+--- PASS: TestCheck3KilledWriterLeavesATornTail (6.15s)
+--- PASS: TestH10Brief (6.48s)
+--- PASS: TestH10bBriefNamesTheRole (2.59s)
+--- PASS: TestH11InitWithNoFlags (2.48s)
+--- PASS: TestH16SettingsNeverPickARole (4.44s)
+--- PASS: TestH9bLaterAndGivingUpWriteNothing (10.40s)
+--- PASS: TestH9HandoffOnItsOwnInAnAgentSession (3.84s)
+--- PASS: TestH11InitReviewers (3.93s)
+--- PASS: TestH10bCodexReadsTheRules (3.55s)
+--- PASS: TestH16RolesAddKeepsTheRecord (9.10s)
+--- PASS: TestH10bSettingsCodex (3.90s)
+--- PASS: TestH9bApproveClickDecides (3.78s)
+--- PASS: TestH6CutThenRepairKilledAfterSyncIsRecoverable (5.92s)
+--- PASS: TestH10BriefCommandsRun (10.22s)
+--- PASS: TestH11InitFindsTheMainBranch (6.77s)
+--- PASS: TestH8ApproveTellsTheOperatorAtOnce (4.82s)
+--- PASS: TestH9bDenyThenCancelWritesNothing (7.52s)
+PASS
+--- PASS: TestHoldStartsOneCaffeinateAndReleaseEndsIt (0.08s)
+--- PASS: TestAHoldEndedElsewhereIsLeftEnded (0.01s)
+--- PASS: TestAKilledHolderLeavesNoHold (0.10s)
+    awake_test.go:109: run by TestAKilledHolderLeavesNoHold
+--- SKIP: TestHelperHolds (0.00s)
+--- PASS: TestTestModeWritesChangesOnly (0.01s)
+PASS
+--- PASS: TestH18NoRepositoryMeansGitInitFixesIt (0.00s)
+PASS
+--- PASS: TestEachAlertIsSentOnce (0.01s)
+--- PASS: TestTwoProcessesRacingSendOnce (0.01s)
+--- PASS: TestANewKeyIsANewAlert (0.01s)
+--- PASS: TestMarkersStayInsideTheRecord (0.00s)
+--- PASS: TestUnsafeKeyIsNotSent (0.00s)
+--- PASS: TestFailedSendIsRetriedByTheNextProcess (0.00s)
+--- PASS: TestMarkerFailureRecoversInTheSameProcess (0.01s)
+--- PASS: TestLastingFailureBacksOff (0.09s)
+--- PASS: TestALockedAlertIsLeftToItsHolder (0.00s)
+--- PASS: TestSenderPausedBeforeMarkingIsNotDuplicated (0.02s)
+--- PASS: TestKilledSendersLockIsReleased (0.06s)
+    notify_test.go:294: a helper process for TestKilledSendersLockIsReleased
+--- SKIP: TestHelperHoldLock (0.00s)
+--- PASS: TestSandboxedProcessLeavesAlertsToOthers (0.00s)
+--- PASS: TestDecideAlertIsHandedToAsk (0.00s)
+PASS
+--- PASS: TestAppendBuildsSequentialChain (0.12s)
+--- PASS: TestBodyIsInsideTheLine (0.02s)
+--- PASS: TestConcurrentAppendsStaySequential (5.18s)
+--- PASS: TestBuildCanReturnExistingReceipt (0.02s)
+--- PASS: TestBuildErrorWritesNothing (0.02s)
+--- PASS: TestTornTailRefusesUntilRepair (0.07s)
+--- PASS: TestEditedMiddleLineBreaksChain (0.04s)
+--- PASS: TestForgedAppendIsWithheldFromTheBreakWhenHeadVouches (0.03s)
+--- PASS: TestForgedAppendWithoutAVouchingHeadWithholdsTheLineBefore (0.03s)
+--- PASS: TestCutTailIsAnAdvisoryNotARefusal (0.08s)
+--- PASS: TestHeadBehindAfterCrashIsAnAdvisory (0.07s)
+--- PASS: TestEditedLastLineIsABreak (0.04s)
+--- PASS: TestAppendAfterACutThatStopsBeforeHeadIsNotAnEdit (0.05s)
+--- PASS: TestRepairWithNothingToRepair (0.01s)
+--- PASS: TestCreateRefusesAnExistingRecord (0.00s)
+PASS
+--- PASS: TestQuietAlertFollowsWhoOwesTheNextMove (0.00s)
+--- PASS: TestLongSilenceIsGivenInHours (0.00s)
+--- PASS: TestAnotherRolesClaimDoesNotRestartTheClock (0.00s)
+--- PASS: TestApproveAlertsTheOperatorAtOnceUntilDecided (0.00s)
+--- PASS: TestNoteToTheOperatorSendsAnAlert (0.00s)
+--- PASS: TestSupersededRequestIsNotQuiet (0.00s)
+--- PASS: TestUnreadableTimestampIsSkipped (0.00s)
+--- PASS: TestClaimDoesNotRestartTheRequestersClock (0.00s)
+--- PASS: TestOwedFollowsTheMoveAndItsAge (0.00s)
+--- PASS: TestRequestLifecycle (0.00s)
+--- PASS: TestOnlyANoteToTheReviewerAnswers (0.00s)
+--- PASS: TestNoteAnsweringAnOlderReplyChangesNothing (0.00s)
+--- PASS: TestSupersededRequestIgnoresLaterReplies (0.00s)
+--- PASS: TestLiveRequest (0.00s)
+--- PASS: TestInboxLists (0.00s)
+--- PASS: TestDecisionOnOperatorNote (0.00s)
+--- PASS: TestDecidable (0.00s)
+PASS
+--- PASS: TestDeliversPendingEntriesAtOnce (0.05s)
+--- PASS: TestCursorMovesOnlyAfterPrinting (0.02s)
+--- PASS: TestWakesWhenAnEntryLands (0.07s)
+--- PASS: TestTimeoutCountsAwakeTicks (0.01s)
+--- PASS: TestDeadlineIsWallClockAndGapIsReported (0.02s)
+--- PASS: TestOneSleepWithBriefWakesIsReportedOnce (0.03s)
+--- PASS: TestAPauseUnderAMinuteIsNotReported (0.03s)
+--- PASS: TestAwakeWhileAnAgentOwesAMove (0.06s)
+--- PASS: TestEntryIsDeliveredBeforeAnExpiredDeadline (0.04s)
+--- PASS: TestEmitStreamsUntilTheDeadline (0.07s)
+--- PASS: TestEntryBetweenTwoArmsIsDelivered (0.03s)
+--- PASS: TestWarnsAboutADamagedRecord (0.03s)
+--- PASS: TestDamageArrivingDuringAWaitStopsIt (0.02s)
+--- PASS: TestBrokenRecordDeliversOnlyVerifiedEntries (0.07s)
+--- PASS: TestEditedLastLineIsNotDelivered (0.03s)
+--- PASS: TestNewAdvisoryDuringAWaitIsPrinted (0.03s)
+--- PASS: TestWaitPassesOnASilenceThatComesDue (0.03s)
+--- PASS: TestWaitWithoutNotifyStillWorks (0.03s)
+--- PASS: TestWaitThatDeliversAtOncePassesAlertsOn (0.12s)
+PASS
+
+## run2: 163 pass, 0 fail, 0 data race warnings, 0 timeouts
+start 2026-10-26 22:32:38 UTC
+exit 0 wall 415 s
+end 2026-10-26 22:39:33 UTC
+ok  	github.com/dre4success/handoff/cmd/handoff	412.336s
+ok  	github.com/dre4success/handoff/internal/awake	1.496s
+ok  	github.com/dre4success/handoff/internal/gitx	1.306s
+ok  	github.com/dre4success/handoff/internal/notify	1.446s
+ok  	github.com/dre4success/handoff/internal/record	5.839s
+ok  	github.com/dre4success/handoff/internal/status	1.333s
+ok  	github.com/dre4success/handoff/internal/wait	2.025s
+
+## run3: 163 pass, 0 fail, 0 data race warnings, 0 timeouts
+start 2026-10-26 22:32:38 UTC
+-test.shuffle 1793053965176741000
+-test.shuffle 1793053964066172000
+-test.shuffle 1793053963994465000
+-test.shuffle 1793053964087893000
+-test.shuffle 1793053964040590000
+-test.shuffle 1793053963969183000
+-test.shuffle 1793053964015998000
+exit 0 wall 401 s
+end 2026-10-26 22:39:19 UTC
+ok  	github.com/dre4success/handoff/cmd/handoff	395.538s
+ok  	github.com/dre4success/handoff/internal/awake	1.457s
+ok  	github.com/dre4success/handoff/internal/gitx	1.277s
+ok  	github.com/dre4success/handoff/internal/notify	1.666s
+ok  	github.com/dre4success/handoff/internal/record	5.733s
+ok  	github.com/dre4success/handoff/internal/status	1.252s
+ok  	github.com/dre4success/handoff/internal/wait	2.095s
+
+## flaky: the two changed tests, -race -count=10, without -v: the package line alone says ok; 0 data race warnings, 0 timeouts
+start 2026-10-26 22:39:33 UTC
+exit 0 wall 173 s
+end 2026-10-26 22:42:26 UTC
+ok  	github.com/dre4success/handoff/cmd/handoff	172.091s
+
+## alerts sent: 0 (to the scratch file only)
+
+## runs.sh
+#!/usr/bin/env bash
+# The reviewer's race runs for H24: run 1 alone with go test's default limit;
+# runs 2 and 3 at once (the worktree with the default limit; a copy shuffled
+# with -parallel 32 and a 30-minute limit), as several race runs sharing the
+# machine; then the two changed tests ten times under -race.
+set -u
+S=${S:?}; W=$S/wt-h24; R=$S/h24/race
+export HANDOFF_TEST_NOTIFY=$R/notify.txt HANDOFF_TEST_AWAKE=$R/awake.txt
+t() { date -u '+%Y-%m-%d %H:%M:%S UTC'; }
+run() { # name dir args...
+  local name=$1 dir=$2; shift 2
+  ( cd "$dir" && echo "start $(t)" > "$R/$name.out" && s=$(date +%s) && go test "$@" >> "$R/$name.out" 2>&1; echo "exit $? wall $(( $(date +%s) - s )) s" >> "$R/$name.out"; echo "end $(t)" >> "$R/$name.out" )
+}
+run run1 "$W" -count=1 -race -v ./...
+mkdir -p "$S/h24/copy" && (cd "$W" && git archive HEAD | tar -x -C "$S/h24/copy")
+run run2 "$W" -count=1 -race -v ./... &
+run run3 "$S/h24/copy" -count=1 -race -v -shuffle=on -parallel 32 -timeout 30m ./... &
+wait
+run flaky "$W" -race -count=10 -run 'TestH8QuietClaimTellsTheOperatorOnce$|TestH8ClaimingAgainWritesNothingAndTellsOnce$' ./cmd/handoff
+echo "ALL DONE $(t)" > "$R/done"

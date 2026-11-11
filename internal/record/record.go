@@ -48,6 +48,7 @@ type Entry struct {
 	Verdict    string   `json:"verdict,omitempty"`
 	Decision   string   `json:"decision,omitempty"`
 	Key        string   `json:"key,omitempty"`
+	Session    string   `json:"session,omitempty"` // an fyi's: the session given its role when written, the only one it is delivered to (row 93)
 	Body       string   `json:"body"`
 	Damage     *Damage  `json:"damage,omitempty"`
 	Prev       string   `json:"prev"`

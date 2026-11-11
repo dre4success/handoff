@@ -165,6 +165,73 @@ func TestBuildErrorWritesNothing(t *testing.T) {
 	}
 }
 
+// H26 (row 92): AppendAll writes its entries after the last one, in order,
+// each chained to the line before, and head.json names the last of them.
+func TestAppendAllChainsItsEntries(t *testing.T) {
+	s := newStore(t)
+	appendNote(t, s, "before")
+	got, err := s.AppendAll(func(snap *Snapshot) ([]*Entry, error) {
+		return []*Entry{
+			{Kind: "fyi", From: "operator", To: "implementer", Body: "away"},
+			{Kind: "fyi", From: "operator", To: "reviewer", Body: "away"},
+		}, nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got) != 2 || got[0].ID != 2 || got[1].ID != 3 || got[0].TS != got[1].TS {
+		t.Fatalf("receipts %+v; want ids 2 and 3, one time", got)
+	}
+	appendNote(t, s, "after")
+	snap := load(t, s)
+	assertIntact(t, snap, 4)
+	lines := bytes.Split(bytes.TrimSuffix(readRecord(t, s), []byte("\n")), []byte("\n"))
+	for i := 1; i < len(lines); i++ {
+		if got, want := snap.Entries[i].Prev, HashLine(lines[i-1]); got != want {
+			t.Fatalf("entry %d prev = %s, want %s", i+1, got, want)
+		}
+	}
+	if snap.Entries[1].To != "implementer" || snap.Entries[2].To != "reviewer" {
+		t.Fatalf("entries 2 and 3 go to %s and %s", snap.Entries[1].To, snap.Entries[2].To)
+	}
+	if snap.Head.Lines != 4 || snap.Head.ID != 4 || snap.Head.Last != HashLine(lines[3]) {
+		t.Fatalf("head %+v after four lines", snap.Head)
+	}
+	if adv := snap.Advisories(); len(adv) != 0 {
+		t.Fatalf("advisories = %v, want none", adv)
+	}
+}
+
+// AppendAll writes nothing when build refuses or gives nothing, and refuses
+// a torn tail as Append does.
+func TestAppendAllRefusals(t *testing.T) {
+	s := newStore(t)
+	appendNote(t, s, "one")
+	before := readRecord(t, s)
+	refusal := errors.New("refused")
+	if _, err := s.AppendAll(func(*Snapshot) ([]*Entry, error) { return nil, refusal }); !errors.Is(err, refusal) {
+		t.Fatalf("err = %v, want the build error", err)
+	}
+	if _, err := s.AppendAll(func(*Snapshot) ([]*Entry, error) { return nil, nil }); err == nil {
+		t.Fatal("nothing to append was not refused")
+	}
+	if !bytes.Equal(before, readRecord(t, s)) {
+		t.Fatal("a refused AppendAll changed the record")
+	}
+	f, err := os.OpenFile(filepath.Join(s.Dir(), FileName), os.O_WRONLY|os.O_APPEND, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	f.WriteString(`{"v":1,"id":2`)
+	f.Close()
+	_, err = s.AppendAll(func(*Snapshot) ([]*Entry, error) {
+		return []*Entry{{Kind: "fyi", From: "operator", To: "reviewer", Body: "x"}}, nil
+	})
+	if !errors.Is(err, ErrTornTail) {
+		t.Fatalf("err = %v, want a torn tail", err)
+	}
+}
+
 // Check 3: a torn tail refuses ordinary posts until repair, and repair keeps the bytes.
 func TestTornTailRefusesUntilRepair(t *testing.T) {
 	s := newStore(t)

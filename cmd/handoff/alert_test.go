@@ -54,6 +54,7 @@ func sentTo(t *testing.T, path string) []string {
 }
 
 func TestH8InitSetsQuietAfter(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	b, err := os.ReadFile(filepath.Join(r.dir, ".handoff", "config.json"))
 	if err != nil {
@@ -80,13 +81,15 @@ func TestH8QuietAfterSetting(t *testing.T) {
 }
 
 // The trial's stall: a claim, then nothing. A running wait, here the
-// implementer's, tells the operator once, naming the project.
+// implementer's, tells the operator once, naming the project. The limit is
+// cut only after the claim: with it set before, a request or claim slower
+// than the limit, as under load, told the operator itself (row 90).
 func TestH8QuietClaimTellsTheOperatorOnce(t *testing.T) {
 	r := newRepo(t)
-	r.setQuiet(t, "1s")
 	path, sinkEnv := sink(t)
 	req := r.request(t, "W1", r.commitA)
 	r.run(t, "reviewer", "", sinkEnv, "claim", req)
+	r.setQuiet(t, "1s")
 	res := r.run(t, "", "", sinkEnv, "wait", "--for", "implementer", "--timeout", "4s")
 	if res.code != 3 {
 		t.Fatalf("wait: exit %d, stderr %q", res.code, res.err)
@@ -109,6 +112,7 @@ func TestH8QuietClaimTellsTheOperatorOnce(t *testing.T) {
 // An APPROVE tells the operator at once, from the reply itself: after an APPROVE no
 // agent may be waiting, as in the trial.
 func TestH8ApproveTellsTheOperatorAtOnce(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	path, sinkEnv := sink(t)
 	req := r.request(t, "W1", r.commitA)
@@ -147,10 +151,10 @@ func TestH8InboxShowsWhatWentQuiet(t *testing.T) {
 // is told once, and claiming again does not tell again.
 func TestH8ClaimingAgainWritesNothingAndTellsOnce(t *testing.T) {
 	r := newRepo(t)
-	r.setQuiet(t, "1s")
 	path, sinkEnv := sink(t)
 	req := r.request(t, "W1", r.commitA)
 	r.run(t, "reviewer", "", sinkEnv, "claim", req)
+	r.setQuiet(t, "1s") // after the claim, as in TestH8QuietClaimTellsTheOperatorOnce
 	time.Sleep(1500 * time.Millisecond)
 	again := r.run(t, "reviewer", "", sinkEnv, "claim", req)
 	if again.code != 0 || !strings.HasPrefix(again.out, "exists #2") {

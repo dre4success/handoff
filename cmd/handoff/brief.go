@@ -120,6 +120,11 @@ func (a *app) writeBrief(w io.Writer, role string, how listening) error {
 	}
 	fmt.Fprintf(w, "- A reply to your request: on CHANGES or QUESTION, fix or answer, then post again (`%s post --as %s ... --supersedes <id>`). On APPROVE, the operator decides; wait for the decision.\n", h, role)
 	fmt.Fprintf(w, "- A decision from the operator: act on it. Merge only on approve.\n")
+	// An fyi is what the operator would otherwise type into each session, so
+	// it is taken as that, no more and no less. It asks for no answer through
+	// handoff, which would only reach the operator as an alert; the operator
+	// reads the session (rows 92, 94).
+	fmt.Fprintf(w, "- An fyi from the operator, to every agent with a session: take it as the operator's word, as if said in this session, and act on it. Don't answer it through handoff; anything to say, say in this session.\n")
 	fmt.Fprintf(w, "- A note to you: answer with `%s note --as %s --to <role> --re <id> --body <file>`.", h, role)
 	if asks {
 		fmt.Fprint(w, " If it has findings on work you haven't asked about, fix them, then ask for a review.")

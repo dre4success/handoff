@@ -1,0 +1,81 @@
+# command: go build ./...; go vet ./...; gofmt -l cmd internal; go.mod requires; go list -deps for net; the commits and diffstat from the base; what the evidence commit touches
+# date: 2026-11-10 18:32:51 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 8162dbfc5075cc48a89880ab6c339a7bce46ee67
+
+## go build ./...: ok
+## go vet ./...: clean
+## gofmt -l cmd internal: []
+## go.mod require lines: 0
+## packages in go list -deps ./... named net or under net/: 0
+## commits on the base (1af34c7):
+8162dbf docs: evidence for H26 round 2
+e35c568 docs: §17 row 93: H26 round 2, a tell is for the session told; a cut after a newline
+c343561 docs: H26 AppendAll's comment: a cut just after a newline leaves no torn tail
+2cda302 fix: H26 tell's refusal says a message can't start with -
+92376ff fix: H26 a tell names the session given its role, and only that session's listener brings it
+f3be27c docs: evidence for H26
+0d4eecd docs: §17 row 92 (c): not all or none across a crash; a torn tail as for one entry
+a31f43a docs: H26 AppendAll and tell comments: one write under the lock, a torn tail across a crash
+71e017e docs: §17 row 92 (f) and (g): a tell is the operator's word, and writes no decision; show
+9b38ca5 fix: H26 show ends the first line of an entry with no item at its kind
+29d6faa fix: H26 the brief takes a tell as the operator's word, as if said in the session
+e8aa4a5 docs: §17 row 92: H26, handoff tell
+6fb988b docs: H26 README: handoff tell, under While you're away
+1ba260f feat: H26 handoff tell: the operator tells every agent with a session at once
+78359e2 feat: H26 record: AppendAll writes several entries in one write under the lock
+## since round 1 (f3be27c):
+ cmd/handoff/cmds.go                       | 28 +++++++----
+ cmd/handoff/hook.go                       |  2 +-
+ cmd/handoff/session.go                    | 14 +++++-
+ cmd/handoff/tell_test.go                  | 82 +++++++++++++++++++++++++++++--
+ docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md |  1 +
+ evidence/h26/README.md                    |  7 +--
+ evidence/h26/collect.sh                   | 56 ++++++++++++++++++---
+ evidence/h26/deps-vet-fmt.log             |  4 +-
+ evidence/h26/go-test-race.log             | 35 ++++++-------
+ evidence/h26/names.log                    | 10 ++--
+ evidence/h26/refusals.log                 | 14 +++---
+ evidence/h26/round1.py                    | 16 ++++++
+ evidence/h26/sessions.log                 | 54 ++++++++++++++++++++
+ evidence/h26/tell.log                     | 10 ++--
+ internal/record/record.go                 |  1 +
+ internal/record/store.go                  |  6 ++-
+ internal/wait/wait.go                     | 15 +++++-
+ 17 files changed, 291 insertions(+), 64 deletions(-)
+## diffstat:
+ README.md                                 |   9 ++
+ cmd/handoff/brief.go                      |   5 +
+ cmd/handoff/cmds.go                       | 106 +++++++++++++--
+ cmd/handoff/hook.go                       |   2 +-
+ cmd/handoff/main.go                       |   6 +-
+ cmd/handoff/session.go                    |  14 +-
+ cmd/handoff/tell_test.go                  | 211 ++++++++++++++++++++++++++++++
+ docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md |   2 +
+ evidence/h26/README.md                    |  14 ++
+ evidence/h26/collect.sh                   | 204 +++++++++++++++++++++++++++++
+ evidence/h26/deps-vet-fmt.log             |  10 ++
+ evidence/h26/go-test-race.log             |  26 ++++
+ evidence/h26/names.log                    |   8 ++
+ evidence/h26/refusals.log                 |  65 +++++++++
+ evidence/h26/round1.py                    |  16 +++
+ evidence/h26/sessions.log                 |  54 ++++++++
+ evidence/h26/tell.log                     |  37 ++++++
+ internal/record/fault.go                  |   5 +-
+ internal/record/record.go                 |   1 +
+ internal/record/record_test.go            |  67 ++++++++++
+ internal/record/store.go                  |  81 +++++++++++-
+ internal/wait/wait.go                     |  15 ++-
+ 22 files changed, 936 insertions(+), 22 deletions(-)
+## the implementer's evidence names e35c568; what the commit under review adds to it:
+ evidence/h26/README.md        |  7 +++---
+ evidence/h26/collect.sh       | 56 ++++++++++++++++++++++++++++++++++++++-----
+ evidence/h26/deps-vet-fmt.log |  4 ++--
+ evidence/h26/go-test-race.log | 35 ++++++++++++++-------------
+ evidence/h26/names.log        | 10 ++++----
+ evidence/h26/refusals.log     | 14 +++++------
+ evidence/h26/round1.py        | 16 +++++++++++++
+ evidence/h26/sessions.log     | 54 +++++++++++++++++++++++++++++++++++++++++
+ evidence/h26/tell.log         | 10 ++++----
+ 9 files changed, 161 insertions(+), 45 deletions(-)
+## the worktree is clean: []

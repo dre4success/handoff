@@ -1,0 +1,42 @@
+# command: go build ./...; go vet ./...; gofmt -l cmd internal; go.mod; go list -deps; commits and diffstat since the base bf9cb0b99f064d4cc2cfbc70eced70cec4a47e68
+# date: 2026-10-26 22:25:49 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: b41bf149639418fd20a9d6a139fbdea74ce642f6
+
+go version go1.25.3 darwin/arm64
+## go build: ok
+## go vet: clean
+## gofmt -l cmd internal: []
+## go.mod require lines: 0
+## packages in go list -deps ./... named net or under net/: 0
+## commits on the base:
+b41bf14 test: H24 evidence: every test under -race before and after with the default limit, the flaky test's cause by hand, the sweep
+279b133 docs: §17 row 90, H24 test timing
+9988df4 test: H24 tests that time nothing run in parallel
+0c405f2 test: H24 set the short quiet limit after the claim, so only wait can tell
+## diffstat:
+ cmd/handoff/alert_test.go                 |  10 +-
+ cmd/handoff/codex_test.go                 |   4 +
+ cmd/handoff/decide_test.go                |   3 +
+ cmd/handoff/hook_test.go                  |   5 +
+ cmd/handoff/main_test.go                  |  21 ++++
+ cmd/handoff/pickup_test.go                |  11 ++
+ cmd/handoff/popup_test.go                 |   9 ++
+ cmd/handoff/roles_test.go                 |   2 +
+ cmd/handoff/session_test.go               |   1 +
+ cmd/handoff/version_test.go               |   1 +
+ docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md |   1 +
+ evidence/h24/README.md                    |  14 +++
+ evidence/h24/collect.sh                   | 119 +++++++++++++++++++
+ evidence/h24/deps-vet-fmt.log             |   9 ++
+ evidence/h24/flake.log                    |  35 ++++++
+ evidence/h24/go-test-race-after.log       | 189 ++++++++++++++++++++++++++++++
+ evidence/h24/go-test-race-before.log      | 187 +++++++++++++++++++++++++++++
+ evidence/h24/names.log                    |  11 ++
+ evidence/h24/parallel.log                 | 100 ++++++++++++++++
+ 19 files changed, 729 insertions(+), 3 deletions(-)
+## main is now 2975fad5a79cddb13e55a607574337ec22f60b77; commits on main since the base:
+2975fad docs(channel): board: H24 in review (#120)
+## what main adds since the base touches:
+ docs/CHANNEL.md | 1 +
+ 1 file changed, 1 insertion(+)

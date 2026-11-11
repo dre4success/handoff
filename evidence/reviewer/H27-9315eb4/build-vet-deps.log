@@ -1,0 +1,54 @@
+# command: go build ./...; go vet ./...; gofmt -l cmd internal; go.mod requires; go list -deps for net; the commits and diffstat from the base; what the evidence commit touches; the rename, word by word
+# date: 2026-11-11 00:19:18 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 9315eb48021f0c7c2ae037aaa2df4d65211d12bb
+
+## go build ./...: ok
+## go vet ./...: clean
+## gofmt -l cmd internal: []
+## go.mod require lines: 0
+## packages in go list -deps ./... named net or under net/: 0
+## commits on the base (3119db5):
+9315eb4 docs: evidence for H27
+791d933 docs: §17 row 94, H27 renames tell to fyi
+c7525c1 docs: README names fyi, not tell
+93e2820 feat: tell is now fyi, as the operator prefers (row 94)
+## diffstat:
+ README.md                                 |   4 +-
+ cmd/handoff/brief.go                      |   6 +-
+ cmd/handoff/cmds.go                       |  36 +++----
+ cmd/handoff/{tell_test.go => fyi_test.go} | 113 ++++++++++++---------
+ cmd/handoff/main.go                       |   6 +-
+ cmd/handoff/session.go                    |   4 +-
+ docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md |   1 +
+ evidence/h27/README.md                    |  11 ++
+ evidence/h27/collect.sh                   | 160 ++++++++++++++++++++++++++++++
+ evidence/h27/deps-vet-fmt.log             |  12 +++
+ evidence/h27/fyi.log                      |  37 +++++++
+ evidence/h27/go-test-race.log             |  27 +++++
+ evidence/h27/leftovers.log                |  31 ++++++
+ evidence/h27/refusals.log                 |  55 ++++++++++
+ internal/record/record.go                 |   2 +-
+ internal/record/record_test.go            |   6 +-
+ internal/wait/wait.go                     |   6 +-
+ 17 files changed, 434 insertions(+), 83 deletions(-)
+## the implementer's evidence names 791d933; what the commit under review adds to it:
+ evidence/h27/README.md        |  11 +++
+ evidence/h27/collect.sh       | 160 ++++++++++++++++++++++++++++++++++++++++++
+ evidence/h27/deps-vet-fmt.log |  12 ++++
+ evidence/h27/fyi.log          |  37 ++++++++++
+ evidence/h27/go-test-race.log |  27 +++++++
+ evidence/h27/leftovers.log    |  31 ++++++++
+ evidence/h27/refusals.log     |  55 +++++++++++++++
+ 7 files changed, 333 insertions(+)
+## the worktree is clean: []
+
+## Is it only the name? The non-test Go source at the base and here, with every tell/Tell/fyi/Fyi word and its article folded to one token, then diffed (comment lines re-wrapped by the rename show as moved words only):
+cmd/handoff/brief.go: [< (row < 92). > (rows > 92, > 94). ]
+cmd/handoff/cmds.go: [< 92). > 92, > 94). < 92). > 92; > named > X > in > row > 94). > // < // > // < // > // < // ]
+cmd/handoff/main.go: []
+cmd/handoff/session.go: []
+internal/record/record.go: []
+internal/wait/wait.go: []
+## files under cmd and internal that differ from the base, other than those six and the tests:
+(none)

@@ -1,0 +1,49 @@
+# command: the README's change; every handoff settings command it names, run in a scratch project; the brief's offer to a session with no hooks
+# date: 2026-10-27 21:47:06 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 4f228c4e2ef20491bb97055a3e4be0c1a1f9ef1e
+
+## git diff 7c5b98a -- README.md
+diff --git a/README.md b/README.md
+index fff4a5e..bdf4551 100644
+--- a/README.md
++++ b/README.md
+@@ -45,7 +45,7 @@ Once set up, each session:
+ 
+ A Claude Code session also tells you when it's stuck at a permission prompt.
+ 
+-A session that isn't set up offers to set itself up. With your OK, it adds what `handoff settings --global` prints; then start it again.
++A session that isn't set up offers to set itself up. With your OK, it adds what `handoff settings claude --global` (or `codex`) prints; then start it again.
+ 
+ ## Deciding
+ 
+
+## the settings commands in the README now:
+`handoff settings claude --as reviewer`
+`handoff settings claude --global`
+`handoff settings codex --global`
+
+## handoff settings --global
+handoff settings: settings needs a CLI: claude or codex
+# exit 2
+
+## handoff settings claude --as reviewer
+Put this in .claude/settings.local.json in this project, merged with anything
+already there. That file stays out of git. Then start Claude Code here again.
+Every Claude Code session in this project is then reviewer. It gets the brief when it starts or is summarised, a hook listens for its
+# exit 0
+
+## handoff settings claude --global
+Put these settings in ~/.claude/settings.json, merged with any already there.
+They set up every project at once, and do nothing in a project with no
+.handoff/ or a session with no role. Sessions already running get them
+# exit 0
+
+## handoff settings codex --global
+Put these two files in ~/.codex/, merged with any already there.
+They set up every project at once, and do nothing in a project with no
+.handoff/ or a session with no role. The next time Codex starts, it asks you
+# exit 0
+
+## brief --for reviewer, outside a session, with no hooks: its offer
+If your session has no handoff hooks, offer to set them up for every project: `handoff settings claude --global` or `handoff settings codex --global` prints them and where they go. With the operator's OK, add them. They work once the operator starts this session again.

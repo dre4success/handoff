@@ -179,6 +179,7 @@ func TestH10HooksOffDuty(t *testing.T) {
 // duty; a role that never reviews does not. `brief` on its own tells the
 // session to run wait itself. A wrong role is said to the model.
 func TestH10Brief(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	req := r.request(t, "W1", r.commitA)
 	res := r.run(t, "reviewer", `{"source":"compact"}`, nil, "hook", "brief")
@@ -203,6 +204,7 @@ func TestH10Brief(t *testing.T) {
 // question to the operator (GPT-6, H10a round 2: the question lacked --item;
 // evidence/reviewer/H10a-d320393/ask-operator.txt).
 func TestH10BriefCommandsRun(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	req := r.request(t, "W1", r.commitA)
 	body := r.body(t, "a question")
@@ -248,6 +250,7 @@ func briefCommands(t *testing.T, r *repo, role string, fill *strings.Replacer) (
 // hook notify tells the operator when a session on duty stops at a permission
 // prompt, and at nothing else.
 func TestH10HookNotify(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	path, envs := sink(t)
 	prompt := `{"notification_type":"permission_prompt","message":"Claude needs your permission to use Bash"}`
@@ -423,6 +426,7 @@ func installed(t *testing.T, dir string) string {
 // shell can run as given, in the brief and in the permission rules
 // (GPT-6's probe, evidence/reviewer/H10a-ebc04f2/spaces.txt).
 func TestH10APathWithSpaces(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	req := r.request(t, "W1", r.commitA)
 	h := installed(t, filepath.Join(t.TempDir(), "install with spaces"))
@@ -463,6 +467,7 @@ func (r *repo) record(t *testing.T) string {
 // worktree shares, not a .handoff/ under the worktree's own folder (GPT-6's
 // probe, evidence/reviewer/H10a-ebc04f2/worktree.txt).
 func TestH10SettingsInALinkedWorktree(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	linked := filepath.Join(t.TempDir(), "linked")
 	mustGit(t, r.dir, "worktree", "add", "-q", "--detach", linked, r.commitA)

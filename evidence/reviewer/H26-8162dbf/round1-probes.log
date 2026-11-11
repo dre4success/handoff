@@ -1,0 +1,752 @@
+# command: the reviewer's probes for handoff tell; see each heading
+# date: 2026-11-10 18:36:02 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 8162dbfc5075cc48a89880ab6c339a7bce46ee67
+
+## P1. Does an old tell reach a session started later? (README: "A session started later doesn't get it."; row 92 (b): "a session given a role later never gets an old tell")
+
+### P1a. The session that was told ends before its turn does; a new session takes the role later (3 s later here; the next morning, in life)
+
+$ env CLAUDE_CODE_SESSION_ID=s-night CLAUDE_PID=<pid> handoff role implementer
+You are now implementer in repo1.
+# s-night is in the middle of a turn: it has the role and no listener yet
+
+$ [terminal] handoff tell Carry on while I'm away. Merge when the reviewer approves.
+told implementer (#1)
+not told, no session: reviewer, reviewer-2
+# exit 0
+
+# s-night's process has ended (a crash, a usage limit, a closed window). It never listened, so it never read the tell.
+
+$ env CLAUDE_CODE_SESSION_ID=s-morning CLAUDE_PID=<pid> handoff role implementer
+You are now implementer in repo1.
+
+# the bindings now, and the tell's time:
+{"v":1,"role":"implementer","session":"s-morning","pid":<pid>,"since":"2026-11-10T18:36:05Z"}
+"ts":"2026-11-10T18:36:02Z","kind":"tell"
+
+$ echo '{"session_id":"s-morning","hook_event_name":"Stop"}' | env CLAUDE_CODE_SESSION_ID=s-morning CLAUDE_PID=<pid> handoff hook listen --timeout 5s
+handoff: nothing new for implementer in 5s. Just end your turn; listening starts again when it ends.
+# exit 2
+# ^ the new session's first listen: exit 2 wakes it with the old tell. The line names no time.
+
+### P1b. The operator moves the role to another session before the first one's turn ends
+
+$ env CLAUDE_CODE_SESSION_ID=s-one CLAUDE_PID=<pid> handoff role reviewer
+You are now reviewer in repo2.
+
+$ [terminal] handoff tell Carry on while I'm away.
+told reviewer (#1)
+not told, no session: implementer, reviewer-2
+# exit 0
+
+$ env CLAUDE_CODE_SESSION_ID=s-two CLAUDE_PID=<pid> handoff role reviewer
+You are now reviewer in repo2. Another session had reviewer; it has no role now.
+
+$ echo '{"session_id":"s-two","hook_event_name":"Stop"}' | env CLAUDE_CODE_SESSION_ID=s-two CLAUDE_PID=<pid> handoff hook listen --timeout 5s
+handoff: nothing new for reviewer in 5s. Just end your turn; listening starts again when it ends.
+# exit 2
+
+### P1c. A Codex thread that took its role by a command and ran no hook: its binding has no process, so it counts as a session for good
+
+$ env CODEX_THREAD_ID=t-gone handoff role reviewer
+You are now reviewer in repo3.
+{"v":1,"role":"reviewer","session":"t-gone","since":"2026-11-10T18:36:15Z"}
+# no such thread runs. The tell still says it told reviewer:
+
+$ [terminal] handoff tell Carry on while I'm away.
+told reviewer (#1)
+not told, no session: implementer, reviewer-2
+# exit 0
+
+$ env CODEX_THREAD_ID=t-new handoff role reviewer
+You are now reviewer in repo3. Another session had reviewer; it has no role now.
+
+$ handoff wait --for reviewer --timeout 2s
+# exit 3
+
+### P1d. Control: a role whose Claude Code session has ended is not told, and a later session gets nothing
+
+$ env CLAUDE_CODE_SESSION_ID=s-impl CLAUDE_PID=<pid> handoff role implementer
+You are now implementer in repo4.
+
+$ env CLAUDE_CODE_SESSION_ID=s-rev CLAUDE_PID=<pid> handoff role reviewer
+You are now reviewer in repo4.
+
+$ [terminal] handoff tell Carry on while I'm away.
+told implementer (#1)
+not told, no session: reviewer, reviewer-2
+# exit 0
+
+$ env CLAUDE_CODE_SESSION_ID=s-rev-new CLAUDE_PID=<pid> handoff role reviewer
+You are now reviewer in repo4.
+
+$ echo '{"session_id":"s-rev-new","hook_event_name":"Stop"}' | env CLAUDE_CODE_SESSION_ID=s-rev-new CLAUDE_PID=<pid> handoff hook listen --timeout 3s
+handoff: nothing new for reviewer in 3s. Just end your turn; listening starts again when it ends.
+# exit 2
+
+## P2. A tell cut short or killed
+
+### P2a. Three roles, a record that already has entries, killed halfway through the write (HANDOFF_TEST_FAULT=torn)
+
+$ env CLAUDE_CODE_SESSION_ID=s-impl CLAUDE_PID=<pid> handoff role implementer
+You are now implementer in repo5.
+
+$ env CLAUDE_CODE_SESSION_ID=s-rev CLAUDE_PID=<pid> handoff role reviewer
+You are now reviewer in repo5.
+
+$ env CLAUDE_CODE_SESSION_ID=s-rev2 CLAUDE_PID=<pid> handoff role reviewer-2
+You are now reviewer-2 in repo5.
+
+$ env HANDOFF_ROLE=implementer handoff note --item W1 --to reviewer --title before --body <scratch>/body.md
+posted #1 note W1 implementer → reviewer: before
+# exit 0
+
+$ [terminal] env HANDOFF_TEST_FAULT=torn handoff tell Carry on.
+# exit 9
+# the record: 2 whole lines, 464 bytes; the bytes after the last newline: 100
+
+$ handoff wait --for implementer --timeout 1s
+handoff: the record ends with 100 bytes that are not a complete line; run `handoff repair`
+handoff: advisory: head.json is behind the record: it counts 1 lines, the record has 2 that chain on from them (a writer stopped between the record and head.json); `handoff repair` acknowledges it
+# exit 3
+
+$ handoff wait --for reviewer --timeout 1s
+handoff: the record ends with 100 bytes that are not a complete line; run `handoff repair`
+handoff: advisory: head.json is behind the record: it counts 1 lines, the record has 2 that chain on from them (a writer stopped between the record and head.json); `handoff repair` acknowledges it
+#1 note W1 implementer → reviewer: before
+# exit 0
+
+$ handoff wait --for reviewer-2 --timeout 1s
+handoff: the record ends with 100 bytes that are not a complete line; run `handoff repair`
+handoff: advisory: head.json is behind the record: it counts 1 lines, the record has 2 that chain on from them (a writer stopped between the record and head.json); `handoff repair` acknowledges it
+# exit 3
+
+$ [terminal] handoff tell Carry on.
+handoff tell: the record ends with an incomplete line (100 bytes after line 2, left by an interrupted write); run `handoff repair`
+# exit 2
+# lines after the refused tell: 2
+
+$ env HANDOFF_ROLE=reviewer handoff repair
+posted #3 repair - reviewer → -: Closed 100 bytes that an interrupted write left without a newline. They are kep…
+# exit 0
+# repair kept every byte of the torn record (464 bytes)
+
+$ [terminal] handoff tell Carry on.
+told implementer, reviewer and reviewer-2 (#4, #5, #6)
+# exit 0
+
+$ handoff wait --for implementer --timeout 1s
+# exit 3
+
+$ handoff wait --for reviewer --timeout 1s
+# exit 3
+
+$ handoff wait --for reviewer-2 --timeout 1s
+# exit 3
+
+$ handoff inbox --for implementer
+inbox for implementer
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+# exit 0
+
+### P2b. Killed after the write is synced and before head.json (HANDOFF_TEST_FAULT=after-sync)
+
+$ env CLAUDE_CODE_SESSION_ID=s-impl CLAUDE_PID=<pid> handoff role implementer
+You are now implementer in repo6.
+
+$ env CLAUDE_CODE_SESSION_ID=s-rev CLAUDE_PID=<pid> handoff role reviewer
+You are now reviewer in repo6.
+
+$ [terminal] env HANDOFF_TEST_FAULT=after-sync handoff tell Carry on.
+# exit 9
+# the record: 2 whole lines; head.json: {"v":1,"lines":0,"last":"genesis","id":0}
+
+$ handoff wait --for implementer --timeout 1s
+handoff: advisory: head.json is behind the record: it counts 0 lines, the record has 2 that chain on from them (a writer stopped between the record and head.json); `handoff repair` acknowledges it
+# exit 3
+
+$ handoff wait --for reviewer --timeout 1s
+handoff: advisory: head.json is behind the record: it counts 0 lines, the record has 2 that chain on from them (a writer stopped between the record and head.json); `handoff repair` acknowledges it
+# exit 3
+# the operator saw nothing printed, so tells again:
+
+$ [terminal] handoff tell Carry on.
+told implementer and reviewer (#3, #4)
+not told, no session: reviewer-2
+handoff: advisory: head.json is behind the record: it counts 0 lines, the record has 2 that chain on from them (a writer stopped between the record and head.json); `handoff repair` acknowledges it
+# exit 0
+
+$ handoff wait --for implementer --timeout 1s
+handoff: advisory: 2026-11-10T18:36:28Z: head.json is behind the record: it counts 0 lines, the record has 2 that chain on from them (a writer stopped between the record and head.json); `handoff repair` acknowledges it
+# exit 3
+
+$ env HANDOFF_ROLE=reviewer handoff repair
+posted #5 repair - reviewer → -: head.json rewritten to match the record, whose chain verifies to its last line.…
+# exit 0
+
+$ handoff inbox --for reviewer
+inbox for reviewer
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+# exit 0
+
+### P2c. A cut that falls exactly after a line's newline: is that a torn tail?
+# With the implementer and reviewer-2 told as #9 and #10, the two lines are the same length ("implementer" is one byte longer than "reviewer-2", and id 10 one longer than 9), so the fault's half-way cut falls just after the first line's newline. A real killed process, no bytes written by hand.
+
+$ env CLAUDE_CODE_SESSION_ID=s-impl CLAUDE_PID=<pid> handoff role implementer
+You are now implementer in repo7.
+
+$ env CLAUDE_CODE_SESSION_ID=s-rev2 CLAUDE_PID=<pid> handoff role reviewer-2
+You are now reviewer-2 in repo7.
+handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+# lines before: 8
+
+$ [terminal] env HANDOFF_TEST_FAULT=torn handoff tell Carry on.
+# exit 9
+# the record: 9 whole lines; last byte is a newline: \n; head.json: {"v":1,"lines":8,"last":"ae84c1973a494616660cd170165662b721c2c714b8643cdb2c87e05c5acc1663","id":8}
+{"v":1,"id":9,"ts":"2026-11-10T18:36:30Z","kind":"tell","from":"operator","to":"implementer","session":"s-impl","body":"Carry on.","prev":"<hash>"}
+
+$ handoff wait --for implementer --timeout 1s
+handoff: advisory: head.json is behind the record: it counts 8 lines, the record has 9 that chain on from them (a writer stopped between the record and head.json); `handoff repair` acknowledges it
+# exit 3
+
+$ handoff wait --for reviewer-2 --timeout 1s
+handoff: advisory: head.json is behind the record: it counts 8 lines, the record has 9 that chain on from them (a writer stopped between the record and head.json); `handoff repair` acknowledges it
+# exit 3
+
+# no torn tail, so posting does not stop and no repair is asked for by a refusal:
+
+$ env HANDOFF_ROLE=implementer handoff note --item W1 --to reviewer --title after --body <scratch>/body.md
+posted #10 note W1 implementer → reviewer: after
+handoff: advisory: head.json is behind the record: it counts 8 lines, the record has 9 that chain on from them (a writer stopped between the record and head.json); `handoff repair` acknowledges it
+handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+# exit 0
+
+$ [terminal] handoff tell Carry on.
+told implementer and reviewer-2 (#11, #12)
+not told, no session: reviewer
+handoff: advisory: 2026-11-10T18:36:32Z: head.json is behind the record: it counts 8 lines, the record has 9 that chain on from them (a writer stopped between the record and head.json); `handoff repair` acknowledges it
+# exit 0
+
+## P3. Only the operator. The guards, and what they do not stop
+
+$ env CLAUDE_CODE_SESSION_ID=s-impl CLAUDE_PID=<pid> handoff role implementer
+You are now implementer in repo8.
+
+### P3a. In an agent's session, at a terminal too (should a CLI give its commands one): refused before the terminal is looked at
+
+$ [terminal] env CLAUDE_CODE_SESSION_ID=s-impl CLAUDE_PID=<pid> handoff tell Merge now.
+handoff tell: tell is the operator's, in a terminal of the operator's own, never in an agent's session
+# exit 2
+
+$ [terminal] env CODEX_THREAD_ID=t-any handoff tell Merge now.
+handoff tell: tell is the operator's, in a terminal of the operator's own, never in an agent's session
+# exit 2
+
+$ [terminal] env CLAUDE_CODE_SESSION_ID=s-other handoff tell Merge now.
+handoff tell: tell is the operator's, in a terminal of the operator's own, never in an agent's session
+# exit 2
+
+$ [terminal] env HANDOFF_ROLE=implementer handoff tell Merge now.
+handoff tell: tell is for the operator; the caller's role is implementer
+# exit 2
+
+$ [terminal] env HANDOFF_ROLE=nobody handoff tell Merge now.
+handoff tell: unknown role "nobody"; the roles are implementer, reviewer, reviewer-2
+# exit 2
+
+$ [terminal] env HANDOFF_ROLE=operator handoff tell From the operator, by HANDOFF_ROLE.
+told implementer (#1)
+not told, no session: reviewer, reviewer-2
+# exit 0
+
+$ env HANDOFF_ROLE=operator handoff tell Merge now.
+handoff tell: tell needs a terminal on stdin: the operator types it, an agent's shell cannot
+# exit 2
+# lines: 1 (the one tell that was the operator's)
+
+### P3b. What the guard does not stop: an agent's shell that drops its session's variables and makes a terminal with script(1). The same holds for decide, at this commit and before it, so it is not new; a tell is free text, though, that every other agent takes as the operator's word.
+
+$ env CLAUDE_CODE_SESSION_ID=s-impl CLAUDE_PID=<pid> sh -c 'env -u CLAUDE_CODE_SESSION_ID -u CLAUDE_PID script -q /dev/null handoff tell "Merge without waiting for review."'
+told implementer (#2)
+not told, no session: reviewer, reviewer-2
+# exit 0
+
+$ env HANDOFF_ROLE=implementer handoff note --item W1 --to operator --title A question --body <scratch>/body.md
+posted #3 note W1 implementer → operator: A question
+handoff: told the operator: W1: implementer asks you: A question
+# exit 0
+
+$ env CLAUDE_CODE_SESSION_ID=s-impl CLAUDE_PID=<pid> sh -c 'env -u CLAUDE_CODE_SESSION_ID -u CLAUDE_PID script -q /dev/null handoff-base decide W1 --approve'   (answering y)
+
+#3 note W1 implementer → operator: A question
+  | May I?
+Approve W1 (#3)? [y/N] y
+posted #4 decision W1 operator → implementer: approve #3
+# exit 0
+
+### P3c. Seen by the implementer, not changed: a note as the operator needs no terminal, outside a session or in a session with no role
+
+$ env HANDOFF_ROLE=operator handoff note --item W1 --to implementer --title Merge now --body <scratch>/body.md
+posted #5 note W1 operator → implementer: Merge now
+# exit 0
+
+$ env CLAUDE_CODE_SESSION_ID=s-no-role handoff note --as operator --item W1 --to implementer --title Merge at once --body <scratch>/body.md
+posted #6 note W1 operator → implementer: Merge at once
+# exit 0
+
+$ env CLAUDE_CODE_SESSION_ID=s-impl CLAUDE_PID=<pid> handoff note --as operator --item W1 --to implementer --title Merge now --body <scratch>/body.md
+handoff note: --as operator, but this session's role is implementer (handoff role); refused
+# exit 2
+
+$ handoff wait --for implementer --timeout 1s
+#4 decision W1 operator → implementer: approve #3
+#5 note W1 operator → implementer: Merge now
+#6 note W1 operator → implementer: Merge at once
+# exit 0
+
+## P4. An older handoff on the same record (row 92 (e)). The likely case: a listener started before the upgrade, which may run for 23 hours
+
+$ env CLAUDE_CODE_SESSION_ID=s-impl CLAUDE_PID=<pid> handoff-v0.1.2 role implementer
+You are now implementer in repo9.
+
+$ handoff-v0.1.2 version
+handoff v0.1.2
+# exit 0
+
+$ [terminal] handoff tell Carry on while I'm away.
+told implementer and reviewer (#1, #2)
+not told, no session: reviewer-2
+# exit 0
+
+# v0.1.2's hook listen, started before the tell:
+handoff: new for implementer:
+#1 tell - operator → implementer: Carry on while I'm away.
+Read each with `handoff-v0.1.2 show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit 2
+
+# the base's wait --for reviewer, started before the tell:
+#2 tell - operator → reviewer: Carry on while I'm away.
+# exit 0
+
+$ handoff-v0.1.2 show 1
+#1 tell 
+from: operator → implementer
+ts: 2026-11-10T18:36:36Z
+prev: genesis
+---
+Carry on while I'm away.
+# exit 0
+# ^ v0.1.2's show ends its first line with a space: [#1 tell ]; this commit's: [#1 tell]
+
+$ handoff-v0.1.2 inbox --for implementer
+inbox for implementer
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+# exit 0
+
+$ env HANDOFF_ROLE=implementer handoff-v0.1.2 note --item W1 --to reviewer --title after a tell, by v0.1.2 --body <scratch>/body.md
+posted #3 note W1 implementer → reviewer: after a tell, by v0.1.2
+handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+# exit 0
+0
+# ^ lines about a tell in v0.1.2's brief: a session briefed before the upgrade is woken by a tell its brief does not name
+
+## P5. Tells among other writers: 20 tells at a terminal while three loops post 40 notes each
+
+$ env CLAUDE_CODE_SESSION_ID=s-impl CLAUDE_PID=<pid> handoff role implementer
+You are now implementer in repo10.
+
+$ env CLAUDE_CODE_SESSION_ID=s-rev CLAUDE_PID=<pid> handoff role reviewer
+You are now reviewer in repo10.
+# told lines printed: 20
+# notes posted: 120; writers' stderr lines other than the no-session notice: 0
+# 160 entries, ids 1..160 in order: True; chain verifies: True; tells: 40; pairs on adjacent lines with consecutive ids, one time, one body: 20; other: 0
+
+$ handoff inbox --for reviewer --quiet
+# exit 0
+# head.json: {"v":1,"lines":160,"last":"8afa986d5f04e58b49fafbbd00e6ceccb0700962ea8d35c69c25c15575c75092","id":160}
+# the reviewer's wait gets its 20, in order, and none of the implementer's:
+
+
+## P6. The message
+
+$ env CLAUDE_CODE_SESSION_ID=s-impl CLAUDE_PID=<pid> handoff role implementer
+You are now implementer in repo11.
+
+$ [terminal] handoff tell Carry on, two  spaces kept
+told implementer (#1)
+not told, no session: reviewer, reviewer-2
+# exit 0
+
+$ [terminal] handoff tell Carry on --as reviewer
+told implementer (#2)
+not told, no session: reviewer, reviewer-2
+# exit 0
+
+$ [terminal] handoff tell - no merges tonight
+handoff tell: tell takes no flags, and a message can't start with -: give the message alone, in quotes, such as handoff tell "Carry on while I'm away."
+# exit 2
+
+$ [terminal] handoff tell -- - no merges tonight
+handoff tell: tell takes no flags, and a message can't start with -: give the message alone, in quotes, such as handoff tell "Carry on while I'm away."
+# exit 2
+
+$ [terminal] handoff tell -h
+usage: handoff [command] [flags]
+
+  (none)  in a project: what waits for the operator's decision; at a terminal, decide each
+  init    [--roles implementer,reviewer,reviewer-2] [--reviewers <roles>] [--main <branch>]
+          (every role reviews but implementer; main, else master)
+  roles   add <role>...         add roles to the record, such as a second reviewer
+  post    --item W31 --to reviewer --commit <ref> --title T --body file
+          [--base <ref>] [--on <branch>] [--parents a,b] [--supersedes <id>] [--key k]
+  claim   <id>
+  reply   <id> --verdict APPROVE|CHANGES|QUESTION --commit <sha> --body file [--key k]
+  note    [--item W31] --to <role|operator> [--re <id>] [--title T] --body file [--key k]
+  decide  <item|id> --approve|--deny [--note text | --body file]   (the operator, at a terminal)
+  tell    "<message>"           (the operator, at a terminal) tell every agent with a session
+          at once, such as that you're away; they act on it and don't reply
+  inbox   [--for role] [--quiet]
+  wait    [--for role] [--timeout 25m] [--emit]
+  show    <id>
+  brief   [--for role]          an agent's duty, its loop and what waits for it
+  role    [<role>]              in an agent's session: take the role the operator gave it, or show it
+  settings claude|codex [--global | --as <role>]   settings that keep a CLI's sessions
+          on duty: --global for every project, else this one; without --as,
+          each session takes the role the operator gives it
+  hook    listen|brief|notify   run by a CLI's hooks, as settings prints
+  repair
+  version                       the version of handoff installed
+  help
+
+The caller's role comes from --as <role>, HANDOFF_ROLE, or the role the operator gave
+its session (handoff role). Those given must agree. --body - reads stdin.
+decide, tell, and handoff on its own, need no role: with none, outside an agent's
+session, the caller is the operator.
+
+Exit codes: 0 done; 1 inbox --quiet: something waits; 2 refused or failed;
+3 wait timed out; 4 wait: another wait for the role is already listening.
+# exit 0
+
+$ [terminal] handoff tell -h now
+handoff tell: tell takes no flags, and a message can't start with -: give the message alone, in quotes, such as handoff tell "Carry on while I'm away."
+# exit 2
+
+$ [terminal] handoff tell --help
+usage: handoff [command] [flags]
+
+  (none)  in a project: what waits for the operator's decision; at a terminal, decide each
+  init    [--roles implementer,reviewer,reviewer-2] [--reviewers <roles>] [--main <branch>]
+          (every role reviews but implementer; main, else master)
+  roles   add <role>...         add roles to the record, such as a second reviewer
+  post    --item W31 --to reviewer --commit <ref> --title T --body file
+          [--base <ref>] [--on <branch>] [--parents a,b] [--supersedes <id>] [--key k]
+  claim   <id>
+  reply   <id> --verdict APPROVE|CHANGES|QUESTION --commit <sha> --body file [--key k]
+  note    [--item W31] --to <role|operator> [--re <id>] [--title T] --body file [--key k]
+  decide  <item|id> --approve|--deny [--note text | --body file]   (the operator, at a terminal)
+  tell    "<message>"           (the operator, at a terminal) tell every agent with a session
+          at once, such as that you're away; they act on it and don't reply
+  inbox   [--for role] [--quiet]
+  wait    [--for role] [--timeout 25m] [--emit]
+  show    <id>
+  brief   [--for role]          an agent's duty, its loop and what waits for it
+  role    [<role>]              in an agent's session: take the role the operator gave it, or show it
+  settings claude|codex [--global | --as <role>]   settings that keep a CLI's sessions
+          on duty: --global for every project, else this one; without --as,
+          each session takes the role the operator gives it
+  hook    listen|brief|notify   run by a CLI's hooks, as settings prints
+  repair
+  version                       the version of handoff installed
+  help
+
+The caller's role comes from --as <role>, HANDOFF_ROLE, or the role the operator gave
+its session (handoff role). Those given must agree. --body - reads stdin.
+decide, tell, and handoff on its own, need no role: with none, outside an agent's
+session, the caller is the operator.
+
+Exit codes: 0 done; 1 inbox --quiet: something waits; 2 refused or failed;
+3 wait timed out; 4 wait: another wait for the role is already listening.
+# exit 0
+
+$ [terminal] handoff tell 
+handoff tell: give the message, in quotes, such as handoff tell "Carry on while I'm away."
+# exit 2
+
+$ [terminal] handoff tell First line.
+Second line, with "quotes", a tab	and café.
+told implementer (#3)
+not told, no session: reviewer, reviewer-2
+# exit 0
+
+$ handoff wait --for implementer --timeout 1s
+# exit 3
+
+$ handoff show 3
+#3 tell
+from: operator → implementer
+ts: 2026-11-10T18:36:40Z
+session: s-impl
+prev: c887836ea38a262476020bf6e8e0f686cabe79138a941d152cd8b7fe16276290
+---
+First line.
+Second line, with "quotes", a tab	and café.
+# exit 0
+
+# from a subfolder, and from a linked worktree of the project:
+
+$ [terminal] handoff tell From a subfolder.
+told implementer (#4)
+not told, no session: reviewer, reviewer-2
+# exit 0
+
+$ [terminal] handoff tell From a linked worktree.
+told implementer (#5)
+not told, no session: reviewer, reviewer-2
+# exit 0
+# outside any project:
+
+$ [terminal] handoff tell Anyone?
+handoff tell: not inside a git repository, which handoff needs; run `git init` first (git rev-parse --path-format=absolute --git-common-dir: fatal: not a git repository (or any of the parent directories): .git)
+# exit 2
+# lines: 5
+
+## P7. A tell asks nothing: the same thread with and without tells between its entries
+# the second thread has a tell before the request and after each of its three entries, to two roles each time: 8 tell lines in its record
+# every inbox, the alerts sent and the sleep holds are the same with and without the tells (ids aside):
+--- after the request
+inbox for implementer
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+inbox for reviewer
+
+needs my review:
+  #N request W1 implementer → reviewer: T @ <sha12>
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+inbox for operator
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+--- after the claim
+inbox for implementer
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+inbox for reviewer
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  #N request W1 implementer → reviewer: T @ <sha12>
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+inbox for operator
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+--- after the APPROVE
+inbox for implementer
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  #N request W1 implementer → reviewer: T @ <sha12>
+    #N reply W1 reviewer → implementer: APPROVE on #N @ <sha12>
+
+gone quiet:
+  (none)
+inbox for reviewer
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  #N request W1 implementer → reviewer: T @ <sha12>
+    #N reply W1 reviewer → implementer: APPROVE on #N @ <sha12>
+
+gone quiet:
+  (none)
+inbox for operator
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  #N request W1 implementer → reviewer: T @ <sha12>
+    #N reply W1 reviewer → implementer: APPROVE on #N @ <sha12>
+
+gone quiet:
+  (none)
+--- alerts sent
+repoN: W1: reviewer approved #N. Your decision.
+--- sleep holds
+
+# deciding a tell, and deciding the item with tells around it:
+
+$ [terminal] handoff decide 1 --approve
+handoff decide: #1 is not awaiting the operator
+# exit 2
+
+$ [terminal] handoff decide W1 --approve   (answering y)
+
+#3 request W1 implementer → reviewer: T @ bf2eb30eb06f
+  #9 reply W1 reviewer → implementer: APPROVE on #3 @ bf2eb30eb06f
+Approve W1 (#3)? [y/N] y
+posted #12 decision W1 operator → implementer: approve #3
+
+$ handoff inbox --for operator
+inbox for operator
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+# exit 0
+
+# alerts sent during all probes went to the scratch file only.

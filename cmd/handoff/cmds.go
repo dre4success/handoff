@@ -682,7 +682,7 @@ func (a *app) cmdDecide(args []string) (int, error) {
 	if err := a.open(); err != nil {
 		return 0, err
 	}
-	if err := a.operator(*as); err != nil {
+	if err := a.operator("decide", *as); err != nil {
 		return 0, err
 	}
 	if !term.IsTerminal(a.stdin) {
@@ -731,13 +731,18 @@ func (a *app) cmdDecide(args []string) (int, error) {
 
 var verbs = map[string]string{"approve": "Approve", "deny": "Deny"}
 
-// operator checks that the caller may decide. With no role given, the caller
-// is the operator; decide also needs a terminal, which an agent's shell does
-// not have. An agent's role is refused (proposal §17 row 64).
-func (a *app) operator(as string) error {
+// operator checks that the caller may run cmd, decide or fyi, as the operator.
+// With no role given, the caller is the operator; both also need a terminal,
+// which an agent's shell does not have. An agent's role is refused (proposal
+// §17 rows 64, 92, 94).
+func (a *app) operator(cmd, as string) error {
 	if callerSession().ID != "" {
 		// Whatever role it claims (row 73).
-		return errors.New("decide is the operator's, in a terminal of the operator's own or the pop-up, never in an agent's session")
+		where := "in a terminal of the operator's own"
+		if cmd == "decide" {
+			where += " or the pop-up"
+		}
+		return fmt.Errorf("%s is the operator's, %s, never in an agent's session", cmd, where)
 	}
 	if as == "" && os.Getenv("HANDOFF_ROLE") == "" {
 		return nil
@@ -747,9 +752,86 @@ func (a *app) operator(as string) error {
 		return err
 	}
 	if role != status.Operator {
-		return fmt.Errorf("decide is for the operator; the caller's role is %s", role)
+		return fmt.Errorf("%s is for the operator; the caller's role is %s", cmd, role)
 	}
 	return nil
+}
+
+// cmdFyi is the operator telling every agent with a session the same thing
+// at once, such as "carry on while I'm away" (row 92; named fyi in row 94).
+// The message is the arguments, so it needs no file, item or role. It
+// writes one fyi to each role with a session, all in one write under the
+// lock, so no listener sees its fyi before the others are written. A crash in the write keeps the
+// whole lines before the cut: those roles were told and the command printed
+// nothing. A cut inside a line is a torn tail, and posting stops until
+// repair; a cut just after a newline leaves none, and only head.json's
+// advisory shows it (row 93). Each fyi names the session the operator gave
+// the role to, and only that session's listener brings it, as it brings a
+// note; any other passes over it, so a session never gets an fyi written
+// before it held the role. A role held by a listener alone, with no session
+// given it, gets an unnamed fyi, which that listener brings within a
+// second. A role with no session gets none (row 93). An fyi is the
+// operator's, so it needs a terminal, as decide does.
+// It asks nothing of anyone: no item's state moves, no move is owed, and it
+// raises no alert of its own. The agents act on it and don't reply through
+// handoff (the brief says so).
+func (a *app) cmdFyi(args []string) (int, error) {
+	if len(args) == 1 && (args[0] == "-h" || args[0] == "-help" || args[0] == "--help") {
+		return 0, flag.ErrHelp
+	}
+	if len(args) > 0 && strings.HasPrefix(args[0], "-") {
+		return 0, errors.New(`fyi takes no flags, and a message can't start with -: give the message alone, in quotes, such as handoff fyi "Carry on while I'm away."`)
+	}
+	msg := strings.TrimSpace(strings.Join(args, " "))
+	if msg == "" {
+		return 0, errors.New(`give the message, in quotes, such as handoff fyi "Carry on while I'm away."`)
+	}
+	if len(msg) > maxBody {
+		return 0, fmt.Errorf("the message is over %d bytes", maxBody)
+	}
+	if err := a.open(); err != nil {
+		return 0, err
+	}
+	if err := a.operator("fyi", ""); err != nil {
+		return 0, err
+	}
+	if !term.IsTerminal(a.stdin) {
+		return 0, errors.New("fyi needs a terminal on stdin: the operator types it, an agent's shell cannot")
+	}
+	var told, idle, sessions []string
+	for _, r := range a.cfg.Roles {
+		if s, ok := a.holder(r.Name); ok {
+			told, sessions = append(told, r.Name), append(sessions, s)
+		} else {
+			idle = append(idle, r.Name)
+		}
+	}
+	if len(told) == 0 {
+		return 0, errors.New("no agent has a session now, so no one was told; nothing written")
+	}
+	var warnings []string
+	got, err := a.store.AppendAll(func(snap *record.Snapshot) ([]*record.Entry, error) {
+		warnings = snap.Warnings()
+		es := make([]*record.Entry, len(told))
+		for i, r := range told {
+			es[i] = &record.Entry{Kind: "fyi", From: status.Operator, To: r, Session: sessions[i], Body: msg}
+		}
+		return es, nil
+	})
+	if err != nil {
+		return 0, err
+	}
+	ids := make([]string, len(got))
+	for i, e := range got {
+		ids[i] = fmt.Sprintf("#%d", e.ID)
+	}
+	fmt.Fprintf(a.stdout, "told %s (%s)\n", listOf(told, "and"), strings.Join(ids, ", "))
+	if len(idle) > 0 {
+		fmt.Fprintf(a.stdout, "not told, no session: %s\n", strings.Join(idle, ", "))
+	}
+	a.alert()
+	a.printWarnings(warnings)
+	return exitOK, nil
 }
 
 // target finds what to decide: an entry id, or an item with exactly one
@@ -1046,7 +1128,7 @@ func (a *app) cmdWait(args []string) (int, error) {
 		return 0, err
 	}
 	defer lock.Close()
-	code, err := wait.Run(a.store, wait.Options{Role: role, Timeout: *timeout, Emit: *emit, Interval: time.Second, Clock: wait.Real, Out: a.stdout, Err: a.stderr,
+	code, err := wait.Run(a.store, wait.Options{Role: role, Session: callerSession().ID, Timeout: *timeout, Emit: *emit, Interval: time.Second, Clock: wait.Real, Out: a.stdout, Err: a.stderr,
 		Quiet: a.quiet, Notify: a.notifier().Send, Alive: holds, Awake: awake.New().Set})
 	if err == nil && code == wait.ExitTimeout && holds != nil && !holds() {
 		return 0, fmt.Errorf("this session no longer holds %s: the operator gave it another role, or gave %s to another session", role, role)
@@ -1084,7 +1166,12 @@ func (a *app) cmdShow(args []string) (int, error) {
 	if to == "" {
 		to = "-"
 	}
-	fmt.Fprintf(w, "#%d %s %s\nfrom: %s → %s\nts: %s\n", e.ID, e.Kind, e.Item, e.From, to, e.TS)
+	// An fyi or a repair has no item, and the line ends at its kind.
+	head := fmt.Sprintf("#%d %s", e.ID, e.Kind)
+	if e.Item != "" {
+		head += " " + e.Item
+	}
+	fmt.Fprintf(w, "%s\nfrom: %s → %s\nts: %s\n", head, e.From, to, e.TS)
 	if !verified {
 		fmt.Fprintf(w, "verified: NO; the hash chain fails at line %d, and this entry is withheld from inbox and wait\n", snap.Broken.Line)
 	}
@@ -1107,6 +1194,7 @@ func (a *app) cmdShow(args []string) (int, error) {
 	field("verdict", e.Verdict)
 	field("decision", e.Decision)
 	field("key", e.Key)
+	field("session", e.Session)
 	if d := e.Damage; d != nil {
 		field("damage", fmt.Sprintf("line %d, %d bytes, sha256 %s, after %s", d.Line, d.Bytes, d.SHA256, d.After))
 	}

@@ -50,6 +50,7 @@ func codexSettings(t *testing.T, r *repo, role string) (map[string][]struct {
 // so the hook's parent is Codex. The rules let handoff run outside the
 // sandbox and forbid decide.
 func TestH10bSettingsCodex(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	hooks, rules, config := codexSettings(t, r, "reviewer")
 	h, err := filepath.EvalSymlinks(bin)
@@ -91,6 +92,7 @@ func TestH10bSettingsCodex(t *testing.T) {
 // Codex's own checker, where it is installed, reads the printed rules as
 // meant: handoff is allowed, and handoff decide is forbidden.
 func TestH10bCodexReadsTheRules(t *testing.T) {
+	t.Parallel()
 	codex, err := exec.LookPath("codex")
 	if err != nil {
 		t.Skip("codex is not installed")
@@ -129,6 +131,7 @@ func TestH10bCodexReadsTheRules(t *testing.T) {
 // The brief names the role in every command that needs one, since a Codex
 // session's commands may not see HANDOFF_ROLE.
 func TestH10bBriefNamesTheRole(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	res := r.run(t, "", "", nil, "hook", "brief", "--as", "reviewer")
 	for _, want := range []string{"claim --as reviewer <id>", "reply --as reviewer <id>", "post --as reviewer ", "note --as reviewer --to <role>", "note --as reviewer --to operator"} {
@@ -139,6 +142,7 @@ func TestH10bBriefNamesTheRole(t *testing.T) {
 }
 
 func TestH10bShellQuote(t *testing.T) {
+	t.Parallel()
 	for in, want := range map[string]string{
 		"/usr/local/bin/handoff":  "/usr/local/bin/handoff",
 		"/Users/a b/bin/handoff":  `'/Users/a b/bin/handoff'`,

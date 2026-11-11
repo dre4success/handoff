@@ -1,0 +1,1079 @@
+# command: every README claim that can be run, run; see each heading
+# date: 2026-10-27 22:08:40 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: <sha>
+
+Line numbers are README.md's at this commit.
+
+## L14, L17: the module path, the main package, go.mod's go line, handoff version
+1:module github.com/dre4success/handoff
+3:go 1.25.3
+github.com/dre4success/handoff/cmd/handoff
+
+$ handoff version
+handoff (devel)
+# exit 0
+
+## L31-36: claude --model takes an alias (claude --help)
+claude 2.1.312 (Claude Code)
+  --model <model>                       Model for the current session. Provide
+                                        an alias for the latest model (e.g.
+                                        'fable', 'opus', or 'sonnet') or a
+                                        model's full name.
+
+## L19: handoff init outside a git repository
+
+$ handoff init
+handoff init: not inside a git repository, which handoff needs; run `git init` first (git rev-parse --path-format=absolute --git-common-dir: fatal: not a git repository (or any of the parent directories): .git)
+# exit 2
+
+## L23, L48, L66, L70, L73, L85: every settings form, in a project; the one the README named before, first
+
+$ handoff init
+Created <scratch>/repo1/.handoff. Git ignores it; nothing else in the project changed.
+Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.
+Main branch: main.
+
+handoff's hooks keep sessions on duty. Set them once, for every project:
+  Claude Code:  handoff settings claude --global
+  Codex:        handoff settings codex --global
+For each CLI you use that isn't set up, run its command and do what it prints, or ask one of its sessions to.
+Then give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+# exit 0
+
+$ handoff settings --global
+handoff settings: settings needs a CLI: claude or codex
+# exit 2
+
+$ handoff settings claude --global
+Put these settings in ~/.claude/settings.json, merged with any already there.
+They set up every project at once, and do nothing in a project with no
+.handoff/ or a session with no role. Sessions already running get them
+when they start again.
+In a project with a record, every Claude Code session takes the role you give
+it: tell it, and it runs handoff role <role>. Until then it has none. It gets
+the brief when it starts or is summarised, a hook listens for its work
+whenever its turn ends, and it runs handoff without asking, but never decides,
+nor edits a .handoff/ folder.
+
+{
+  "hooks": {
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "args": [
+              "hook",
+              "notify"
+            ],
+            "command": "handoff",
+            "type": "command"
+          }
+        ],
+        "matcher": "permission_prompt"
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "args": [
+              "hook",
+              "brief"
+            ],
+            "command": "handoff",
+            "type": "command"
+          },
+          {
+            "args": [
+              "hook",
+              "listen"
+            ],
+            "asyncRewake": true,
+            "command": "handoff",
+            "timeout": 86400,
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "args": [
+              "hook",
+              "listen"
+            ],
+            "asyncRewake": true,
+            "command": "handoff",
+            "timeout": 86400,
+            "type": "command"
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(handoff *)"
+    ],
+    "deny": [
+      "Bash(handoff decide *)",
+      "Edit(//**/.handoff/**)"
+    ]
+  }
+}
+# exit 0
+
+$ handoff settings codex --global
+Put these two files in ~/.codex/, merged with any already there.
+They set up every project at once, and do nothing in a project with no
+.handoff/ or a session with no role. The next time Codex starts, it asks you
+to review the new hooks: choose Trust all. Sessions already running get them
+when they start again.
+In a project with a record, every Codex session takes the role you give it:
+tell it, and it runs handoff role <role>. Until then it has none, and handoff
+on its own never shows it your decisions. It gets the brief when its first
+turn starts and after a summary. When its turn would end, a hook listens for
+its work and continues it with what arrives. And handoff runs outside Codex's
+sandbox, so its notifications and pop-ups reach you; handoff decide is
+forbidden.
+
+~/.codex/hooks.json:
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "exec handoff hook brief",
+            "timeout": 30,
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "command": "exec handoff hook listen",
+            "timeout": 86400,
+            "type": "command"
+          }
+        ]
+      }
+    ]
+  }
+}
+
+~/.codex/rules/handoff.rules:
+# handoff writes only under .handoff/ and has no network code (proposal §9).
+prefix_rule(pattern=["handoff"], decision="allow", justification="handoff runs outside the sandbox so that it can notify the operator")
+prefix_rule(pattern=["handoff", "decide"], decision="forbidden", justification="The operator decides, not an agent")
+# exit 0
+
+$ handoff settings claude --as reviewer
+Put this in .claude/settings.local.json in this project, merged with anything
+already there. That file stays out of git. Then start Claude Code here again.
+Every Claude Code session in this project is then reviewer. It gets the brief when it starts or is summarised, a hook listens for its
+work whenever its turn ends, and it runs handoff without asking, but never
+decides, nor edits .handoff/. To set up every project at once, use --global.
+
+{
+  "env": {
+    "HANDOFF_ROLE": "reviewer"
+  },
+  "hooks": {
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "args": [
+              "hook",
+              "notify"
+            ],
+            "command": "handoff",
+            "type": "command"
+          }
+        ],
+        "matcher": "permission_prompt"
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "args": [
+              "hook",
+              "brief"
+            ],
+            "command": "handoff",
+            "type": "command"
+          },
+          {
+            "args": [
+              "hook",
+              "listen"
+            ],
+            "asyncRewake": true,
+            "command": "handoff",
+            "timeout": 86400,
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "args": [
+              "hook",
+              "listen"
+            ],
+            "asyncRewake": true,
+            "command": "handoff",
+            "timeout": 86400,
+            "type": "command"
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(handoff *)"
+    ],
+    "deny": [
+      "Bash(handoff decide *)",
+      "Edit(/<scratch>/repo1/.handoff/**)"
+    ]
+  }
+}
+# exit 0
+
+$ handoff settings claude
+Put this in .claude/settings.local.json in this project, merged with anything
+already there. That file stays out of git. Then start Claude Code here again.
+Every Claude Code session in this project then takes the role you give it:
+tell it, and it runs handoff role <role>. Until then it has none. It gets the brief when it starts or is summarised, a hook listens for its
+work whenever its turn ends, and it runs handoff without asking, but never
+decides, nor edits .handoff/. To set up every project at once, use --global.
+
+{
+  "hooks": {
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "args": [
+              "hook",
+              "notify"
+            ],
+            "command": "handoff",
+            "type": "command"
+          }
+        ],
+        "matcher": "permission_prompt"
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "args": [
+              "hook",
+              "brief"
+            ],
+            "command": "handoff",
+            "type": "command"
+          },
+          {
+            "args": [
+              "hook",
+              "listen"
+            ],
+            "asyncRewake": true,
+            "command": "handoff",
+            "timeout": 86400,
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "args": [
+              "hook",
+              "listen"
+            ],
+            "asyncRewake": true,
+            "command": "handoff",
+            "timeout": 86400,
+            "type": "command"
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(handoff *)"
+    ],
+    "deny": [
+      "Bash(handoff decide *)",
+      "Edit(/<scratch>/repo1/.handoff/**)"
+    ]
+  }
+}
+# exit 0
+
+$ handoff settings codex
+Put these two files in this project's .codex/ folder, merged with any already
+there, and keep it out of git (add .codex/ to .git/info/exclude). Codex reads
+them only in a project it trusts. The next time Codex starts here, it asks you
+to review the new hooks: choose Trust all. To set up every project at once,
+use --global.
+
+Every Codex session in this project then takes the role you give it:
+tell it, and it runs handoff role <role>. Until then it has none. Without a role, handoff on its own never shows it your decisions.
+It gets the brief when its first turn starts and after a summary. When its turn
+would end, a hook listens for its work and continues it with what arrives. And
+handoff runs outside Codex's sandbox, so its notifications and pop-ups reach
+you; handoff decide is forbidden.
+
+.codex/hooks.json:
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "exec handoff hook brief",
+            "timeout": 30,
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "command": "exec handoff hook listen",
+            "timeout": 86400,
+            "type": "command"
+          }
+        ]
+      }
+    ]
+  }
+}
+
+.codex/rules/handoff.rules:
+# handoff writes only under .handoff/ and has no network code (proposal §9).
+prefix_rule(pattern=["handoff"], decision="allow", justification="handoff runs outside the sandbox so that it can notify the operator")
+prefix_rule(pattern=["handoff", "decide"], decision="forbidden", justification="The operator decides, not an agent")
+# exit 0
+
+$ handoff settings codex --as reviewer
+Put these three files in this project's .codex/ folder, merged with any already
+there, and keep it out of git (add .codex/ to .git/info/exclude). Codex reads
+them only in a project it trusts. The next time Codex starts here, it asks you
+to review the new hooks: choose Trust all. To set up every project at once,
+use --global.
+
+Every Codex session in this project is then reviewer. Every command it runs has HANDOFF_ROLE=reviewer, so handoff on its own
+shows its inbox, never your decisions.
+It gets the brief when its first turn starts and after a summary. When its turn
+would end, a hook listens for its work and continues it with what arrives. And
+handoff runs outside Codex's sandbox, so its notifications and pop-ups reach
+you; handoff decide is forbidden.
+
+.codex/config.toml:
+[shell_environment_policy]
+set = { HANDOFF_ROLE = "reviewer" }
+
+.codex/hooks.json:
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "exec handoff hook brief --as reviewer",
+            "timeout": 30,
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "command": "exec handoff hook listen --as reviewer",
+            "timeout": 86400,
+            "type": "command"
+          }
+        ]
+      }
+    ]
+  }
+}
+
+.codex/rules/handoff.rules:
+# handoff writes only under .handoff/ and has no network code (proposal §9).
+prefix_rule(pattern=["handoff"], decision="allow", justification="handoff runs outside the sandbox so that it can notify the operator")
+prefix_rule(pattern=["handoff", "decide"], decision="forbidden", justification="The operator decides, not an agent")
+# exit 0
+
+## L72: 'sandbox' in what settings codex prints, and in settings.go
+11:sandbox, so its notifications and pop-ups reach you; handoff decide is
+44:prefix_rule(pattern=["handoff"], decision="allow", justification="handoff runs outside the sandbox so that it can notify the operator")
+177:handoff runs outside Codex's sandbox, so its notifications and pop-ups reach
+206:sandbox, so its notifications and pop-ups reach you; handoff decide is
+236:// sandbox, and decide never runs.
+240:prefix_rule(pattern=[%s], decision="allow", justification="handoff runs outside the sandbox so that it can notify the operator")
+
+## L23: the hooks do nothing where handoff isn't used: a git repository with no .handoff/, with a session and with HANDOFF_ROLE
+
+$ echo '{"session_id":"x","hook_event_name":"Stop"}' | env CLAUDE_CODE_SESSION_ID=x CLAUDE_PID=<pid> handoff hook listen --timeout 1s
+# exit 0
+
+$ echo '{"session_id":"x","hook_event_name":"SessionStart","source":"startup"}' | env CLAUDE_CODE_SESSION_ID=x CLAUDE_PID=<pid> handoff hook brief
+# exit 0
+
+$ echo '{"session_id":"x","hook_event_name":"Notification","notification_type":"permission_prompt","message":"Claude needs your permission to use Bash"}' | env CLAUDE_CODE_SESSION_ID=x CLAUDE_PID=<pid> handoff hook notify
+# exit 0
+
+$ echo '{"session_id":"x","hook_event_name":"Stop"}' | env HANDOFF_ROLE=reviewer handoff hook listen --timeout 1s
+# exit 0
+
+$ echo '{"session_id":"x","hook_event_name":"SessionStart","source":"startup"}' | env HANDOFF_ROLE=reviewer handoff hook brief
+# exit 0
+
+$ echo '{"session_id":"t","hook_event_name":"Stop"}' | env CODEX_THREAD_ID=t handoff hook listen --timeout 1s
+# exit 0
+alerts so far: 0
+
+## L27: init makes .handoff/, ignored by git, with three roles; says whether each CLI is set up; every worktree shares it
+
+$ handoff init
+Created <scratch>/repo2/.handoff. Git ignores it; nothing else in the project changed.
+Roles: implementer, reviewer and reviewer-2; reviewer and reviewer-2 review.
+Main branch: main.
+
+handoff's hooks keep sessions on duty. Set them once, for every project:
+  Claude Code:  handoff settings claude --global
+  Codex:        handoff settings codex --global
+For each CLI you use that isn't set up, run its command and do what it prints, or ask one of its sessions to.
+Then give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+# exit 0
+
+$ git status --short --ignored
+!! .handoff/
+# exit 0
+
+$ git check-ignore -v .handoff/
+.handoff/.gitignore:2:*	.handoff/
+# exit 0
+
+$ ls -A .handoff
+.gitignore
+channel.jsonl
+config.json
+head.json
+# exit 0
+.handoff/.gitignore:
+# handoff's record is never committed.
+*
+config.json:
+{
+  "v": 1,
+  "roles": [
+    {
+      "name": "implementer",
+      "reviews": false
+    },
+    {
+      "name": "reviewer",
+      "reviews": true
+    },
+    {
+      "name": "reviewer-2",
+      "reviews": true
+    }
+  ],
+  "main": "main",
+  "quiet_after": "30m"
+}
+
+$ git worktree add -q <scratch>/side2 -b side
+# exit 0
+a note posted from the main worktree:
+
+$ handoff note --as implementer --to reviewer --item W0 --title from the main worktree --body <scratch>/b0.md
+posted #1 note W0 implementer → reviewer: from the main worktree
+handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+# exit 0
+(now in the linked worktree <scratch>/side2)
+
+$ ls -A
+.git
+# exit 0
+
+$ handoff inbox --for reviewer
+inbox for reviewer
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+# exit 0
+
+$ handoff init
+handoff init: <scratch>/repo2/.handoff exists; refused
+# exit 2
+
+$ handoff show 1
+#1 note W0
+from: implementer → reviewer
+ts: <time>
+title: from the main worktree
+prev: genesis
+---
+hello
+# exit 0
+
+## L54: quiet_after in config.json after init
+18:  "quiet_after": "30m"
+
+## L58, L42, L60: no role until given; the brief; a second session takes the role
+
+$ env CLAUDE_CODE_SESSION_ID=s1 CLAUDE_PID=<pid> handoff inbox
+handoff inbox: no role: when the operator gives this session one, run `handoff role <role>`; or give --for <role>
+# exit 2
+
+$ env CLAUDE_CODE_SESSION_ID=s1 CLAUDE_PID=<pid> handoff role
+handoff role: no role: when the operator gives this session one, run `handoff role <role>`
+# exit 2
+
+$ env CLAUDE_CODE_SESSION_ID=s1 CLAUDE_PID=<pid> handoff brief
+handoff brief: no role: when the operator gives this session one, run `handoff role <role>`; or give --for <role>
+# exit 2
+
+$ env CLAUDE_CODE_SESSION_ID=s1 CLAUDE_PID=<pid> handoff role reviewer
+You are now reviewer in repo3.
+
+handoff brief: you are reviewer in repo3. You and implementer, reviewer-2 hand work to each other through handoff. The operator decides.
+
+Listening: if your session has handoff's hooks, a hook listens for reviewer when your turn ends, and you don't run wait. If not, run `handoff wait --for reviewer --timeout 25m` in the background. Exit 3: run it again. Exit 4: another session already listens for reviewer. After you handle what it delivers, wait again. If your session has no handoff hooks, offer to set them up for every project: `handoff settings claude --global` prints them and where they go. With the operator's OK, add them. They work once the operator starts this session again.
+
+When something arrives, read it with `handoff show <id>`, then:
+- A request to you: `handoff claim --as reviewer <id>`, review exactly the commit it names in a temporary worktree, then `handoff reply --as reviewer <id> --verdict APPROVE|CHANGES|QUESTION --commit <that sha> --body <file>`.
+- A reply to your request: on CHANGES or QUESTION, fix or answer, then post again (`handoff post --as reviewer ... --supersedes <id>`). On APPROVE, the operator decides; wait for the decision.
+- A decision from the operator: act on it. Merge only on approve.
+- A note to you: answer with `handoff note --as reviewer --to <role> --re <id> --body <file>`.
+
+If the operator asks you to review work with no request, such as uncommitted changes, send what you find to implementer as a note: `handoff note --as reviewer --to implementer --item <item> --title "<title>" --body <file>`. Only a request names a commit, so only a request gets a verdict.
+To ask the operator about an item: `handoff note --as reviewer --to operator --item <item> --title "<question>" --body <file>`.
+Rules: never edit .handoff/ by hand. Never merge, push or deploy without the operator's decision. A claim is not an approval.
+
+Waiting for you now (inbox for reviewer):
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+# exit 0
+
+$ env CLAUDE_CODE_SESSION_ID=s1 CLAUDE_PID=<pid> handoff role
+You are reviewer in repo3.
+# exit 0
+
+$ env CLAUDE_CODE_SESSION_ID=s1 CLAUDE_PID=<pid> handoff brief
+handoff brief: you are reviewer in repo3. You and implementer, reviewer-2 hand work to each other through handoff. The operator decides.
+
+Listening: Run `handoff wait --for reviewer --timeout 25m` in the background. Exit 3: run it again. Exit 4: another session already listens for reviewer. After you handle what it delivers, wait again. If your session has no handoff hooks, offer to set them up for every project: `handoff settings claude --global` prints them and where they go. With the operator's OK, add them. They work once the operator starts this session again.
+
+When something arrives, read it with `handoff show <id>`, then:
+- A request to you: `handoff claim --as reviewer <id>`, review exactly the commit it names in a temporary worktree, then `handoff reply --as reviewer <id> --verdict APPROVE|CHANGES|QUESTION --commit <that sha> --body <file>`.
+- A reply to your request: on CHANGES or QUESTION, fix or answer, then post again (`handoff post --as reviewer ... --supersedes <id>`). On APPROVE, the operator decides; wait for the decision.
+- A decision from the operator: act on it. Merge only on approve.
+- A note to you: answer with `handoff note --as reviewer --to <role> --re <id> --body <file>`.
+
+If the operator asks you to review work with no request, such as uncommitted changes, send what you find to implementer as a note: `handoff note --as reviewer --to implementer --item <item> --title "<title>" --body <file>`. Only a request names a commit, so only a request gets a verdict.
+To ask the operator about an item: `handoff note --as reviewer --to operator --item <item> --title "<question>" --body <file>`.
+Rules: never edit .handoff/ by hand. Never merge, push or deploy without the operator's decision. A claim is not an approval.
+
+Waiting for you now (inbox for reviewer):
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+# exit 0
+
+$ env CLAUDE_CODE_SESSION_ID=s2 CLAUDE_PID=<pid> handoff role reviewer
+You are now reviewer in repo3. Another session had reviewer; it has no role now.
+
+handoff brief: you are reviewer in repo3. You and implementer, reviewer-2 hand work to each other through handoff. The operator decides.
+
+Listening: if your session has handoff's hooks, a hook listens for reviewer when your turn ends, and you don't run wait. If not, run `handoff wait --for reviewer --timeout 25m` in the background. Exit 3: run it again. Exit 4: another session already listens for reviewer. After you handle what it delivers, wait again. If your session has no handoff hooks, offer to set them up for every project: `handoff settings claude --global` prints them and where they go. With the operator's OK, add them. They work once the operator starts this session again.
+
+When something arrives, read it with `handoff show <id>`, then:
+- A request to you: `handoff claim --as reviewer <id>`, review exactly the commit it names in a temporary worktree, then `handoff reply --as reviewer <id> --verdict APPROVE|CHANGES|QUESTION --commit <that sha> --body <file>`.
+- A reply to your request: on CHANGES or QUESTION, fix or answer, then post again (`handoff post --as reviewer ... --supersedes <id>`). On APPROVE, the operator decides; wait for the decision.
+- A decision from the operator: act on it. Merge only on approve.
+- A note to you: answer with `handoff note --as reviewer --to <role> --re <id> --body <file>`.
+
+If the operator asks you to review work with no request, such as uncommitted changes, send what you find to implementer as a note: `handoff note --as reviewer --to implementer --item <item> --title "<title>" --body <file>`. Only a request names a commit, so only a request gets a verdict.
+To ask the operator about an item: `handoff note --as reviewer --to operator --item <item> --title "<question>" --body <file>`.
+Rules: never edit .handoff/ by hand. Never merge, push or deploy without the operator's decision. A claim is not an approval.
+
+Waiting for you now (inbox for reviewer):
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+# exit 0
+
+$ env CLAUDE_CODE_SESSION_ID=s1 CLAUDE_PID=<pid> handoff role
+handoff role: no role: when the operator gives this session one, run `handoff role <role>`
+# exit 2
+
+$ env CLAUDE_CODE_SESSION_ID=s1 CLAUDE_PID=<pid> handoff inbox
+handoff inbox: no role: when the operator gives this session one, run `handoff role <role>`; or give --for <role>
+# exit 2
+
+$ env CLAUDE_CODE_SESSION_ID=s2 CLAUDE_PID=<pid> handoff role
+You are reviewer in repo3.
+# exit 0
+
+## L59: the role survives a resume (same id, new process) and /clear (new id, same process); a new Codex thread needs telling again
+
+$ echo '{"session_id":"s2","hook_event_name":"SessionStart","source":"resume"}' | env CLAUDE_CODE_SESSION_ID=s2 CLAUDE_PID=<pid> handoff hook brief
+handoff brief: you are reviewer in repo3. You and implementer, reviewer-2 hand work to each other through handoff. The operator decides.
+
+Listening: you don't run `handoff wait`. When your turn ends, a hook listens for reviewer and brings you what arrives.
+
+When something arrives, read it with `handoff show <id>`, then:
+- A request to you: `handoff claim --as reviewer <id>`, review exactly the commit it names in a temporary worktree, then `handoff reply --as reviewer <id> --verdict APPROVE|CHANGES|QUESTION --commit <that sha> --body <file>`.
+- A reply to your request: on CHANGES or QUESTION, fix or answer, then post again (`handoff post --as reviewer ... --supersedes <id>`). On APPROVE, the operator decides; wait for the decision.
+- A decision from the operator: act on it. Merge only on approve.
+- A note to you: answer with `handoff note --as reviewer --to <role> --re <id> --body <file>`.
+
+If the operator asks you to review work with no request, such as uncommitted changes, send what you find to implementer as a note: `handoff note --as reviewer --to implementer --item <item> --title "<title>" --body <file>`. Only a request names a commit, so only a request gets a verdict.
+To ask the operator about an item: `handoff note --as reviewer --to operator --item <item> --title "<question>" --body <file>`.
+Rules: never edit .handoff/ by hand. Never merge, push or deploy without the operator's decision. A claim is not an approval.
+
+Waiting for you now (inbox for reviewer):
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+# exit 0
+s2's binding now:
+{"v":1,"role":"reviewer","session":"s2","pid":<pid>,"since":"<time>"}
+
+$ echo '{"session_id":"s2c","hook_event_name":"SessionStart","source":"clear"}' | env CLAUDE_CODE_SESSION_ID=s2c CLAUDE_PID=<pid> handoff hook brief
+handoff brief: you are reviewer in repo3. You and implementer, reviewer-2 hand work to each other through handoff. The operator decides.
+
+Listening: you don't run `handoff wait`. When your turn ends, a hook listens for reviewer and brings you what arrives.
+
+When something arrives, read it with `handoff show <id>`, then:
+- A request to you: `handoff claim --as reviewer <id>`, review exactly the commit it names in a temporary worktree, then `handoff reply --as reviewer <id> --verdict APPROVE|CHANGES|QUESTION --commit <that sha> --body <file>`.
+- A reply to your request: on CHANGES or QUESTION, fix or answer, then post again (`handoff post --as reviewer ... --supersedes <id>`). On APPROVE, the operator decides; wait for the decision.
+- A decision from the operator: act on it. Merge only on approve.
+- A note to you: answer with `handoff note --as reviewer --to <role> --re <id> --body <file>`.
+
+If the operator asks you to review work with no request, such as uncommitted changes, send what you find to implementer as a note: `handoff note --as reviewer --to implementer --item <item> --title "<title>" --body <file>`. Only a request names a commit, so only a request gets a verdict.
+To ask the operator about an item: `handoff note --as reviewer --to operator --item <item> --title "<question>" --body <file>`.
+Rules: never edit .handoff/ by hand. Never merge, push or deploy without the operator's decision. A claim is not an approval.
+
+Waiting for you now (inbox for reviewer):
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+# exit 0
+
+$ env CLAUDE_CODE_SESSION_ID=s2c CLAUDE_PID=<pid> handoff role
+You are reviewer in repo3.
+# exit 0
+bindings now: s2c.json 
+
+$ env CODEX_THREAD_ID=t1 handoff role implementer
+You are now implementer in repo3.
+
+handoff brief: you are implementer in repo3. You and reviewer, reviewer-2 hand work to each other through handoff. The operator decides.
+
+Listening: if your session has handoff's hooks, a hook listens for implementer when your turn ends, and you don't run wait. If not, don't run `handoff wait`: Codex checks on a running command about once a minute, each time with a whole model call, which uses up the operator's plan. Instead, end your turn. If work waits for you, the operator hears of it and tells you. If your session has no handoff hooks, offer to set them up for every project: `handoff settings codex --global` prints them and where they go. With the operator's OK, add them. They work once the operator starts this session again.
+
+When something arrives, read it with `handoff show <id>`, then:
+- A reply to your request: on CHANGES or QUESTION, fix or answer, then post again (`handoff post --as implementer ... --supersedes <id>`). On APPROVE, the operator decides; wait for the decision.
+- A decision from the operator: act on it. Merge only on approve.
+- A note to you: answer with `handoff note --as implementer --to <role> --re <id> --body <file>`. If it has findings on work you haven't asked about, fix them, then ask for a review.
+
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as implementer --item <item> --to reviewer --commit <sha> --title "<title>" --body <file>`. reviewer-2 has no session now: send to it only once the operator gives it one.
+To ask the operator about an item: `handoff note --as implementer --to operator --item <item> --title "<question>" --body <file>`.
+Rules: never edit .handoff/ by hand. Never merge, push or deploy without the operator's decision. A claim is not an approval.
+
+Waiting for you now (inbox for implementer):
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+# exit 0
+
+$ echo '{"session_id":"t2","hook_event_name":"SessionStart","source":"startup"}' | env CODEX_THREAD_ID=t2 handoff hook brief
+handoff: repo3 hands work between agents through handoff, and this session has no role in it. When the operator gives you one, run `handoff role <role>` (the roles are implementer, reviewer, reviewer-2); it prints your brief. Until then, leave handoff alone.
+# exit 0
+
+$ env CODEX_THREAD_ID=t2 handoff role
+handoff role: no role: when the operator gives this session one, run `handoff role <role>`
+# exit 2
+
+$ env CODEX_THREAD_ID=t1 handoff role
+You are implementer in repo3.
+# exit 0
+
+## L61, L62, L63: the implementer's brief, with one reviewer session (s2c, process alive); a post to reviewer-2, which has none
+
+$ env CODEX_THREAD_ID=t1 handoff brief
+handoff brief: you are implementer in repo3. You and reviewer, reviewer-2 hand work to each other through handoff. The operator decides.
+
+Listening: Don't run `handoff wait`: Codex checks on a running command about once a minute, each time with a whole model call, which uses up the operator's plan. Instead, end your turn. If work waits for you, the operator hears of it and tells you. If your session has no handoff hooks, offer to set them up for every project: `handoff settings codex --global` prints them and where they go. With the operator's OK, add them. They work once the operator starts this session again.
+
+When something arrives, read it with `handoff show <id>`, then:
+- A reply to your request: on CHANGES or QUESTION, fix or answer, then post again (`handoff post --as implementer ... --supersedes <id>`). On APPROVE, the operator decides; wait for the decision.
+- A decision from the operator: act on it. Merge only on approve.
+- A note to you: answer with `handoff note --as implementer --to <role> --re <id> --body <file>`. If it has findings on work you haven't asked about, fix them, then ask for a review.
+
+To ask for a review, commit your work on a branch of its own, not on main; you don't need to ask the operator first. Then `handoff post --as implementer --item <item> --to reviewer --commit <sha> --title "<title>" --body <file>`. reviewer-2 has no session now: send to it only once the operator gives it one.
+To ask the operator about an item: `handoff note --as implementer --to operator --item <item> --title "<question>" --body <file>`.
+Rules: never edit .handoff/ by hand. Never merge, push or deploy without the operator's decision. A claim is not an approval.
+
+Waiting for you now (inbox for implementer):
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+# exit 0
+
+$ env CODEX_THREAD_ID=t1 handoff post --item W1 --to reviewer-2 --commit <sha> --title to a reviewer with no session --body <scratch>/req.md
+posted #1 request W1 implementer → reviewer-2: to a reviewer with no session @ fa7229072ed6
+handoff: no session has reviewer-2 now, so this waits until the operator gives one that role; tell the operator.
+# exit 0
+
+## L64, L65: init --roles, --reviewers; roles add; no rename or remove
+
+$ handoff init --roles a,b
+Created <scratch>/repo4/.handoff. Git ignores it; nothing else in the project changed.
+Roles: a and b. Either can implement or review.
+Main branch: main.
+
+handoff's hooks keep sessions on duty. Set them once, for every project:
+  Claude Code:  handoff settings claude --global
+  Codex:        handoff settings codex --global
+For each CLI you use that isn't set up, run its command and do what it prints, or ask one of its sessions to.
+Then give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+# exit 0
+{
+  "v": 1,
+  "roles": [
+    {
+      "name": "a",
+      "reviews": true
+    },
+    {
+      "name": "b",
+      "reviews": true
+    }
+  ],
+  "main": "main",
+  "quiet_after": "30m"
+}
+
+$ handoff init --roles implementer,b,c --reviewers b
+Created <scratch>/repo5/.handoff. Git ignores it; nothing else in the project changed.
+Roles: implementer, b and c; b reviews.
+Main branch: main.
+
+handoff's hooks keep sessions on duty. Set them once, for every project:
+  Claude Code:  handoff settings claude --global
+  Codex:        handoff settings codex --global
+For each CLI you use that isn't set up, run its command and do what it prints, or ask one of its sessions to.
+Then give each session its role: tell it, such as "you review", and it runs handoff role <role>.
+# exit 0
+{
+  "v": 1,
+  "roles": [
+    {
+      "name": "implementer",
+      "reviews": false
+    },
+    {
+      "name": "b",
+      "reviews": true
+    },
+    {
+      "name": "c",
+      "reviews": false
+    }
+  ],
+  "main": "main",
+  "quiet_after": "30m"
+}
+
+$ handoff roles add reviewer-3
+Added reviewer-3.
+Roles: implementer, b, c and reviewer-3; b and reviewer-3 review.
+Give a session a role by telling it; it runs handoff role <role>.
+# exit 0
+{
+  "v": 1,
+  "roles": [
+    {
+      "name": "implementer",
+      "reviews": false
+    },
+    {
+      "name": "b",
+      "reviews": true
+    },
+    {
+      "name": "c",
+      "reviews": false
+    },
+    {
+      "name": "reviewer-3",
+      "reviews": true
+    }
+  ],
+  "main": "main",
+  "quiet_after": "30m"
+}
+
+$ handoff roles rename b x
+handoff roles: roles needs add: handoff roles add <role>...
+# exit 2
+
+$ handoff roles remove c
+handoff roles: roles needs add: handoff roles add <role>...
+# exit 2
+
+$ handoff roles
+handoff roles: roles needs add: handoff roles add <role>...
+# exit 2
+
+## L71: a Codex session's brief against a Claude Code session's, same role, neither with hooks: the lines that differ
+3c3
+< Listening: Run `handoff wait --for reviewer --timeout 25m` in the background. Exit 3: run it again. Exit 4: another session already listens for reviewer. After you handle what it delivers, wait again. If your session has no handoff hooks, offer to set them up for every project: `handoff settings claude --global` prints them and where they go. With the operator's OK, add them. They work once the operator starts this session again.
+---
+> Listening: Don't run `handoff wait`: Codex checks on a running command about once a minute, each time with a whole model call, which uses up the operator's plan. Instead, end your turn. If work waits for you, the operator hears of it and tells you. If your session has no handoff hooks, offer to set them up for every project: `handoff settings codex --global` prints them and where they go. With the operator's OK, add them. They work once the operator starts this session again.
+# diff exit 1
+
+## L46: a Claude Code session on duty, stuck at a permission prompt: hook notify (alerts go to the scratch file)
+
+$ echo '{"session_id":"c1","hook_event_name":"Notification","notification_type":"permission_prompt","message":"Claude needs your permission to use Bash"}' | env CLAUDE_CODE_SESSION_ID=c1 CLAUDE_PID=<pid> handoff hook notify
+# exit 0
+
+$ echo '{"session_id":"c1","hook_event_name":"Notification","notification_type":"idle_prompt","message":"Claude is waiting for your input"}' | env CLAUDE_CODE_SESSION_ID=c1 CLAUDE_PID=<pid> handoff hook notify
+# exit 0
+alerts file:
+repo6: reviewer is waiting for your permission: Claude needs your permission to use Bash
+
+## L7, L52: the pop-up's buttons, in popup.go
+163:	button, _, gaveUp, err := show(title, popupText(t), []string{"Later", "Deny", "Approve"}, false)
+
+## L77: what keeps the Mac awake, and for how long (awake.go, wait.go)
+58:	cmd := exec.Command(caffeinate, "-i", "-w", strconv.Itoa(os.Getpid()))
+68:const AwakeWithin = 2 * time.Hour
+
+## L101-114: the By hand sequence, as the operator at a terminal with no session, in a fresh project
+
+$ handoff wait --for reviewer   (started first, in the background, with --timeout 60s so the probe cannot hang)
+
+$ handoff post --as implementer --item W1 --to reviewer --commit <sha> --title W1: a change --body <scratch>/req.md
+posted #1 request W1 implementer → reviewer: W1: a change @ 063ccfc81b40
+# exit 0
+the wait ended with exit 0, 1 s or so after the post; it printed:
+#1 request W1 implementer → reviewer: W1: a change @ 063ccfc81b40
+
+$ handoff claim --as reviewer 1
+posted #2 claim W1 reviewer → -: claimed #1
+# exit 0
+
+$ handoff reply --as reviewer 1 --verdict APPROVE --commit <sha> --body <scratch>/verdict.md
+posted #3 reply W1 reviewer → implementer: APPROVE on #1 @ 063ccfc81b40
+handoff: told the operator: W1: reviewer approved #1. Your decision.
+# exit 0
+
+## L53: handoff with no arguments, not at a terminal: what waits
+
+$ handoff
+
+#1 request W1 implementer → reviewer: W1: a change @ 063ccfc81b40
+  #3 reply W1 reviewer → implementer: APPROVE on #1 @ 063ccfc81b40
+
+Run handoff in a terminal to decide.
+# exit 0
+
+## L53: handoff with no arguments at a terminal (script(1) gives it one; its stdin is kept open, since script ends the terminal's input when its own closes), answering n
+exit 0
+
+#1 request W1 implementer → reviewer: W1: a change @ 063ccfc81b40
+  #3 reply W1 reviewer → implementer: APPROVE on #1 @ 063ccfc81b40
+Approve, deny or skip? [a/d/s] n
+Approve, deny or skip? [a/d/s] ^D
+## L113: handoff decide W1 --approve, not at a terminal
+
+$ handoff decide W1 --approve
+handoff decide: decide needs a terminal on stdin: the operator types it, an agent's shell cannot
+# exit 2
+
+## L113: handoff decide W1 --approve at a terminal, answering y to its [y/N]
+exit 0
+
+#1 request W1 implementer → reviewer: W1: a change @ 063ccfc81b40
+  #3 reply W1 reviewer → implementer: APPROVE on #1 @ 063ccfc81b40
+Approve W1 (#1)? [y/N] y
+posted #4 decision W1 operator → implementer: approve #1
+
+$ handoff
+Nothing needs your decision.
+# exit 0
+
+$ handoff inbox
+handoff inbox: no role: pass --as <role>, or set HANDOFF_ROLE; or give --for <role>
+# exit 2
+
+$ handoff show 4
+#4 decision W1
+from: operator → implementer
+ts: <time>
+re: #1
+decision: approve
+prev: <sha>0b6db2e4e567db7249badbd0
+---
+Approved.
+# exit 0
+
+## L94: repair on a sound record
+
+$ handoff repair
+handoff repair: no role: pass --as <role>, or set HANDOFF_ROLE
+# exit 2
+
+## L54: the alerts that went to the operator during the sequence
+repo7: W1: reviewer approved #1. Your decision.
+
+## L118-120, L126: the files the README points to
+LICENSE
+docs/CHANNEL.md
+docs/prompts/gate-reviewer.md
+docs/prompts/implementer.md
+docs/prompts/reviewer.md
+docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md
+MIT License
+
+## L97: flags defined in the source against the flags handoff help names
+approve as base body commit deny emit for global item key main note on parents prefer quiet re reviewers roles supersedes timeout title to verdict 
+--approve --as --base --body --commit --deny --emit --for --global --item --key --main --note --on --parents --quiet --re --reviewers --roles --supersedes --timeout --title --to --verdict 
+(prefer is ignored, as hook.go says; hook's --timeout, --as and --prefer are the hooks', set by what settings prints)
+
+## sleep holds asked for during the probes (none expected: nothing was owed for long):
+   1 hold 40068
+   1 release 40068
+## done

@@ -1,0 +1,9 @@
+# command: the H26 probes2.sh as committed, with the command and kind renamed (rerun-h26.sh), run at this commit; its log against probes2.log saved at 8162dbf, both folded
+# date: 2026-11-11 00:20:16 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the operator's Mac
+# commit: 9315eb48021f0c7c2ae037aaa2df4d65211d12bb
+
+## lines of the script the rename changed: 23 of 220
+## lines then: 441; now: 441
+## diff, then (<) against now (>), after the fold:
+(none)

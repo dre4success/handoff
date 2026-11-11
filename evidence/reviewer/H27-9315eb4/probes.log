@@ -1,0 +1,254 @@
+# command: the reviewer's probes for H27, handoff fyi; see each heading
+# date: 2026-11-11 00:19:29 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 9315eb48021f0c7c2ae037aaa2df4d65211d12bb
+
+# handoff is this commit's build; handoff-h26 is the base's (3119db5, the build installed on this Mac now, which has tell); handoff-v0.1.2 is the last release
+
+## F1. fyi at a terminal: a session given its role, a role held by a listener alone, a role with no session
+
+$ env CLAUDE_CODE_SESSION_ID=s-impl CLAUDE_PID=<pid> handoff role implementer
+You are now implementer in repo1.
+
+$ [terminal] handoff fyi Carry on while I'm away. Back at 9.
+told implementer and reviewer (#1, #2)
+not told, no session: reviewer-2
+# exit 0
+
+# the reviewer's wait, outside any session, running since before the fyi: exit 0
+#2 fyi - operator → reviewer: Carry on while I'm away. Back at 9.
+
+$ echo '{"session_id":"s-impl","hook_event_name":"Stop"}' | env CLAUDE_CODE_SESSION_ID=s-impl CLAUDE_PID=<pid> handoff hook listen --timeout 3s
+handoff: new for implementer:
+#1 fyi - operator → implementer: Carry on while I'm away. Back at 9.
+Read each with `handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit 2
+
+$ handoff show 1
+#1 fyi
+from: operator → implementer
+ts: 2026-11-11T00:19:31Z
+session: s-impl
+prev: genesis
+---
+Carry on while I'm away. Back at 9.
+# exit 0
+
+$ handoff show 2
+#2 fyi
+from: operator → reviewer
+ts: 2026-11-11T00:19:31Z
+prev: ea60af800b54704558d1b889849b36aa8ccd1fc3d0d1b3be8f86ad120bd8980d
+---
+Carry on while I'm away. Back at 9.
+# exit 0
+
+# the record:
+{"id":1,"kind":"fyi","from":"operator","to":"implementer","session":"s-impl","body":"Carry on while I'm away. Back at 9.","prev":"genesis"}
+{"id":2,"kind":"fyi","from":"operator","to":"reviewer","body":"Carry on while I'm away. Back at 9.","prev":"<hash>"}
+# the cursors: implementer #1  reviewer #2  
+# inbox --for implementer --quiet: exit 0 (0: nothing waits)
+# inbox --for reviewer --quiet: exit 0 (0: nothing waits)
+# inbox --for reviewer-2 --quiet: exit 0 (0: nothing waits)
+# inbox --for operator --quiet: exit 0 (0: nothing waits)
+# alerts sent: 0; sleep holds taken: 0
+
+# the brief's lines that name fyi or tell (brief in s-impl):
+8:- An fyi from the operator, to every agent with a session: take it as the operator's word, as if said in this session, and act on it. Don't answer it through handoff; anything to say, say in this session.
+# a decision on an fyi's id:
+
+$ [terminal] handoff decide 1 --approve
+handoff decide: #1 is not awaiting the operator
+# exit 2
+
+## F2. tell is gone: no alias
+
+$ env CLAUDE_CODE_SESSION_ID=s-impl CLAUDE_PID=<pid> handoff role implementer
+You are now implementer in repo2.
+
+$ [terminal] handoff tell "Carry on."   (first two lines; the usage follows)
+handoff: unknown command "tell"
+
+# exit 2
+
+$ handoff tell "Carry on."   (no terminal; first line)
+handoff: unknown command "tell"
+# exit 2
+
+$ env CLAUDE_CODE_SESSION_ID=s-impl handoff tell "Carry on."   (in the session; first line)
+handoff: unknown command "tell"
+# lines in the record after these: 0
+
+# handoff help: every line with the word tell or fyi
+13:  fyi     "<message>"           (the operator, at a terminal) tell every agent with a session
+30:decide, fyi, and handoff on its own, need no role: with none, outside an agent's
+# handoff fyi -h prints the same usage: 2 lines with fyi, exit 0
+# v0.1.2, the last release, has neither:
+handoff: unknown command "tell"
+handoff: unknown command "fyi"
+
+## F3. A tell already in a record, written by the base's build, read by this one (row 94: "would be delivered by role, as before row 93")
+
+$ env CLAUDE_CODE_SESSION_ID=s-one CLAUDE_PID=<pid> handoff-h26 role implementer
+You are now implementer in repo3.
+
+$ [terminal] handoff-h26 tell Merge when the reviewer approves.
+told implementer (#1)
+not told, no session: reviewer, reviewer-2
+# exit 0
+
+### F3a. The session told listens with this build: it gets its tell
+
+$ echo '{"session_id":"s-one","hook_event_name":"Stop"}' | env CLAUDE_CODE_SESSION_ID=s-one CLAUDE_PID=<pid> handoff hook listen --timeout 3s
+handoff: new for implementer:
+#1 tell - operator → implementer: Merge when the reviewer approves.
+Read each with `handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit 2
+
+### F3b. The same record, but the session told ends unread and a later session takes the role, with this build: it gets the old tell (round 1's P1a, for a tell only)
+
+$ env CLAUDE_CODE_SESSION_ID=s-two CLAUDE_PID=<pid> handoff role implementer
+You are now implementer in repo3.
+
+$ echo '{"session_id":"s-two","hook_event_name":"Stop"}' | env CLAUDE_CODE_SESSION_ID=s-two CLAUDE_PID=<pid> handoff hook listen --timeout 3s
+handoff: new for implementer:
+#1 tell - operator → implementer: Merge when the reviewer approves.
+Read each with `handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit 2
+
+$ handoff show 1
+#1 tell
+from: operator → implementer
+ts: 2026-11-11T00:19:32Z
+session: s-one
+prev: genesis
+---
+Merge when the reviewer approves.
+# exit 0
+# nothing waits for anyone, and the record still takes entries:
+# inbox --for implementer --quiet: exit 0
+# inbox --for reviewer --quiet: exit 0
+# inbox --for operator --quiet: exit 0
+
+$ env HANDOFF_ROLE=reviewer handoff note --item W1 --to implementer --title after a tell --body <scratch>/body.md
+posted #2 note W1 reviewer → implementer: after a tell
+# exit 0
+
+$ [terminal] handoff fyi And an fyi after it.
+told implementer (#3)
+not told, no session: reviewer, reviewer-2
+# exit 0
+
+# the record:
+{"id":1,"kind":"tell","from":"operator","to":"implementer","session":"s-one","body":"Merge when the reviewer approves.","prev":"genesis"}
+{"id":2,"kind":"note","item":"W1","from":"reviewer","to":"implementer","title":"after a tell","body":"x\n","prev":"<hash>"}
+{"id":3,"kind":"fyi","from":"operator","to":"implementer","session":"s-two","body":"And an fyi after it.","prev":"<hash>"}
+# the cursors: implementer #1  
+
+## F4. An fyi written by this build, met by a listener of an older build (the time between the install and each session's next start)
+
+### F4a. The session told, whose listener is the base's build and was running before the fyi (a session idle since before the install): it gets its fyi
+
+$ env CLAUDE_CODE_SESSION_ID=s-one CLAUDE_PID=<pid> handoff-h26 role implementer
+You are now implementer in repo4.
+# its brief, from the base's build, names: 1 line for a tell, 0 for an fyi
+
+$ [terminal] handoff fyi Carry on while I'm away.
+told implementer (#1)
+not told, no session: reviewer, reviewer-2
+# exit 0
+
+# s-one's hook listen, the base's build, running since before: exit 0
+handoff: new for implementer:
+#1 fyi - operator → implementer: Carry on while I'm away.
+Read each with `handoff-h26 show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+
+### F4b. A second fyi to s-one, unread; s-one ends; a later session takes the role. Its listener is this build: nothing. Then the same record with the base's build, and with v0.1.2, as the later session's listener: delivered by role
+
+$ [terminal] handoff fyi Merge when the reviewer approves.
+told implementer (#2)
+not told, no session: reviewer, reviewer-2
+# exit 0
+
+$ env CLAUDE_CODE_SESSION_ID=s-two CLAUDE_PID=<pid> handoff role implementer
+You are now implementer in repo4.
+
+$ echo '{"session_id":"s-two","hook_event_name":"Stop"}' | env CLAUDE_CODE_SESSION_ID=s-two CLAUDE_PID=<pid> handoff hook listen --timeout 3s
+handoff: nothing new for implementer in 3s. Just end your turn; listening starts again when it ends.
+# exit 2
+
+$ echo '{"session_id":"s-two","hook_event_name":"Stop"}' | env CLAUDE_CODE_SESSION_ID=s-two CLAUDE_PID=<pid> handoff-h26 hook listen --timeout 3s
+handoff: new for implementer:
+#2 fyi - operator → implementer: Merge when the reviewer approves.
+Read each with `handoff-h26 show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit 2
+
+$ echo '{"session_id":"s-two","hook_event_name":"Stop"}' | env CLAUDE_CODE_SESSION_ID=s-two CLAUDE_PID=<pid> handoff-v0.1.2 hook listen --timeout 3s
+handoff: new for implementer:
+#2 fyi - operator → implementer: Merge when the reviewer approves.
+Read each with `handoff-v0.1.2 show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit 2
+
+### F4c. The older builds read a record with an fyi in it
+
+$ handoff-h26 show 2
+#2 fyi
+from: operator → implementer
+ts: 2026-11-11T00:19:34Z
+session: s-one
+prev: b8614dbe41c568e3d700e3d87e25f84af5ae0caab82fa5c2366fe7a5ccbc1156
+---
+Merge when the reviewer approves.
+# exit 0
+
+$ handoff-v0.1.2 show 2
+#2 fyi 
+from: operator → implementer
+ts: 2026-11-11T00:19:34Z
+prev: b8614dbe41c568e3d700e3d87e25f84af5ae0caab82fa5c2366fe7a5ccbc1156
+---
+Merge when the reviewer approves.
+# exit 0
+# handoff-h26 inbox --for implementer --quiet: exit 0
+# handoff-h26 inbox --for reviewer --quiet: exit 0
+# handoff-h26 inbox --for operator --quiet: exit 0
+
+$ env HANDOFF_ROLE=reviewer handoff-v0.1.2 note --item W1 --to implementer --title after an fyi, by v0.1.2 --body <scratch>/body.md
+posted #3 note W1 reviewer → implementer: after an fyi, by v0.1.2
+# exit 0
+
+# the record:
+{"id":1,"kind":"fyi","from":"operator","to":"implementer","session":"s-one","body":"Carry on while I'm away.","prev":"genesis"}
+{"id":2,"kind":"fyi","from":"operator","to":"implementer","session":"s-one","body":"Merge when the reviewer approves.","prev":"<hash>"}
+{"id":3,"kind":"note","item":"W1","from":"reviewer","to":"implementer","title":"after an fyi, by v0.1.2","body":"x\n","prev":"<hash>"}
+# the cursors: implementer #2  
+
+## F5. The message: words that are also commands, and the old name as the message
+
+$ env CLAUDE_CODE_SESSION_ID=s-impl CLAUDE_PID=<pid> handoff role implementer
+You are now implementer in repo5.
+
+$ [terminal] handoff fyi tell everyone: no merges tonight
+told implementer (#1)
+not told, no session: reviewer, reviewer-2
+# exit 0
+
+$ [terminal] handoff fyi fyi
+told implementer (#2)
+not told, no session: reviewer, reviewer-2
+# exit 0
+
+$ [terminal] handoff fyi -fyi
+handoff fyi: fyi takes no flags, and a message can't start with -: give the message alone, in quotes, such as handoff fyi "Carry on while I'm away."
+# exit 2
+
+$ [terminal] handoff fyi --
+handoff fyi: fyi takes no flags, and a message can't start with -: give the message alone, in quotes, such as handoff fyi "Carry on while I'm away."
+# exit 2
+
+# the record:
+{"id":1,"kind":"fyi","from":"operator","to":"implementer","session":"s-impl","body":"tell everyone: no merges tonight","prev":"genesis"}
+{"id":2,"kind":"fyi","from":"operator","to":"implementer","session":"s-impl","body":"fyi","prev":"<hash>"}
+# the cursors: 
+
+# alerts sent in every probe above: 0 (to the scratch file only)

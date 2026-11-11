@@ -188,6 +188,7 @@ func TestH9HandoffOnItsOwnAsksAboutEach(t *testing.T) {
 // Without a terminal it lists and writes nothing, so an agent's shell can
 // read it but not decide.
 func TestH9HandoffOnItsOwnWithoutATerminal(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	req := r.approved(t, "W1")
 	res := r.run(t, "", "a\n\n", nil)
@@ -201,6 +202,7 @@ func TestH9HandoffOnItsOwnWithoutATerminal(t *testing.T) {
 
 // In an agent's session, handoff on its own is that role's inbox.
 func TestH9HandoffOnItsOwnInAnAgentSession(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	r.request(t, "W1", r.commitA)
 	res := r.h(t, "reviewer")
@@ -210,6 +212,7 @@ func TestH9HandoffOnItsOwnInAnAgentSession(t *testing.T) {
 }
 
 func TestH9HandoffOnItsOwnOutsideAProject(t *testing.T) {
+	t.Parallel()
 	cmd := exec.Command(bin)
 	cmd.Dir, cmd.Env = t.TempDir(), env()
 	out, err := cmd.CombinedOutput()

@@ -1,0 +1,32 @@
+# command: go build ./...; go vet ./...; gofmt -l cmd internal; go.mod; go list -deps; commits and diffstat since the base 7c5b98a6ce3db6976b032c33753b20b1f63a28ce
+# date: 2026-10-27 22:02:48 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: ba23d944ffbf89d8b880923add7434ce400d087c
+
+go version go1.25.3 darwin/arm64
+## go build: ok
+## go vet: clean
+## gofmt -l cmd internal: []
+## go.mod require lines: 0
+## packages in go list -deps ./... named net or under net/: 0
+## commits on the base:
+ba23d94 docs: evidence for H25
+4f228c4 docs: §17 row 91: H25, the README's setup command, and a correction to row 90 (b)
+fa4b9e2 test: the comment above TestMain: a timeout that only ends a step times nothing
+de363a8 docs: README: the setup a session offers names its CLI
+## diffstat:
+ README.md                                 |   2 +-
+ cmd/handoff/main_test.go                  |   8 ++-
+ docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md |   1 +
+ evidence/h25/README.md                    |  12 ++++
+ evidence/h25/collect.sh                   | 106 ++++++++++++++++++++++++++++++
+ evidence/h25/deps-vet-fmt.log             |   9 +++
+ evidence/h25/h12a-under-load.log          |  19 ++++++
+ evidence/h25/names.log                    |  11 ++++
+ evidence/h25/readme.log                   |  49 ++++++++++++++
+ 9 files changed, 213 insertions(+), 4 deletions(-)
+## main is now 6a38229cf19822c8982774a9d14c5556c774de26; commits on main since the base:
+6a38229 docs(channel): board: H25 in review (#124)
+## what main adds since the base touches:
+ docs/CHANNEL.md | 1 +
+ 1 file changed, 1 insertion(+)

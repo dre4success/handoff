@@ -1,0 +1,72 @@
+# command: git merge-tree --write-tree main <commit>, objects to a scratch directory; the name sweep over main, the commit, the merged tree and the reviewer's evidence folder
+# date: 2026-11-10 18:12:04 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: f3be27c25afae359e4d8417c0d3a9c5def2ff88b
+
+## main is fdc37cbf1b90ca57f4c9401d46dc29348a34335e; the request's base is 1af34c7b053db2bc73e242b63691c53f3efb5d39; commits on main since the base:
+fdc37cb docs(channel): board: H26 in review (#128)
+ docs/CHANNEL.md | 1 +
+ 1 file changed, 1 insertion(+)
+## loose objects in the repository before: 127
+## merge-tree of main and the commit: exit 0
+c47a185f30a6b6621290433efb806d046f80e3e3
+## loose objects in the repository after: 127
+## files that differ between main and the merged tree:
+Files main/README.md and merged/README.md differ
+Files main/cmd/handoff/brief.go and merged/cmd/handoff/brief.go differ
+Files main/cmd/handoff/cmds.go and merged/cmd/handoff/cmds.go differ
+Files main/cmd/handoff/main.go and merged/cmd/handoff/main.go differ
+Only in merged/cmd/handoff: tell_test.go
+Files main/docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md and merged/docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md differ
+Only in merged/evidence: h26
+Files main/internal/record/fault.go and merged/internal/record/fault.go differ
+Files main/internal/record/record_test.go and merged/internal/record/record_test.go differ
+Files main/internal/record/store.go and merged/internal/record/store.go differ
+## files that differ between the commit and the merged tree:
+Files commit/docs/CHANNEL.md and merged/docs/CHANNEL.md differ
+
+## sweep of main
+666 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder: 2 lines, 0 file names
+the names of the operator's other projects (the reviewer's list): 3 lines, 0 file names
+an email address: 36 lines, 0 file names
+
+## sweep of commit
+674 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder: 2 lines, 0 file names
+the names of the operator's other projects (the reviewer's list): 3 lines, 0 file names
+an email address: 36 lines, 0 file names
+
+## sweep of merged
+674 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder: 2 lines, 0 file names
+the names of the operator's other projects (the reviewer's list): 3 lines, 0 file names
+an email address: 36 lines, 0 file names
+
+## added lines in git diff 1af34c7 <commit> that match any pattern:
+the operator's name, as a word, in a file name or inside an identifier: 0 lines
+the operator's account name, other than in the module path: 0 lines
+a path under a home folder: 0 lines
+the names of the operator's other projects (the reviewer's list): 0 lines
+an email address: 0 lines
+
+## sweep of the reviewer's evidence folder
+9 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder: 0 lines, 0 file names
+the names of the operator's other projects (the reviewer's list): 0 lines, 0 file names
+an email address: 0 lines, 0 file names
+## the final sweep of this folder, after this log and the README:
+9 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines
+the operator's account name, other than in the module path: 0 lines
+a path under a home folder: 0 lines
+the names of the operator's other projects (the reviewer's list): 0 lines
+an email address: 0 lines

@@ -1,0 +1,31 @@
+# command: git grep for tell as the command or the kind; TestH27TellIsNowFyi on 3119db5
+# date: 2026-11-10 23:56:02 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 791d93356526bf71b1b016b1d90ed663e7e78743
+
+## files changed since 3119db5:
+README.md                                 |   4 +-
+cmd/handoff/brief.go                      |   6 +-
+cmd/handoff/cmds.go                       |  36 +++++-----
+cmd/handoff/{tell_test.go => fyi_test.go} | 113 +++++++++++++++++-------------
+cmd/handoff/main.go                       |   6 +-
+cmd/handoff/session.go                    |   4 +-
+docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md |   1 +
+internal/record/record.go                 |   2 +-
+internal/record/record_test.go            |   6 +-
+internal/wait/wait.go                     |   6 +-
+10 files changed, 101 insertions(+), 83 deletions(-)
+
+## git grep -n -E '"tell"|cmdTell|handoff tell|[Aa] tell\b|`tell' -- cmd internal README.md docs/prompts
+cmd/handoff/fyi_test.go:219:	if out, err := r.atTerminal(t, "", nil, "tell", "Carry on."); err == nil || !strings.Contains(out, `unknown command "tell"`) {
+# (the one match is the H27 test, which runs tell to see it refused)
+
+## TestH27TellIsNowFyi against 3119db5, where tell is a command
+--- FAIL: TestH27TellIsNowFyi (0.42s)
+    h27_test.go:14: tell: <nil>
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	0.932s
+FAIL
+## the same test at this commit
+--- PASS: TestH27TellIsNowFyi (0.29s)
+ok  	github.com/dre4success/handoff/cmd/handoff	0.583s

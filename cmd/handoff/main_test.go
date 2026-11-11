@@ -28,6 +28,14 @@ var (
 	raceBuild bool // set by race_test.go under -race
 )
 
+// A test that times nothing runs in parallel (t.Parallel), so every test
+// under -race ends within go test's default 10 minutes. A test that sleeps,
+// checks what a timeout does, or sets a short quiet limit runs alone, before
+// the parallel ones, so their load can't move its timing; so does the
+// fifty-process check, which is load itself (row 90). A timeout that only
+// ends a step, as the listener's in TestH12ACodexThreadKeepsItsRoleAlone,
+// times nothing (row 91).
+
 func TestMain(m *testing.M) {
 	// Tests that call the code in this process, such as the pop-up's, send
 	// what they tell the operator, and their holds on sleep, nowhere, unless a test
@@ -228,6 +236,7 @@ func (r *repo) request(t *testing.T, item, commit string, extra ...string) strin
 }
 
 func TestInitRefusesASecondTime(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	r.refused(t, "", "exists", "init", "--roles", "implementer,reviewer")
 }
@@ -275,6 +284,7 @@ func TestCheck1FiftyProcessesTwentyPostsEach(t *testing.T) {
 
 // Check 2: the same post twice gives one entry; a key reused with different content is refused.
 func TestCheck2SamePostTwice(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	b := r.body(t, "review W1")
 	args := []string{"post", "--item", "W1", "--to", "reviewer", "--commit", r.commitA, "--title", "W1", "--body", b}
@@ -296,6 +306,7 @@ func TestCheck2SamePostTwice(t *testing.T) {
 
 // Check 18: a retry after a lost receipt, with the same key, creates nothing.
 func TestCheck18RetryAfterLostReceipt(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	r1 := r.request(t, "W1", r.commitA)
 	b := r.body(t, "revision 2")
@@ -319,6 +330,7 @@ func signaled(t *testing.T, res result) {
 
 // Check 3: a writer killed leaving no newline; the next post refuses; repair keeps the bytes.
 func TestCheck3KilledWriterLeavesATornTail(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	r.ok(t, "implementer", "note", "--item", "W1", "--to", "reviewer", "--body", r.body(t, "one"))
 	r.ok(t, "implementer", "note", "--item", "W1", "--to", "reviewer", "--body", r.body(t, "two"))
@@ -350,6 +362,7 @@ func TestCheck3KilledWriterLeavesATornTail(t *testing.T) {
 
 // Row 51: killed after the record sync, before head.json; posting continues with an advisory.
 func TestRow51KilledAfterSyncIsAnAdvisory(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	r.ok(t, "implementer", "note", "--item", "W1", "--to", "reviewer", "--body", r.body(t, "one"))
 	signaled(t, r.run(t, "implementer", "", []string{record.FaultEnv + "=after-sync"}, "note", "--item", "W1", "--to", "reviewer", "--body", r.body(t, "two")))
@@ -369,6 +382,7 @@ func TestRow51KilledAfterSyncIsAnAdvisory(t *testing.T) {
 
 // Check 4: an edited middle line stops posting; reading still works and warns.
 func TestCheck4EditedMiddleLineStopsPosting(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	for _, b := range []string{"one", "two", "three"} {
 		r.ok(t, "implementer", "note", "--item", "W1", "--to", "reviewer", "--body", r.body(t, b))
@@ -386,6 +400,7 @@ func TestCheck4EditedMiddleLineStopsPosting(t *testing.T) {
 
 // Check 5: reply refusals, and a reply to a superseded request changes nothing.
 func TestCheck5ReplyRefusals(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	r1 := r.request(t, "W1", r.commitA)
 	note := idOf(t, r.ok(t, "implementer", "note", "--item", "W1", "--to", "reviewer", "--body", r.body(t, "fyi")))
@@ -412,6 +427,7 @@ func TestCheck5ReplyRefusals(t *testing.T) {
 
 // Check 6: a second revision supersedes the first; only the exact-commit verdict on it counts.
 func TestCheck6SecondRevision(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	r1 := r.request(t, "W1", r.commitA)
 	r.ok(t, "reviewer", "claim", r1)
@@ -431,6 +447,7 @@ func TestCheck6SecondRevision(t *testing.T) {
 }
 
 func TestPostChecksCommitsBranchAndParents(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	b := r.body(t, "x")
 	r.refused(t, "implementer", "does not name a commit", "post", "--item", "W1", "--to", "reviewer", "--commit", "deadbeef", "--title", "t", "--body", b)
@@ -448,6 +465,7 @@ func TestPostChecksCommitsBranchAndParents(t *testing.T) {
 
 // The QUESTION round trip, and inbox --quiet for hooks.
 func TestQuestionAnsweredByANote(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	quiet := func(role string) int { return r.h(t, role, "inbox", "--quiet").code }
 	if quiet("reviewer") != 0 || quiet("implementer") != 0 {
@@ -482,6 +500,7 @@ func TestQuestionAnsweredByANote(t *testing.T) {
 
 // Check 16: roles come from HANDOFF_ROLE or --as; a mismatch, no role, or decide without a terminal is refused.
 func TestCheck16Roles(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	b := r.body(t, "x")
 	note := []string{"note", "--item", "W1", "--to", "reviewer", "--body", b}
@@ -594,6 +613,7 @@ func TestCheck19InterruptedWait(t *testing.T) {
 
 // Part of check 14: two worktrees of one repository resolve to the same record.
 func TestLinkedWorktreeUsesTheSameRecord(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	wt := filepath.Join(t.TempDir(), "wt")
 	mustGit(t, r.dir, "worktree", "add", "-q", "--detach", wt, r.commitA)
@@ -688,6 +708,7 @@ func TestH6EditedLastLineIsWithheld(t *testing.T) {
 // H5 CHANGES 2, as GPT-6 ran it: a note linked to the QUESTION but sent to
 // the operator, or to another role, is not the answer.
 func TestH5LinkedEscalationIsNotAnAnswer(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	req := r.request(t, "W1", r.commitA)
 	q := idOf(t, r.ok(t, "reviewer", "reply", req, "--verdict", "QUESTION", "--commit", r.commitA, "--body", r.body(t, "why?")))
@@ -726,6 +747,7 @@ func cutLastLine(t *testing.T, r *repo) {
 // record sync. The retry returns the original receipt, one keyed request
 // exists, and repair only appends.
 func TestH6CutThenPostKilledAfterSyncIsRecoverable(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	r.ok(t, "implementer", "note", "--item", "W1", "--to", "reviewer", "--body", r.body(t, "one"))
 	r.ok(t, "implementer", "note", "--item", "W1", "--to", "reviewer", "--body", r.body(t, "two"))
@@ -761,6 +783,7 @@ func TestH6CutThenPostKilledAfterSyncIsRecoverable(t *testing.T) {
 // The same boundary inside repair: after a cut, a repair killed after its
 // record sync leaves a record that a second repair recovers by appending.
 func TestH6CutThenRepairKilledAfterSyncIsRecoverable(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	r.ok(t, "implementer", "note", "--item", "W1", "--to", "reviewer", "--body", r.body(t, "one"))
 	r.ok(t, "implementer", "note", "--item", "W1", "--to", "reviewer", "--body", r.body(t, "two"))

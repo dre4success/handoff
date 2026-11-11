@@ -1,0 +1,41 @@
+# command: the v0.1.2 release: the public commit checked in a plain clone, the push, then go install through the module proxy
+# date: 2026-10-26 21:33:08 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (go1.25.3)
+## clone at v0.1.2: 51898c0219b3f50fb1d1827b30fe278b257e76da, tree 3f12290ebabea36e30252543bc0e126d3e6d7d22
+## local main tree: 3f12290ebabea36e30252543bc0e126d3e6d7d22
+## handoff version: handoff v0.1.2
+## go.mod require lines: 0
+## go vet: clean
+## gofmt -l cmd internal: []
+## go test -count=1 -race -timeout 30m ./... (cmd/handoff takes close to the default 10 minutes under -race)
+ok  	github.com/dre4success/handoff/cmd/handoff	568.938s
+ok  	github.com/dre4success/handoff/internal/awake	1.329s
+ok  	github.com/dre4success/handoff/internal/gitx	1.420s
+ok  	github.com/dre4success/handoff/internal/notify	1.619s
+ok  	github.com/dre4success/handoff/internal/record	3.732s
+ok  	github.com/dre4success/handoff/internal/status	1.415s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	1.854s
+## go test exit: 0
+## H14's sweep of every tracked file
+636 files
+the operator's name, as a word, in a file name or inside an identifier: 0
+the operator's account name, other than in the module path: 0
+a path under a home folder, other than the test's made-up ones: 0
+the other project's name: 0
+the operator's email domains: 0
+## alerts sent: 0 (to the test file only)
+## git push origin main v0.1.2, on the operator's decision: 40ca8db..51898c0 main, new tag v0.1.2
+## git ls-remote after the push
+51898c0219b3f50fb1d1827b30fe278b257e76da	HEAD
+51898c0219b3f50fb1d1827b30fe278b257e76da	refs/heads/main
+7dad3b17cbeb6fe472c81d85066906d0d17029fd	refs/tags/v0.1.0
+2226a1194e87d2f1a301a778b2ed51a8a2d72b1e	refs/tags/v0.1.0^{}
+e61a3b2c4542e6ba95793e952e1204c879cb5b80	refs/tags/v0.1.1
+40ca8db0f05c5de5bf6f03828cd71b4548ef2a0b	refs/tags/v0.1.1^{}
+2ee8158458b9bcd694cfb3eb8bebf2d9bf83a810	refs/tags/v0.1.2
+51898c0219b3f50fb1d1827b30fe278b257e76da	refs/tags/v0.1.2^{}
+## 2026-10-26 21:43:01 UTC: go install github.com/dre4success/handoff/cmd/handoff@v0.1.2 and @latest, with a scratch GOBIN and module cache
+@v0.1.2: handoff v0.1.2
+@latest: handoff v0.1.2
+## proxy.golang.org list: v0.1.2 v0.1.0 v0.1.1 

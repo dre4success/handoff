@@ -1,0 +1,55 @@
+# command: handoff fyi's refusals; handoff tell; the usage
+# date: 2026-11-10 23:56:01 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 791d93356526bf71b1b016b1d90ed663e7e78743
+
+
+## no terminal
+handoff fyi: fyi needs a terminal on stdin: the operator types it, an agent's shell cannot
+# exit 2
+
+## no terminal, HANDOFF_ROLE=operator
+handoff fyi: fyi needs a terminal on stdin: the operator types it, an agent's shell cannot
+# exit 2
+
+## an agent's role
+handoff fyi: fyi is for the operator; the caller's role is implementer
+# exit 2
+
+## in the implementer's session
+handoff fyi: fyi is the operator's, in a terminal of the operator's own, never in an agent's session
+# exit 2
+
+## in a Codex thread with no role
+handoff fyi: fyi is the operator's, in a terminal of the operator's own, never in an agent's session
+# exit 2
+
+## no message
+handoff fyi: give the message, in quotes, such as handoff fyi "Carry on while I'm away."
+# exit 2
+
+## a blank message
+handoff fyi: give the message, in quotes, such as handoff fyi "Carry on while I'm away."
+# exit 2
+
+## a flag
+handoff fyi: fyi takes no flags, and a message can't start with -: give the message alone, in quotes, such as handoff fyi "Carry on while I'm away."
+# exit 2
+
+## handoff tell, at a terminal (first line of its output; the usage follows)
+handoff: unknown command "tell"
+
+## lines in the record after these: 0
+
+## at a terminal, with the implementer's session: the fyi goes through
+told implementer (#1)
+not told, no session: reviewer, reviewer-2
+# exit 0
+
+## at a terminal, once that session's process has ended: no session
+handoff fyi: no agent has a session now, so no one was told; nothing written
+# exit 2; lines in the record: 1
+
+## handoff --help: the lines that name fyi or tell
+13:  fyi     "<message>"           (the operator, at a terminal) tell every agent with a session
+30:decide, fyi, and handoff on its own, need no role: with none, outside an agent's

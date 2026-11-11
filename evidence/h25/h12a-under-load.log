@@ -1,0 +1,19 @@
+# command: go test -race -count=1 ./cmd/handoff in the background; meanwhile 8 at once of go test -race -count=5 -run '^TestH12ACodexThreadKeepsItsRoleAlone$' ./cmd/handoff
+# date: 2026-10-27 21:47:07 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 4f228c4e2ef20491bb97055a3e4be0c1a1f9ef1e
+
+## TestH12ACodexThreadKeepsItsRoleAlone, 8 copies at once, each -count=5, from 20 s into the whole run
+copy 1: exit 0; 5 passed, 0 failed; each took 9.36s 8.48s 8.27s 8.51s 8.25s 
+copy 2: exit 0; 5 passed, 0 failed; each took 9.32s 8.70s 8.58s 8.56s 8.42s 
+copy 3: exit 0; 5 passed, 0 failed; each took 9.49s 8.84s 8.57s 9.08s 8.45s 
+copy 4: exit 0; 5 passed, 0 failed; each took 9.53s 8.77s 8.63s 8.86s 8.40s 
+copy 5: exit 0; 5 passed, 0 failed; each took 9.32s 8.94s 8.51s 8.93s 8.40s 
+copy 6: exit 0; 5 passed, 0 failed; each took 9.13s 8.11s 8.34s 8.75s 8.36s 
+copy 7: exit 0; 5 passed, 0 failed; each took 9.43s 8.99s 8.53s 8.81s 8.37s 
+copy 8: exit 0; 5 passed, 0 failed; each took 9.33s 8.70s 8.42s 8.62s 8.38s 
+# all 8 done 69 s after the whole run started
+
+## the whole package beside them: its result, and its tests that failed, if any
+ok  	github.com/dre4success/handoff/cmd/handoff	397.047s
+# passed: 94; exit 0; wall time 397 s

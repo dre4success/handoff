@@ -1,0 +1,27 @@
+# command: go test -race -count=1 ./...; then the H26 and H27 tests, -count=10
+# date: 2026-11-10 23:56:05 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 791d93356526bf71b1b016b1d90ed663e7e78743
+
+ok  	github.com/dre4success/handoff/cmd/handoff	341.166s
+ok  	github.com/dre4success/handoff/internal/awake	1.344s
+ok  	github.com/dre4success/handoff/internal/gitx	1.432s
+ok  	github.com/dre4success/handoff/internal/notify	1.414s
+ok  	github.com/dre4success/handoff/internal/record	3.723s
+ok  	github.com/dre4success/handoff/internal/status	1.255s
+ok  	github.com/dre4success/handoff/internal/wait	1.824s
+# passed: 171; failed: 0; exit 0; wall time 346 s
+
+## the H26 and H27 tests in that run
+--- PASS: TestH26FyiReachesEverySessionAtOnce (12.66s)
+--- PASS: TestH26FyiWithNoSessionWritesNothing (1.20s)
+--- PASS: TestH26TornFyiStopsPostingUntilRepair (5.42s)
+--- PASS: TestH26AnFyiIsForTheSessionTold (13.87s)
+--- PASS: TestH26FyiIsTheOperatorsAlone (3.33s)
+--- PASS: TestH27TellIsNowFyi (3.22s)
+--- PASS: TestAppendAllChainsItsEntries (0.02s)
+--- PASS: TestAppendAllRefusals (0.01s)
+
+## the H26 and H27 tests, 10 times each under the race detector
+ok  	github.com/dre4success/handoff/cmd/handoff	370.569s
+ok  	github.com/dre4success/handoff/internal/record	2.035s

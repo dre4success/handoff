@@ -1,0 +1,133 @@
+package record
+
+import (
+	"fmt"
+	"sync"
+	"testing"
+	"time"
+)
+
+// The reviewer's check for H26 (f3be27c), not part of the commit: while one
+// writer appends tells three at a time with AppendAll and three others append
+// notes, readers that Load under the shared lock never see a tell without
+// the two written with it, and never a torn tail or a broken chain. Each
+// goroutine has its own Store, so each takes the lock through its own open
+// file, as separate processes do.
+func TestReviewerAppendAllReadersSeeAllOrNone(t *testing.T) {
+	s := newStore(t)
+	const rounds = 60
+	roles := []string{"implementer", "reviewer", "reviewer-2"}
+	stop := make(chan struct{})
+	bad := make(chan string, 64)
+	var readers, writers sync.WaitGroup
+	loads := make([]int, 4)
+	for r := 0; r < 4; r++ {
+		readers.Add(1)
+		go func(r int) {
+			defer readers.Done()
+			st := New(s.Dir())
+			for {
+				select {
+				case <-stop:
+					return
+				default:
+				}
+				// A pause between reads: readers that barely let go of the
+				// shared lock starve the writers (flock gives a waiting writer
+				// no turn), which is this test's doing, not handoff's; a wait
+				// reads at most once a second.
+				time.Sleep(20 * time.Millisecond)
+				snap, err := st.Load()
+				if err != nil {
+					bad <- err.Error()
+					return
+				}
+				loads[r]++
+				if snap.Broken != nil || snap.Torn != nil {
+					bad <- fmt.Sprintf("broken %v torn %q", snap.Broken, snap.Torn)
+					return
+				}
+				if adv := snap.Advisories(); len(adv) != 0 {
+					bad <- fmt.Sprintf("a reader saw head.json disagree: %v", adv)
+					return
+				}
+				n := map[string]int{}
+				for _, e := range snap.Entries {
+					if e.Kind == "tell" {
+						n[e.Body]++
+					}
+				}
+				for body, c := range n {
+					if c != len(roles) {
+						bad <- fmt.Sprintf("a reader saw %d of %d tells for %q", c, len(roles), body)
+						return
+					}
+				}
+			}
+		}(r)
+	}
+	for w := 0; w < 3; w++ {
+		writers.Add(1)
+		go func(w int) {
+			defer writers.Done()
+			st := New(s.Dir())
+			for i := 0; i < rounds; i++ {
+				_, _, err := st.Append(func(*Snapshot) (*Entry, *Entry, error) {
+					return &Entry{Kind: "note", Item: "T1", From: "implementer", To: "reviewer", Body: fmt.Sprintf("w%d n%d", w, i)}, nil, nil
+				})
+				if err != nil {
+					bad <- err.Error()
+					return
+				}
+			}
+		}(w)
+	}
+	writers.Add(1)
+	go func() {
+		defer writers.Done()
+		st := New(s.Dir())
+		for i := 0; i < rounds; i++ {
+			got, err := st.AppendAll(func(*Snapshot) ([]*Entry, error) {
+				var es []*Entry
+				for _, to := range roles {
+					es = append(es, &Entry{Kind: "tell", From: "operator", To: to, Body: fmt.Sprintf("tell %d", i)})
+				}
+				return es, nil
+			})
+			if err != nil {
+				bad <- err.Error()
+				return
+			}
+			if len(got) != 3 || got[1].ID != got[0].ID+1 || got[2].ID != got[0].ID+2 {
+				bad <- fmt.Sprintf("receipts %+v", got)
+				return
+			}
+		}
+	}()
+	writers.Wait()
+	close(stop)
+	readers.Wait()
+	close(bad)
+	for m := range bad {
+		t.Error(m)
+	}
+	snap := load(t, s)
+	assertIntact(t, snap, rounds*6)
+	// Every tell's three lines are next to each other, in the roles' order.
+	for i := 0; i < len(snap.Entries); i++ {
+		if snap.Entries[i].Kind != "tell" {
+			continue
+		}
+		for k, to := range roles {
+			e := snap.Entries[i+k]
+			if e.Kind != "tell" || e.To != to || e.Body != snap.Entries[i].Body || e.TS != snap.Entries[i].TS || e.ID != snap.Entries[i].ID+int64(k) {
+				t.Fatalf("entry %d: tell %q is not three lines together: %+v", i+k+1, snap.Entries[i].Body, e)
+			}
+		}
+		i += len(roles) - 1
+	}
+	if snap.Head.Lines != rounds*6 || snap.Head.Last != snap.LastHash {
+		t.Fatalf("head %+v", snap.Head)
+	}
+	t.Logf("%d tells of 3 among %d notes; the four readers loaded the record %v times", rounds, rounds*3, loads)
+}

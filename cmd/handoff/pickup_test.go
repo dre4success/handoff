@@ -39,6 +39,7 @@ func readConfig(t *testing.T, r *repo) config {
 }
 
 func TestH11InitWithNoFlags(t *testing.T) {
+	t.Parallel()
 	r := plainRepo(t, "main")
 	out := r.ok(t, "", "init")
 	c := readConfig(t, r)
@@ -70,6 +71,7 @@ func TestH11InitWithNoFlags(t *testing.T) {
 }
 
 func TestH11InitFindsTheMainBranch(t *testing.T) {
+	t.Parallel()
 	master := plainRepo(t, "master")
 	both := plainRepo(t, "master")
 	mustGit(t, both.dir, "branch", "main")
@@ -100,6 +102,7 @@ func TestH11InitFindsTheMainBranch(t *testing.T) {
 }
 
 func TestH11InitReviewers(t *testing.T) {
+	t.Parallel()
 	for _, tc := range []struct {
 		args []string
 		want []roleCfg
@@ -121,6 +124,7 @@ func TestH11InitReviewers(t *testing.T) {
 // CLI when it starts. Even where the roles are named after the agents, the
 // settings give no session a role; the operator does.
 func TestH16SettingsNeverPickARole(t *testing.T) {
+	t.Parallel()
 	r := plainRepo(t, "main")
 	r.ok(t, "", "init", "--roles", "claude,codex")
 	out := r.ok(t, "", "settings", "claude")
@@ -142,6 +146,7 @@ func TestH16SettingsNeverPickARole(t *testing.T) {
 // Either agent can implement, so each agent's brief says how to ask the
 // other for a review, and every command it gives runs as printed.
 func TestH11BriefCommandsRunForClaudeAndCodex(t *testing.T) {
+	t.Parallel()
 	r := plainRepo(t, "main")
 	r.ok(t, "", "init", "--roles", "claude,codex")
 	mustGit(t, r.dir, "switch", "-q", "-c", "w1")
@@ -168,6 +173,7 @@ func TestH11BriefCommandsRunForClaudeAndCodex(t *testing.T) {
 // With an implementer and reviewers, only the implementer is told how to
 // ask for a review, and of whom.
 func TestH11BriefTellsTheImplementerHowToAsk(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	req := r.request(t, "W1", r.commitA)
 	fill := strings.NewReplacer("<id>", req, "<sha>", r.commitB, "<file>", r.body(t, "a question"), "<role>", "reviewer",
@@ -190,6 +196,7 @@ func TestH11BriefTellsTheImplementerHowToAsk(t *testing.T) {
 // request names a commit. Outside one, a command says so and how to make one,
 // and keeps git's own words. Then init works, with no commit yet.
 func TestH18OutsideGitSaysRunGitInit(t *testing.T) {
+	t.Parallel()
 	r := &repo{dir: t.TempDir()}
 	// Git looks no higher than the folder, and speaks English.
 	e := []string{"GIT_CEILING_DIRECTORIES=" + filepath.Dir(r.dir), "LC_ALL=C"}
@@ -211,6 +218,7 @@ func TestH18OutsideGitSaysRunGitInit(t *testing.T) {
 // run only those in use. The name comes first, so the rest of the line is the
 // command, and it runs as printed.
 func TestH18InitNamesEachCLI(t *testing.T) {
+	t.Parallel()
 	r := plainRepo(t, "main")
 	out := r.ok(t, "", "init")
 	if want := "handoff's hooks keep sessions on duty. Set them once, for every project:\n"; !strings.Contains(out, want) {
@@ -240,6 +248,7 @@ func TestH18InitNamesEachCLI(t *testing.T) {
 // worktree whose repository is gone, and GIT_DIR naming a missing path
 // (the reviewer's P5 and P6, evidence/reviewer/H18-1c392de/probes.log).
 func TestH18AMissingRepositoryGetsNoHint(t *testing.T) {
+	t.Parallel()
 	gone := &repo{dir: t.TempDir()}
 	missing := filepath.Join(t.TempDir(), "main", ".git", "worktrees", "gone")
 	if err := os.WriteFile(filepath.Join(gone.dir, ".git"), []byte("gitdir: "+missing+"\n"), 0o644); err != nil {
@@ -269,6 +278,7 @@ func TestH18AMissingRepositoryGetsNoHint(t *testing.T) {
 // implementer as a note. The commands are run as printed by TestH10Brief-
 // CommandsRun and TestH11BriefCommandsRunForClaudeAndCodex.
 func TestH19BriefSaysWhoCommitsAndWhereFindingsGo(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	impl := r.ok(t, "implementer", "brief")
 	for _, want := range []string{
@@ -294,6 +304,7 @@ func TestH19BriefSaysWhoCommitsAndWhereFindingsGo(t *testing.T) {
 // with no base. Any other commit still needs main or --base, so a misnamed
 // main is still caught.
 func TestH19FirstCommitNeedsNoBase(t *testing.T) {
+	t.Parallel()
 	r := &repo{dir: t.TempDir()}
 	mustGit(t, r.dir, "init", "-q", "-b", "main")
 	r.ok(t, "", "init")

@@ -1,0 +1,37 @@
+# command: handoff fyi at a terminal (script(1)), with wait --for implementer and hook listen for reviewer running, reviewer-2 with no session
+# date: 2026-11-10 23:55:58 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 791d93356526bf71b1b016b1d90ed663e7e78743
+
+## $ handoff fyi "Carry on while I'm away."
+told implementer and reviewer (#1, #2)
+not told, no session: reviewer-2
+# exit 0
+
+## the implementer's wait: exit 0
+#1 fyi - operator → implementer: Carry on while I'm away.
+## the reviewer's hook listen: exit 2 (2 wakes the session)
+handoff: new for reviewer:
+#2 fyi - operator → reviewer: Carry on while I'm away.
+Read each with `handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+
+## handoff show 1
+#1 fyi
+from: operator → implementer
+ts: 2026-11-10T23:56:00Z
+prev: genesis
+---
+Carry on while I'm away.
+
+## the record's lines
+{"v":1,"id":1,"ts":"2026-11-10T23:56:00Z","kind":"fyi","from":"operator","to":"implementer","body":"Carry on while I'm away.","prev":"genesis"}
+{"v":1,"id":2,"ts":"2026-11-10T23:56:00Z","kind":"fyi","from":"operator","to":"reviewer","body":"Carry on while I'm away.","prev":"<hash>"}
+
+## inbox --quiet for implementer: exit 0 (0: nothing waits)
+## inbox --quiet for reviewer: exit 0 (0: nothing waits)
+## inbox --quiet for reviewer-2: exit 0 (0: nothing waits)
+## inbox --quiet for operator: exit 0 (0: nothing waits)
+## alerts sent: 0
+
+## the brief's line for an fyi (brief --for reviewer)
+- An fyi from the operator, to every agent with a session: take it as the operator's word, as if said in this session, and act on it. Don't answer it through handoff; anything to say, say in this session.

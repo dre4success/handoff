@@ -1,0 +1,8 @@
+# command: git diff 1af34c7: added lines with a home path or an email address
+# date: 2026-11-10 18:30:43 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: e35c568905967694d34c97218d810704eeb12ddb
+
+## files changed: 19
+## added lines matching /Users/, /home/ or an email address: 3
+## the same in evidence/h26's other logs as collected: 0

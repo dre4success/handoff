@@ -38,7 +38,13 @@ func (realClock) Sleep(d time.Duration) { time.Sleep(d) }
 var Real Clock = realClock{}
 
 type Options struct {
-	Role     string
+	Role string
+	// Session is the agent session this wait listens for, or "" outside one.
+	// An fyi that names another session was meant for that session alone:
+	// the wait passes over it, moving the cursor past it and delivering
+	// nothing, so a session never gets an fyi written before it held the
+	// role (row 93).
+	Session  string
 	Timeout  time.Duration
 	Emit     bool          // keep streaming until the deadline instead of returning on the first delivery
 	Interval time.Duration // how often to stat the record
@@ -166,6 +172,13 @@ func Run(store *record.Store, o Options) (int, error) {
 			}
 			for _, e := range snap.Entries {
 				if e.To != o.Role || e.ID <= cur {
+					continue
+				}
+				if e.Kind == "fyi" && e.Session != "" && e.Session != o.Session {
+					cur = e.ID
+					if err := writeCursor(store.Dir(), o.Role, cur); err != nil {
+						return 0, err
+					}
 					continue
 				}
 				if _, err := fmt.Fprintln(o.Out, status.Summary(e)); err != nil {

@@ -1,0 +1,47 @@
+# command: go test -race -count=1 -v ./... (no -timeout); then the H26 tests, -count=5; then the reviewer's own AppendAll test, -count=3
+# date: 2026-11-10 18:04:14 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: f3be27c25afae359e4d8417c0d3a9c5def2ff88b
+
+ok  	github.com/dre4success/handoff/cmd/handoff	331.997s
+ok  	github.com/dre4success/handoff/internal/awake	1.359s
+ok  	github.com/dre4success/handoff/internal/gitx	1.286s
+ok  	github.com/dre4success/handoff/internal/notify	1.357s
+ok  	github.com/dre4success/handoff/internal/record	3.684s
+ok  	github.com/dre4success/handoff/internal/status	1.284s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	1.694s
+# passed: 169; failed: 0; skipped: 2; data races: 0; exit 0; wall time 332 s
+
+## the H26 tests in that run
+--- PASS: TestH26TellReachesEverySessionAtOnce (11.66s)
+--- PASS: TestH26TellWithNoSessionWritesNothing (1.23s)
+--- PASS: TestH26TornTellStopsPostingUntilRepair (5.42s)
+--- PASS: TestH26TellIsTheOperatorsAlone (3.44s)
+--- PASS: TestAppendAllChainsItsEntries (0.02s)
+--- PASS: TestAppendAllRefusals (0.01s)
+
+## the H26 tests, 5 times each under the race detector
+   5 --- PASS: TestH26TellIsTheOperatorsAlone
+   5 --- PASS: TestH26TellReachesEverySessionAtOnce
+   5 --- PASS: TestH26TellWithNoSessionWritesNothing
+   5 --- PASS: TestH26TornTellStopsPostingUntilRepair
+   1 ok  	github.com/dre4success/handoff/cmd/handoff	109.940s
+   5 --- PASS: TestAppendAllChainsItsEntries
+   5 --- PASS: TestAppendAllRefusals
+   1 ok  	github.com/dre4success/handoff/internal/record	1.525s
+
+## the reviewer's test (appendall-readers_test.go.txt), in a second worktree at the same commit, 3 times under the race detector
+f3be27c25afae359e4d8417c0d3a9c5def2ff88b
+?? internal/record/zz_reviewer_h26_test.go
+=== RUN   TestReviewerAppendAllReadersSeeAllOrNone
+    zz_reviewer_h26_test.go:132: 60 tells of 3 among 180 notes; the four readers loaded the record [57 56 54 57] times
+--- PASS: TestReviewerAppendAllReadersSeeAllOrNone (3.56s)
+=== RUN   TestReviewerAppendAllReadersSeeAllOrNone
+    zz_reviewer_h26_test.go:132: 60 tells of 3 among 180 notes; the four readers loaded the record [57 58 61 60] times
+--- PASS: TestReviewerAppendAllReadersSeeAllOrNone (3.62s)
+=== RUN   TestReviewerAppendAllReadersSeeAllOrNone
+    zz_reviewer_h26_test.go:132: 60 tells of 3 among 180 notes; the four readers loaded the record [57 57 57 62] times
+--- PASS: TestReviewerAppendAllReadersSeeAllOrNone (3.49s)
+PASS
+ok  	github.com/dre4success/handoff/internal/record	11.921s

@@ -1,0 +1,10 @@
+# command: find every .handoff/channel.jsonl under the home folder (12 levels, Library, node_modules and the Trash left out) and count its entries of kind tell and fyi; git tag and git branch -r --contains 17b7920; the installed handoff
+# date: 2026-11-11 00:21:17 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the operator's Mac
+# commit: 9315eb48021f0c7c2ae037aaa2df4d65211d12bb (under review; nothing here runs it)
+
+## handoff records found: 8, with 1859 entries in all
+## entries of kind tell: 0; of kind fyi: 0
+## tags that contain the H26 merge (17b7920): []; tags in the repository: 0
+## remote branches that contain it: []; remotes: 0
+## the handoff installed now: handoff v0.0.0-20261110233940-17b79204683c (the H26 merge's build: tell still works there until the next install)

@@ -45,7 +45,7 @@ Once set up, each session:
 
 A Claude Code session also tells you when it's stuck at a permission prompt.
 
-A session that isn't set up offers to set itself up. With your OK, it adds what `handoff settings --global` prints; then start it again.
+A session that isn't set up offers to set itself up. With your OK, it adds what `handoff settings claude --global` (or `codex`) prints; then start it again.
 
 ## Deciding
 
@@ -74,6 +74,14 @@ A session that isn't set up offers to set itself up. With your OK, it adds what 
 
 ## While you're away
 
+To tell every agent something at once, such as that you're going away, run this in your own terminal in the project:
+
+```
+handoff fyi "Carry on while I'm away."
+```
+
+Every agent with a session gets it, and it says which ones did. They act on it and don't reply through handoff, so it brings you no notifications; anything they have to say is in their own sessions. A session started later doesn't get it.
+
 While an agent owes a move, a listening session keeps your Mac awake, for up to two hours. Closing the lid still puts it to sleep. If the Mac sleeps, nothing is lost: work is picked up when it wakes.
 
 ## Commands
@@ -90,6 +98,7 @@ While an agent owes a move, a listening session keeps your Mac awake, for up to 
 | `reply <id>` | APPROVE, CHANGES or QUESTION |
 | `note` | Anything else, such as an answer to a question |
 | `decide <item>` | You approve or deny, at a terminal |
+| `fyi "<message>"` | You tell every agent with a session, at once, at a terminal |
 | `inbox`, `wait`, `show <id>`, `brief` | Read what's waiting, wait for it, show one entry, show a session's brief |
 | `repair` | Fixes the record after a crash, keeping every byte |
 | `version` | The version installed |

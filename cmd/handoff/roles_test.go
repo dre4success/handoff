@@ -13,6 +13,7 @@ import (
 // the agents gets roles named by job, without changing an entry, and a
 // session can then hold and work in a new role.
 func TestH16RolesAddKeepsTheRecord(t *testing.T) {
+	t.Parallel()
 	r := plainRepo(t, "main")
 	r.ok(t, "", "init", "--roles", "claude,codex")
 	r.ok(t, "codex", "post", "--item", "W1", "--to", "claude", "--commit", "HEAD", "--title", "W1 work", "--body", r.body(t, "please review"))
@@ -54,6 +55,7 @@ func TestH16RolesAddKeepsTheRecord(t *testing.T) {
 }
 
 func TestH16RolesAddRefuses(t *testing.T) {
+	t.Parallel()
 	r := plainRepo(t, "main")
 	r.refused(t, "", "handoff init", "roles", "add", "reviewer")
 	r.ok(t, "", "init")

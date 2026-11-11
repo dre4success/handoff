@@ -1,0 +1,41 @@
+# command: bash run.sh (below): go test -race -count=1 -v ./... in a detached worktree at the commit, with no -timeout; alerts and sleep holds to scratch files, HOME and both CLIs' settings folders scratch
+# date: 2026-10-27 21:58:16 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: ba23d944ffbf89d8b880923add7434ce400d087c
+
+## run.sh
+#!/bin/bash
+S=<scratchpad>
+cd "$S/wt-h25" || exit 9
+export HANDOFF_TEST_NOTIFY="$S/h25/race/alerts.txt" HANDOFF_TEST_AWAKE="$S/h25/race/awake.txt"
+export HOME="$S/h25/race/home" CLAUDE_CONFIG_DIR="$S/h25/race/home/.claude" CODEX_HOME="$S/h25/race/home/.codex"
+mkdir -p "$CLAUDE_CONFIG_DIR" "$CODEX_HOME"
+unset HANDOFF_ROLE CLAUDE_CODE_SESSION_ID CLAUDE_PID CODEX_THREAD_ID
+echo "start $(date -u '+%Y-%m-%d %H:%M:%S UTC') commit $(git rev-parse HEAD)"
+s=$(date +%s)
+go test -race -count=1 -v ./... > "$S/h25/race/go-test.out" 2>&1
+code=$?
+echo "exit $code after $(( $(date +%s) - s )) s"
+echo "pass: $(grep -c '^--- PASS' "$S/h25/race/go-test.out") fail: $(grep -c '^--- FAIL' "$S/h25/race/go-test.out")"
+grep -E '^(ok|FAIL|---FAIL|panic)' "$S/h25/race/go-test.out"
+echo "alerts: $(cat "$S/h25/race/alerts.txt" 2>/dev/null | wc -l | tr -d ' ')"
+
+## the run's summary (the full -v output, 163 tests, is in the scratchpad, not here). The reviewer's probes and, for a few seconds, 16 busy loops ran on the machine during it.
+start 2026-10-27 21:58:16 UTC commit ba23d944ffbf89d8b880923add7434ce400d087c
+exit 0 after 462 s
+pass: 163 fail: 0
+ok  	github.com/dre4success/handoff/cmd/handoff	438.893s
+ok  	github.com/dre4success/handoff/internal/awake	1.625s
+ok  	github.com/dre4success/handoff/internal/gitx	1.251s
+ok  	github.com/dre4success/handoff/internal/notify	1.645s
+ok  	github.com/dre4success/handoff/internal/record	5.359s
+ok  	github.com/dre4success/handoff/internal/status	1.369s
+ok  	github.com/dre4success/handoff/internal/wait	2.043s
+alerts: 0
+
+## WARNING: DATA RACE lines: 0
+## the tests H24 and H25 are about:
+--- PASS: TestH8QuietClaimTellsTheOperatorOnce (9.76s)
+--- PASS: TestH8ClaimingAgainWritesNothingAndTellsOnce (7.25s)
+--- PASS: TestH12ACodexThreadKeepsItsRoleAlone (9.48s)
+## tests that call t.Parallel at this commit: 53 of 94 in cmd/handoff (as at H24)

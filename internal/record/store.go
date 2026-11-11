@@ -113,11 +113,8 @@ func (s *Store) Append(build func(*Snapshot) (*Entry, *Entry, error)) (Entry, bo
 	if err != nil {
 		return Entry{}, false, err
 	}
-	if snap.Torn != nil {
-		return Entry{}, false, fmt.Errorf("%w (%d bytes after line %d, left by an interrupted write); run `handoff repair`", ErrTornTail, len(snap.Torn), snap.Lines)
-	}
-	if snap.Broken != nil {
-		return Entry{}, false, fmt.Errorf("%w at line %d: %s; posting stops until the operator decides", ErrBroken, snap.Broken.Line, snap.Broken.Detail)
+	if err := writable(snap); err != nil {
+		return Entry{}, false, err
 	}
 	e, existing, err := build(snap)
 	if err != nil {
@@ -149,6 +146,80 @@ func (s *Store) Append(build func(*Snapshot) (*Entry, *Entry, error)) (Entry, bo
 		return *e, false, fmt.Errorf("entry #%d is in the record, but head.json was not updated: %w", e.ID, err)
 	}
 	return *e, false, nil
+}
+
+// AppendAll adds several entries under one exclusive lock, in one write and
+// one sync, so no other entry lands between them, and no reader, who reads
+// under the lock, sees some without the rest. A write cut short by a crash
+// keeps the whole lines before the cut. A cut inside a line leaves a torn
+// tail, as Append's does, and posting stops until repair, which keeps it; a
+// cut just after a newline leaves none, and only head.json's advisory shows
+// it (row 93). build sees the record as it is under the
+// lock and returns the entries to write, or an error to refuse. AppendAll
+// fills in each entry's v, id, ts and prev, each prev the hash of the line
+// before it.
+func (s *Store) AppendAll(build func(*Snapshot) ([]*Entry, error)) ([]Entry, error) {
+	unlock, err := s.lock(syscall.LOCK_EX)
+	if err != nil {
+		return nil, err
+	}
+	defer unlock()
+	snap, err := s.read()
+	if err != nil {
+		return nil, err
+	}
+	if err := writable(snap); err != nil {
+		return nil, err
+	}
+	es, err := build(snap)
+	if err != nil {
+		return nil, err
+	}
+	if len(es) == 0 {
+		return nil, errors.New("nothing to append")
+	}
+	var b []byte
+	id, prev, ts := snap.NextID(), snap.LastHash, s.timestamp()
+	for _, e := range es {
+		e.V, e.ID, e.TS, e.Prev = Version, id, ts, prev
+		line, err := encode(e)
+		if err != nil {
+			return nil, err
+		}
+		b = append(append(b, line...), '\n')
+		id, prev = id+1, HashLine(line)
+	}
+	if fault("torn") {
+		s.writeRecord(b[:len(b)/2])
+		killSelf()
+	}
+	if err := s.writeRecord(b); err != nil {
+		return nil, err
+	}
+	if fault("after-sync") {
+		killSelf()
+	}
+	out := make([]Entry, len(es))
+	for i, e := range es {
+		out[i] = *e
+	}
+	first, last := es[0].ID, es[len(es)-1].ID
+	head := Head{V: Version, Lines: snap.Lines + len(es), Last: prev, ID: last, Advisory: s.carryAdvisory(snap)}
+	if err := s.writeHead(head); err != nil {
+		return out, fmt.Errorf("entries #%d to #%d are in the record, but head.json was not updated: %w", first, last, err)
+	}
+	return out, nil
+}
+
+// writable refuses a record with a torn tail or a broken chain.
+func writable(snap *Snapshot) error {
+	if snap.Torn != nil {
+		return fmt.Errorf("%w (%d bytes after line %d, left by an interrupted write); run `handoff repair`", ErrTornTail, len(snap.Torn), snap.Lines)
+	}
+	if snap.Broken != nil {
+		return fmt.Errorf("%w at line %d: %s; posting stops until the operator decides", ErrBroken, snap.Broken.Line, snap.Broken.Detail)
+	}
+	return nil
 }
 
 // Repair closes a torn tail, keeping its bytes, or rewrites a head.json that

@@ -1,0 +1,54 @@
+# command: round 2: a later session never gets an old tell (the reviewer's P1a, P1b); the session told does
+# date: 2026-11-10 18:18:31 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: e35c568905967694d34c97218d810704eeb12ddb
+
+## s-one has the role; a tell
+told implementer (#1)
+not told, no session: reviewer, reviewer-2
+# exit 0
+{"v":1,"id":1,"ts":"2026-11-10T18:18:31Z","kind":"tell","from":"operator","to":"implementer","session":"s-one","body":"Merge when the reviewer approves.","prev":"genesis"}
+
+## P1a: s-one's process ended before it read the tell; s-two takes the role and listens
+handoff: nothing new for implementer in 2s. Just end your turn; listening starts again when it ends.
+# exit 2
+
+## P1b: a tell to s-two; the operator gives the role to s-three before s-two reads it
+told implementer (#2)
+not told, no session: reviewer, reviewer-2
+# exit 0
+## s-three listens
+handoff: nothing new for implementer in 2s. Just end your turn; listening starts again when it ends.
+# exit 2
+## s-two listens, having lost the role
+# exit 0
+
+## a tell to s-three, then a note for the role: s-three listens and gets both
+told implementer (#3)
+not told, no session: reviewer, reviewer-2
+# exit 0
+posted #4 note W1 reviewer → implementer: a note
+handoff: new for implementer:
+#3 tell - operator → implementer: Carry on, three.
+#4 note W1 reviewer → implementer: a note
+Read each with `handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit 2
+
+## handoff show 3
+#3 tell
+from: operator → implementer
+ts: 2026-11-10T18:18:35Z
+session: s-three
+prev: 48913ee667b0d44dacfabf904a5e11c3aeb3e8c8d18b3eb076e327c7f2be9ea0
+---
+Carry on, three.
+
+## TestH26ATellIsForTheSessionTold against round 1 (f3be27c), its Session check left out, as round 1 has no such field
+--- FAIL: TestH26ATellIsForTheSessionTold (0.45s)
+    round2_test.go:43: a later session got the old tell:
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	0.903s
+FAIL
+## the same test at this commit
+--- PASS: TestH26ATellIsForTheSessionTold (3.55s)
+ok  	github.com/dre4success/handoff/cmd/handoff	3.847s

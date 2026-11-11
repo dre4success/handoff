@@ -1,0 +1,138 @@
+# command: a scan of every test in cmd/handoff at this commit: parallel or alone, its duration in the implementer's after log, and what in its body (and the helpers it calls) touches time, processes, listeners or the environment; then the sums
+# date: 2026-10-26 22:29:07 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: b41bf149639418fd20a9d6a139fbdea74ce642f6
+
+kind        secs  test                                                 what touches time, processes, listeners or the environment (body and the repo helpers it calls)
+parallel    16.0  TestQuestionAnsweredByANote                          -
+parallel    12.6  TestH11BriefCommandsRunForClaudeAndCodex             -
+parallel    12.5  TestH5LinkedEscalationIsNotAnAnswer                  -
+parallel    11.0  TestH19FirstCommitNeedsNoBase                        -
+parallel    10.4  TestH10BriefCommandsRun                              -
+parallel     9.8  TestCheck6SecondRevision                             -
+parallel     9.7  TestH11BriefTellsTheImplementerHowToAsk              -
+parallel     9.5  TestH9bLaterAndGivingUpWriteNothing                  -
+parallel     9.0  TestH16RolesAddKeepsTheRecord                        -
+parallel     8.6  TestCheck5ReplyRefusals                              -
+parallel     8.0  TestH12ACodexThreadKeepsItsRoleAlone                 timeout, listener
+parallel     7.7  TestH9bDenyThenCancelWritesNothing                   -
+parallel     6.7  TestH11InitFindsTheMainBranch                        -
+parallel     6.3  TestH10Brief                                         timeout, listener
+parallel     6.0  TestH10APathWithSpaces                               -
+parallel     6.0  TestH6CutThenPostKilledAfterSyncIsRecoverable        ends process, fault env
+parallel     6.0  TestCheck4EditedMiddleLineStopsPosting               -
+parallel     5.9  TestCheck3KilledWriterLeavesATornTail                ends process, fault env
+parallel     5.8  TestH6CutThenRepairKilledAfterSyncIsRecoverable      ends process, fault env
+parallel     5.1  TestH8ApproveTellsTheOperatorAtOnce                  -
+parallel     5.1  TestCheck2SamePostTwice                              -
+parallel     5.0  TestH9HandoffOnItsOwnWithoutATerminal                -
+parallel     5.0  TestRow51KilledAfterSyncIsAnAdvisory                 ends process, fault env
+parallel     4.9  TestCheck16Roles                                     -
+parallel     4.9  TestCheck18RetryAfterLostReceipt                     -
+parallel     4.7  TestH10HookNotify                                    -
+parallel     4.7  TestPostChecksCommitsBranchAndParents                -
+parallel     4.5  TestH16SettingsNeverPickARole                        listener
+parallel     4.2  TestH11InitReviewers                                 -
+parallel     3.8  TestH9bDenyAsksWhy                                   -
+parallel     3.8  TestH9bDecidedMeanwhileIsNotAsked                    -
+parallel     3.7  TestH10bCodexReadsTheRules                           timeout
+parallel     3.7  TestH9HandoffOnItsOwnInAnAgentSession                -
+parallel     3.7  TestH10bSettingsCodex                                timeout, listener
+parallel     3.7  TestH19BriefSaysWhoCommitsAndWhereFindingsGo         -
+parallel     3.6  TestH9bApproveClickDecides                           -
+parallel     3.6  TestH9bHelperNeedsTheLock                            -
+parallel     3.5  TestH9bDialogFailureLeavesTheAlert                   -
+parallel     3.3  TestH18InitNamesEachCLI                              listener
+parallel     2.8  TestH10SettingsInALinkedWorktree                     -
+parallel     2.7  TestH10bBriefNamesTheRole                            -
+parallel     2.6  TestH9bNoteToTheOperator                             -
+parallel     2.6  TestH11InitWithNoFlags                               -
+parallel     2.5  TestLinkedWorktreeUsesTheSameRecord                  -
+parallel     2.1  TestH17VersionNamesTheBuild                          -
+parallel     2.0  TestH16RolesAddRefuses                               -
+parallel     1.6  TestInitRefusesASecondTime                           -
+parallel     1.5  TestH8InitSetsQuietAfter                             -
+parallel     1.4  TestH18OutsideGitSaysRunGitInit                      -
+parallel     0.3  TestH9bDialogScriptsCompile                          -
+parallel     0.1  TestH9HandoffOnItsOwnOutsideAProject                 -
+parallel     0.0  TestH18AMissingRepositoryGetsNoHint                  -
+parallel     0.0  TestH10bShellQuote                                   -
+alone      106.8  TestCheck1FiftyProcessesTwentyPostsEach              goroutines
+alone       17.2  TestH12ARoleMovedWhileAListenerStartsStopsIt         Sleep, timeout, listener, ends process, startup delay, goroutines
+alone       14.6  TestH23ReviewersWithASession                         listener, ends process
+alone       12.0  TestH21BriefOffersHooks                              cli process
+alone       10.7  TestH10HooksOffDuty                                  listener
+alone        9.6  TestH8QuietClaimTellsTheOperatorOnce                 timeout, listener, quiet
+alone        8.4  TestH12TwoClaudeSessionsTakeTheRolesTheOperatorGives timeout, listener, cli process
+alone        8.2  TestH9HandoffOnItsOwnAsksAboutEach                   terminal
+alone        7.9  TestH12AnAgentSessionNeverAnswersForTheOperator      timeout, terminal, ends process
+alone        7.7  TestH16AStartTakesNoRole                             timeout, listener, cli process
+alone        7.5  TestH8ClaimingAgainWritesNothingAndTellsOnce         Sleep, quiet
+alone        7.4  TestDecideWithATerminal                              terminal
+alone        7.2  TestH10bTheRoleKeepsBareHandoffFromTheOperatorsQuestion timeout, terminal
+alone        7.1  TestH9ItemWithTwoEntriesNeedsTheId                   terminal
+alone        7.0  TestH21SettingsGlobal                                listener, cli process
+alone        6.9  TestH12AWaitStopsWhenItsRoleMoves                    Sleep, timeout, listener, ends process, goroutines
+alone        6.8  TestH12ARoleMovesAndTheOldListenerStops              Sleep, timeout, listener, cli process, ends process, goroutines
+alone        6.8  TestH5ForgedLineDuringAnEmittingWait                 Sleep, timeout, ends process, goroutines
+alone        6.7  TestH12ARoleOutlivesClearAndResume                   cli process
+alone        6.6  TestH9bPopupAcrossProcesses                          Sleep, timeout, listener
+alone        6.3  TestH13ListenersHoldOffSleepWhileAMoveIsOwed         timeout, listener, ends process
+alone        6.3  TestH6EditedLastLineIsWithheld                       timeout, listener
+alone        5.7  TestCheck13NextWaitDeliversAtOnce                    timeout, listener
+alone        5.4  TestH8InboxShowsWhatWentQuiet                        Sleep, quiet
+alone        5.1  TestCheck19InterruptedWait                           Sleep, timeout, listener, ends process, goroutines
+alone        4.9  TestH10ResumedOrphanLeavesTheEntry                   timeout, listener, ends process
+alone        4.9  TestH10HookListenStopsWithItsSession                 timeout, listener, ends process
+alone        4.7  TestCheck8WaitWakesWithinTwoSeconds                  Sleep, timeout
+alone        4.7  TestH9DenyWithANote                                  terminal
+alone        4.6  TestH9DecideByItemWithNoRole                         terminal
+alone        4.4  TestH21CodexWithNoHooksDoesNotWait                   timeout, cli process
+alone        4.4  TestH10ListenTroubleIsToldOnce                       timeout, listener
+alone        4.2  TestH9DecideRefusals                                 terminal
+alone        4.0  TestH10SecondWaitForARoleExits                       timeout, listener, ends process
+alone        3.9  TestH10HookListenWakesTheSession                     timeout, listener, ends process
+alone        3.7  TestH9NotConfirmedWritesNothing                      terminal
+alone        3.6  TestH10SettingsClaude                                timeout, listener
+alone        3.4  TestH9bClickAfterATerminalDecisionIsRefused          Setenv
+alone        3.2  TestH10HookListenLeavesItToTheListener               timeout, listener, ends process
+alone        3.1  TestH8QuietAfterSetting                              quiet
+alone        1.6  TestH12RoleRefusals                                  -
+
+# alone: 41 tests, 365 s in all (run one after another, before the parallel ones)
+# parallel: 53 tests, 274 s in all, run up to GOMAXPROCS (8) at once after the serial ones; longest 16.0 s
+# parallel tests with a signal: [('TestH10bSettingsCodex', ['timeout', 'listener']), ('TestH10bCodexReadsTheRules', ['timeout']), ('TestH10Brief', ['timeout', 'listener']), ('TestCheck3KilledWriterLeavesATornTail', ['ends process', 'fault env']), ('TestRow51KilledAfterSyncIsAnAdvisory', ['ends process', 'fault env']), ('TestH6CutThenPostKilledAfterSyncIsRecoverable', ['ends process', 'fault env']), ('TestH6CutThenRepairKilledAfterSyncIsRecoverable', ['ends process', 'fault env']), ('TestH16SettingsNeverPickARole', ['listener']), ('TestH18InitNamesEachCLI', ['listener']), ('TestH12ACodexThreadKeepsItsRoleAlone', ['timeout', 'listener'])]
+# alone tests with no signal: [('TestH12RoleRefusals', 1.58)]
+
+## go doc testing.T.Parallel
+package testing // import "testing"
+
+func (t *T) Parallel()
+    Parallel signals that this test is to be run in parallel with (and only
+    with) other parallel tests. When a test is run multiple times due to use of
+    -test.count or -test.cpu, multiple instances of a single test never run in
+    parallel with each other.
+
+
+## hw.ncpu: 8; GOMAXPROCS, which is go test's default -parallel: 8
+
+## why the parallel tests run only after every serial test: testing.go in /usr/local/go (go1.25.3), tRunner after the test function returns
+1878-		t.duration += highPrecisionTimeSince(t.start)
+1879-
+1880-		if len(t.sub) > 0 {
+1881:			// Run parallel subtests.
+1882-
+1883-			// Decrease the running count for this test and mark it as no longer running.
+1884-			t.tstate.release()
+1885-			running.Delete(t.name)
+1886-
+1887-			// Release the parallel subtests.
+1888-			close(t.barrier)
+1889-			// Wait for subtests to complete.
+1890-			for _, sub := range t.sub {
+1891-				<-sub.signal
+1892-			}
+1893-
+
+## the implementer's after log, in the order the tests finished: every 'alone' test before the first 'parallel' one?
+94 cmd/handoff tests; the first parallel test finished at position 42 (TestH10bShellQuote); the last alone test at position 41 (TestH23ReviewersWithASession); alone before parallel: True

@@ -1,0 +1,37 @@
+# command: handoff tell at a terminal (script(1)), with wait --for implementer and hook listen for reviewer running, reviewer-2 with no session
+# date: 2026-11-10 18:18:27 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: e35c568905967694d34c97218d810704eeb12ddb
+
+## $ handoff tell "Carry on while I'm away. If both reviewers approve, merge."
+told implementer and reviewer (#1, #2)
+not told, no session: reviewer-2
+# exit 0
+
+## the implementer's wait: exit 0, ended 1.0 s after the tell began
+#1 tell - operator → implementer: Carry on while I'm away. If both reviewers approve, merge.
+## the reviewer's hook listen: exit 2 (2 wakes the session), ended 1.0 s after the tell began
+handoff: new for reviewer:
+#2 tell - operator → reviewer: Carry on while I'm away. If both reviewers approve, merge.
+Read each with `handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+
+## handoff show 1
+#1 tell
+from: operator → implementer
+ts: 2026-11-10T18:18:30Z
+prev: genesis
+---
+Carry on while I'm away. If both reviewers approve, merge.
+
+## the record's tell lines (channel.jsonl), and the chain
+{"v":1,"id":1,"ts":"2026-11-10T18:18:30Z","kind":"tell","from":"operator","to":"implementer","body":"Carry on while I'm away. If both reviewers approve, merge.","prev":"genesis"}
+{"v":1,"id":2,"ts":"2026-11-10T18:18:30Z","kind":"tell","from":"operator","to":"reviewer","body":"Carry on while I'm away. If both reviewers approve, merge.","prev":"<hash>"}
+
+## inbox --quiet for implementer: exit 0 (0: nothing waits)
+## inbox --quiet for reviewer: exit 0 (0: nothing waits)
+## inbox --quiet for reviewer-2: exit 0 (0: nothing waits)
+## inbox --quiet for operator: exit 0 (0: nothing waits)
+## alerts sent: 0
+
+## the brief's line for a tell (brief --for reviewer)
+- A tell from the operator, to every agent with a session: take it as the operator's word, as if said in this session, and act on it. Don't answer it through handoff; anything to say, say in this session.

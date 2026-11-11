@@ -1,0 +1,444 @@
+# command: the reviewer's round 2 probes for handoff tell; see each heading
+# date: 2026-11-11 00:19:38 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 9315eb48021f0c7c2ae037aaa2df4d65211d12bb
+
+## R1. Round 1's P1, again: does an old tell reach a session started later?
+
+### R1a. The session told ends before its turn does; a new session takes the role
+
+$ env CLAUDE_CODE_SESSION_ID=s-night CLAUDE_PID=<pid> handoff role implementer
+You are now implementer in repo1.
+
+$ [terminal] handoff fyi Carry on while I'm away. Merge when the reviewer approves.
+told implementer (#1)
+not told, no session: reviewer, reviewer-2
+# exit 0
+
+$ env CLAUDE_CODE_SESSION_ID=s-morning CLAUDE_PID=<pid> handoff role implementer
+You are now implementer in repo1.
+
+$ echo '{"session_id":"s-morning","hook_event_name":"Stop"}' | env CLAUDE_CODE_SESSION_ID=s-morning CLAUDE_PID=<pid> handoff hook listen --timeout 3s
+handoff: nothing new for implementer in 3s. Just end your turn; listening starts again when it ends.
+# exit 2
+
+$ handoff show 1
+#1 fyi
+from: operator → implementer
+ts: 2026-11-11T00:19:38Z
+session: s-night
+prev: genesis
+---
+Carry on while I'm away. Merge when the reviewer approves.
+# exit 0
+
+# the record:
+{"id":1,"kind":"fyi","from":"operator","to":"implementer","session":"s-night","body":"Carry on while I'm away. Merge when the reviewer approves.","prev":"genesis"}
+# the cursors: implementer #1  
+
+### R1b. The operator moves the role before the first session's turn ends; then gives it back
+
+$ env CLAUDE_CODE_SESSION_ID=s-one CLAUDE_PID=<pid> handoff role reviewer
+You are now reviewer in repo2.
+
+$ [terminal] handoff fyi Carry on while I'm away.
+told reviewer (#1)
+not told, no session: implementer, reviewer-2
+# exit 0
+
+$ env CLAUDE_CODE_SESSION_ID=s-two CLAUDE_PID=<pid> handoff role reviewer
+You are now reviewer in repo2. Another session had reviewer; it has no role now.
+# s-two has the role and has not listened yet. The operator gives it back to s-one, which was the one told:
+
+$ env CLAUDE_CODE_SESSION_ID=s-one CLAUDE_PID=<pid> handoff role reviewer
+You are now reviewer in repo2. Another session had reviewer; it has no role now.
+
+$ echo '{"session_id":"s-one","hook_event_name":"Stop"}' | env CLAUDE_CODE_SESSION_ID=s-one CLAUDE_PID=<pid> handoff hook listen --timeout 3s
+handoff: new for reviewer:
+#1 fyi - operator → reviewer: Carry on while I'm away.
+Read each with `handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit 2
+# and the plain case: a second tell, to s-one; the role moves to s-two, which listens:
+
+$ [terminal] handoff fyi Second.
+told reviewer (#2)
+not told, no session: implementer, reviewer-2
+# exit 0
+
+$ env CLAUDE_CODE_SESSION_ID=s-two CLAUDE_PID=<pid> handoff role reviewer
+You are now reviewer in repo2. Another session had reviewer; it has no role now.
+
+$ echo '{"session_id":"s-two","hook_event_name":"Stop"}' | env CLAUDE_CODE_SESSION_ID=s-two CLAUDE_PID=<pid> handoff hook listen --timeout 3s
+handoff: nothing new for reviewer in 3s. Just end your turn; listening starts again when it ends.
+# exit 2
+# the role goes back to s-one once more, after s-two's listener passed the tell over:
+
+$ env CLAUDE_CODE_SESSION_ID=s-one CLAUDE_PID=<pid> handoff role reviewer
+You are now reviewer in repo2. Another session had reviewer; it has no role now.
+
+$ echo '{"session_id":"s-one","hook_event_name":"Stop"}' | env CLAUDE_CODE_SESSION_ID=s-one CLAUDE_PID=<pid> handoff hook listen --timeout 3s
+handoff: nothing new for reviewer in 3s. Just end your turn; listening starts again when it ends.
+# exit 2
+
+# the record:
+{"id":1,"kind":"fyi","from":"operator","to":"reviewer","session":"s-one","body":"Carry on while I'm away.","prev":"genesis"}
+{"id":2,"kind":"fyi","from":"operator","to":"reviewer","session":"s-one","body":"Second.","prev":"<hash>"}
+# the cursors: reviewer #2  
+
+### R1c. A Codex thread that took its role by a command and ran no hook
+
+$ env CODEX_THREAD_ID=t-gone handoff role reviewer
+You are now reviewer in repo3.
+
+$ [terminal] handoff fyi Carry on while I'm away.
+told reviewer (#1)
+not told, no session: implementer, reviewer-2
+# exit 0
+
+$ env CODEX_THREAD_ID=t-new handoff role reviewer
+You are now reviewer in repo3. Another session had reviewer; it has no role now.
+
+$ env CODEX_THREAD_ID=t-new handoff wait --timeout 2s
+# exit 3
+
+$ echo '{"session_id":"t-new","hook_event_name":"Stop"}' | env LC_ALL=C handoff hook listen --timeout 2s
+handoff: nothing new for reviewer in 2s. Just end your turn; listening starts again when it ends.
+# exit 2
+
+# the record:
+{"id":1,"kind":"fyi","from":"operator","to":"reviewer","session":"t-gone","body":"Carry on while I'm away.","prev":"genesis"}
+# the cursors: reviewer #1  
+
+## R2. The session told gets its tell, each way a session listens
+
+### R2a. Claude Code: told in the middle of a turn, it listens when the turn ends; after a resume (same id, a new process); with a plain wait in the session
+
+$ env CLAUDE_CODE_SESSION_ID=s-impl CLAUDE_PID=<pid> handoff role implementer
+You are now implementer in repo4.
+
+$ [terminal] handoff fyi One: read at the turn's end.
+told implementer (#1)
+not told, no session: reviewer, reviewer-2
+# exit 0
+
+$ echo '{"session_id":"s-impl","hook_event_name":"Stop"}' | env CLAUDE_CODE_SESSION_ID=s-impl CLAUDE_PID=<pid> handoff hook listen --timeout 3s
+handoff: new for implementer:
+#1 fyi - operator → implementer: One: read at the turn's end.
+Read each with `handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit 2
+
+$ [terminal] handoff fyi Two: read after a resume.
+told implementer (#2)
+not told, no session: reviewer, reviewer-2
+# exit 0
+# the session's process ended; the session is resumed in a new process, with the same id:
+
+$ echo '{"session_id":"s-impl","hook_event_name":"SessionStart","source":"resume"}' | env CLAUDE_CODE_SESSION_ID=s-impl CLAUDE_PID=<pid> handoff hook brief
+handoff brief: you are implementer in repo4. You and reviewer, reviewer-2 hand work to each other through handoff. The operator decides.
+
+
+$ echo '{"session_id":"s-impl","hook_event_name":"Stop"}' | env CLAUDE_CODE_SESSION_ID=s-impl CLAUDE_PID=<pid> handoff hook listen --timeout 3s
+handoff: new for implementer:
+#2 fyi - operator → implementer: Two: read after a resume.
+Read each with `handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit 2
+
+$ [terminal] handoff fyi Three: read by a plain wait in the session.
+told implementer (#3)
+not told, no session: reviewer, reviewer-2
+# exit 0
+
+$ env CLAUDE_CODE_SESSION_ID=s-impl CLAUDE_PID=<pid> handoff wait --timeout 3s
+#3 fyi - operator → implementer: Three: read by a plain wait in the session.
+# exit 0
+
+### R2b. Codex: the role taken by a command (CODEX_THREAD_ID), the hook given the id on stdin alone
+
+$ env CODEX_THREAD_ID=t-rev handoff role reviewer
+You are now reviewer in repo4.
+
+$ [terminal] handoff fyi Four: both told.
+told implementer and reviewer (#4, #5)
+not told, no session: reviewer-2
+# exit 0
+
+$ echo '{"session_id":"t-rev","hook_event_name":"Stop"}' | env LC_ALL=C handoff hook listen --timeout 3s
+handoff: new for reviewer:
+#5 fyi - operator → reviewer: Four: both told.
+Read each with `handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit 2
+
+$ [terminal] handoff fyi Five: read by a plain wait in the thread.
+told implementer and reviewer (#6, #7)
+not told, no session: reviewer-2
+# exit 0
+
+$ env CODEX_THREAD_ID=t-rev handoff wait --timeout 3s
+#7 fyi - operator → reviewer: Five: read by a plain wait in the thread.
+# exit 0
+
+### R2c. A listener already running when the tell is written wakes with it
+
+$ [terminal] handoff fyi Six: both listening.
+told implementer and reviewer (#8, #9)
+not told, no session: reviewer-2
+# exit 0
+# the implementer's:
+handoff: new for implementer:
+#4 fyi - operator → implementer: Four: both told.
+#6 fyi - operator → implementer: Five: read by a plain wait in the thread.
+Read each with `handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit 2
+# the reviewer's:
+handoff: new for reviewer:
+#9 fyi - operator → reviewer: Six: both listening.
+Read each with `handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit 2
+
+# the record:
+{"id":1,"kind":"fyi","from":"operator","to":"implementer","session":"s-impl","body":"One: read at the turn's end.","prev":"genesis"}
+{"id":2,"kind":"fyi","from":"operator","to":"implementer","session":"s-impl","body":"Two: read after a resume.","prev":"<hash>"}
+{"id":3,"kind":"fyi","from":"operator","to":"implementer","session":"s-impl","body":"Three: read by a plain wait in the session.","prev":"<hash>"}
+{"id":4,"kind":"fyi","from":"operator","to":"implementer","session":"s-impl","body":"Four: both told.","prev":"<hash>"}
+{"id":5,"kind":"fyi","from":"operator","to":"reviewer","session":"t-rev","body":"Four: both told.","prev":"<hash>"}
+{"id":6,"kind":"fyi","from":"operator","to":"implementer","session":"s-impl","body":"Five: read by a plain wait in the thread.","prev":"<hash>"}
+{"id":7,"kind":"fyi","from":"operator","to":"reviewer","session":"t-rev","body":"Five: read by a plain wait in the thread.","prev":"<hash>"}
+{"id":8,"kind":"fyi","from":"operator","to":"implementer","session":"s-impl","body":"Six: both listening.","prev":"<hash>"}
+{"id":9,"kind":"fyi","from":"operator","to":"reviewer","session":"t-rev","body":"Six: both listening.","prev":"<hash>"}
+# the cursors: implementer #6  reviewer #9  
+
+## R3. The role's other entries around a tell that is passed over: nothing else is lost, and order holds
+
+$ env CLAUDE_CODE_SESSION_ID=s-old CLAUDE_PID=<pid> handoff role implementer
+You are now implementer in repo5.
+
+$ env HANDOFF_ROLE=reviewer handoff note --item W1 --to implementer --title before the tell --body <scratch>/body.md
+posted #1 note W1 reviewer → implementer: before the tell
+# exit 0
+
+$ [terminal] handoff fyi For s-old alone.
+told implementer (#2)
+not told, no session: reviewer, reviewer-2
+# exit 0
+
+$ env HANDOFF_ROLE=reviewer handoff note --item W1 --to implementer --title after the tell --body <scratch>/body.md
+posted #3 note W1 reviewer → implementer: after the tell
+# exit 0
+
+$ env CLAUDE_CODE_SESSION_ID=s-new CLAUDE_PID=<pid> handoff role implementer
+You are now implementer in repo5.
+
+$ [terminal] handoff fyi For s-new.
+told implementer (#4)
+not told, no session: reviewer, reviewer-2
+# exit 0
+
+$ echo '{"session_id":"s-new","hook_event_name":"Stop"}' | env CLAUDE_CODE_SESSION_ID=s-new CLAUDE_PID=<pid> handoff hook listen --timeout 3s
+handoff: new for implementer:
+#1 note W1 reviewer → implementer: before the tell
+#3 note W1 reviewer → implementer: after the tell
+#4 fyi - operator → implementer: For s-new.
+Read each with `handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit 2
+# a wait with --emit outside any session, already running, passes over s-new's next tell and goes on to the note after it:
+
+$ [terminal] handoff fyi For s-new, while an outside wait streams.
+told implementer (#5)
+not told, no session: reviewer, reviewer-2
+# exit 0
+
+$ env HANDOFF_ROLE=reviewer handoff note --item W1 --to implementer --title after that tell --body <scratch>/body.md
+posted #6 note W1 reviewer → implementer: after that tell
+# exit 0
+# the --emit wait printed:
+#6 note W1 reviewer → implementer: after that tell
+# exit 3
+
+# the record:
+{"id":1,"kind":"note","item":"W1","from":"reviewer","to":"implementer","title":"before the tell","body":"b1\n","prev":"genesis"}
+{"id":2,"kind":"fyi","from":"operator","to":"implementer","session":"s-old","body":"For s-old alone.","prev":"<hash>"}
+{"id":3,"kind":"note","item":"W1","from":"reviewer","to":"implementer","title":"after the tell","body":"b2\n","prev":"<hash>"}
+{"id":4,"kind":"fyi","from":"operator","to":"implementer","session":"s-new","body":"For s-new.","prev":"<hash>"}
+{"id":5,"kind":"fyi","from":"operator","to":"implementer","session":"s-new","body":"For s-new, while an outside wait streams.","prev":"<hash>"}
+{"id":6,"kind":"note","item":"W1","from":"reviewer","to":"implementer","title":"after that tell","body":"b3\n","prev":"<hash>"}
+# the cursors: implementer #6  
+
+## R4. /clear in Claude Code: the role moves to the new id; a tell to the old id is passed over (the implementer's choice 2)
+
+$ env CLAUDE_CODE_SESSION_ID=s-before CLAUDE_PID=<pid> handoff role implementer
+You are now implementer in repo6.
+
+$ [terminal] handoff fyi Told before the clear.
+told implementer (#1)
+not told, no session: reviewer, reviewer-2
+# exit 0
+
+$ echo '{"session_id":"s-after","hook_event_name":"SessionStart","source":"clear"}' | env CLAUDE_CODE_SESSION_ID=s-after CLAUDE_PID=<pid> handoff hook brief
+handoff brief: you are implementer in repo6. You and reviewer, reviewer-2 hand work to each other through handoff. The operator decides.
+
+{"v":1,"role":"implementer","session":"s-after","pid":<pid>,"since":"2026-11-11T00:20:02Z"}
+
+$ echo '{"session_id":"s-after","hook_event_name":"Stop"}' | env CLAUDE_CODE_SESSION_ID=s-after CLAUDE_PID=<pid> handoff hook listen --timeout 3s
+handoff: nothing new for implementer in 3s. Just end your turn; listening starts again when it ends.
+# exit 2
+
+$ [terminal] handoff fyi Told after the clear.
+told implementer (#2)
+not told, no session: reviewer, reviewer-2
+# exit 0
+
+$ echo '{"session_id":"s-after","hook_event_name":"Stop"}' | env CLAUDE_CODE_SESSION_ID=s-after CLAUDE_PID=<pid> handoff hook listen --timeout 3s
+handoff: new for implementer:
+#2 fyi - operator → implementer: Told after the clear.
+Read each with `handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit 2
+
+# the record:
+{"id":1,"kind":"fyi","from":"operator","to":"implementer","session":"s-before","body":"Told before the clear.","prev":"genesis"}
+{"id":2,"kind":"fyi","from":"operator","to":"implementer","session":"s-after","body":"Told after the clear.","prev":"<hash>"}
+# the cursors: implementer #2  
+
+## R5. A role held by a listener alone (the implementer's 3): the tell names no session and goes by role
+
+### R5a. A wait outside any session, and a session whose role its settings fix (HANDOFF_ROLE), both listening
+
+$ [terminal] handoff fyi To whoever listens.
+told implementer and reviewer (#1, #2)
+not told, no session: reviewer-2
+# exit 0
+# the wait outside a session:
+#1 fyi - operator → implementer: To whoever listens.
+# exit 0
+# the session with a fixed role:
+handoff: new for reviewer:
+#2 fyi - operator → reviewer: To whoever listens.
+Read each with `handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit 2
+
+# the record:
+{"id":1,"kind":"fyi","from":"operator","to":"implementer","body":"To whoever listens.","prev":"genesis"}
+{"id":2,"kind":"fyi","from":"operator","to":"reviewer","body":"To whoever listens.","prev":"<hash>"}
+# the cursors: implementer #1  reviewer #2  
+
+### R5b. The same session, in the middle of a turn (no listener): not told at all, and says so
+
+$ [terminal] handoff fyi Anyone?
+handoff fyi: no agent has a session now, so no one was told; nothing written
+# exit 2
+
+### R5c. An unnamed tell left unread (its listener killed in the second before it read), then a session given the role: this is the window the implementer names
+
+$ [terminal] handoff fyi Unnamed, and its listener stopped.
+told implementer (#3)
+not told, no session: reviewer, reviewer-2
+# exit 0
+
+$ env CLAUDE_CODE_SESSION_ID=s-later CLAUDE_PID=<pid> handoff role implementer
+You are now implementer in repo7.
+
+$ echo '{"session_id":"s-later","hook_event_name":"Stop"}' | env CLAUDE_CODE_SESSION_ID=s-later CLAUDE_PID=<pid> handoff hook listen --timeout 3s
+handoff: new for implementer:
+#3 fyi - operator → implementer: Unnamed, and its listener stopped.
+Read each with `handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit 2
+
+### R5d. A session with a fixed role, started later, meets a tell that names an earlier session: passed over
+
+$ env CLAUDE_CODE_SESSION_ID=s-rev CLAUDE_PID=<pid> handoff role reviewer
+You are now reviewer in repo7.
+
+$ [terminal] handoff fyi For s-rev alone.
+told reviewer (#4)
+not told, no session: implementer, reviewer-2
+# exit 0
+# (s-rev's binding removed, as if it had ended and been dropped)
+
+$ echo '{"session_id":"s-fixed2","hook_event_name":"Stop"}' | env HANDOFF_ROLE=reviewer CLAUDE_CODE_SESSION_ID=s-fixed2 CLAUDE_PID=<pid> handoff hook listen --timeout 3s
+handoff: nothing new for reviewer in 3s. Just end your turn; listening starts again when it ends.
+# exit 2
+
+# the record:
+{"id":1,"kind":"fyi","from":"operator","to":"implementer","body":"To whoever listens.","prev":"genesis"}
+{"id":2,"kind":"fyi","from":"operator","to":"reviewer","body":"To whoever listens.","prev":"<hash>"}
+{"id":3,"kind":"fyi","from":"operator","to":"implementer","body":"Unnamed, and its listener stopped.","prev":"<hash>"}
+{"id":4,"kind":"fyi","from":"operator","to":"reviewer","session":"s-rev","body":"For s-rev alone.","prev":"<hash>"}
+# the cursors: implementer #3  reviewer #4  
+
+## R6. A wait outside any session, for a role a session holds (the implementer's 1): it passes over that session's tell and moves the cursor, so the session never gets it
+
+$ env CLAUDE_CODE_SESSION_ID=s-impl CLAUDE_PID=<pid> handoff role implementer
+You are now implementer in repo8.
+
+$ [terminal] handoff fyi For s-impl.
+told implementer (#1)
+not told, no session: reviewer, reviewer-2
+# exit 0
+
+$ env HANDOFF_ROLE=reviewer handoff note --item W1 --to implementer --title a note --body <scratch>/body.md
+posted #2 note W1 reviewer → implementer: a note
+# exit 0
+
+$ handoff wait --for implementer --timeout 2s
+#2 note W1 reviewer → implementer: a note
+# exit 0
+
+$ echo '{"session_id":"s-impl","hook_event_name":"Stop"}' | env CLAUDE_CODE_SESSION_ID=s-impl CLAUDE_PID=<pid> handoff hook listen --timeout 3s
+handoff: nothing new for implementer in 3s. Just end your turn; listening starts again when it ends.
+# exit 2
+# ^ the session gets neither: the outside wait took the note, as before H26, and passed over the tell, printing nothing of it
+
+# the record:
+{"id":1,"kind":"fyi","from":"operator","to":"implementer","session":"s-impl","body":"For s-impl.","prev":"genesis"}
+{"id":2,"kind":"note","item":"W1","from":"reviewer","to":"implementer","title":"a note","body":"n\n","prev":"<hash>"}
+# the cursors: implementer #2  
+
+## R7. An older handoff (v0.1.2) on a record whose tells name sessions
+
+$ env CLAUDE_CODE_SESSION_ID=s-told CLAUDE_PID=<pid> handoff role implementer
+You are now implementer in repo9.
+
+$ [terminal] handoff fyi Named for s-told.
+told implementer (#1)
+not told, no session: reviewer, reviewer-2
+# exit 0
+
+$ env CLAUDE_CODE_SESSION_ID=s-later CLAUDE_PID=<pid> handoff-v0.1.2 role implementer
+You are now implementer in repo9.
+
+$ echo '{"session_id":"s-later","hook_event_name":"Stop"}' | env CLAUDE_CODE_SESSION_ID=s-later CLAUDE_PID=<pid> handoff-v0.1.2 hook listen --timeout 3s
+handoff: new for implementer:
+#1 fyi - operator → implementer: Named for s-told.
+Read each with `handoff-v0.1.2 show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit 2
+# ^ v0.1.2 ignores the field and delivers by role, as row 93 says: the promise holds only once every session runs the new handoff
+
+$ handoff-v0.1.2 show 1
+#1 fyi 
+from: operator → implementer
+ts: 2026-11-11T00:20:16Z
+prev: genesis
+---
+Named for s-told.
+# exit 0
+
+$ env HANDOFF_ROLE=reviewer handoff-v0.1.2 note --item W1 --to implementer --title by v0.1.2, after --body <scratch>/body.md
+posted #2 note W1 reviewer → implementer: by v0.1.2, after
+# exit 0
+
+$ handoff inbox --for implementer --quiet
+# exit 0
+
+# the record:
+{"id":1,"kind":"fyi","from":"operator","to":"implementer","session":"s-told","body":"Named for s-told.","prev":"genesis"}
+{"id":2,"kind":"note","item":"W1","from":"reviewer","to":"implementer","title":"by v0.1.2, after","body":"x\n","prev":"<hash>"}
+# the cursors: implementer #1  
+
+## R8. The message's refusal (round 1's P6)
+
+$ [terminal] handoff fyi - no merges tonight
+handoff fyi: fyi takes no flags, and a message can't start with -: give the message alone, in quotes, such as handoff fyi "Carry on while I'm away."
+# exit 2
+
+$ [terminal] handoff fyi --as operator Carry on.
+handoff fyi: fyi takes no flags, and a message can't start with -: give the message alone, in quotes, such as handoff fyi "Carry on while I'm away."
+# exit 2

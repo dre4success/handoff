@@ -1,0 +1,65 @@
+# command: handoff tell's refusals; with no session; killed mid-write (HANDOFF_TEST_FAULT=torn)
+# date: 2026-11-10 18:18:31 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: e35c568905967694d34c97218d810704eeb12ddb
+
+
+## no terminal
+handoff tell: tell needs a terminal on stdin: the operator types it, an agent's shell cannot
+# exit 2
+
+## no terminal, HANDOFF_ROLE=operator
+handoff tell: tell needs a terminal on stdin: the operator types it, an agent's shell cannot
+# exit 2
+
+## an agent's role
+handoff tell: tell is for the operator; the caller's role is implementer
+# exit 2
+
+## in the implementer's session
+handoff tell: tell is the operator's, in a terminal of the operator's own, never in an agent's session
+# exit 2
+
+## in a Codex thread with no role
+handoff tell: tell is the operator's, in a terminal of the operator's own, never in an agent's session
+# exit 2
+
+## no message
+handoff tell: give the message, in quotes, such as handoff tell "Carry on while I'm away."
+# exit 2
+
+## a blank message
+handoff tell: give the message, in quotes, such as handoff tell "Carry on while I'm away."
+# exit 2
+
+## a flag
+handoff tell: tell takes no flags, and a message can't start with -: give the message alone, in quotes, such as handoff tell "Carry on while I'm away."
+# exit 2
+
+## lines in the record after these: 0
+
+## at a terminal, with the implementer's session: the tell goes through
+told implementer (#1)
+not told, no session: reviewer, reviewer-2
+# exit 0
+
+## at a terminal, once that session's process has ended: no session
+handoff tell: no agent has a session now, so no one was told; nothing written
+# exit 2; lines in the record: 1
+
+## killed halfway through the write of two tells
+# exit 9 (script(1) gives 9 for its child killed by SIGKILL); the record: 175 bytes, 1 whole lines, then the cut
+## its whole lines:
+{"v":1,"id":1,"ts":"2026-11-10T18:18:31Z","kind":"tell","from":"operator","to":"implementer","session":"s-impl","body":"Carry on.","prev":"genesis"}
+
+## a note after it
+handoff note: the record ends with an incomplete line (26 bytes after line 1, left by an interrupted write); run `handoff repair`
+# exit 2
+
+## repair
+posted #2 repair - reviewer → -: Closed 26 bytes that an interrupted write left without a newline. They are kept…
+# exit 0
+
+## a note after repair
+posted #3 note W1 implementer → reviewer: after
+# exit 0

@@ -1,0 +1,75 @@
+# command: the shell line of TestH12ACodexThreadKeepsItsRoleAlone by hand, in five ways; see each heading
+# date: 2026-10-27 22:05:55 UTC
+# by: Fable 5.1 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: ba23d944ffbf89d8b880923add7434ce400d087c
+
+## the order in hook listen (hook.go) and where wait's clock starts (wait.go)
+109:	role, given, ok, err := a.hookRole(*as, in)
+119:	startupDelay()
+120:	lock, err := a.listen(role, "hook", given)
+130:	code, err := wait.Run(a.store, wait.Options{Role: role, Timeout: *timeout, Interval: time.Second, Clock: wait.Real,
+159:	role, _, ok, err := a.hookRole(*as, in)
+189:	role, _, ok, _ := a.hookRole(*as, in)
+277:		if (b.PID != s.PID || b.Host != s.Host) && !a.update(s, b.Role) {
+302:	b.PID, b.Host = s.PID, s.Host
+104:	start := o.Clock.Now().Round(0)
+
+## (a) as the test runs it: --timeout 1s
+t-1's binding before: {"v":1,"role":"implementer","session":"t-1","since":"<time>"}
+sh: exit 0, took 1.18 s; 'this session has no role in it' x2 (want 2); 'you are implementer' x0 (want 0)
+t-1 role: You are implementer in repo1.
+t-2 inbox: exit 2: handoff inbox: no role: when the operator gives this session one, run `handoff role <role>`; or give --for <role>
+t-4 hook brief after the parent ended: exit 0: handoff: repo1 hands work between agents through handoff, and this session has no role in it. When the operator gives you one, run `handoff role <role>` (the roles are implementer, reviewer, reviewer-2); it prints your brief. Until then, leave handoff alone.
+t-1's binding: {"v":1,"role":"implementer","session":"t-1","host":<pid>,"since":"<time>"}
+the listener's own stderr, run once more on its own:
+handoff: nothing new for implementer in 1s. Just end your turn; listening starts again when it ends.
+# exit 2
+
+## (b) --timeout 5s, t-1's binding sampled at 0.2 s, 1 s and 3 s while the listener runs
+at 0.3 s: listener pid alive: yes; its parent is the sh: yes; binding host is the sh's pid: yes; presence files: implementer.json implementer.json.lock 
+at 1.2 s: listener pid alive: yes; its parent is the sh: yes; binding host is the sh's pid: yes; presence files: implementer.json implementer.json.lock 
+at 3.3 s: listener pid alive: yes; its parent is the sh: yes; binding host is the sh's pid: yes; presence files: implementer.json implementer.json.lock 
+sh: exit 0, took 5.10 s; 'this session has no role in it' x2 (want 2); 'you are implementer' x0 (want 0)
+t-1 role: You are implementer in repo2.
+t-2 inbox: exit 2: handoff inbox: no role: when the operator gives this session one, run `handoff role <role>`; or give --for <role>
+t-4 hook brief after the parent ended: exit 0: handoff: repo2 hands work between agents through handoff, and this session has no role in it. When the operator gives you one, run `handoff role <role>` (the roles are implementer, reviewer, reviewer-2); it prints your brief. Until then, leave handoff alone.
+t-1's binding: {"v":1,"role":"implementer","session":"t-1","host":<pid>,"since":"<time>"}
+
+## (c) --timeout 5s, the listener killed (SIGKILL) 0.3 s in: the briefs after it see the same binding
+killed the listener at 0.4 s
+sh: exit 0, took 0.44 s; 'this session has no role in it' x2 (want 2); 'you are implementer' x0 (want 0)
+t-1 role: You are implementer in repo3.
+t-2 inbox: exit 2: handoff inbox: no role: when the operator gives this session one, run `handoff role <role>`; or give --for <role>
+t-4 hook brief after the parent ended: exit 0: handoff: repo3 hands work between agents through handoff, and this session has no role in it. When the operator gives you one, run `handoff role <role>` (the roles are implementer, reviewer, reviewer-2); it prints your brief. Until then, leave handoff alone.
+t-1's binding: {"v":1,"role":"implementer","session":"t-1","host":<pid>,"since":"<time>"}
+
+## (d) --timeout 1s under CPU load: 16 busy loops for the run (the race suite also runs on this machine now)
+load average: { 33.08 44.71 46.94 }
+sh: exit 0, took 1.43 s; 'this session has no role in it' x2 (want 2); 'you are implementer' x0 (want 0)
+t-1 role: You are implementer in repo4.
+t-2 inbox: exit 2: handoff inbox: no role: when the operator gives this session one, run `handoff role <role>`; or give --for <role>
+t-4 hook brief after the parent ended: exit 0: handoff: repo4 hands work between agents through handoff, and this session has no role in it. When the operator gives you one, run `handoff role <role>` (the roles are implementer, reviewer, reviewer-2); it prints your brief. Until then, leave handoff alone.
+t-1's binding: {"v":1,"role":"implementer","session":"t-1","host":<pid>,"since":"<time>"}
+
+## (e) the listener refused its lock: another wait for implementer already listens in this project (the test never meets this: each test has its own repository)
+presence: implementer.json implementer.json.lock 
+sh: exit 0, took 6.49 s; 'this session has no role in it' x2 (want 2); 'you are implementer' x0 (want 0)
+t-1 role: You are implementer in repo5.
+t-2 inbox: exit 2: handoff inbox: no role: when the operator gives this session one, run `handoff role <role>`; or give --for <role>
+t-4 hook brief after the parent ended: exit 0: handoff: repo5 hands work between agents through handoff, and this session has no role in it. When the operator gives you one, run `handoff role <role>` (the roles are implementer, reviewer, reviewer-2); it prints your brief. Until then, leave handoff alone.
+t-1's binding: {"v":1,"role":"implementer","session":"t-1","host":<pid>,"since":"<time>"}
+(the sh took 6.49 s: the listener retried the lock for about 6.5 s, as listen in session.go does for a role the operator gave (12 tries 250 ms apart, each of wait.Listen's 5 tries 50 ms apart), then gave up with exit 0, and the briefs ran)
+
+## (f) ten runs of (a) in a row, timed
+run 1: 1.18 s, no-role x2, implementer x0
+run 2: 1.25 s, no-role x2, implementer x0
+run 3: 1.17 s, no-role x2, implementer x0
+run 4: 1.27 s, no-role x2, implementer x0
+run 5: 1.11 s, no-role x2, implementer x0
+run 6: 1.12 s, no-role x2, implementer x0
+run 7: 1.12 s, no-role x2, implementer x0
+run 8: 1.33 s, no-role x2, implementer x0
+run 9: 1.17 s, no-role x2, implementer x0
+run 10: 1.13 s, no-role x2, implementer x0
+## alerts sent to the scratch file during the probes: 0
+## done

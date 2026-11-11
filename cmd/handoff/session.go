@@ -148,13 +148,23 @@ func alive(pid int) bool {
 // it now. init makes roles the operator may never give, such as a second
 // reviewer (row 89).
 func (a *app) hasSession(role string) bool {
+	_, ok := a.holder(role)
+	return ok
+}
+
+// holder is who has role, as hasSession reads it: the session the operator
+// gave it to, while that may still run, or, with no such session, "" when
+// something listens for it now. Giving a role to a session takes it from any
+// other (bind), so there is at most one. An fyi names this session, so
+// that only it gets the fyi (row 93).
+func (a *app) holder(role string) (session string, ok bool) {
 	bs, _ := a.bindings()
 	for _, b := range bs {
 		if b.Role == role && b.running() {
-			return true
+			return b.Session, true
 		}
 	}
-	return wait.Listening(a.dir, role)
+	return "", wait.Listening(a.dir, role)
 }
 
 // bound finds s's binding, by its id.

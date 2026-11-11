@@ -1,0 +1,16 @@
+# command: TestH26ATellIsForTheSessionTold, copied by the implementer's round1.py into a worktree at round 1 (f3be27c); then at the commit under review
+# date: 2026-11-10 18:36:56 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3)
+# commit: 8162dbfc5075cc48a89880ab6c339a7bce46ee67
+
+## at f3be27c (f3be27c25afae359e4d8417c0d3a9c5def2ff88b), with round2_test.go added:
+--- FAIL: TestH26ATellIsForTheSessionTold (0.47s)
+    round2_test.go:43: a later session got the old tell:
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	1.019s
+FAIL
+## at 8162dbf, three times:
+--- PASS: TestH26ATellIsForTheSessionTold (3.64s)
+--- PASS: TestH26ATellIsForTheSessionTold (3.50s)
+--- PASS: TestH26ATellIsForTheSessionTold (3.45s)
+ok  	github.com/dre4success/handoff/cmd/handoff	11.075s

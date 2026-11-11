@@ -1,0 +1,35 @@
+# command: the old and the new order of TestH8QuietClaimTellsTheOperatorOnce, by hand, with a second claim standing in for a slow one; then the two changed tests, -race -count=20
+# date: 2026-10-26 22:15:33 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 279b133b7c0e94d2c6ee16b7f5c5e519f7b86d93
+
+
+## old order
+quiet_after: 1s, before the request
+posted #1 request W1 implementer → reviewer: W1 work @ 5685bbcb2296
+handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+posted #2 claim W1 reviewer → -: claimed #1
+# 1.2 s later, a second claim, as a claim slow to check would be:
+exists #2 claim W1 reviewer → -: claimed #1
+handoff: told the operator: W1: reviewer claimed #1 and has been quiet for 1 s
+# wait --for implementer --timeout 4s, its stderr:
+# wait exit 3
+# told the operator (1):
+p-old: W1: reviewer claimed #1 and has been quiet for 1 s
+
+## new order
+posted #1 request W1 implementer → reviewer: W1 work @ 4db127f545c5
+handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+posted #2 claim W1 reviewer → -: claimed #1
+# 1.2 s later, a second claim, as a claim slow to check would be:
+exists #2 claim W1 reviewer → -: claimed #1
+quiet_after: 1s, after the claims
+# wait --for implementer --timeout 4s, its stderr:
+handoff: told the operator: W1: reviewer claimed #1 and has been quiet for 1 s
+# wait exit 3
+# told the operator (1):
+p-new: W1: reviewer claimed #1 and has been quiet for 1 s
+
+## go test -race -count=20 -run 'TestH8QuietClaimTellsTheOperatorOnce|TestH8ClaimingAgainWritesNothingAndTellsOnce' ./cmd/handoff
+ok  	github.com/dre4success/handoff/cmd/handoff	346.766s
+# exit 0

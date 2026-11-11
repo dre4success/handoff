@@ -186,6 +186,7 @@ func TestH12ARoleOutlivesClearAndResume(t *testing.T) {
 // keeps its role by its id alone: another thread under the same parent, at
 // any kind of start, gets none.
 func TestH12ACodexThreadKeepsItsRoleAlone(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	r.as(t, codex("t-1"), "role", "implementer")
 	dir := t.TempDir()

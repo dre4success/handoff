@@ -11,6 +11,7 @@ import (
 // pseudo-version such as v0.0.0-20261024210540-cbb09c235ffb; built in a
 // linked worktree, (devel).
 func TestH17VersionNamesTheBuild(t *testing.T) {
+	t.Parallel()
 	want := regexp.MustCompile(`^handoff (\(devel\)|v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+dirty)?)\n$`)
 	for _, arg := range []string{"version", "--version"} {
 		out, err := exec.Command(bin, arg).Output()
