@@ -1315,7 +1315,7 @@ func (a *app) cmdWait(args []string) (int, error) {
 		return 0, err
 	}
 	defer lock.Close()
-	code, err := wait.Run(a.store, wait.Options{Role: role, Session: callerSession().ID, Timeout: *timeout, Emit: *emit, Interval: time.Second, Clock: wait.Real, Out: a.stdout, Err: a.stderr,
+	code, err := wait.Run(a.store, wait.Options{Role: role, Session: callerSession().ID, Was: a.was(callerSession()), Timeout: *timeout, Emit: *emit, Interval: time.Second, Clock: wait.Real, Out: a.stdout, Err: a.stderr,
 		Quiet: a.quiet, Notify: a.notifier().Send, Alive: holds, Awake: awake.New().Set})
 	if err == nil && code == wait.ExitTimeout && holds != nil && !holds() {
 		return 0, fmt.Errorf("this session no longer holds %s: the operator gave it another role, or gave %s to another session", role, role)

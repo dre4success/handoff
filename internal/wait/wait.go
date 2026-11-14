@@ -11,6 +11,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"time"
 
 	"github.com/dre4success/handoff/internal/record"
@@ -44,7 +45,10 @@ type Options struct {
 	// the wait passes over it, moving the cursor past it and delivering
 	// nothing, so a session never gets an fyi written before it held the
 	// role (row 93).
-	Session  string
+	Session string
+	// Was is the sessions this one went on from, by /background: an fyi
+	// named for one of them is this session's too (row 100).
+	Was      []string
 	Timeout  time.Duration
 	Emit     bool          // keep streaming until the deadline instead of returning on the first delivery
 	Interval time.Duration // how often to stat the record
@@ -174,7 +178,7 @@ func Run(store *record.Store, o Options) (int, error) {
 				if e.To != o.Role || e.ID <= cur {
 					continue
 				}
-				if e.Kind == "fyi" && e.Session != "" && e.Session != o.Session {
+				if e.Kind == "fyi" && e.Session != "" && e.Session != o.Session && !slices.Contains(o.Was, e.Session) {
 					cur = e.ID
 					if err := writeCursor(store.Dir(), o.Role, cur); err != nil {
 						return 0, err

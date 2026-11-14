@@ -1,0 +1,66 @@
+# command: python3 -I real-probe.py <scratch>/<run> <handoff built at the commit> idle|tool, with the reviewer's hookwrap.sh, settings.local.json.txt and timeline.py (evidence/reviewer/H30-345a0e7/), and notify-when-moved.sh posting a reviewer's note once the role has moved; then python3 -I collect-real.py
+# date: 2026-11-13T23:27Z
+# by: Opus 5.5 (implementer), on the operator's Mac, Claude Code 2.1.325, Haiku; the session's folder has no .handoff/, so the installed hooks did nothing there; alerts went to a scratch file
+# A line from the transcript dated before the run's /background is the first session's history, copied into the new one.
+
+## run-idle-28b27b9: R4's case, at 28b27b9: /background with the turn over and the listener waiting
+23:23:17.767 session 1 (34c3617c): SessionStart (startup): handoff hook listen
+23:23:17.768 session 1 (34c3617c): SessionStart (startup): handoff hook brief  -> brief says: this session has NO ROLE
+23:23:20.357 DRIVER: handoff role implementer, as that session: 0 You are now implementer in rec.
+23:23:25.616 session 1 (34c3617c): Stop: handoff hook listen
+23:23:29.646 DRIVER: pressed Enter
+23:23:30.501 session 1 (34c3617c): SessionEnd (prompt_input_exit)
+23:23:30.611 session 2 (97ad8bb3): SessionStart (fork): handoff hook listen
+23:23:30.613 session 2 (97ad8bb3): SessionStart (fork): handoff hook brief  -> brief says: this session has NO ROLE
+23:23:30.839 DRIVER: the session's process 91514 has ended and is reaped
+23:23:30.847 session 2 (97ad8bb3): the binding was written: this session has implementer (process 92124)
+23:23:33.881 DRIVER: 3 s later: binding: session 2 (97ad8bb3) has implementer | listeners of this build running: 0
+23:23:46.639 session 2 (97ad8bb3): Stop: handoff hook listen
+23:23:49.331 DRIVER: after the new session's first Stop (seen: True): binding: session 2 (97ad8bb3) has implementer | listeners of this build running: 1
+23:23:32.961 NOTE posted by the reviewer, the binding being 97ad8bb3: posted #1 note W1 reviewer → implementer: A note after the move   (anything handoff said is on this line)
+  transcript of 34c3617c: 48 lines; its continued-in line: {"type": "continued-in", "timestamp": "2026-11-13T23:23:30.074Z", "sessionId": "34c3617c", "continuedInSessionId": "97ad8bb3"}
+  transcript of 97ad8bb3: 59 lines; its continued-in line: none
+    23:23:17.861 attachment: the brief: NO ROLE
+    23:23:33.902 user: handoff: new for implementer: #1 note W1 reviewer
+
+## run-idle: R4's case, at 9dbb4ff: /background with the turn over and the listener waiting
+23:24:41.426 session 1 (dff252d8): SessionStart (startup): handoff hook listen
+23:24:41.427 session 1 (dff252d8): SessionStart (startup): handoff hook brief  -> brief says: this session has NO ROLE
+23:24:47.036 DRIVER: handoff role implementer, as that session: 0 You are now implementer in rec.
+23:24:52.353 session 1 (dff252d8): Stop: handoff hook listen
+23:24:56.326 DRIVER: pressed Enter
+23:24:57.179 session 1 (dff252d8): SessionEnd (prompt_input_exit)
+23:24:57.264 session 2 (1326faa0): SessionStart (fork): handoff hook brief  -> brief says: YOU ARE IMPLEMENTER
+23:24:57.265 session 2 (1326faa0): SessionStart (fork): handoff hook listen
+23:24:57.604 DRIVER: the session's process 95472 has ended and is reaped
+23:24:57.605 session 2 (1326faa0): the binding was written: this session has implementer (process 95988)
+23:25:00.680 DRIVER: 3 s later: binding: session 2 (1326faa0) has implementer | listeners of this build running: 0
+23:25:24.882 session 2 (1326faa0): Stop: handoff hook listen
+23:25:27.553 DRIVER: after the new session's first Stop (seen: True): binding: session 2 (1326faa0) has implementer | listeners of this build running: 1
+23:24:59.656 NOTE posted by the reviewer, the binding being 1326faa0: posted #1 note W1 reviewer → implementer: A note after the move   (anything handoff said is on this line)
+  transcript of 1326faa0: 81 lines; its continued-in line: none
+    23:24:41.497 attachment: the brief: NO ROLE
+    23:24:57.620 attachment: the brief: YOU ARE IMPLEMENTER
+    23:25:00.656 user: handoff: new for implementer: #1 note W1 reviewer
+  transcript of dff252d8: 48 lines; its continued-in line: {"type": "continued-in", "timestamp": "2026-11-13T23:24:56.748Z", "sessionId": "dff252d8", "continuedInSessionId": "1326faa0"}
+
+## run-tool: R2's case, at 9dbb4ff: /background typed while a 45 s command runs
+23:25:48.701 session 1 (e9b76b6a): SessionStart (startup): handoff hook listen
+23:25:48.702 session 1 (e9b76b6a): SessionStart (startup): handoff hook brief  -> brief says: this session has NO ROLE
+23:25:51.425 DRIVER: handoff role implementer, as that session: 0 You are now implementer in rec.
+23:25:56.799 session 1 (e9b76b6a): Stop: handoff hook listen
+23:26:21.095 DRIVER: pressed Enter
+23:26:21.710 session 1 (e9b76b6a): SessionEnd (prompt_input_exit)
+23:26:21.786 session 2 (c262b398): SessionStart (fork): handoff hook brief  -> brief says: YOU ARE IMPLEMENTER
+23:26:21.786 session 2 (c262b398): SessionStart (fork): handoff hook listen
+23:26:22.608 DRIVER: the session's process 97251 has ended and is reaped
+23:26:22.651 session 2 (c262b398): the binding was written: this session has implementer (process 96033)
+23:26:25.673 DRIVER: 3 s later: binding: session 2 (c262b398) has implementer | listeners of this build running: 2
+23:27:16.791 session 2 (c262b398): Stop: handoff hook listen
+23:27:19.583 DRIVER: after the new session's first Stop (seen: True): binding: session 2 (c262b398) has implementer | listeners of this build running: 2
+23:26:24.753 NOTE posted by the reviewer, the binding being c262b398: posted #1 note W1 reviewer → implementer: A note after the move   (anything handoff said is on this line)
+  transcript of c262b398: 64 lines; its continued-in line: none
+    23:25:48.770 attachment: the brief: NO ROLE
+    23:26:22.668 attachment: the brief: YOU ARE IMPLEMENTER
+    23:26:25.696 attachment: handoff: new for implementer: #1 note W1 reviewer
+  transcript of e9b76b6a: 55 lines; its continued-in line: {"type": "continued-in", "timestamp": "2026-11-13T23:26:21.252Z", "sessionId": "e9b76b6a", "continuedInSessionId": "c262b398"}

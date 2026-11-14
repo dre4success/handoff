@@ -1,0 +1,14 @@
+# command: go build ./... && go vet ./... && gofmt -l cmd internal && go test -race -count=1 ./...
+# date: 2026-11-13T23:29Z
+# by: Opus 5.5 (implementer), on the operator's Mac, branch h30-background at 9dbb4ff
+build, vet: ok
+gofmt -l: []
+ok  	github.com/dre4success/handoff/cmd/handoff	394.550s
+ok  	github.com/dre4success/handoff/internal/awake	1.531s
+ok  	github.com/dre4success/handoff/internal/gitx	1.447s
+ok  	github.com/dre4success/handoff/internal/notify	1.654s
+ok  	github.com/dre4success/handoff/internal/record	4.093s
+ok  	github.com/dre4success/handoff/internal/status	1.216s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	1.688s
+exit 0

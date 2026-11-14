@@ -1,0 +1,6 @@
+{"hooks":{
+ "SessionStart":[{"hooks":[{"type":"command","command":"<scratch>/hookwrap.sh","args":["brief"]},{"type":"command","command":"<scratch>/hookwrap.sh","args":["listen"],"timeout":86400,"asyncRewake":true}]}],
+ "Stop":[{"hooks":[{"type":"command","command":"<scratch>/hookwrap.sh","args":["listen"],"timeout":86400,"asyncRewake":true}]}],
+ "SessionEnd":[{"hooks":[{"type":"command","command":"<scratch>/hookwrap.sh","args":["end"]}]}],
+ "Notification":[{"matcher":"permission_prompt","hooks":[{"type":"command","command":"<scratch>/hookwrap.sh","args":["notify"]}]}]
+}}

@@ -1,0 +1,26 @@
+# command: replay.sh <handoff> probe-hooks.log, in the probe's scratch project, with the installed build and then this branch's (go build -o handoff-h30 ./cmd/handoff at 3a5d686)
+# date: 2026-11-13T22:29Z
+# by: Opus 5.5 (implementer), on the operator's Mac
+# Each run gives the role to the session the probe started (its process has ended), then gives handoff hook brief the SessionStart input Claude Code gave the new session, with its environment.
+
+== installed: handoff v0.0.0-20261111110840-e491575b9251
+/background: implementer given to 8d47e001 (pid 74000, ended: yes)
+  the old transcript names: e05f1c64
+  brief of e05f1c64 (SessionStart, source fork): handoff: proj hands work between agents through handoff, and this session has no role in it. When the operator gives you one, run `handoff role <role>` (the rol
+  bindings: {"v":1,"role":"implementer","session":"8d47e001-f495-43b9-a180-84183d947c32","pid":74000} 
+/fork: implementer given to 175512d7 (pid 82132, ended: yes)
+  the old transcript names: 
+  brief of e3cd0611 (SessionStart, source fork): handoff: proj hands work between agents through handoff, and this session has no role in it. When the operator gives you one, run `handoff role <role>` (the rol
+  bindings: {"v":1,"role":"implementer","session":"175512d7-eed2-46b5-8ae7-25776adc008a","pid":82132} 
+
+== this branch
+/background: implementer given to 8d47e001 (pid 74000, ended: yes)
+  the old transcript names: e05f1c64
+  brief of e05f1c64 (SessionStart, source fork): handoff brief: you are implementer in proj. You and reviewer, reviewer-2 hand work to each other through handoff. The operator decides.
+  brief of e05f1c64 (SessionStart, source fork): 
+  brief of e05f1c64 (SessionStart, source fork): Listening: you don't ru
+  bindings: {"v":1,"role":"implementer","session":"e05f1c64-264b-427e-be69-d710dba403e0","pid":75546} 
+/fork: implementer given to 175512d7 (pid 82132, ended: yes)
+  the old transcript names: 
+  brief of e3cd0611 (SessionStart, source fork): handoff: proj hands work between agents through handoff, and this session has no role in it. When the operator gives you one, run `/private/tmp/claude-501/-User
+  bindings: {"v":1,"role":"implementer","session":"175512d7-eed2-46b5-8ae7-25776adc008a","pid":82132} 

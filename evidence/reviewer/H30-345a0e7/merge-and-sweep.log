@@ -1,0 +1,60 @@
+# command: git merge-tree --write-tree main <commit>, objects to a scratch directory; the name sweep over main, the commit, the merged tree and the reviewer's evidence folder
+# date: 2026-11-13 23:12:48 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 345a0e704ad502e54fbf0d4c947bc296486975cb
+
+## main is 1dc04ca86a98b98195d3b5c221d9905e823fa744; the request's base is 2336ecd97bb887cfce119980ce382eb28b1f37d5; commits on main since the base:
+1dc04ca docs(channel): board: H30 in review (#159)
+ docs/CHANNEL.md | 1 +
+ 1 file changed, 1 insertion(+)
+## loose objects in the repository before: 183
+## merge-tree of main and the commit: exit 0
+cc50c8370ff39ee4e10e22ad5f0ce1af7f36498d
+## loose objects in the repository after: 183
+## files that differ between main and the merged tree:
+Files main/README.md and merged/README.md differ
+Only in merged/cmd/handoff: background_test.go
+Files main/cmd/handoff/session.go and merged/cmd/handoff/session.go differ
+Files main/docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md and merged/docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md differ
+Only in merged/evidence: h30
+## files that differ between the commit and the merged tree:
+Files commit/docs/CHANNEL.md and merged/docs/CHANNEL.md differ
+
+## sweep of main
+779 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder: 2 lines, 0 file names
+the names of the operator's other projects (the reviewer's list): 0 lines, 0 file names
+an email address: 36 lines, 0 file names
+
+## sweep of commit
+790 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder: 2 lines, 0 file names
+the names of the operator's other projects (the reviewer's list): 0 lines, 0 file names
+an email address: 36 lines, 0 file names
+
+## sweep of merged
+790 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder: 2 lines, 0 file names
+the names of the operator's other projects (the reviewer's list): 0 lines, 0 file names
+an email address: 36 lines, 0 file names
+
+## added lines in git diff 2336ecd <commit> that match any pattern:
+the operator's name, as a word, in a file name or inside an identifier: 0 lines
+the operator's account name, other than in the module path: 0 lines
+a path under a home folder: 0 lines
+the names of the operator's other projects (the reviewer's list): 0 lines
+an email address: 0 lines
+
+## sweep of the reviewer's evidence folder
+14 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder: 0 lines, 0 file names
+the names of the operator's other projects (the reviewer's list): 0 lines, 0 file names
+an email address: 0 lines, 0 file names

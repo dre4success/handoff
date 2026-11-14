@@ -1,0 +1,188 @@
+# command: real-probe.py, once per run below, each a throwaway interactive Claude Code session (Haiku) through a pseudo-terminal; then timeline.py and real-collect.py on what hookwrap.sh kept
+# date: 2026-11-13, 22:49 to 23:09 UTC
+# by: Fable 5.2 (reviewer), on the operator's Mac (darwin arm64), Claude Code 2.1.325, with handoff built at 345a0e704ad502e54fbf0d4c947bc296486975cb
+#
+# The session ran in a scratch git repository with no .handoff/ of its own, so the operator's installed
+# hooks did nothing there. Its .claude/settings.local.json ran hookwrap.sh at SessionStart (brief, and
+# listen with asyncRewake), Stop (listen with asyncRewake), SessionEnd and at a permission prompt.
+# hookwrap.sh keeps the hook's input and runs this build's `handoff hook <brief|listen|notify>` on it in a
+# scratch record beside it, with alerts and sleep holds going to scratch files. None were sent.
+# Each line's time is when the hook's input was written, a few milliseconds before handoff started.
+# "DRIVER" lines are the pseudo-terminal driver's: it reaps the session's process within about 5 ms
+# of its end, as a shell would. "the binding was written" is the time on the binding file as the run ended.
+# In each run the driver gives the session implementer (`handoff role implementer`, with the session's
+# id and CLAUDE_PID), lets it finish one turn, and then types /background or /fork.
+# Session ids are cut to eight characters. The background sessions were stopped and removed
+# (`claude stop`, `claude rm`) and the scratch project's Claude Code data deleted after this log was made.
+#
+# In short: in 4 of the 5 runs with the plain wrapper (R2, R3, R4, R6) the new session's SessionStart hooks
+# ran 0.1 to 1.0 s BEFORE the old session's process ended, so its brief said it had no role and no
+# listener started. In R2, R3 and R6 the role moved at the new session's first Stop, 52 to 54 s later. In R4
+# the new session was idle, had no Stop, and the role had not moved when the run ended 107 s later.
+# In R5 the old process ended 23 ms before, and the role moved at the start. In R1 the wrapper's own
+# logging delayed handoff by about 0.2 s, which was enough for the role to move at the start.
+
+## R1. /background while a command runs; hookwrap-verbose.sh, which logs before it runs handoff (about 0.2 s)
+22:50:01.871 (the same event's other hook, brief; the two wrote to the log at once)
+22:50:01.877 session 0c43ed37: SessionStart (startup): hook listen
+22:50:10.717 session 0c43ed37: Stop: hook listen
+    binding as this hook starts: 0c43ed37 has implementer; its process 25478 RUNS
+22:50:38.203 session 0c43ed37: SessionEnd: hook end
+    binding as this hook starts: 0c43ed37 has implementer; its process 25478 RUNS
+22:50:38.412 (the same event's other hook, listen; the two wrote to the log at once)
+22:50:38.412 session 814ad498: SessionStart (fork): hook brief
+    binding as this hook starts: 0c43ed37 has implementer; its process 25478 RUNS
+    binding as this hook starts: 0c43ed37 has implementer; its process 25478 RUNS
+22:51:31.415 session 814ad498: Stop: hook listen
+    binding as this hook starts: 814ad498 has implementer; its process 26745 RUNS
+22:52:09.895 session 814ad498: Stop: hook listen
+    binding as this hook starts: 814ad498 has implementer; its process 26745 RUNS
+22:52:44.459 session 814ad498: SessionEnd: hook end
+    binding as this hook starts: 814ad498 has implementer; its process 26745 RUNS
+# from the driver's log: the old session's process was reaped at 22:50:38.546
+# from the new session's transcript: what its SessionStart brief hook printed, and what woke it later
+  22:50:38.723 attachment: the brief hook's output: YOU ARE IMPLEMENTER
+  22:51:51.545 user : carries "handoff: new for implementer: #1 note W1 reviewer → implementer"
+  22:52:09.890 system stop_hook_summary
+# the reviewer's note was posted at 22:51:51 (handoff note, in the scratch record); the session's next Stop hook ran at 22:52:09.895
+  transcript of 0c43ed37: 54 lines; continued-in lines: 1; lines after the last one: 3 (1570 bytes)
+    {"type": "continued-in", "timestamp": "2026-11-13T22:50:37.752Z", "sessionId": "0c43ed37", "continuedInSessionId": "814ad498"}
+    its last lines' types: attachment, cost-state, continued-in, cost-state, last-prompt, cost-state
+  transcript of 814ad498: 91 lines; continued-in lines: 0
+    its last lines' types: system, cost-state, last-prompt, cost-state
+
+## R2. /background while a command runs
+22:53:13.108 session 1 (a3bc77f8): SessionStart (startup): handoff hook brief  -> brief says: this session has NO ROLE
+22:53:13.110 session 1 (a3bc77f8): SessionStart (startup): handoff hook listen
+22:53:18.852 DRIVER: handoff role implementer, as that session: 0 You are now implementer in rec.
+22:53:24.168 session 1 (a3bc77f8): Stop: handoff hook listen
+22:53:48.486 DRIVER: pressed Enter
+22:53:49.382 session 1 (a3bc77f8): SessionEnd (prompt_input_exit)
+22:53:49.478 session 2 (3269e751): SessionStart (fork): handoff hook brief  -> brief says: this session has NO ROLE
+22:53:49.486 session 2 (3269e751): SessionStart (fork): handoff hook listen
+22:53:50.497 DRIVER: the session's process 29947 has ended and is reaped
+22:53:53.526 DRIVER: 3 s later: binding: session 1 (a3bc77f8) has implementer | listeners of this build running: 0
+22:54:41.957 session 2 (3269e751): Stop: handoff hook listen
+22:54:41.969 session 2 (3269e751): the binding was written: this session has implementer (process 31057)
+22:54:44.733 DRIVER: after the new session's first Stop (seen: True): binding: session 2 (3269e751) has implementer | listeners of this build running: 1
+  transcript of a3bc77f8: 54 lines; continued-in lines: 1; lines after the last one: 3 (1570 bytes)
+    {"type": "continued-in", "timestamp": "2026-11-13T22:53:48.941Z", "sessionId": "a3bc77f8", "continuedInSessionId": "3269e751"}
+    its last lines' types: attachment, cost-state, continued-in, cost-state, last-prompt, cost-state
+  transcript of 3269e751: 56 lines; continued-in lines: 0
+    its last lines' types: assistant, system, system, cost-state, last-prompt, cost-state
+
+## R3. the same again
+22:57:02.180 session 1 (16b18f3f): SessionStart (startup): handoff hook listen
+22:57:02.183 session 1 (16b18f3f): SessionStart (startup): handoff hook brief  -> brief says: this session has NO ROLE
+22:57:07.812 DRIVER: handoff role implementer, as that session: 0 You are now implementer in rec.
+22:57:13.761 session 1 (16b18f3f): Stop: handoff hook listen
+22:57:38.066 DRIVER: pressed Enter
+22:57:39.059 session 1 (16b18f3f): SessionEnd (prompt_input_exit)
+22:57:39.329 session 2 (eb7149de): SessionStart (fork): handoff hook brief  -> brief says: this session has NO ROLE
+22:57:39.355 session 2 (eb7149de): SessionStart (fork): handoff hook listen
+22:57:39.470 DRIVER: the session's process 38021 has ended and is reaped
+22:57:42.534 DRIVER: 3 s later: binding: session 1 (16b18f3f) has implementer | listeners of this build running: 0
+22:58:31.804 session 2 (eb7149de): Stop: handoff hook listen
+22:58:31.823 session 2 (eb7149de): the binding was written: this session has implementer (process 39180)
+22:58:34.365 DRIVER: after the new session's first Stop (seen: True): binding: session 2 (eb7149de) has implementer | listeners of this build running: 1
+  transcript of 16b18f3f: 54 lines; continued-in lines: 1; lines after the last one: 3 (1614 bytes)
+    {"type": "continued-in", "timestamp": "2026-11-13T22:57:38.617Z", "sessionId": "16b18f3f", "continuedInSessionId": "eb7149de"}
+    its last lines' types: attachment, cost-state, continued-in, cost-state, last-prompt, cost-state
+  transcript of eb7149de: 56 lines; continued-in lines: 0
+    its last lines' types: assistant, system, system, cost-state, last-prompt, cost-state
+
+## R4. /background with the turn over and the session's listener waiting
+22:58:36.454 session 1 (3a1b8f1b): SessionStart (startup): handoff hook listen
+22:58:36.455 session 1 (3a1b8f1b): SessionStart (startup): handoff hook brief  -> brief says: this session has NO ROLE
+22:58:42.108 session 1 (3a1b8f1b): the binding was written: this session has implementer (process 40694)
+22:58:42.122 DRIVER: handoff role implementer, as that session: 0 You are now implementer in rec.
+22:58:47.687 session 1 (3a1b8f1b): Stop: handoff hook listen
+22:58:51.716 DRIVER: pressed Enter
+22:58:52.586 session 1 (3a1b8f1b): SessionEnd (prompt_input_exit)
+22:58:52.662 session 2 (06812a35): SessionStart (fork): handoff hook brief  -> brief says: this session has NO ROLE
+22:58:52.665 session 2 (06812a35): SessionStart (fork): handoff hook listen
+22:58:53.643 DRIVER: the session's process 40694 has ended and is reaped
+22:58:56.695 DRIVER: 3 s later: binding: session 1 (3a1b8f1b) has implementer | listeners of this build running: 0
+23:00:39.372 DRIVER: after the new session's first Stop (seen: False): binding: session 1 (3a1b8f1b) has implementer | listeners of this build running: 0
+  transcript of 3a1b8f1b: 48 lines; continued-in lines: 1; lines after the last one: 4 (1672 bytes)
+    {"type": "continued-in", "timestamp": "2026-11-13T22:58:52.172Z", "sessionId": "3a1b8f1b", "continuedInSessionId": "06812a35"}
+    its last lines' types: cost-state, continued-in, cost-state, file-history-snapshot, last-prompt, cost-state
+  transcript of 06812a35: 2 lines; continued-in lines: 0
+    its last lines' types: ai-title, agent-name
+
+## R5. the same again
+23:00:41.807 session 1 (66edd49d): SessionStart (startup): handoff hook brief  -> brief says: this session has NO ROLE
+23:00:41.808 session 1 (66edd49d): SessionStart (startup): handoff hook listen
+23:00:47.273 DRIVER: handoff role implementer, as that session: 0 You are now implementer in rec.
+23:00:52.765 session 1 (66edd49d): Stop: handoff hook listen
+23:00:56.897 DRIVER: pressed Enter
+23:00:57.762 session 1 (66edd49d): SessionEnd (prompt_input_exit)
+23:00:58.119 DRIVER: the session's process 43179 has ended and is reaped
+23:00:58.142 session 2 (09e13ea7): SessionStart (fork): handoff hook listen
+23:00:58.145 session 2 (09e13ea7): SessionStart (fork): handoff hook brief  -> brief says: YOU ARE IMPLEMENTER
+23:00:58.187 session 2 (09e13ea7): the binding was written: this session has implementer (process 43517)
+23:01:01.198 DRIVER: 3 s later: binding: session 2 (09e13ea7) has implementer | listeners of this build running: 1
+23:02:43.809 DRIVER: after the new session's first Stop (seen: False): binding: session 2 (09e13ea7) has implementer | listeners of this build running: 1
+  transcript of 66edd49d: 48 lines; continued-in lines: 1; lines after the last one: 4 (1714 bytes)
+    {"type": "continued-in", "timestamp": "2026-11-13T23:00:57.331Z", "sessionId": "66edd49d", "continuedInSessionId": "09e13ea7"}
+    its last lines' types: cost-state, continued-in, cost-state, file-history-snapshot, last-prompt, cost-state
+  transcript of 09e13ea7: 2 lines; continued-in lines: 0
+    its last lines' types: ai-title, agent-name
+
+## R6. /background while a command runs, a third time; its background session is kept for R8
+23:06:28.405 session 1 (f09506c6): SessionStart (startup): handoff hook listen
+23:06:28.407 session 1 (f09506c6): SessionStart (startup): handoff hook brief  -> brief says: this session has NO ROLE
+23:06:34.134 DRIVER: handoff role implementer, as that session: 0 You are now implementer in rec.
+23:06:40.113 session 1 (f09506c6): Stop: handoff hook listen
+23:07:04.394 DRIVER: pressed Enter
+23:07:05.261 session 1 (f09506c6): SessionEnd (prompt_input_exit)
+23:07:05.389 session 2 (0145638e): SessionStart (fork): handoff hook brief  -> brief says: this session has NO ROLE
+23:07:05.389 session 2 (0145638e): SessionStart (fork): handoff hook listen
+23:07:05.598 DRIVER: the session's process 49383 has ended and is reaped
+23:07:08.642 DRIVER: 3 s later: binding: session 1 (f09506c6) has implementer | listeners of this build running: 0
+23:07:58.929 session 2 (0145638e): Stop: handoff hook listen
+23:07:58.946 session 2 (0145638e): the binding was written: this session has implementer (process 50505)
+23:08:01.667 DRIVER: after the new session's first Stop (seen: True): binding: session 2 (0145638e) has implementer | listeners of this build running: 1
+  transcript of f09506c6: 67 lines; continued-in lines: 1; lines after the last one: 16 (13154 bytes)
+    {"type": "continued-in", "timestamp": "2026-11-13T23:07:04.840Z", "sessionId": "f09506c6", "continuedInSessionId": "0145638e"}
+    its last lines' types: system, system, cost-state, file-history-snapshot, last-prompt, cost-state
+  transcript of 0145638e: 56 lines; continued-in lines: 0
+    its last lines' types: assistant, system, system, cost-state, last-prompt, cost-state
+
+## R7. /fork with the turn over; the old session is closed three minutes later
+23:03:02.379 session 1 (a9988c24): SessionStart (startup): handoff hook listen
+23:03:02.383 session 1 (a9988c24): SessionStart (startup): handoff hook brief  -> brief says: this session has NO ROLE
+23:03:08.069 session 1 (a9988c24): the binding was written: this session has implementer (process 45576)
+23:03:08.084 DRIVER: handoff role implementer, as that session: 0 You are now implementer in rec.
+23:03:13.599 session 1 (a9988c24): Stop: handoff hook listen
+23:03:17.496 DRIVER: pressed Enter
+23:03:18.614 session 2 (6ebcbeb4): SessionStart (fork): handoff hook brief  -> brief says: this session has NO ROLE
+23:03:18.620 session 2 (6ebcbeb4): SessionStart (fork): handoff hook listen
+23:04:35.561 DRIVER: 3 s later: binding: session 1 (a9988c24) has implementer | listeners of this build running: 1
+23:06:18.255 DRIVER: after the new session's first Stop (seen: False): binding: session 1 (a9988c24) has implementer | listeners of this build running: 1
+23:06:19.446 session 1 (a9988c24): SessionEnd (prompt_input_exit)
+23:06:19.827 DRIVER: the session's process 45576 has ended and is reaped
+23:06:26.556 DRIVER: after it closed: binding: session 1 (a9988c24) has implementer | listeners of this build running: 0
+  transcript of a9988c24: 50 lines; continued-in lines: 0
+    its last lines' types: system, user, cost-state, file-history-snapshot, last-prompt, cost-state
+  transcript of 6ebcbeb4: 38 lines; continued-in lines: 0
+    its last lines' types: mode, permission-mode, session-owner, atis-latch, cost-state, cost-state
+
+## R8. claude --resume of R6's old session, which is given implementer again, has one turn and is closed
+23:08:15.028 session 1 (f09506c6): SessionStart (resume): handoff hook listen
+23:08:15.029 session 1 (f09506c6): SessionStart (resume): handoff hook brief  -> brief says: this session has NO ROLE
+23:08:20.709 session 1 (f09506c6): the binding was written: this session has implementer (process 52222)
+23:08:20.723 DRIVER: handoff role implementer, as the resumed session: 0 You are now implementer in rec. Another session had implementer; it has no role now.
+23:08:27.697 session 1 (f09506c6): Stop: handoff hook listen
+23:08:29.878 DRIVER: DELTA on screen: True | binding: session 1 (f09506c6) has implementer | listeners of this build running: 1
+23:08:31.055 session 1 (f09506c6): SessionEnd (prompt_input_exit)
+23:08:31.376 DRIVER: the session's process 52222 has ended and is reaped
+23:08:32.953 DRIVER: after it closed: binding: session 1 (f09506c6) has implementer | listeners of this build running: 0
+  transcript of f09506c6: 67 lines; continued-in lines: 1; lines after the last one: 16 (13154 bytes)
+    {"type": "continued-in", "timestamp": "2026-11-13T23:07:04.840Z", "sessionId": "f09506c6", "continuedInSessionId": "0145638e"}
+    its last lines' types: system, system, cost-state, file-history-snapshot, last-prompt, cost-state
+
+# replay of the background session's own Stop input, after the resumed old session was given the role and closed
+handoff: nothing new for implementer in 2s. Just end your turn; listening starts again when it ends.
+# exit 2
+after: {"v":1,"role":"implementer","session":"0145638e","pid":50505,"since":"2026-11-13T23:08:20Z"}

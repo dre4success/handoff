@@ -1,0 +1,75 @@
+# command: go build ./...; go vet ./...; gofmt -l cmd internal; go.mod requires; go list -deps for net; the commits and diffstat from the base; what the later commits touch
+# date: 2026-11-13 23:53:00 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: f0b0d8e5bc743b814784e500bb11faa87e4f9aa6
+
+## go build ./...: ok
+## go vet ./...: clean
+## gofmt -l cmd internal: []
+## go.mod require lines: 0
+## packages in go list -deps ./... named net or under net/: 0
+## commits on the base (2336ecd):
+f0b0d8e docs: H30 round 2 evidence: real runs with this build's hooks, every condition taken out in turn, tests
+bf3ff4e docs: §17 row 100, corrections to row 99 from the H30 review
+9dbb4ff fix: H30 round 2: every SessionStart hook of the new session has the role, not only the one that moved it
+28b27b9 fix: H30 round 2: the role moves at the new session's start, and only on a line newer than the role
+345a0e7 docs: H30 evidence: /background and /fork probes, a replay on their files, tests
+401488e docs: §17 row 99, a role follows a Claude Code session sent to the background
+3a5d686 docs: README: a role is kept through /background, not by a /fork copy
+bc1a2aa feat: a role follows a Claude Code session sent to the background
+## diffstat:
+ README.md                                 |   2 +-
+ cmd/handoff/background_test.go            | 336 ++++++++++++++++++++++++++++++
+ cmd/handoff/cmds.go                       |   2 +-
+ cmd/handoff/hook.go                       |   2 +-
+ cmd/handoff/session.go                    | 158 +++++++++++++-
+ docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md |   2 +
+ evidence/h30/README.md                    |  23 ++
+ evidence/h30/background-probe.py          |  47 +++++
+ evidence/h30/dump.sh                      |   2 +
+ evidence/h30/fork-probe.py                |  51 +++++
+ evidence/h30/go-test-race.log             |  14 ++
+ evidence/h30/mutate.py                    |  28 +++
+ evidence/h30/mutations.log                |  16 ++
+ evidence/h30/on-this-mac.txt              |   8 +
+ evidence/h30/probe-hooks.log              |  66 ++++++
+ evidence/h30/probe-transcripts.txt        |  41 ++++
+ evidence/h30/real/collect-real.py         |  31 +++
+ evidence/h30/real/notify-when-moved.sh    |  20 ++
+ evidence/h30/real/real-runs.log           |  66 ++++++
+ evidence/h30/replay.log                   |  26 +++
+ evidence/h30/replay.sh                    |  16 ++
+ internal/wait/wait.go                     |   8 +-
+ 22 files changed, 957 insertions(+), 8 deletions(-)
+## the implementer's test log, real runs and mutations name 9dbb4ff; what the commit under review adds to it:
+ docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md |  1 +
+ evidence/h30/README.md                    | 21 +++++++---
+ evidence/h30/go-test-race.log             | 18 ++++-----
+ evidence/h30/mutate.py                    | 28 +++++++++++++
+ evidence/h30/mutations.log                | 16 ++++++++
+ evidence/h30/real/collect-real.py         | 31 +++++++++++++++
+ evidence/h30/real/notify-when-moved.sh    | 20 ++++++++++
+ evidence/h30/real/real-runs.log           | 66 +++++++++++++++++++++++++++++++
+ 8 files changed, 187 insertions(+), 14 deletions(-)
+## since round 1 (345a0e7):
+ cmd/handoff/background_test.go            | 302 +++++++++++++++++++++++-------
+ cmd/handoff/cmds.go                       |   2 +-
+ cmd/handoff/hook.go                       |   2 +-
+ cmd/handoff/session.go                    | 103 +++++++---
+ docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md |   1 +
+ evidence/h30/README.md                    |  21 ++-
+ evidence/h30/go-test-race.log             |  18 +-
+ evidence/h30/mutate.py                    |  28 +++
+ evidence/h30/mutations.log                |  16 ++
+ evidence/h30/real/collect-real.py         |  31 +++
+ evidence/h30/real/notify-when-moved.sh    |  20 ++
+ evidence/h30/real/real-runs.log           |  66 +++++++
+ internal/wait/wait.go                     |   8 +-
+ 13 files changed, 507 insertions(+), 111 deletions(-)
+## files under cmd or internal that differ from the base:
+ cmd/handoff/background_test.go | 336 +++++++++++++++++++++++++++++++++++++++++
+ cmd/handoff/cmds.go            |   2 +-
+ cmd/handoff/hook.go            |   2 +-
+ cmd/handoff/session.go         | 158 ++++++++++++++++++-
+ internal/wait/wait.go          |   8 +-
+## the worktree is clean: []

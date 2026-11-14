@@ -127,7 +127,7 @@ func (a *app) hookListen(args []string, in hookInput) (int, error) {
 	}
 	defer lock.Close()
 	var out bytes.Buffer
-	code, err := wait.Run(a.store, wait.Options{Role: role, Session: hookSession(in).ID, Timeout: *timeout, Interval: time.Second, Clock: wait.Real,
+	code, err := wait.Run(a.store, wait.Options{Role: role, Session: hookSession(in).ID, Was: a.was(hookSession(in)), Timeout: *timeout, Interval: time.Second, Clock: wait.Real,
 		Out: &out, Err: &out, Quiet: a.quiet, Notify: a.notifier().Send, Alive: alive, Awake: awake.New().Set})
 	h := shellQuote(selfCommand())
 	switch {

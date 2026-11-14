@@ -1,0 +1,8 @@
+# command: find ~/.claude/projects -name '*.jsonl' -exec grep -l '"continued-in"' {} +; for each, the line before its continued-in line, and whether ~/.claude/daemon.log started the id it names "(slash)". Counts and dates only; the probe's own transcripts are left out.
+# date: 2026-11-13T22:29Z
+# by: Opus 5.5 (implementer), on the operator's Mac
+
+2026-10-11 | system line before it: Backgrounding after the current tool finishes… | daemon log: bg claimed-spare <new id> (slash)
+2026-10-24 | system line before it: Backgrounding after the current tool finishes… | daemon log: bg claimed-spare <new id> (slash)
+2026-11-08 | system line before it: Backgrounding after the current tool finishes… | daemon log: bg spawned <new id> (slash)
+2026-11-09 | system line before it: Backgrounding after the current tool finishes… | daemon log: bg claimed-spare <new id> (slash)

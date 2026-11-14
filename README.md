@@ -43,7 +43,7 @@ To tell every agent something without a go-ahead, use `handoff fyi "Carry on."`.
 ## Good to know
 
 - A session waits for work by itself. It never decides for you or edits `.handoff/`. `handoff brief` shows what it's told.
-- A session keeps its role through a resume and `/clear`. A new Codex thread needs telling again. Giving a role to another session takes it from the first.
+- A session keeps its role through a resume, `/clear` and `/background`. A copy made with `/fork`, or a new Codex thread, needs telling again. Giving a role to another session takes it from the first.
 - The implementer works on a branch of its own and never merges or pushes without your decision.
 - `reviewer-2` is for a second reviewer; with one, leave it unused. For other roles, use `handoff init --roles a,b` or, later, `handoff roles add <role>`.
 - Codex asks you to review the new hooks: choose **Trust all**. `handoff` runs outside Codex's sandbox, so its notifications reach you. Without hooks, a Codex session doesn't wait for work, so you tell it when there is some.

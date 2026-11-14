@@ -1,0 +1,54 @@
+# command: go test -race -count=1 -json ./... (no -timeout but go's own); the test names at the base and here; the H30 tests, -count=5; the implementer's mutate.py
+# date: 2026-11-13 23:53:01 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: f0b0d8e5bc743b814784e500bb11faa87e4f9aa6
+
+# (the full run was started at 2026-11-13 23:36:28 local time, in this worktree, with a scratch HOME, and its output is read here)
+pass  github.com/dre4success/handoff/cmd/handoff  397.277s
+pass  github.com/dre4success/handoff/internal/awake  1.376s
+pass  github.com/dre4success/handoff/internal/gitx  1.285s
+pass  github.com/dre4success/handoff/internal/notify  1.446s
+pass  github.com/dre4success/handoff/internal/record  3.68s
+pass  github.com/dre4success/handoff/internal/status  1.2810000000000001s
+skip  github.com/dre4success/handoff/internal/term  0s
+pass  github.com/dre4success/handoff/internal/wait  1.829s
+# tests: passed 189, failed 0, skipped 2; subtests: passed 10, failed 0; data races: 0
+
+## the tests' names at the base that are not here, and here that are not at the base
+> TestH30AnFyiForTheOldSessionReachesTheNewOne
+> TestH30AnOldLineDoesntTakeALaterRole
+> TestH30ARunningSessionKeepsItsRole
+> TestH30BothStartHooksHaveTheRole
+> TestH30OnlyTheLineNamingItMovesARole
+> TestH30ReadingTheTranscript
+> TestH30RoleFollowsBackground
+> TestH30RoleFollowsTwoMoves
+> TestH30TwoSessionsNamingOneMoveNothing
+# tests at the base: 182; here: 191
+
+## the H30 tests, 5 times each under the race detector
+   5 --- PASS: TestH30AnFyiForTheOldSessionReachesTheNewOne
+   5 --- PASS: TestH30AnOldLineDoesntTakeALaterRole
+   5 --- PASS: TestH30ARunningSessionKeepsItsRole
+   5 --- PASS: TestH30BothStartHooksHaveTheRole
+   5 --- PASS: TestH30OnlyTheLineNamingItMovesARole
+   5 --- PASS: TestH30ReadingTheTranscript
+   5 --- PASS: TestH30RoleFollowsBackground
+   5 --- PASS: TestH30RoleFollowsTwoMoves
+   5 --- PASS: TestH30TwoSessionsNamingOneMoveNothing
+   1 ok  	github.com/dre4success/handoff/cmd/handoff
+
+## the implementer's evidence/h30/mutate.py, run in a scratch copy of the tree: each condition taken out in turn, then the H30 tests
+the hook's transcript is named after its session: FAIL TestH30OnlyTheLineNamingItMovesARole, TestH30OnlyTheLineNamingItMovesARole/a_transcript_not_named_after_the_session
+exactly one binding qualifies: FAIL TestH30TwoSessionsNamingOneMoveNothing
+the line's type is continued-in: FAIL TestH30OnlyTheLineNamingItMovesARole, TestH30OnlyTheLineNamingItMovesARole/a_line_of_another_type
+the last such line wins: FAIL TestH30OnlyTheLineNamingItMovesARole, TestH30OnlyTheLineNamingItMovesARole/a_later_line_naming_another_session
+no line older than the role: FAIL TestH30AnOldLineDoesntTakeALaterRole, TestH30OnlyTheLineNamingItMovesARole, TestH30OnlyTheLineNamingItMovesARole/a_line_with_no_time
+the hook waits for the old process: FAIL TestH30BothStartHooksHaveTheRole, TestH30RoleFollowsBackground
+a running session keeps its role: FAIL TestH30ARunningSessionKeepsItsRole
+ids are plain names: FAIL TestH30OnlyTheLineNamingItMovesARole, TestH30OnlyTheLineNamingItMovesARole/an_id_that_isn't_a_plain_name
+an fyi for the session it went on from: FAIL TestH30AnFyiForTheOldSessionReachesTheNewOne
+a named pipe is never waited on: FAIL TestH30ReadingTheTranscript
+a hook finds the role another hook of its session moved: FAIL TestH30BothStartHooksHaveTheRole
+the move itself: FAIL TestH30ARunningSessionKeepsItsRole, TestH30AnFyiForTheOldSessionReachesTheNewOne, TestH30BothStartHooksHaveTheRole, TestH30RoleFollowsBackground, TestH30RoleFollowsTwoMoves
+## the scratch copy's session.go and wait.go are as in the commit again: yes

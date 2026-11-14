@@ -1,0 +1,55 @@
+# command: the v0.1.4 release: the public commit checked in a plain clone, the push, then go install through the module proxy
+# date: 2026-11-11 11:16:40 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (go1.25.3)
+## clone at v0.1.4: a7831fe1dd1397994239ee61b2337c764f7ba98f, tree 80ea930d0641b27bf224962123e8aabd3528f8ea
+## local main tree: 80ea930d0641b27bf224962123e8aabd3528f8ea
+## handoff version: handoff v0.1.4
+## go.mod require lines: 0
+## go vet: clean
+## gofmt -l cmd internal: []
+## go test -count=1 -race -timeout 30m ./...
+ok  	github.com/dre4success/handoff/cmd/handoff	414.899s
+ok  	github.com/dre4success/handoff/internal/awake	1.613s
+ok  	github.com/dre4success/handoff/internal/gitx	1.515s
+ok  	github.com/dre4success/handoff/internal/notify	1.276s
+ok  	github.com/dre4success/handoff/internal/record	4.409s
+ok  	github.com/dre4success/handoff/internal/status	1.523s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	2.074s
+## go test exit: 0
+## the name sweep of every tracked file, the public tree before this (b2631db, public c1ccfcb) against this one (main); the patterns stay outside the repository
+## b2631db: 748 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder: 27 lines, 0 file names
+the names of the operator's other projects: 0 lines, 0 file names
+an email address or mail domain: 36 lines, 0 file names
+the operator's server: 0 lines, 0 file names
+## main: 778 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder: 33 lines, 0 file names
+the names of the operator's other projects: 0 lines, 0 file names
+an email address or mail domain: 36 lines, 0 file names
+the operator's server: 0 lines, 0 file names
+## added lines in git diff b2631db main that match:
+the operator's name, as a word, in a file name or inside an identifier: 0 added lines
+the operator's account name, other than in the module path: 0 added lines
+a path under a home folder: 6 added lines
+the names of the operator's other projects: 0 added lines
+an email address or mail domain: 0 added lines
+the operator's server: 0 added lines
+# every added line that matches is a scratch home folder ($SCRATCH/home/.claude, .codex) or a search pattern's own text (/Users/, /home/)
+## the 16 lines H29 dropped from CLAUDE.md, found in any file of this tree: 0
+## alerts sent: 0 (to the test file only)
+## git push origin main v0.1.4, on the operator's decision (H28, #158): c1ccfcb..a7831fe main, new tag v0.1.4
+## git ls-remote after the push
+a7831fe1dd1397994239ee61b2337c764f7ba98f	HEAD
+a7831fe1dd1397994239ee61b2337c764f7ba98f	refs/heads/main
+df46adfe8892be39e631fb66056eb915b154856f	refs/tags/v0.1.4
+a7831fe1dd1397994239ee61b2337c764f7ba98f	refs/tags/v0.1.4^{}
+## 2026-11-11 11:24:40 UTC: go install github.com/dre4success/handoff/cmd/handoff@v0.1.4 and @latest, with a scratch GOBIN and module cache
+@v0.1.4: handoff v0.1.4
+@latest: handoff v0.1.4
+## proxy.golang.org list: v0.1.4 v0.1.3 v0.1.2 v0.1.0 v0.1.1 
+## GitHub release: v0.1.4, Latest

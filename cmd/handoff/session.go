@@ -1,12 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -32,7 +34,9 @@ import (
 // resumed session keeps its id. Claude Code also gives CLAUDE_PID, its own
 // process, which hosts one conversation at a time: /clear starts a new id in
 // it, with a SessionStart whose source is "clear", and only then does a role
-// move to the new id. Codex gives nothing of the kind: its hooks' parent may
+// move to the new id. /background goes on in a new id in another process; the
+// old transcript's last lines name it, and the role follows once the old
+// process has ended (row 99). Codex gives nothing of the kind: its hooks' parent may
 // be a server for many threads (GPT-6, H12 review), so a new thread starts
 // with no role, and the parent only tells whether a session may still run.
 
@@ -60,6 +64,8 @@ type hookInput struct {
 	Source  string `json:"source"`
 	Type    string `json:"notification_type"`
 	Message string `json:"message"`
+	// Transcript is the session's transcript, which Claude Code gives every hook.
+	Transcript string `json:"transcript_path"`
 }
 
 // hookSession is the session a hook runs for: the id on its stdin; Claude
@@ -83,6 +89,8 @@ type binding struct {
 	PID     int    `json:"pid,omitempty"`
 	Host    int    `json:"host,omitempty"`
 	Since   string `json:"since"`
+	// Was is the sessions this one went on from, by /background (row 100).
+	Was []string `json:"was,omitempty"`
 }
 
 // running says whether b's session may still run: no when its process, or
@@ -267,7 +275,7 @@ func (a *app) bind(s session, role string) (took bool, err error) {
 			return false, err
 		}
 	}
-	return took, a.writeBinding(binding{V: 1, Role: role, Session: s.ID, PID: s.PID, Host: s.Host, Since: time.Now().UTC().Format(time.RFC3339)})
+	return took, a.writeBinding(binding{V: 1, Role: role, Session: s.ID, PID: s.PID, Host: s.Host, Since: time.Now().UTC().Format(time.RFC3339Nano)})
 }
 
 func (a *app) writeBinding(b binding) error {
@@ -278,7 +286,9 @@ func (a *app) writeBinding(b binding) error {
 // sessionRole is the role a hook's session holds, with its binding brought
 // up to date: a new process or host noted, as after a resume. At a start:
 // after Claude Code's /clear, the role of the one binding in the same
-// process moves to the new id. A session with no role gets none (row 80).
+// process moves to the new id. At any hook: after /background, the role of
+// the session it went on from moves to it (row 99). A session with no role
+// gets none (row 80).
 func (a *app) sessionRole(s session, in hookInput) (string, bool) {
 	if s.ID == "" {
 		return "", false
@@ -294,7 +304,149 @@ func (a *app) sessionRole(s session, in hookInput) (string, bool) {
 			return role, true
 		}
 	}
+	if in.Transcript != "" {
+		if role, ok := a.moveContinued(s, in.Transcript); ok {
+			return role, true
+		}
+	}
 	return "", false
+}
+
+// moveContinued moves a role to s when Claude Code says the session that
+// holds it went on as s. /background ends a session, and its conversation
+// goes on in a new id, in another process, with a SessionStart whose source
+// is "fork"; the old transcript ends with a line naming the new id. /fork
+// starts the same kind of session but keeps the old one, and writes no such
+// line. So the role moves only from a session whose transcript, beside s's,
+// names s, at once or after a few such moves, in lines no older than the
+// role. The new session usually starts a moment before the old process ends
+// (row 100), so while that process runs, the hook waits for it, a few seconds
+// at most, without the sessions' lock; a running session keeps its role
+// (row 99).
+func (a *app) moveContinued(s session, transcript string) (string, bool) {
+	if !plainID.MatchString(s.ID) || filepath.Base(transcript) != s.ID+".jsonl" {
+		return "", false
+	}
+	dir := filepath.Dir(transcript)
+	deadline := time.Now().Add(continuedWait())
+	for {
+		role, running, ok := a.tryMoveContinued(s, dir)
+		if ok || !running || !time.Now().Before(deadline) {
+			return role, ok
+		}
+		time.Sleep(50 * time.Millisecond)
+	}
+}
+
+// continuedWait is how long a hook waits for the session it went on from to
+// end. The longest seen was about a second (row 100).
+func continuedWait() time.Duration {
+	if d, err := time.ParseDuration(os.Getenv("HANDOFF_TEST_CONTINUED_WAIT")); err == nil {
+		return d // for tests only
+	}
+	return 5 * time.Second
+}
+
+// tryMoveContinued moves the role, under the sessions' lock, when exactly one
+// binding went on as s and its process has ended; running says that binding's
+// process still runs. Claude Code starts a session's SessionStart hooks at
+// once, so another of them may have moved it already (row 100). The new binding keeps the role's time, and notes the
+// session it went on from, so that an fyi named for that one still reaches it.
+func (a *app) tryMoveContinued(s session, dir string) (role string, running, ok bool) {
+	unlock, err := a.lockSessions()
+	if err != nil {
+		return "", false, false
+	}
+	defer unlock()
+	if b, ok := a.bound(s); ok {
+		return b.Role, false, true // another hook of s moved it meanwhile
+	}
+	bs, _ := a.bindings()
+	var from []binding
+	for _, b := range bs {
+		if wentOnAs(dir, b, s.ID) {
+			from = append(from, b)
+		}
+	}
+	if len(from) != 1 {
+		return "", false, false
+	}
+	b := from[0]
+	if b.running() {
+		return "", true, false
+	}
+	os.Remove(a.bindingPath(b.Session))
+	b.Was = append(b.Was, b.Session)
+	b.Session, b.PID, b.Host = s.ID, s.PID, s.Host
+	return b.Role, false, a.writeBinding(b) == nil
+}
+
+// wentOnAs says whether Claude Code's transcripts in dir show b's session
+// going on as session to, at once or after a few moves, each in a line no
+// older than b's role: a session resumed after /background keeps its id,
+// and the operator may give it the role after that line (row 100).
+func wentOnAs(dir string, b binding, to string) bool {
+	since, err := time.Parse(time.RFC3339Nano, b.Since)
+	if err != nil {
+		return false
+	}
+	id := b.Session
+	for range 8 {
+		if !plainID.MatchString(id) {
+			return false
+		}
+		next, at := continuedIn(filepath.Join(dir, id+".jsonl"))
+		if next == "" || at.Before(since) {
+			return false
+		}
+		if next == to {
+			return true
+		}
+		id = next
+	}
+	return false
+}
+
+// continuedIn is the session a Claude Code transcript says it went on in, and
+// when, from the last "continued-in" line among its last lines, or "". It
+// reads only a regular file, and never waits to open one (row 100).
+func continuedIn(path string) (string, time.Time) {
+	f, err := os.OpenFile(path, os.O_RDONLY|syscall.O_NONBLOCK, 0)
+	if err != nil {
+		return "", time.Time{}
+	}
+	defer f.Close()
+	st, err := f.Stat()
+	if err != nil || !st.Mode().IsRegular() {
+		return "", time.Time{}
+	}
+	const tail = 64 << 10 // the line is followed by a few short ones
+	off := max(st.Size()-tail, 0)
+	buf := make([]byte, st.Size()-off)
+	if _, err := f.ReadAt(buf, off); err != nil && !errors.Is(err, io.EOF) {
+		return "", time.Time{}
+	}
+	next, at := "", time.Time{}
+	for _, line := range bytes.Split(buf, []byte("\n")) {
+		if !bytes.Contains(line, []byte(`"continued-in"`)) {
+			continue
+		}
+		var e struct {
+			Type string    `json:"type"`
+			Next string    `json:"continuedInSessionId"`
+			At   time.Time `json:"timestamp"`
+		}
+		if json.Unmarshal(line, &e) == nil && e.Type == "continued-in" {
+			next, at = e.Next, e.At
+		}
+	}
+	return next, at
+}
+
+// was is the sessions s went on from, by /background, as its binding notes.
+func (a *app) was(s session) []string {
+	b, _ := a.bound(s)
+	return b.Was
 }
 
 // update notes s's process and host in its binding, and says whether s

@@ -1,0 +1,21 @@
+# command: grep -l -r --include='*.jsonl' '"type":"continued-in"' ~/.claude/projects, then for each top-level continued-in line: its date, its keys, how many lines follow it, whether the transcript it names is beside it, and the nearest system line before it that says "Backgrounding" (python3 -I). Dates and counts only; no path or session id is printed.
+# date: 2026-11-13 23:05 and 23:14 UTC (the second run after the reviewer's probe data was deleted)
+# by: Fable 5.2 (reviewer), Claude Code, on the operator's Mac
+
+## first run: every such line, the probes' included
+date       | whose                | keys of the line                                      | lines after it | the named transcript is beside it | bytes from the line to the end
+2026-10-11 | another session      | continuedInSessionId, sessionId, timestamp, type      | 2 | yes | 1196
+2026-10-24 | another session      | continuedInSessionId, sessionId, timestamp, type      | 1 | yes | 923
+2026-11-08 | another session      | continuedInSessionId, sessionId, timestamp, type      | 2 | yes | 1339
+2026-11-09 | another session      | continuedInSessionId, sessionId, timestamp, type      | 1 | yes | 1061
+2026-11-13 | a probe (four lines) | continuedInSessionId, sessionId, timestamp, type      | 3 or 4 | yes | 1660 to 1751
+
+## second run: the four that are not a probe's
+2026-10-11 | a system line "Backgrounding after the current tool finishes…" is 2 lines before the continued-in line
+2026-10-24 | the same, 11 lines before
+2026-11-08 | the same, 2 lines before
+2026-11-09 | the same, 12 lines before
+
+# So: the implementer's count (four, on these dates, each after "Backgrounding…") holds. Every line seen,
+# the probes' six included (real-probe.log), has a timestamp, and sits in the last 2 KB of its transcript
+# until the session is resumed (real-probe.log, R8).

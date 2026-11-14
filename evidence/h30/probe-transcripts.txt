@@ -1,0 +1,41 @@
+# command: for each transcript the probes made, its last five lines' type, and any continuedInSessionId (python3 -I, reading ~/.claude/projects/<transcripts>/<id>.jsonl)
+# date: 2026-11-13T22:29Z
+# by: Opus 5.5 (implementer), on the operator's Mac
+
+## 8d47e001-f495-43b9-a180-84183d947c32: the session /background was run in
+  continued-in lines in the whole transcript: 1
+   continued-in  e05f1c64-264b-427e-be69-d710dba403e0 
+   cost-state   
+   file-history-snapshot   
+   last-prompt   
+   cost-state   
+
+## e05f1c64-264b-427e-be69-d710dba403e0: the one it went on as
+  continued-in lines in the whole transcript: 0
+   system stop_hook_summary  
+   system turn_duration  
+   cost-state   
+   last-prompt   
+   cost-state   
+
+## 175512d7-eed2-46b5-8ae7-25776adc008a: the session /fork was run in
+  continued-in lines in the whole transcript: 0
+   system local_command  <local-command-stdout>session waiting for a prompt · ALPHA ·
+   user   
+   cost-state   
+   last-prompt   
+   cost-state   
+
+## e3cd0611-012a-4861-8787-1f5b7bd44acd: the copy /fork made
+  continued-in lines in the whole transcript: 0
+   permission-mode   
+   session-owner   
+   atis-latch   
+   cost-state   
+   cost-state   
+
+## Claude Code's daemon log (~/.claude/daemon.log), its lines for the two new sessions
+[2026-11-13T22:18:15.118Z] [bg] bg claimed-spare e05f1c64 (slash)
+[2026-11-13T22:24:47.750Z] [bg] bg claimed-spare e3cd0611 (slash)
+[2026-11-13T22:26:25.920Z] [bg] bg settled e05f1c64 (killed)
+[2026-11-13T22:26:27.266Z] [bg] bg settled e3cd0611 (killed)

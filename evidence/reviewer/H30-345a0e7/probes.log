@@ -1,0 +1,283 @@
+# command: the reviewer's probes for H30, a role follows a session sent to the background; see each heading
+# date: 2026-11-13 23:10:18 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 345a0e704ad502e54fbf0d4c947bc296486975cb
+
+## M1. /background: the old session's process has ended, and its transcript names the new session
+
+# --- with handoff-v0.1.4
+# a scratch project
+
+$ [session s-old] handoff role implementer
+You are now implementer in m1.
+  note to implementer, before the new session starts: posted #1 note W1 reviewer → implementer: before
+  note to implementer, before the new session starts: handoff: no session has implementer now, so this waits until the operator gives one that role; tell the operator.
+
+$ [session s-new, at SessionStart (fork)] handoff hook brief
+handoff: m1 hands work between agents through handoff, and this session has no role in it. When the operator gives you one, run `handoff role <role>` 
+# exit 0
+
+$ [session s-new, at SessionStart (fork)] handoff hook listen
+# exit 0
+# bindings: {"v":1,"role":"implementer","session":"s-old","pid":<pid>,"since":"<ts>"} 
+  note to implementer, after: posted #2 note W1 reviewer → implementer: after
+  note to implementer, after: handoff: no session has implementer now, so this waits until the operator gives one that role; tell the operator.
+
+$ [session s-new] handoff inbox   (no --as)
+handoff inbox: no role: when the operator gives this session one, run `handoff role <role>`; or give --for <role>
+
+# --- with handoff
+# a scratch project
+
+$ [session s-old] handoff role implementer
+You are now implementer in m2.
+  note to implementer, before the new session starts: posted #1 note W1 reviewer → implementer: before
+  note to implementer, before the new session starts: handoff: no session has implementer now, so this waits until the operator gives one that role; tell the operator.
+
+$ [session s-new, at SessionStart (fork)] handoff hook brief
+handoff brief: you are implementer in m2. You and reviewer, reviewer-2 hand work to each other through handoff. The operator decides.
+
+Listening: you don't run `handoff wait`. When your turn ends, a hook listens for implementer and brings you what arrives.
+# exit 0
+
+$ [session s-new, at SessionStart (fork)] handoff hook listen
+handoff: new for implementer:
+#1 note W1 reviewer → implementer: before
+Read each with `handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit 2
+# bindings: {"v":1,"role":"implementer","session":"s-new","pid":<pid>,"since":"<ts>"} 
+  note to implementer, after: posted #2 note W1 reviewer → implementer: after
+
+$ [session s-new] handoff inbox   (no --as)
+inbox for implementer
+
+
+## M2. The old process still runs when the new session starts; the role moves at the next hook after it ends
+# a scratch project
+
+$ [session s-old] handoff role implementer
+You are now implementer in m3.
+
+$ [session s-new, at SessionStart (fork)] handoff hook brief
+handoff: m3 hands work between agents through handoff, and this session has no role in it. When the operator gives you one, run `handoff role <role>` 
+# exit 0
+
+$ [session s-new, at SessionStart (fork)] handoff hook listen
+# exit 0
+# roles now: s-old has implementer; 
+# the old process has ended, a moment after the new session started, as in real-probe.log, R2 to R4 and R6
+# until the new session's next hook, nothing listens for implementer:
+  the reviewer: posted #1 note W1 reviewer → implementer: meanwhile
+  the reviewer: handoff: no session has implementer now, so this waits until the operator gives one that role; tell the operator.
+
+$ [session s-new, at Stop] handoff hook listen
+handoff: new for implementer:
+#1 note W1 reviewer → implementer: meanwhile
+Read each with `handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit 2
+# roles now: s-new has implementer; 
+# the binding's since is the time the role was given: yes
+# with a Notification hook as the first after it ends, the same:
+# a scratch project
+
+$ [session s-old] handoff role reviewer
+You are now reviewer in m4.
+
+$ [session s-new, at Notification (permission_prompt)] handoff hook notify
+# exit 0
+# roles now: s-new has reviewer; 
+# alerts file: m4: reviewer is waiting for your permission: Claude needs your permission to use Bash
+
+## M3. Nothing else moves a role. In each line: implementer is given to s-a, whose process ends; then s-b's SessionStart and Stop
+case                                                           | s-b's brief at SessionStart begins                         | its Stop hook                              | who has a role after
+/fork: s-a's transcript has no such line                       | handoff: m5 hands work between agents through handoff, and | exit 0                                     | s-a has implementer; 
+the line names another session, s-c                            | handoff: m6 hands work between agents through handoff, and | exit 0                                     | s-a has implementer; 
+the hook gives s-c's transcript, which the line names          | handoff: m7 hands work between agents through handoff, and | exit 0                                     | s-a has implementer; 
+s-b's transcript is in another folder than s-a's               | handoff: m8 hands work between agents through handoff, and | exit 0                                     | s-a has implementer; 
+the hook gives no transcript                                   | handoff: m9 hands work between agents through handoff, and | exit 0                                     | s-a has implementer; 
+the hook's transcript has another name (s-b.txt)               | handoff: m10 hands work between agents through handoff, an | exit 0                                     | s-a has implementer; 
+the old id is ../s-a, and ../s-a.jsonl names s-b               | handoff: m11 hands work between agents through handoff, an | exit 0                                     | ../s-a has implementer; 
+the line is only quoted inside a message in s-a's transcript   | handoff: m12 hands work between agents through handoff, an | exit 0                                     | s-a has implementer; 
+the line names nobody, or is not whole JSON                    | handoff: m13 hands work between agents through handoff, an | exit 0                                     | s-a has implementer; 
+70 KiB of transcript follow the line (s-a was used again)      | handoff: m14 hands work between agents through handoff, an | exit 0                                     | s-a has implementer; 
+a later line in s-a's transcript names s-z                     | handoff: m15 hands work between agents through handoff, an | exit 0                                     | s-a has implementer; 
+s-a's transcript names itself                                  | handoff: m16 hands work between agents through handoff, an | exit 0                                     | s-a has implementer; 
+nine moves from s-a to s-b (the limit is eight)                | handoff: m17 hands work between agents through handoff, an | exit 0                                     | s-a has implementer; 
+s-a.jsonl is a folder                                          | handoff: m18 hands work between agents through handoff, an | exit 0                                     | s-a has implementer; 
+s-a's binding names no process (given in a Codex session)      | handoff: m19 hands work between agents through handoff, an | exit 0                                     | s-a has implementer; 
+s-a's process id is some running process's                     | handoff: m20 hands work between agents through handoff, an | exit 0                                     | s-a has implementer; 
+two ended sessions with roles both name s-b                    | handoff: m21 hands work between agents through handoff, an | exit 0                                     | s-a has implementer; s-a2 has reviewer; 
+HANDOFF_ROLE=reviewer in s-b's settings                        | handoff brief: you are reviewer in m22. You and implemente | (not run)                                  | s-a has implementer; 
+a Codex thread s-b, its rollout file beside s-a's transcript   | handoff: m23 hands work between agents through handoff, an | (not run)                                  | s-a has implementer; 
+
+## M4. What does move it besides one /background
+# eight moves from s-a to s-b, none of the sessions between ran a hook:
+
+$ [session s-b, at Stop] handoff hook listen
+handoff: nothing new for implementer in 2s. Just end your turn; listening starts again when it ends.
+# exit 2
+# roles now: s-b has implementer; 
+
+# s-a.jsonl is a symbolic link to a file kept elsewhere:
+
+$ [session s-b, at SessionStart (fork)] handoff hook brief
+handoff brief: you are implementer in m25. You and reviewer, reviewer-2 hand work to each other through handoff. The operator decides.
+
+Listening: you don't run `handoff wait`. When your turn ends, a hook listens for implementer and brings you what arrives.
+# exit 0
+# roles now: s-b has implementer; 
+
+# a 3 MB transcript; the line's keys in other letter case (Go's JSON reading takes them):
+
+$ [session s-b, at SessionStart (fork)] handoff hook brief
+handoff brief: you are implementer in m26. You and reviewer, reviewer-2 hand work to each other through handoff. The operator decides.
+
+Listening: you don't run `handoff wait`. When your turn ends, a hook listens for implementer and brings you what arrives.
+# exit 0
+# roles now: s-b has implementer; 
+
+## M5. After the move, the operator gives the role to another session: the moved-to session does not take it back
+
+$ [session s-b, at SessionStart (fork)] handoff hook brief
+handoff brief: you are implementer in m27. You and reviewer, reviewer-2 hand work to each other through handoff. The operator decides.
+
+Listening: you don't run `handoff wait`. When your turn ends, a hook listens for implementer and brings you what arrives.
+# exit 0
+# roles now: s-b has implementer; 
+
+$ [session s-x] handoff role implementer
+You are now implementer in m27. Another session had implementer; it has no role now.
+
+$ [session s-b, at Stop] handoff hook listen
+# exit 0
+
+$ [session s-b, at SessionStart (resume)] handoff hook brief
+handoff: m27 hands work between agents through handoff, and this session has no role in it. When the operator gives you one, run `handoff role <role>`
+# exit 0
+# roles now: s-x has implementer; 
+
+# And when the operator gives the role to another session before the new session's first hook:
+
+$ [session s-x] handoff role implementer
+You are now implementer in m28.
+
+$ [session s-b, at SessionStart (fork)] handoff hook brief
+handoff: m28 hands work between agents through handoff, and this session has no role in it. When the operator gives you one, run `handoff role <role>`
+# exit 0
+# roles now: s-x has implementer; 
+
+# And when the operator gives a different role to another session first (handoff role drops bindings of ended sessions):
+
+$ [session s-x] handoff role reviewer
+You are now reviewer in m29.
+
+$ [session s-b, at SessionStart (fork)] handoff hook brief
+handoff: m29 hands work between agents through handoff, and this session has no role in it. When the operator gives you one, run `handoff role <role>`
+# exit 0
+# roles now: s-x has reviewer; 
+
+## M6. An old line, and a role given after it
+# s-a is sent to the background and goes on as s-b; the role moves. Later the operator
+# resumes s-a, which keeps its id and its transcript (real-probe.log, R8), and gives it the role again.
+
+$ [session s-b, at SessionStart (fork)] handoff hook brief
+handoff brief: you are implementer in m30. You and reviewer, reviewer-2 hand work to each other through handoff. The operator decides.
+
+Listening: you don't run `handoff wait`. When your turn ends, a hook listens for implementer and brings you what arrives.
+# exit 0
+
+$ [session s-a] handoff role implementer
+You are now implementer in m30. Another session had implementer; it has no role now.
+# roles now: s-a has implementer; 
+# while s-a runs, s-b's hooks move nothing:
+
+$ [session s-b, at Stop] handoff hook listen
+# exit 0
+# roles now: s-a has implementer; 
+# s-a's process ends (the operator closes it). s-b, still in the background, ends a turn:
+
+$ [session s-b, at Stop] handoff hook listen
+handoff: nothing new for implementer in 2s. Just end your turn; listening starts again when it ends.
+# exit 2
+# roles now: s-b has implementer; 
+
+## M7. Many hooks at once
+# 20 rounds. Each: the role at an ended s-a; then 12 hooks of s-b at once (brief, listen, notify), and in
+# the odd rounds a third session running handoff role implementer at the same moment.
+# rounds with anything but one binding holding implementer: 0 of 20; it ended with s-b in 10, with the third session in 10
+
+## M8. The listeners. The old session's listener runs under its CLI's process; the CLI ends; the new session listens
+# a scratch project
+You are now implementer in m51.
+# the old session's listener runs: yes; who listens, by .handoff/presence: implementer.json implementer.json.lock 
+# /background: the old CLI's process ends, its transcript names s-new
+# s-new, SessionStart, brief: handoff brief: you are implementer in m51. You and reviewer,
+# three seconds on, the old listener runs: no; what it printed: 0 bytes
+# the reviewer: posted #1 note W1 reviewer → implementer: for the implementer
+# s-new's listener: exit 2
+#   handoff: new for implementer:
+#   #1 note W1 reviewer → implementer: for the implementer
+#   Read each with `handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# roles now: s-new has implementer; 
+
+## M9. An fyi from the operator, around the move
+# a scratch project
+
+$ [session s-old] handoff role implementer
+You are now implementer in m52.
+
+$ [session s-rev] handoff role reviewer
+You are now reviewer in m52.
+
+$ [terminal] handoff fyi First: sent while the old session has the role.
+told implementer and reviewer (#1, #2)
+not told, no session: reviewer-2
+# exit 0
+# the old session never read it. /background; its process has ended.
+
+$ [terminal] handoff fyi Second: sent after the old process ended, before the new session's first hook.
+told reviewer (#3)
+not told, no session: implementer, reviewer-2
+# exit 0
+
+$ [session s-new, at SessionStart (fork)] handoff hook brief
+handoff brief: you are implementer in m52. You and reviewer, reviewer-2 hand work to each other through handoff. The operator decides.
+
+Listening: you don't run `handoff wait`. When your turn ends, a hook listens for implementer and brings you what arrives.
+# exit 0
+
+$ [terminal] handoff fyi Third: sent after the role moved.
+told implementer and reviewer (#4, #5)
+not told, no session: reviewer-2
+# exit 0
+
+$ [session s-new, at SessionStart (fork)] handoff hook listen
+handoff: new for implementer:
+#4 fyi - operator → implementer: Third: sent after the role moved.
+Read each with `handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+# exit 2
+
+$ [session s-new, at Stop] handoff hook listen      (again: is the first fyi brought later?)
+handoff: nothing new for implementer in 2s. Just end your turn; listening starts again when it ends.
+# exit 2
+# the first fyi, as the record has it: session: s-old 
+
+## M10. A session with no role, in a project where no session has one: what its hooks leave behind
+# a scratch project
+# .handoff/sessions before: 
+
+$ [session s-b, at SessionStart (startup)] handoff hook brief
+handoff: m53 hands work between agents through handoff, and this session has no role in it. When the operator gives you one, run `handoff role <role>`
+# exit 0
+
+$ [session s-b, at Stop] handoff hook listen
+# exit 0
+# .handoff/sessions after: .lock 
+# git status --short in the project: []
+# the same with v0.1.4:
+# .handoff/sessions after: 
+
+## M11. A named pipe where the old transcript should be
+$ [session s-b, at SessionStart (fork)] handoff hook brief      (stopped after 5 seconds if still running)
+# still running after 5 seconds: the hook waits for the pipe, holding the sessions' lock
+# and another session's handoff role waits too (3 seconds, then stopped)

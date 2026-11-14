@@ -1,0 +1,48 @@
+# command: go build ./...; go vet ./...; gofmt -l cmd internal; go.mod requires; go list -deps for net; the commits and diffstat from the base; what the later commits touch
+# date: 2026-11-13 23:11:32 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 345a0e704ad502e54fbf0d4c947bc296486975cb
+
+## go build ./...: ok
+## go vet ./...: clean
+## gofmt -l cmd internal: []
+## go.mod require lines: 0
+## packages in go list -deps ./... named net or under net/: 0
+## commits on the base (2336ecd):
+345a0e7 docs: H30 evidence: /background and /fork probes, a replay on their files, tests
+401488e docs: §17 row 99, a role follows a Claude Code session sent to the background
+3a5d686 docs: README: a role is kept through /background, not by a /fork copy
+bc1a2aa feat: a role follows a Claude Code session sent to the background
+## diffstat:
+ README.md                                 |   2 +-
+ cmd/handoff/background_test.go            | 174 ++++++++++++++++++++++++++++++
+ cmd/handoff/session.go                    |  99 ++++++++++++++++-
+ docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md |   1 +
+ evidence/h30/README.md                    |  12 +++
+ evidence/h30/background-probe.py          |  47 ++++++++
+ evidence/h30/dump.sh                      |   2 +
+ evidence/h30/fork-probe.py                |  51 +++++++++
+ evidence/h30/go-test-race.log             |  14 +++
+ evidence/h30/on-this-mac.txt              |   8 ++
+ evidence/h30/probe-hooks.log              |  66 ++++++++++++
+ evidence/h30/probe-transcripts.txt        |  41 +++++++
+ evidence/h30/replay.log                   |  26 +++++
+ evidence/h30/replay.sh                    |  16 +++
+ 14 files changed, 556 insertions(+), 3 deletions(-)
+## the implementer's test log and replay name 3a5d686; what the commit under review adds to it:
+ docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md |  1 +
+ evidence/h30/README.md                    | 12 ++++++
+ evidence/h30/background-probe.py          | 47 ++++++++++++++++++++++
+ evidence/h30/dump.sh                      |  2 +
+ evidence/h30/fork-probe.py                | 51 ++++++++++++++++++++++++
+ evidence/h30/go-test-race.log             | 14 +++++++
+ evidence/h30/on-this-mac.txt              |  8 ++++
+ evidence/h30/probe-hooks.log              | 66 +++++++++++++++++++++++++++++++
+ evidence/h30/probe-transcripts.txt        | 41 +++++++++++++++++++
+ evidence/h30/replay.log                   | 26 ++++++++++++
+ evidence/h30/replay.sh                    | 16 ++++++++
+ 11 files changed, 284 insertions(+)
+## files under cmd or internal that differ from the base:
+ cmd/handoff/background_test.go | 174 +++++++++++++++++++++++++++++++++++++++++
+ cmd/handoff/session.go         |  99 ++++++++++++++++++++++-
+## the worktree is clean: []

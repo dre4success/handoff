@@ -1,0 +1,40 @@
+# command: go test -race -count=1 -json ./... (no -timeout but go's own); the test names at the base and here; the H30 tests, -count=5; the H30 tests with one condition of the change taken out at a time
+# date: 2026-11-13 23:11:33 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 345a0e704ad502e54fbf0d4c947bc296486975cb
+
+# (the full run was started at 2026-11-13 22:37:47 local time, in this worktree, with a scratch HOME, and its output is read here)
+pass  github.com/dre4success/handoff/cmd/handoff  398.548s
+pass  github.com/dre4success/handoff/internal/awake  1.381s
+pass  github.com/dre4success/handoff/internal/gitx  1.296s
+pass  github.com/dre4success/handoff/internal/notify  1.461s
+pass  github.com/dre4success/handoff/internal/record  3.9290000000000003s
+pass  github.com/dre4success/handoff/internal/status  1.305s
+skip  github.com/dre4success/handoff/internal/term  0s
+pass  github.com/dre4success/handoff/internal/wait  1.861s
+# tests: passed 184, failed 0, skipped 2; subtests: passed 7, failed 0; data races: 0
+
+## the tests' names at the base that are not here, and here that are not at the base
+> TestH30ALongTranscript
+> TestH30OnlyTheLineNamingItMovesARole
+> TestH30RoleFollowsBackground
+> TestH30StopMovesTheRoleAndListens
+# tests at the base: 182; here: 186
+
+## the H30 tests, 5 times each under the race detector
+   5 --- PASS: TestH30ALongTranscript
+   5 --- PASS: TestH30OnlyTheLineNamingItMovesARole
+   5 --- PASS: TestH30RoleFollowsBackground
+   5 --- PASS: TestH30StopMovesTheRoleAndListens
+   1 ok  	github.com/dre4success/handoff/cmd/handoff
+
+## the H30 tests with one condition taken out of cmd/handoff/session.go at a time, in a scratch copy of the tree
+# (which tests notice each condition; a condition no test notices is not wrong, only untested)
+0. nothing taken out: ok  	github.com/dre4success/handoff/cmd/handoff;
+1. the move itself (sessionRole never calls moveContinued): --- FAIL: TestH30StopMovesTheRoleAndListens;--- FAIL: TestH30RoleFollowsBackground;FAIL	github.com/dre4success/handoff/cmd/handoff;
+2. "its process has ended" (!b.running()): --- FAIL: TestH30RoleFollowsBackground;FAIL	github.com/dre4success/handoff/cmd/handoff;
+3. the hook's transcript is named after its session: ok  	github.com/dre4success/handoff/cmd/handoff;
+4. the old id is a plain name (in wentOnAs): --- FAIL: TestH30OnlyTheLineNamingItMovesARole;    --- FAIL: TestH30OnlyTheLineNamingItMovesARole/an_id_that_isn't_a_plain_name;FAIL	github.com/dre4success/handoff/cmd/handoff;
+5. exactly one binding qualifies: ok  	github.com/dre4success/handoff/cmd/handoff;
+6. the line's type is continued-in: ok  	github.com/dre4success/handoff/cmd/handoff;
+7. the last such line wins (first one taken instead): ok  	github.com/dre4success/handoff/cmd/handoff;

@@ -1,0 +1,16 @@
+# command: python3 -I evidence/h30/mutate.py (each condition taken out in turn; go test ./cmd/handoff -run TestH30 -count=1; the file put back)
+# date: 2026-11-13T23:28Z
+# by: Opus 5.5 (implementer), on the operator's Mac, at 9dbb4ff
+the hook's transcript is named after its session: FAIL TestH30OnlyTheLineNamingItMovesARole, TestH30OnlyTheLineNamingItMovesARole/a_transcript_not_named_after_the_session
+exactly one binding qualifies: FAIL TestH30TwoSessionsNamingOneMoveNothing
+the line's type is continued-in: FAIL TestH30OnlyTheLineNamingItMovesARole, TestH30OnlyTheLineNamingItMovesARole/a_line_of_another_type
+the last such line wins: FAIL TestH30OnlyTheLineNamingItMovesARole, TestH30OnlyTheLineNamingItMovesARole/a_later_line_naming_another_session
+no line older than the role: FAIL TestH30AnOldLineDoesntTakeALaterRole, TestH30OnlyTheLineNamingItMovesARole, TestH30OnlyTheLineNamingItMovesARole/a_line_with_no_time
+the hook waits for the old process: FAIL TestH30BothStartHooksHaveTheRole, TestH30RoleFollowsBackground
+a running session keeps its role: FAIL TestH30ARunningSessionKeepsItsRole
+ids are plain names: FAIL TestH30OnlyTheLineNamingItMovesARole, TestH30OnlyTheLineNamingItMovesARole/an_id_that_isn't_a_plain_name
+an fyi for the session it went on from: FAIL TestH30AnFyiForTheOldSessionReachesTheNewOne
+a named pipe is never waited on: FAIL TestH30ReadingTheTranscript
+a hook finds the role another hook of its session moved: FAIL TestH30BothStartHooksHaveTheRole
+the move itself: FAIL TestH30ARunningSessionKeepsItsRole, TestH30AnFyiForTheOldSessionReachesTheNewOne, TestH30BothStartHooksHaveTheRole, TestH30RoleFollowsBackground, TestH30RoleFollowsTwoMoves
+with every condition in: ok  	github.com/dre4success/handoff/cmd/handoff	3.376s
