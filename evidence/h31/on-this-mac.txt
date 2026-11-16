@@ -1,0 +1,11 @@
+# command: this branch's handoff role, with no role named (it only reads), as each of the three sessions with a role in another project; then a check that no binding there changed
+# date: 2026-11-15 22:01:44 UTC
+# by: Opus 5.5 (implementer), on the operator's Mac. The project is written <another project>, and the folder above it <the folder above it>
+## Claude-Code session holding implementer
+You are implementer in <another project>.
+handoff: warning: this session started in <the folder above it>, outside <another project>. Its hooks run outside <another project> when it starts or resumes, and may at other times, so it can miss its brief and the work sent to it. Tell the operator, who can start a session in <another project> and give it the role there.
+## Claude-Code session holding reviewer
+You are reviewer in <another project>.
+## Codex session holding reviewer-2
+You are reviewer-2 in <another project>.
+## the bindings are unchanged

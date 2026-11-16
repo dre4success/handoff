@@ -1,0 +1,24 @@
+# command: python3 -I evidence/h32/mutate.py
+# date: 2026-11-15 22:27:52 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (go1.25.3)
+unchanged: exit 0
+C1 an Antigravity command is an agent's session: fails TestH32ListenContinuesTheTurn, TestH32TheBriefOffersAntigravitysHooks, TestH32TheOperatorsCommandsRefuseAnAntigravitySession, TestH32TheStartBriefIsASystemMessage
+C2 the CLI is known as antigravity: fails TestH32TheBriefOffersAntigravitysHooks
+C3 Antigravity's input names the session: fails TestH32TheStartBriefIsASystemMessage
+C4 the project is the agent's folder: fails TestH32ListenContinuesTheTurn, TestH32TheStartBriefIsASystemMessage
+C5 only an absolute folder: fails TestH32TheStartBriefIsASystemMessage
+C6 listen answers with a continue: fails TestH32ListenContinuesTheTurn
+C7 listen is Antigravity's for its input: fails TestH32ListenContinuesTheTurn
+C8 the brief is a system message: fails TestH32TheStartBriefIsASystemMessage
+C9 nothing to say is {}: fails TestH32TheStartBriefIsASystemMessage
+C10 no listening at the limit: fails TestH32ListenContinuesTheTurn
+C11 the operator is told at the limit: fails TestH32ListenContinuesTheTurn
+C12 settings knows antigravity: fails TestH32Settings
+C13 settings fixes no role for it: fails TestH32Settings
+C14 its user hooks are in ~/.gemini/config: fails TestH32Settings, TestH32TheBriefOffersAntigravitysHooks
+C15 its project hooks are in .agents/: fails TestH32TheBriefOffersAntigravitysHooks
+C16 a hook turned off doesn't listen: fails TestH32TheBriefOffersAntigravitysHooks
+C17 only handoff's listen counts: fails TestH32TheBriefOffersAntigravitysHooks
+C18 its brief by hand says not to wait: fails TestH32TheBriefOffersAntigravitysHooks
+C19 its brief offers its hooks: fails TestH32TheBriefOffersAntigravitysHooks
+C20 the operator's brief offers only the other two: fails TestH32TheBriefOffersAntigravitysHooks

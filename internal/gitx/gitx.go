@@ -60,6 +60,10 @@ func noRepository(msg string) bool {
 	return strings.Contains(msg, "not a git repository (or any")
 }
 
+// NoRepository says whether err, from RecordDir, means git found no
+// repository at all (row 101).
+func NoRepository(err error) bool { return err != nil && noRepository(err.Error()) }
+
 // ResolveCommit turns a ref into a full commit id, or fails if it names no
 // commit.
 func ResolveCommit(dir, ref string) (string, error) {

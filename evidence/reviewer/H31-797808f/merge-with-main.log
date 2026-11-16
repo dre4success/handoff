@@ -1,0 +1,51 @@
+# command: bash merge-check.sh <repository> <commit> <an empty scratch folder>
+# date: 2026-11-15 23:46:57 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the Mac of the operator (darwin arm64, go1.25.3, git 2.55.0)
+# commit: 797808f943440139cd8da86683c3e044b32c7f70
+
+## main is 78facf67cde89c0dce60ccd2f627d6095aad30e8; commits on main that the commit doesn't have:
+   78facf6 docs: the reviewer's correction to H32's A2, from note #177, as supplied
+   3e84f87 docs(channel): board: H32 done, merged
+   fe64d06 docs: the reviewer's H32 APPROVE evidence for 82d04ea, as supplied (reply #175)
+   38d604e feat: H32 Antigravity sessions, and its agent's commands are an agent's session (merge h32-antigravity)
+   1ca82b1 docs: the reviewer's H31 CHANGES evidence for c57d29e, as supplied (reply #171)
+   65b607a docs(channel): board: H31 round 2 in review (#174)
+   54a7c48 docs(channel): board: H32 in review (#172); H31 changes asked (#171)
+   82d04ea docs: H32 evidence: Antigravity probes, a real run with the printed hooks, the operator check, mutations, tests
+   ffc2291 docs: §17 row 102, Antigravity sessions
+   729e77d docs: README: Antigravity, Esc before typing to a waiting session, and its limit of 10
+   7b45319 feat: Antigravity sessions: its hooks get the brief and listen, and handoff settings antigravity prints them
+   3c65449 fix: an Antigravity session is an agent's session, so decide, fyi, away and back refuse it
+   2967c9a docs(channel): board: H31 in review (#169)
+## git merge --no-commit <commit>:
+   Auto-merging README.md
+   Auto-merging cmd/handoff/brief.go
+   Auto-merging cmd/handoff/hook.go
+   Auto-merging cmd/handoff/main_test.go
+   CONFLICT (content): Merge conflict in cmd/handoff/main_test.go
+   Auto-merging cmd/handoff/session.go
+   Auto-merging cmd/handoff/session_test.go
+   Auto-merging docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md
+   CONFLICT (content): Merge conflict in docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md
+   Automatic merge failed; fix conflicts and then commit the result.
+## files in conflict:
+   cmd/handoff/main_test.go
+   docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md
+## cmd/handoff/main_test.go:
+   <<<<<<< HEAD
+   var sessionVars = []string{"CLAUDE_CODE_SESSION_ID", "CLAUDE_PID", "CODEX_THREAD_ID", "ANTIGRAVITY_CONVERSATION_ID"}
+   =======
+   var sessionVars = []string{"CLAUDE_CODE_SESSION_ID", "CLAUDE_PID", "CODEX_THREAD_ID", "CLAUDE_PROJECT_DIR"}
+   >>>>>>> 797808f943440139cd8da86683c3e044b32c7f70
+## the proposal: the rows on each side:
+   <<<<<<< HEAD
+   | 102 | H32: Antigravity sessions. The operator 
+   =======
+   | 101 | H31: a session started outside the proje
+   | 103 | Corrections to row 101 from the H31 revi
+   >>>>>>> 797808f943440139cd8da86683c3e044b32c7f70
+## settled the plain way; the rows now end: 100 101 102 103 
+## go build, go vet: ok
+## go test -count=1 -run 'TestH31|TestH32|TestH30|TestH12' ./cmd/handoff:
+   ok  	github.com/dre4success/handoff/cmd/handoff
+## an Antigravity session takes a role in a scratch project, with the merged build: exit 0, 0 warning (it reads no transcript of Antigravity's, as row 102 says)

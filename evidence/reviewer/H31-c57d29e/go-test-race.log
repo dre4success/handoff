@@ -1,0 +1,57 @@
+# command: go test -race -count=1 -json ./... (no -timeout but go's own); the test names at the base and here; the H31 tests, -count=5; the implementer's mutate.py
+# date: 2026-11-15 22:24:27 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: c57d29eed941ff63acb91cce953dfc62d421fc94
+
+# (the full run was started at 2026-11-15 22:04:46 local time, in this worktree, with a scratch HOME, and its output is read here)
+pass  github.com/dre4success/handoff/cmd/handoff  401.101s
+pass  github.com/dre4success/handoff/internal/awake  1.3940000000000001s
+pass  github.com/dre4success/handoff/internal/gitx  1.289s
+pass  github.com/dre4success/handoff/internal/notify  1.482s
+pass  github.com/dre4success/handoff/internal/record  3.673s
+pass  github.com/dre4success/handoff/internal/status  1.293s
+skip  github.com/dre4success/handoff/internal/term  0s
+pass  github.com/dre4success/handoff/internal/wait  1.875s
+# tests: passed 196, failed 0, skipped 2; subtests: passed 22, failed 0; data races: 0
+
+## the tests' names at the base that are not here, and here that are not at the base
+> TestH31AnIdIsNotAPattern
+> TestH31CodexIsWarnedToo
+> TestH31NoWarningWhenTheFolderIsntKnown
+> TestH31OnlyAStartOutsideIsWarned
+> TestH31RoleWarnsASessionStartedOutside
+> TestH31TheLatestTranscriptCounts
+> TestH31TheStartBriefWarns
+# tests at the base: 191; here: 198
+
+## the H31 tests, 5 times each under the race detector
+   5 --- PASS: TestH31AnIdIsNotAPattern
+   5 --- PASS: TestH31CodexIsWarnedToo
+   5 --- PASS: TestH31NoWarningWhenTheFolderIsntKnown
+   5 --- PASS: TestH31OnlyAStartOutsideIsWarned
+   5 --- PASS: TestH31RoleWarnsASessionStartedOutside
+   5 --- PASS: TestH31TheLatestTranscriptCounts
+   5 --- PASS: TestH31TheStartBriefWarns
+   1 ok  	github.com/dre4success/handoff/cmd/handoff
+
+## the implementer's evidence/h31/mutate.py, run in a scratch copy of the tree: each condition taken out in turn, then the H31 tests
+unchanged: exit 0
+C1 role warns when taking a role: fails TestH31CodexIsWarnedToo, TestH31OnlyAStartOutsideIsWarned, TestH31RoleWarnsASessionStartedOutside
+C2 role, asked, warns: fails TestH31RoleWarnsASessionStartedOutside
+C3 brief by hand warns: fails TestH31RoleWarnsASessionStartedOutside
+C4 the start brief warns: fails TestH31TheStartBriefWarns
+C5 a hook's transcript must be this session's: fails TestH31TheStartBriefWarns
+C6 the folder must be absolute: fails TestH31NoWarningWhenTheFolderIsntKnown
+C7 no repository is outside: fails TestH31CodexIsWarnedToo, TestH31OnlyAStartOutsideIsWarned, TestH31RoleWarnsASessionStartedOutside, TestH31TheStartBriefWarns
+C8 any other git failure says nothing: fails TestH31NoWarningWhenTheFolderIsntKnown
+C9 the same record is inside: fails TestH31CodexIsWarnedToo, TestH31OnlyAStartOutsideIsWarned, TestH31TheLatestTranscriptCounts
+C10 the first folder named, not a later one: fails TestH31OnlyAStartOutsideIsWarned, TestH31RoleWarnsASessionStartedOutside, TestH31TheStartBriefWarns
+C11 Codex's folder is in its payload: fails TestH31CodexIsWarnedToo
+C12 a long first line is read: fails TestH31CodexIsWarnedToo
+C13 200 lines at most: fails TestH31NoWarningWhenTheFolderIsntKnown
+C14 4 MiB at most: fails TestH31NoWarningWhenTheFolderIsntKnown
+C15 a file is opened without waiting: fails  (timed out)
+C16 the latest transcript counts: fails TestH31TheLatestTranscriptCounts
+C17 an id is never a pattern: fails TestH31AnIdIsNotAPattern
+C18 Codex's transcripts are found: fails TestH31CodexIsWarnedToo
+## the scratch copy's cmd and internal are as in the commit again: yes

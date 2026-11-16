@@ -1,0 +1,15 @@
+# command: the probe's session (started in <scratch>/P, and resumed there) takes a role from inside <scratch>/P/proj, with the installed build (handoff v0.0.0-20261114070435-22ea906cfabe) and with this branch's; each in a fresh copy of the record
+# date: 2026-11-15 22:01:33 UTC
+# by: Opus 5.5 (implementer), on the operator's Mac
+## installed: handoff role implementer
+You are now implementer in proj.
+
+handoff brief: you are implementer in proj. You and reviewer, reviewer-2 hand work to each other through handoff. The operator decides.
+## branch: handoff role implementer
+You are now implementer in proj.
+
+handoff: warning: this session started in <scratch>/P, outside proj. Its hooks run outside proj when it starts or resumes, and may at other times, so it can miss its brief and the work sent to it. Tell the operator, who can start a session in <scratch>/P/proj and give it the role there.
+## branch: a session started in the project (the transcript's first folder made <scratch>/P/proj), the same command
+You are now implementer in proj.
+
+handoff brief: you are implementer in proj. You and reviewer, reviewer-2 hand work to each other through handoff. The operator decides.

@@ -55,10 +55,24 @@ func (a *app) cmdHook(args []string) (int, error) {
 	raw, _ := io.ReadAll(io.LimitReader(a.stdin, 1<<20))
 	var in hookInput
 	json.Unmarshal(raw, &in)
+	if in.Session == "" && in.Conversation != "" {
+		// Antigravity runs a hook in the folder of the hooks.json that names it,
+		// so the project is the one of the folder the agent is in.
+		in.Session, in.Event, in.agy = in.Conversation, in.EventName, true
+		if filepath.IsAbs(in.Cwd) {
+			a.cwd = in.Cwd
+		}
+	}
 	switch args[0] {
 	case "listen":
+		if in.agy {
+			return a.agyListen(args[1:], in)
+		}
 		return a.hookListen(args[1:], in)
 	case "brief":
+		if in.agy {
+			return a.agyBrief(args[1:], in)
+		}
 		return a.hookBrief(args[1:], in)
 	case "notify":
 		return a.hookNotify(args[1:], in)
@@ -109,6 +123,13 @@ func (a *app) hookListen(args []string, in hookInput) (int, error) {
 	role, given, ok, err := a.hookRole(*as, in)
 	if err != nil || !ok {
 		return exitOK, nil // the brief reports a wrong role, once per session start
+	}
+	if in.Continuations >= agyContinuations {
+		// Antigravity, the only CLI that counts these, would ignore a continue
+		// now, so the session can't be woken until the operator types in it.
+		// It ends its turn, and they are told.
+		a.tellOperator(fmt.Sprintf("handoff can't wake %s's Antigravity session for new work until you type in it: Antigravity lets hooks continue a turn %d times in a row.", role, agyContinuations))
+		return exitOK, nil
 	}
 	if given {
 		// Stop when the session's role moves: the operator gave it another, or gave
@@ -168,6 +189,7 @@ func (a *app) hookBrief(args []string, in hookInput) (int, error) {
 		}
 		return exitOK, nil
 	}
+	a.warnOutside(a.stdout, hookSession(in), in.Transcript)
 	if err := a.writeBrief(a.stdout, role, listenHook); err != nil {
 		fmt.Fprintf(a.stdout, "handoff: no brief: %v. Tell the operator.\n", err)
 	}
@@ -208,4 +230,50 @@ func (a *app) tellOperator(text string) {
 	if err := notify.Tell(project, text); err != nil {
 		fmt.Fprintf(a.stderr, "handoff: could not tell the operator (%v): %s\n", err, text)
 	}
+}
+
+// Antigravity's hooks (row 102) answer in JSON on stdout. Its Stop hook
+// continues the turn with {"decision": "continue", "reason": …}, and the
+// reason reaches the model; anything else lets the turn end. A SessionStart
+// hook adds a system message with {"injectSteps": …}. Antigravity starts a
+// session's hooks at its first message, not when it opens or resumes, and a
+// person who presses Esc while a Stop hook holds the turn ends that hook.
+
+// agyContinuations is how many times in a row Antigravity lets Stop hooks
+// continue a turn; it ignores the next (evidence/h32/). Its executionNum, on
+// a Stop hook's input, counts them, and starts again when the person types.
+const agyContinuations = 10
+
+// agyListen is listen for an Antigravity session, with what would wake it as
+// the reason to continue.
+func (a *app) agyListen(args []string, in hookInput) (int, error) {
+	var says bytes.Buffer
+	stderr := a.stderr
+	a.stderr = &says
+	code, err := a.hookListen(args, in)
+	a.stderr = stderr
+	if err != nil {
+		return code, err
+	}
+	if code != exitWake {
+		fmt.Fprintln(a.stdout, "{}")
+		return code, nil
+	}
+	return exitOK, json.NewEncoder(a.stdout).Encode(map[string]string{"decision": "continue", "reason": says.String()})
+}
+
+// agyBrief is brief for an Antigravity session: what it would print, as a
+// system message.
+func (a *app) agyBrief(args []string, in hookInput) (int, error) {
+	var says bytes.Buffer
+	stdout := a.stdout
+	a.stdout = &says
+	code, err := a.hookBrief(args, in)
+	a.stdout = stdout
+	if err != nil || says.Len() == 0 {
+		fmt.Fprintln(a.stdout, "{}")
+		return code, err
+	}
+	step := map[string]any{"systemMessage": map[string]string{"systemMessage": says.String()}}
+	return code, json.NewEncoder(a.stdout).Encode(map[string]any{"injectSteps": []any{step}})
 }

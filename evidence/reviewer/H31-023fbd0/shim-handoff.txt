@@ -1,0 +1,19 @@
+#!/bin/sh
+# shim: first on the probe session's PATH as "handoff". It notes each run (the time, the
+# arguments, the folder it ran in, CLAUDE_PROJECT_DIR, a hook's stdin), then runs the build
+# under review in the same folder with the same stdin. Alerts go to a scratch file.
+BIN=<the build of 023fbd0>
+LOGD=<scratch>/log
+export HANDOFF_TEST_NOTIFY=<scratch>/alerts.txt HANDOFF_TEST_AWAKE=<scratch>/awake.txt
+f="$LOGD/$(date -u +%H%M%S).$$"
+if [ "$1" = hook ]; then
+  cat > "$f.in"
+  printf '{"t":"%s","args":"%s","pwd":"%s","pdir":"%s","f":"%s","in":%s}\n' "$(date -u +%H:%M:%S)" "$*" "$(pwd -P)" "${CLAUDE_PROJECT_DIR:-}" "$f" "$(cat "$f.in")" >> "$LOGD/runs.jsonl"
+  if [ "$2" = brief ]; then
+    "$BIN" "$@" < "$f.in" > "$f.out"; cat "$f.out"; exit 0
+  fi
+  exec "$BIN" "$@" < "$f.in"
+fi
+printf '{"t":"%s","args":"%s","pwd":"%s","pdir":"%s","f":"%s","in":null}\n' "$(date -u +%H:%M:%S)" "$*" "$(pwd -P)" "${CLAUDE_PROJECT_DIR:-}" "$f" >> "$LOGD/runs.jsonl"
+"$BIN" "$@" > "$f.out" 2> "$f.err"; code=$?
+cat "$f.out"; cat "$f.err" >&2; exit $code

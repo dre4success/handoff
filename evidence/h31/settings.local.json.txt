@@ -1,0 +1,6 @@
+{"hooks":{
+ "SessionStart":[{"hooks":[{"type":"command","command":"HOOKLOG=<scratch>/hooks.log <scratch>/dump.sh"}]}],
+ "UserPromptSubmit":[{"hooks":[{"type":"command","command":"HOOKLOG=<scratch>/hooks.log <scratch>/dump.sh"}]}],
+ "Stop":[{"hooks":[{"type":"command","command":"HOOKLOG=<scratch>/hooks.log <scratch>/dump.sh"}]}],
+ "SessionEnd":[{"hooks":[{"type":"command","command":"HOOKLOG=<scratch>/hooks.log <scratch>/dump.sh"}]}]
+}}

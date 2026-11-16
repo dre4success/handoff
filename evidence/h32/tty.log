@@ -1,0 +1,4 @@
+# command: python3 -I agy-tty.py <scratch>/tty <scratch>/screen-tty.txt: the agent runs python3 -c 'import os; print(os.isatty(0), os.isatty(1))' through its command tool
+# date: 2026-11-15 22:10 UTC, Antigravity CLI 1.5.9, model gemini-3.8-flash-low
+# by: Opus 5.5 (implementer), on the operator's Mac; HANDOFF_TEST_NOTIFY set
+## printed: STDIN_TTY=True STDOUT_TTY=True

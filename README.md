@@ -2,7 +2,7 @@
 
 Two AI coding agents on your Mac hand work to each other: one writes the code, the other reviews it. You only decide.
 
-Each agent runs in its own Claude Code or Codex session. They talk through `handoff`, which keeps a record you can read. When a review is approved, a pop-up asks you to approve or deny. Made for macOS.
+Each agent runs in its own Claude Code, Codex or Antigravity session. They talk through `handoff`, which keeps a record you can read. When a review is approved, a pop-up asks you to approve or deny. Made for macOS.
 
 ## Install
 
@@ -14,9 +14,9 @@ You need Go 1.25.3 or later, with `~/go/bin` on your `PATH`. Run it again to upd
 
 ## Quick start
 
-1. Once: run `handoff settings claude --global`, `handoff settings codex --global`, or both, and add what it prints where it says. A session can do this for you.
+1. Once: run `handoff settings claude --global`, `handoff settings codex --global` or `handoff settings antigravity --global`, for each CLI you use, and add what it prints where it says. A session can do this for you.
 2. In the project, run `handoff init`. It adds a `.handoff/` folder, which git ignores, with three roles: `implementer`, `reviewer` and `reviewer-2`.
-3. Start a session for each agent and tell it its role: "you're the implementer", "you're the reviewer".
+3. Start a session for each agent in the project's folder and tell it its role: "you're the implementer", "you're the reviewer". A session started outside the project, even in the folder above it, can miss work; it's warned when it takes a role.
 4. Give the implementer a task. It asks for a review when it's ready. You decide at the end.
 
 ```
@@ -46,6 +46,7 @@ To tell every agent something without a go-ahead, use `handoff fyi "Carry on."`.
 - A session keeps its role through a resume, `/clear` and `/background`. A copy made with `/fork`, or a new Codex thread, needs telling again. Giving a role to another session takes it from the first.
 - The implementer works on a branch of its own and never merges or pushes without your decision.
 - `reviewer-2` is for a second reviewer; with one, leave it unused. For other roles, use `handoff init --roles a,b` or, later, `handoff roles add <role>`.
+- Antigravity: to type to a session that's waiting for work, press Esc first. Handoff can wake it 10 times in a row; after that, you're told, and it waits for a message from you. After reopening a session, type something in it, or it won't hear of new work.
 - Codex asks you to review the new hooks: choose **Trust all**. `handoff` runs outside Codex's sandbox, so its notifications reach you. Without hooks, a Codex session doesn't wait for work, so you tell it when there is some.
 - While an agent owes a move, your Mac stays awake for up to two hours. If it sleeps, nothing is lost.
 
@@ -55,7 +56,7 @@ To tell every agent something without a go-ahead, use `handoff fyi "Carry on."`.
 |---|---|
 | `handoff` | What waits for your decision |
 | `init` | Sets up a project |
-| `settings claude\|codex` | Prints the settings that keep sessions working |
+| `settings claude\|codex\|antigravity` | Prints the settings that keep sessions working |
 | `role <role>` | Gives a session its role (the session runs it) |
 | `roles add <role>…` | Adds roles |
 | `post`, `claim`, `reply`, `note` | Ask for a review, take one on, give a verdict, say anything else |

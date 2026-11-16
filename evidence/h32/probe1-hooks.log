@@ -1,0 +1,26 @@
+# command: python3 -I agy-probe.py <scratch>/proj <scratch>/hooks.log <scratch>/screen.txt, with <scratch>/proj/.agents/hooks.json running dump.sh at SessionStart, PreInvocation, PostToolUse (run_command) and Stop
+# date: 2026-11-15 21:51 UTC, Antigravity CLI 1.5.9, model gemini-3.8-flash-low; <scratch>/proj is a git repository after handoff init. Each hook line: time, event, the folder the hook ran in, its parent process, whether ANTIGRAVITY_CONVERSATION_ID was set and to the stdin's conversationId, the stdin's cwd, its keys
+# by: Opus 5.5 (implementer), on the operator's Mac; HANDOFF_TEST_NOTIFY set
+## 21:51:32 screen at start: Antigravity asks whether to trust the project (its path, under <scratch>)
+## 21:51:32 trust prompt seen; Enter
+## 21:51:36 turn 1
+21:52:33 SessionStart   hook ran in=<scratch>/proj/.agents parent=11152 ANTIGRAVITY_CONVERSATION_ID=same stdin cwd=<scratch>/proj conversation=e0cbb482 keys=artifactDirectoryPath,conversationId,cwd,hookEventName,lastUserInput,modelName,transcriptPath,workspacePaths
+21:52:33 PreInvocation  hook ran in=<scratch>/proj/.agents parent=11152 ANTIGRAVITY_CONVERSATION_ID=same stdin cwd=<scratch>/proj conversation=e0cbb482 keys=artifactDirectoryPath,conversationId,cwd,hookEventName,initialNumSteps,invocationNum,lastUserInput,modelName,transcriptPath,workspacePaths
+21:52:35 PostToolUse    hook ran in=<scratch>/proj/.agents parent=11152 ANTIGRAVITY_CONVERSATION_ID=same stdin cwd=<scratch>/proj conversation=e0cbb482 keys=artifactDirectoryPath,conversationId,cwd,error,hookEventName,lastUserInput,modelName,stepIdx,toolCall,transcriptPath,workspacePaths
+21:52:36 PreInvocation  hook ran in=<scratch>/proj/.agents parent=11152 ANTIGRAVITY_CONVERSATION_ID=same stdin cwd=<scratch>/proj conversation=e0cbb482 keys=artifactDirectoryPath,conversationId,cwd,hookEventName,initialNumSteps,invocationNum,lastUserInput,modelName,transcriptPath,workspacePaths
+21:52:38 Stop           hook ran in=<scratch>/proj/.agents parent=11152 ANTIGRAVITY_CONVERSATION_ID=same stdin cwd=<scratch>/proj conversation=e0cbb482 keys=artifactDirectoryPath,continuationActive,conversationId,cwd,error,executionNum,fullyIdle,hookEventName,lastUserInput,modelName,terminationReason,transcriptPath,workspacePaths
+## stop hook continues after 70 s at 21:53:48
+21:53:48 PreInvocation  hook ran in=<scratch>/proj/.agents parent=11152 ANTIGRAVITY_CONVERSATION_ID=same stdin cwd=<scratch>/proj conversation=e0cbb482 keys=artifactDirectoryPath,conversationId,cwd,hookEventName,initialNumSteps,invocationNum,lastUserInput,modelName,transcriptPath,workspacePaths
+21:53:52 Stop           hook ran in=<scratch>/proj/.agents parent=11152 ANTIGRAVITY_CONVERSATION_ID=same stdin cwd=<scratch>/proj conversation=e0cbb482 keys=artifactDirectoryPath,continuationActive,conversationId,cwd,error,executionNum,fullyIdle,hookEventName,lastUserInput,modelName,terminationReason,transcriptPath,workspacePaths
+## 21:54:43 after turn 1 and the held stop
+## 21:54:43 conversation e0cbb482-b518-4ed9-a336-3f66377b8356; exit
+## 21:54:46 resume with --conversation
+## 21:54:56 turn 2 after resume
+21:55:18 PreInvocation  hook ran in=<scratch>/proj/.agents parent=17832 ANTIGRAVITY_CONVERSATION_ID=same stdin cwd=<scratch>/proj conversation=e0cbb482 keys=artifactDirectoryPath,conversationId,cwd,hookEventName,initialNumSteps,invocationNum,lastUserInput,modelName,transcriptPath,workspacePaths
+21:55:20 PostToolUse    hook ran in=<scratch>/proj/.agents parent=17832 ANTIGRAVITY_CONVERSATION_ID=same stdin cwd=<scratch>/proj conversation=e0cbb482 keys=artifactDirectoryPath,conversationId,cwd,error,hookEventName,lastUserInput,modelName,stepIdx,toolCall,transcriptPath,workspacePaths
+21:55:20 PreInvocation  hook ran in=<scratch>/proj/.agents parent=17832 ANTIGRAVITY_CONVERSATION_ID=same stdin cwd=<scratch>/proj conversation=e0cbb482 keys=artifactDirectoryPath,conversationId,cwd,hookEventName,initialNumSteps,invocationNum,lastUserInput,modelName,transcriptPath,workspacePaths
+21:55:22 Stop           hook ran in=<scratch>/proj/.agents parent=17832 ANTIGRAVITY_CONVERSATION_ID=same stdin cwd=<scratch>/proj conversation=e0cbb482 keys=artifactDirectoryPath,continuationActive,conversationId,cwd,error,executionNum,fullyIdle,hookEventName,lastUserInput,modelName,terminationReason,transcriptPath,workspacePaths
+## 21:55:58 exit
+## the Stop hooks' own fields: continuationActive=False executionNum=0 terminationReason=NO_TOOL_CALL fullyIdle=True; continuationActive=False executionNum=1 terminationReason=NO_TOOL_CALL fullyIdle=True; continuationActive=False executionNum=0 terminationReason=NO_TOOL_CALL fullyIdle=True
+## on the screen: the model said KIWI (the word SessionStart injected): True; the agent's command printed CONV=<the conversation's id>: True (the same id each time, before and after the resume); after the held stop's continue, it said PONG: True
+## the names the agent's command found (two cut short by the screen's wrapping left out): ANTIGRAVITY_AGENT ANTIGRAVITY_AGENTAPI_EXE ANTIGRAVITY_APP_DATA_DIR ANTIGRAVITY_CONVERSATION_ID ANTIGRAVITY_CSRF_TOKEN ANTIGRAVITY_LS_ADDRESS ANTIGRAVITY_LS_VERSION ANTIGRAVITY_PROJECT_ID ANTIGRAVITY_SOURCE_METADATA ANTIGRAVITY_TRAJECTORY_ID

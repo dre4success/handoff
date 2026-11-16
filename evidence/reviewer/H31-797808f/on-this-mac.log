@@ -1,0 +1,13 @@
+# command: python3 -I on-this-mac.py (read-only; counts and sizes only: no path, no id, no text)
+# date: 2026-11-15 23:46:30 UTC
+# by: Fable 5.2 (reviewer), Claude Code 2.1.325, Codex 0.169.0, on the Mac of the operator
+# (run after the probe sessions and their data were removed)
+
+## Codex: how far from a rollout's end its last turn_context is
+rollouts: 8; sizes in bytes: least 63470, most 34156479
+with no turn_context: 2
+bytes from the last turn_context to the end: least 50733, most 2452888; over 1 MiB: 1; over 16 MiB: 0
+turn_context lines not written exactly as "type":"turn_context": 0
+
+## Claude Code: is each running session's process in the session's folder? (claude agents --json, then lsof)
+sessions listed with a process: 4; process in the folder the listing names: 4; listed with no process: 2; by kind: {'interactive, same': 4}

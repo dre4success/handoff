@@ -1,0 +1,55 @@
+# command: go build ./...; go vet ./...; gofmt -l cmd internal; go.mod requires; go list -deps for net; the commits and diffstat from the base; what the later commits touch
+# date: 2026-11-15 22:24:22 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: c57d29eed941ff63acb91cce953dfc62d421fc94
+
+## go build ./...: ok
+## go vet ./...: clean
+## gofmt -l cmd internal: []
+## go.mod require lines: 0
+## packages in go list -deps ./... named net or under net/: 0
+## commits on the base (37e341b):
+c57d29e docs: H31 evidence: where hooks run after a cd and a resume, a replay, the check on this Mac, mutations, tests
+2576877 docs: §17 row 101, a session started outside the project is warned
+e260eb0 docs: README: start each session in the project's folder
+6f16143 feat: warn a session started outside the project when it takes a role or reads its brief
+## diffstat:
+ README.md                                 |   2 +-
+ cmd/handoff/brief.go                      |   1 +
+ cmd/handoff/hook.go                       |   1 +
+ cmd/handoff/outside.go                    | 144 ++++++++++++++++
+ cmd/handoff/outside_test.go               | 273 ++++++++++++++++++++++++++++++
+ cmd/handoff/session.go                    |   2 +
+ docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md |   1 +
+ evidence/h31/README.md                    |  12 ++
+ evidence/h31/dump.sh                      |   3 +
+ evidence/h31/go-test-race.log             |  14 ++
+ evidence/h31/mutate.py                    |  43 +++++
+ evidence/h31/mutations.log                |  22 +++
+ evidence/h31/on-this-mac.txt              |  11 ++
+ evidence/h31/outside-probe.py             |  54 ++++++
+ evidence/h31/probe-hooks.log              |  24 +++
+ evidence/h31/replay.log                   |  15 ++
+ evidence/h31/settings.local.json.txt      |   6 +
+ internal/gitx/gitx.go                     |   4 +
+ 18 files changed, 631 insertions(+), 1 deletion(-)
+## the implementer's test and mutation logs were made before the evidence commit; what it adds to 2576877:
+ evidence/h31/README.md               | 12 ++++++++
+ evidence/h31/dump.sh                 |  3 ++
+ evidence/h31/go-test-race.log        | 14 ++++++++++
+ evidence/h31/mutate.py               | 43 ++++++++++++++++++++++++++++
+ evidence/h31/mutations.log           | 22 +++++++++++++++
+ evidence/h31/on-this-mac.txt         | 11 ++++++++
+ evidence/h31/outside-probe.py        | 54 ++++++++++++++++++++++++++++++++++++
+ evidence/h31/probe-hooks.log         | 24 ++++++++++++++++
+ evidence/h31/replay.log              | 15 ++++++++++
+ evidence/h31/settings.local.json.txt |  6 ++++
+ 10 files changed, 204 insertions(+)
+## files under cmd or internal that differ from the base:
+ cmd/handoff/brief.go        |   1 +
+ cmd/handoff/hook.go         |   1 +
+ cmd/handoff/outside.go      | 144 +++++++++++++++++++++++
+ cmd/handoff/outside_test.go | 273 ++++++++++++++++++++++++++++++++++++++++++++
+ cmd/handoff/session.go      |   2 +
+ internal/gitx/gitx.go       |   4 +
+## the worktree is clean: []

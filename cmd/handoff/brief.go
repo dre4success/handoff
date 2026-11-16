@@ -38,6 +38,7 @@ func (a *app) cmdBrief(args []string) (int, error) {
 	if role == status.Operator {
 		return 0, fmt.Errorf("the brief is for an agent's role; the operator runs handoff on its own")
 	}
+	a.warnOutside(a.stdout, callerSession(), "")
 	return exitOK, a.writeBrief(a.stdout, role, listenSelf)
 }
 
@@ -100,15 +101,16 @@ func (a *app) writeBrief(w io.Writer, role string, how listening) error {
 	wait := fmt.Sprintf("run `%s wait --for %s --timeout 25m` in the background. Exit 3: run it again. Exit 4: another session already listens for %s. After you handle what it delivers, wait again.", h, role, role)
 	idle := "end your turn. If work waits for you, the operator hears of it and tells you."
 	self := map[string]string{
-		"claude": wait,
-		"codex":  fmt.Sprintf("don't run `%s wait`: Codex checks on a running command about once a minute, each time with a whole model call, which uses up the operator's plan. Instead, %s", h, idle),
-		"":       fmt.Sprintf("in Claude Code, %s In Codex, don't run wait, since each minute of it costs a whole model call: %s", wait, idle),
+		"claude":      wait,
+		"codex":       fmt.Sprintf("don't run `%s wait`: Codex checks on a running command about once a minute, each time with a whole model call, which uses up the operator's plan. Instead, %s", h, idle),
+		"antigravity": fmt.Sprintf("don't run `%s wait`. Instead, %s", h, idle),
+		"":            fmt.Sprintf("in Claude Code, %s In Codex, don't run wait, since each minute of it costs a whole model call: %s", wait, idle),
 	}[cli]
 	// A session with no hooks can't give itself any: they work only from
 	// its next start, so it offers, for every project at once (row 87).
 	var unset []string
-	for _, c := range []string{"claude", "codex"} {
-		if (cli == "" || cli == c) && a.hooked(c) == "" {
+	for _, c := range []string{"claude", "codex", "antigravity"} {
+		if (cli == "" && c != "antigravity" || cli == c) && a.hooked(c) == "" {
 			unset = append(unset, fmt.Sprintf("`%s settings %s --global`", h, c))
 		}
 	}
@@ -208,6 +210,8 @@ func sessionCLI() string {
 		return "claude"
 	case os.Getenv("CODEX_THREAD_ID") != "":
 		return "codex"
+	case os.Getenv("ANTIGRAVITY_CONVERSATION_ID") != "":
+		return "antigravity"
 	}
 	return ""
 }

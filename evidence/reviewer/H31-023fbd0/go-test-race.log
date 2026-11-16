@@ -1,0 +1,69 @@
+# command: go test -race -count=1 -json ./... (no -timeout but go's own); the test names at the base and here; the H31 tests, -count=5; the implementer's mutate.py
+# date: 2026-11-16 00:07:06 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 023fbd038e348404ff2c1d50e608829ba461b5db
+
+# (the full run was started at 2026-11-16 00:00:12 local time, in this worktree, with a scratch HOME, and its output is read here)
+pass  github.com/dre4success/handoff/cmd/handoff  411.1s
+pass  github.com/dre4success/handoff/internal/awake  1.358s
+pass  github.com/dre4success/handoff/internal/gitx  1.279s
+pass  github.com/dre4success/handoff/internal/notify  1.418s
+pass  github.com/dre4success/handoff/internal/record  3.733s
+pass  github.com/dre4success/handoff/internal/status  1.2810000000000001s
+skip  github.com/dre4success/handoff/internal/term  0s
+pass  github.com/dre4success/handoff/internal/wait  1.826s
+# tests: passed 204, failed 0, skipped 2; subtests: passed 16, failed 0; data races: 0
+
+## the tests' names at the base that are not here, and here that are not at the base
+> TestH31AnIdIsNotAPattern
+> TestH31AntigravityIsntLookedFor
+> TestH31APathIsQuoted
+> TestH31ASpacedTurnIsFound
+> TestH31CodexIsWarnedToo
+> TestH31NoWarningWhenTheFolderIsntKnown
+> TestH31OnlyAStartOutsideIsWarned
+> TestH31RoleWarnsASessionStartedOutside
+> TestH31TheLatestRolloutCounts
+> TestH31TheRunCounts
+# tests at the base: 196; here: 206
+
+## the H31 tests, 5 times each under the race detector
+   5 --- PASS: TestH31AnIdIsNotAPattern
+   5 --- PASS: TestH31AntigravityIsntLookedFor
+   5 --- PASS: TestH31APathIsQuoted
+   5 --- PASS: TestH31ASpacedTurnIsFound
+   5 --- PASS: TestH31CodexIsWarnedToo
+   5 --- PASS: TestH31NoWarningWhenTheFolderIsntKnown
+   5 --- PASS: TestH31OnlyAStartOutsideIsWarned
+   5 --- PASS: TestH31RoleWarnsASessionStartedOutside
+   5 --- PASS: TestH31TheLatestRolloutCounts
+   5 --- PASS: TestH31TheRunCounts
+   1 ok  	github.com/dre4success/handoff/cmd/handoff
+
+## the implementer's evidence/h31/mutate.py, run in a scratch copy of the tree: each condition taken out in turn, then the H31 tests
+unchanged: exit 0
+C1 role warns when taking a role: fails TestH31APathIsQuoted, TestH31ASpacedTurnIsFound, TestH31CodexIsWarnedToo, TestH31OnlyAStartOutsideIsWarned, TestH31RoleWarnsASessionStartedOutside, TestH31TheRunCounts
+C2 role, asked, warns: fails TestH31RoleWarnsASessionStartedOutside
+C3 brief by hand warns: fails TestH31RoleWarnsASessionStartedOutside
+C4 the start brief warns: fails TestH31CodexIsWarnedToo, TestH31TheRunCounts
+C5 a Claude Code hook's run folder is CLAUDE_PROJECT_DIR: fails TestH31TheRunCounts
+C6 CLAUDE_PROJECT_DIR only for Claude Code: fails TestH31CodexIsWarnedToo, TestH31NoWarningWhenTheFolderIsntKnown
+C7 a Claude Code command's run folder is its process's: fails TestH31APathIsQuoted, TestH31OnlyAStartOutsideIsWarned, TestH31RoleWarnsASessionStartedOutside, TestH31TheRunCounts
+C8 lsof's folder line: fails TestH31APathIsQuoted, TestH31OnlyAStartOutsideIsWarned, TestH31RoleWarnsASessionStartedOutside, TestH31TheRunCounts
+C9 a hook's rollout only when it names the session: fails TestH31CodexIsWarnedToo
+C10 Codex's words: fails TestH31CodexIsWarnedToo
+C11 a path a shell would split is quoted: fails TestH31APathIsQuoted
+C12 the folder must be absolute: fails TestH31NoWarningWhenTheFolderIsntKnown
+C13 no repository is outside: fails TestH31APathIsQuoted, TestH31ASpacedTurnIsFound, TestH31CodexIsWarnedToo, TestH31OnlyAStartOutsideIsWarned, TestH31RoleWarnsASessionStartedOutside, TestH31TheRunCounts
+C14 any other git failure says nothing: fails TestH31NoWarningWhenTheFolderIsntKnown
+C15 the same record is inside: fails TestH31CodexIsWarnedToo, TestH31OnlyAStartOutsideIsWarned, TestH31TheLatestRolloutCounts, TestH31TheRunCounts
+C16 only a line whose own type is turn_context: fails TestH31CodexIsWarnedToo
+C17 a second, longer read: fails TestH31CodexIsWarnedToo
+C18 16 MiB at most: fails TestH31NoWarningWhenTheFolderIsntKnown
+C19 a file is opened without waiting: fails  (timed out)
+C20 the latest rollout counts: fails TestH31TheLatestRolloutCounts
+C21 an id is never a pattern: fails TestH31AnIdIsNotAPattern
+C22 Codex's rollouts are found: fails TestH31ASpacedTurnIsFound, TestH31CodexIsWarnedToo
+C23 an Antigravity session isn't looked for (round 3): fails TestH31AntigravityIsntLookedFor
+C24 a spaced turn_context is found (round 3): fails TestH31ASpacedTurnIsFound
+## the scratch copy's cmd and internal are as in the commit again: yes

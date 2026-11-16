@@ -1,0 +1,75 @@
+# command: git merge-tree --write-tree main <commit>, objects to a scratch directory; the name sweep over main, the commit, the merged tree and the reviewer's evidence folder
+# date: 2026-11-15 23:22:02 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 82d04ea0aaff11f3b156ec621457dda4baa1b32b
+
+## main is 1ca82b104c15d4997ffb69f54fb4c72bbb1a7494; the request's base is 2967c9a9ea902784afca98f5629f92402da34daa; commits on main since the base:
+1ca82b1 docs: the reviewer's H31 CHANGES evidence for c57d29e, as supplied (reply #171)
+65b607a docs(channel): board: H31 round 2 in review (#174)
+54a7c48 docs(channel): board: H32 in review (#172); H31 changes asked (#171)
+ evidence/reviewer/H31-c57d29e/sweep.sh            |  52 ++++
+ 16 files changed, 1280 insertions(+), 1 deletion(-)
+## loose objects in the repository before: 0
+## merge-tree of main and the commit: exit 0
+456a546504b27005be5b08be4e6597de852b2b9a
+## loose objects in the repository after: 0
+## files that differ between main and the merged tree:
+Files main/README.md and merged/README.md differ
+Only in merged/cmd/handoff: antigravity_test.go
+Files main/cmd/handoff/brief.go and merged/cmd/handoff/brief.go differ
+Files main/cmd/handoff/codex_test.go and merged/cmd/handoff/codex_test.go differ
+Files main/cmd/handoff/hook.go and merged/cmd/handoff/hook.go differ
+Files main/cmd/handoff/main_test.go and merged/cmd/handoff/main_test.go differ
+Files main/cmd/handoff/session.go and merged/cmd/handoff/session.go differ
+Files main/cmd/handoff/session_test.go and merged/cmd/handoff/session_test.go differ
+Files main/cmd/handoff/settings.go and merged/cmd/handoff/settings.go differ
+Files main/cmd/handoff/setup.go and merged/cmd/handoff/setup.go differ
+Files main/docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md and merged/docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md differ
+Only in merged/evidence: h32
+## files that differ between the commit and the merged tree:
+Files commit/docs/CHANNEL.md and merged/docs/CHANNEL.md differ
+Only in merged/evidence/reviewer: H31-c57d29e
+
+## sweep of main
+841 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder: 2 lines, 0 file names
+the names of the operator's other projects (the reviewer's list): 0 lines, 0 file names
+an email address: 37 lines, 0 file names
+a folder name on this Mac (the reviewer's list): 0 lines, 0 file names
+
+## sweep of commit
+847 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder: 2 lines, 0 file names
+the names of the operator's other projects (the reviewer's list): 0 lines, 0 file names
+an email address: 36 lines, 0 file names
+a folder name on this Mac (the reviewer's list): 0 lines, 0 file names
+
+## sweep of merged
+862 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder: 2 lines, 0 file names
+the names of the operator's other projects (the reviewer's list): 0 lines, 0 file names
+an email address: 37 lines, 0 file names
+a folder name on this Mac (the reviewer's list): 0 lines, 0 file names
+
+## added lines in git diff 2967c9a <commit> that match any pattern:
+the operator's name, as a word, in a file name or inside an identifier: 0 lines
+the operator's account name, other than in the module path: 0 lines
+a path under a home folder: 0 lines
+the names of the operator's other projects (the reviewer's list): 0 lines
+an email address: 0 lines
+a folder name on this Mac (the reviewer's list): 0 lines
+
+## sweep of the reviewer's evidence folder
+14 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder: 0 lines, 0 file names
+the names of the operator's other projects (the reviewer's list): 0 lines, 0 file names
+an email address: 1 lines, 0 file names
+a folder name on this Mac (the reviewer's list): 0 lines, 0 file names

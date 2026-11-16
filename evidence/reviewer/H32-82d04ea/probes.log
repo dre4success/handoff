@@ -1,0 +1,94 @@
+# command: bash probes.sh <the build of 82d04ea> <the build of the base, 2967c9a> <an empty scratch folder>
+# date: 2026-11-15 23:19:45 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the Mac of the operator (darwin arm64, go1.25.3, git 2.55.0)
+# commit: 82d04ea0aaff11f3b156ec621457dda4baa1b32b
+
+## Q1. the operator's commands, run with a terminal on stdin and one CLI's variables set
+## (each line: what the command said; 'the operator's' means refused as an agent's session)
+-- the base's build, Antigravity's variable
+   handoff fyi hello      exit 2: handoff fyi: no agent has a session now, so no one was told; nothing written
+   handoff away gone      it asked "Your go-ahead approves now: W1 (#1). Go ahead? [y/N] "; answered n; then exit 2: handoff away: not confirmed; nothing written
+   handoff back           exit 2: handoff back: you aren't away; nothing written
+   handoff decide W1 --approve it asked "Approve W1 (#1)? [y/N] "; answered n; then exit 2: handoff decide: not confirmed; nothing written
+   handoff                it asked "Approve, deny or skip? [a/d/s] "; answered n; then exit 0: Approve, deny or skip? [a/d/s] ^D
+   entries written as the operator so far: 0
+-- this build, Antigravity's variable
+   handoff fyi hello      exit 2: handoff fyi: fyi is the operator's, in a terminal of the operator's own, never in an agent's session
+   handoff away gone      exit 2: handoff away: away is the operator's, in a terminal of the operator's own, never in an agent's session
+   handoff back           exit 2: handoff back: back is the operator's, in a terminal of the operator's own, never in an agent's session
+   handoff decide W1 --approve exit 2: handoff decide: decide is the operator's, in a terminal of the operator's own or the pop-up, never in an agent's session
+   handoff                exit 0: handoff: q1 hands work between agents through handoff, and this session has no role in it. When the operator gives you one, run `handoff
+-- this build, Claude Code's variables
+   handoff fyi hello      exit 2: handoff fyi: fyi is the operator's, in a terminal of the operator's own, never in an agent's session
+   handoff away gone      exit 2: handoff away: away is the operator's, in a terminal of the operator's own, never in an agent's session
+   handoff back           exit 2: handoff back: back is the operator's, in a terminal of the operator's own, never in an agent's session
+   handoff decide W1 --approve exit 2: handoff decide: decide is the operator's, in a terminal of the operator's own or the pop-up, never in an agent's session
+   handoff                exit 0: handoff: q1 hands work between agents through handoff, and this session has no role in it. When the operator gives you one, run `handoff
+-- this build, Codex's variable
+   handoff fyi hello      exit 2: handoff fyi: fyi is the operator's, in a terminal of the operator's own, never in an agent's session
+   handoff away gone      exit 2: handoff away: away is the operator's, in a terminal of the operator's own, never in an agent's session
+   handoff back           exit 2: handoff back: back is the operator's, in a terminal of the operator's own, never in an agent's session
+   handoff decide W1 --approve exit 2: handoff decide: decide is the operator's, in a terminal of the operator's own or the pop-up, never in an agent's session
+   handoff                exit 0: handoff: q1 hands work between agents through handoff, and this session has no role in it. When the operator gives you one, run `handoff
+-- this build, Antigravity's other nine variables, without the conversation's id
+   handoff fyi hello      exit 2: handoff fyi: no agent has a session now, so no one was told; nothing written
+   handoff away gone      it asked "Your go-ahead approves now: W1 (#1). Go ahead? [y/N] "; answered n; then exit 2: handoff away: not confirmed; nothing written
+   handoff back           exit 2: handoff back: you aren't away; nothing written
+   handoff decide W1 --approve it asked "Approve W1 (#1)? [y/N] "; answered n; then exit 2: handoff decide: not confirmed; nothing written
+   handoff                it asked "Approve, deny or skip? [a/d/s] "; answered n; then exit 0: Approve, deny or skip? [a/d/s] ^D
+-- this build, a CLI handoff doesn't know (GEMINI_CLI=1, as Gemini CLI documents)
+   handoff fyi hello      exit 2: handoff fyi: no agent has a session now, so no one was told; nothing written
+   handoff away gone      it asked "Your go-ahead approves now: W1 (#1). Go ahead? [y/N] "; answered n; then exit 2: handoff away: not confirmed; nothing written
+   handoff back           exit 2: handoff back: you aren't away; nothing written
+   handoff decide W1 --approve it asked "Approve W1 (#1)? [y/N] "; answered n; then exit 2: handoff decide: not confirmed; nothing written
+   handoff                it asked "Approve, deny or skip? [a/d/s] "; answered n; then exit 0: Approve, deny or skip? [a/d/s] ^D
+-- this build, no variable (the operator's own terminal)
+   handoff fyi hello      exit 2: handoff fyi: no agent has a session now, so no one was told; nothing written
+   handoff away gone      it asked "Your go-ahead approves now: W1 (#1). Go ahead? [y/N] "; answered n; then exit 2: handoff away: not confirmed; nothing written
+   handoff back           exit 2: handoff back: you aren't away; nothing written
+   handoff decide W1 --approve it asked "Approve W1 (#1)? [y/N] "; answered n; then exit 2: handoff decide: not confirmed; nothing written
+   handoff                it asked "Approve, deny or skip? [a/d/s] "; answered n; then exit 0: Approve, deny or skip? [a/d/s] ^D
+   entries written as the operator in all (the lines above answered n to each question): 0
+-- this build, no terminal, Antigravity's variable: handoff decide: decide is the operator's, in a terminal of the operator's own or the pop-up, never in an agent's session
+-- this build, no terminal, no variable:            handoff decide: decide needs a terminal on stdin: the operator types it, an agent's shell cannot
+
+## Q2. Antigravity's hooks
+a. SessionStart, no role, run where a user's hooks.json would be (no repository), stdin's cwd the project:
+{"injectSteps":[{"systemMessage":{"systemMessage":"handoff: q2 hands work between agents through handoff, and this session has no role in it. When the operator gives you one, run `handoff role \u003crole\u003e` (the roles are impl
+
+b. the same, stdin's cwd a folder that is no project:
+{} [exit 0]
+c. the same, stdin's cwd not absolute:
+{} [exit 0]
+d. SessionStart with the role reviewer-2:
+{"injectSteps":[{"systemMessage":{"systemMessage":"handoff brief: you are reviewer-2 in q2. You and implementer, reviewer hand work to each other through handoff. The operator decides.\n\nListening: you don't run `handoff wait`. W
+
+   is it JSON with one system message: True
+e. Stop, nothing waiting, --timeout 2s (stands for the 23 hours):
+{"decision":"continue","reason":"handoff: nothing new for reviewer-2 in 2s. Just end your turn; listening starts again when it ends.\n"} [exit 0]
+f. Stop with a note waiting, executionNum 9:
+{"decision":"continue","reason":"handoff: new for reviewer-2:\n#4 note W1 implementer → reviewer-2: for you\nRead each with `handoff show \u003cid\u003e` and act on it as your brief says. Listening starts again when your turn ends
+
+g. Stop with a note waiting, executionNum 10:
+{} [exit 0]
+   the operator is told: q2: handoff can't wake reviewer-2's Antigravity session for new work until you type in it: Antigravity lets hooks continue a turn 10 times in a row.
+h. the same again (executionNum 11): 
+{} [exit 0]
+   told in all: 2
+i. Stop with the note still waiting, executionNum 0 (the person typed):
+{"decision":"continue","reason":"handoff: new for reviewer-2:\n#5 note W1 implementer → reviewer-2: for you too\nRead each with `handoff show \u003cid\u003e` and act on it as your brief says. Listening starts again when your turn 
+
+j. Stop for a conversation with no role:
+{} [exit 0] 
+k. a Claude Code Stop hook's input with a cwd and executionNum 10 in it (not Antigravity's): [exit 0]
+
+## Q3. settings and the brief
+a. handoff settings antigravity --global, outside any project: valid JSON, hooks: ['SessionStart', 'Stop'] | names True
+b. handoff settings antigravity, outside any project: handoff settings: not inside a git repository, which handoff needs; run `git init` first (git rev-parse --path-format=absolute --g
+c. handoff settings antigravity --as reviewer: handoff settings: --as fixes a role for Claude Code or Codex; an Antigravity session takes the role you give it
+d. the brief by hand in an Antigravity session offers its settings: with no hooks.json: 1
+   with the printed hooks in .agents/hooks.json: 0
+   with that hook turned off (enabled false): 1
+e. the brief by hand says not to run wait: 1
+
+alerts written to the scratch file in all: 2

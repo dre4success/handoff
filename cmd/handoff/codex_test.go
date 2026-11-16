@@ -79,7 +79,7 @@ func TestH10bSettingsCodex(t *testing.T) {
 	if got := strings.Join(config, "\n"); got != "[shell_environment_policy]\nset = { HANDOFF_ROLE = \"reviewer\" }" {
 		t.Fatalf("config.toml:\n%s", got)
 	}
-	r.refused(t, "", "settings needs a CLI: claude or codex", "settings", "cursor", "--as", "reviewer")
+	r.refused(t, "", "settings needs a CLI: claude, codex or antigravity", "settings", "cursor", "--as", "reviewer")
 	// Without --as, no role is fixed: no config.toml, and hooks with no role
 	// (row 73).
 	out := r.ok(t, "", "settings", "codex")

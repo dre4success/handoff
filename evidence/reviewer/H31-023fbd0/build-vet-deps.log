@@ -1,0 +1,76 @@
+# command: go build ./...; go vet ./...; gofmt -l cmd internal; go.mod requires; go list -deps for net; the commits and diffstat from the base; what the later commits touch
+# date: 2026-11-16 00:07:05 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 023fbd038e348404ff2c1d50e608829ba461b5db
+
+## go build ./...: ok
+## go vet ./...: clean
+## gofmt -l cmd internal: []
+## go.mod require lines: 0
+## packages in go list -deps ./... named net or under net/: 0
+## commits on the base (78facf6):
+023fbd0 docs: H31 round 3 evidence: mutations and tests on the branch with main merged in
+3d16d2c docs: §17 row 104, H31 round 3 and the notes from H32's review
+055cd00 docs: README: type in a reopened Antigravity session
+2d8d711 fix: H31 round 3: an Antigravity session isn't looked for, and a spaced turn_context is found
+be95d21 Merge branch 'main' into h31-outside
+797808f docs: H31 round 2 evidence: a backgrounded session's process, the reviewer's resume cases on real sessions, mutations, tests
+457eba1 docs: §17 row 103, corrections to row 101 from the H31 review
+6dc9616 fix: H31 round 2: the folder this run of the session started in, not where its conversation began
+c57d29e docs: H31 evidence: where hooks run after a cd and a resume, a replay, the check on this Mac, mutations, tests
+2576877 docs: §17 row 101, a session started outside the project is warned
+e260eb0 docs: README: start each session in the project's folder
+6f16143 feat: warn a session started outside the project when it takes a role or reads its brief
+## diffstat:
+ README.md                                 |   4 +-
+ cmd/handoff/brief.go                      |   1 +
+ cmd/handoff/hook.go                       |   1 +
+ cmd/handoff/main_test.go                  |   2 +-
+ cmd/handoff/outside.go                    | 206 ++++++++++++++++++
+ cmd/handoff/outside_test.go               | 347 ++++++++++++++++++++++++++++++
+ cmd/handoff/session.go                    |   2 +
+ cmd/handoff/session_test.go               |  12 +-
+ docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md |   3 +
+ evidence/h31/README.md                    |  27 +++
+ evidence/h31/background.log               |  15 ++
+ evidence/h31/bg-probe.py                  |  52 +++++
+ evidence/h31/dump.sh                      |   3 +
+ evidence/h31/dump2.sh                     |   3 +
+ evidence/h31/go-test-race.log             |  14 ++
+ evidence/h31/mutate.py                    |  49 +++++
+ evidence/h31/mutations.log                |  28 +++
+ evidence/h31/on-this-mac.txt              |  11 +
+ evidence/h31/outside-probe.py             |  54 +++++
+ evidence/h31/probe-hooks.log              |  24 +++
+ evidence/h31/replay.log                   |  15 ++
+ evidence/h31/resume-probe.py              |  56 +++++
+ evidence/h31/resume.log                   |  18 ++
+ evidence/h31/settings.local.json.txt      |   6 +
+ internal/gitx/gitx.go                     |   4 +
+ 25 files changed, 946 insertions(+), 11 deletions(-)
+## the implementer's test and mutation logs were made before the evidence commit; what it adds to 3d16d2c:
+ evidence/h31/README.md        | 11 ++++++++---
+ evidence/h31/go-test-race.log | 18 +++++++++---------
+ evidence/h31/mutate.py        |  4 +++-
+ evidence/h31/mutations.log    | 12 +++++++-----
+ 4 files changed, 27 insertions(+), 18 deletions(-)
+## since the merge of main (be95d21):
+ README.md                                 |  2 +-
+ cmd/handoff/outside.go                    |  7 ++++++-
+ cmd/handoff/outside_test.go               | 25 +++++++++++++++++++++++++
+ docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md |  1 +
+ evidence/h31/README.md                    | 11 ++++++++---
+ evidence/h31/go-test-race.log             | 18 +++++++++---------
+ evidence/h31/mutate.py                    |  4 +++-
+ evidence/h31/mutations.log                | 12 +++++++-----
+ 8 files changed, 60 insertions(+), 20 deletions(-)
+## files under cmd or internal that differ from the base:
+ cmd/handoff/brief.go        |   1 +
+ cmd/handoff/hook.go         |   1 +
+ cmd/handoff/main_test.go    |   2 +-
+ cmd/handoff/outside.go      | 206 ++++++++++++++++++++++++++
+ cmd/handoff/outside_test.go | 347 ++++++++++++++++++++++++++++++++++++++++++++
+ cmd/handoff/session.go      |   2 +
+ cmd/handoff/session_test.go |  12 +-
+ internal/gitx/gitx.go       |   4 +
+## the worktree is clean: []

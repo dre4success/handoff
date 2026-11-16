@@ -27,8 +27,21 @@ func (a *app) cmdSettings(args []string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	if len(pos) != 1 || (pos[0] != "claude" && pos[0] != "codex") {
-		return 0, errors.New("settings needs a CLI: claude or codex")
+	if len(pos) != 1 || (pos[0] != "claude" && pos[0] != "codex" && pos[0] != "antigravity") {
+		return 0, errors.New("settings needs a CLI: claude, codex or antigravity")
+	}
+	if pos[0] == "antigravity" {
+		// Antigravity gives a hook no way to set what its agent's commands see,
+		// so no role is fixed for its sessions (row 102).
+		if *as != "" {
+			return 0, errors.New("--as fixes a role for Claude Code or Codex; an Antigravity session takes the role you give it")
+		}
+		if !*global {
+			if err := a.open(); err != nil {
+				return 0, err
+			}
+		}
+		return exitOK, a.printAntigravity(selfCommand(), *global)
 	}
 	if *global {
 		// Roles are each project's own, so no role is fixed for them all.
@@ -240,4 +253,43 @@ func codexRules(h string) string {
 prefix_rule(pattern=[%s], decision="allow", justification="handoff runs outside the sandbox so that it can notify the operator")
 prefix_rule(pattern=[%s, "decide"], decision="forbidden", justification="The operator decides, not an agent")
 `, q, q)
+}
+
+// printAntigravity prints Antigravity's hooks.json for this project, or with
+// global for its user settings (row 102). Antigravity runs a hook's command
+// through a shell, so each starts with exec, and the hook's parent is then
+// Antigravity itself, as for Codex.
+func (a *app) printAntigravity(h string, global bool) error {
+	cmd := func(hook string) string { return "exec " + shellQuote(h) + " hook " + hook }
+	b, err := json.MarshalIndent(map[string]any{"handoff": map[string]any{
+		"SessionStart": []any{map[string]any{"type": "command", "command": cmd("brief"), "timeout": 30}},
+		// listen waits up to 23 hours; the hook may wait a day.
+		"Stop": []any{map[string]any{"type": "command", "command": cmd("listen"), "timeout": 24 * 60 * 60}},
+	}}, "", "  ")
+	if err != nil {
+		return err
+	}
+	where := fmt.Sprintf(`Put this in .agents/hooks.json in this project, merged with anything already
+there, and keep it out of git (add .agents/hooks.json to .git/info/exclude).
+Antigravity reads it once you trust the project. To set up every project at
+once, use --global.
+
+%s`, whose("Antigravity", ""))
+	if global {
+		where = fmt.Sprintf(`Put this in %s, merged with anything already there.
+%s Sessions already running get them
+when they start again.
+In a project with a record, every Antigravity session takes the role you give
+it: tell it, and it runs handoff role <role>. Until then it has none.`, tilde(filepath.Join(userConfig("antigravity"), "hooks.json")), everywhere)
+	}
+	fmt.Fprintf(a.stdout, `%s
+It gets the brief with its first message. When its turn would end, a hook
+listens for its work and continues it with what arrives. While a session
+listens, press Esc before you type to it. Antigravity lets hooks continue a
+turn %d times in a row; after that, handoff tells you, and the session waits
+for a message from you.
+
+%s
+`, where, agyContinuations, b)
+	return nil
 }

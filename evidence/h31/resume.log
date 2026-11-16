@@ -1,0 +1,18 @@
+# command: python3 -I evidence/h31/resume-probe.py <scratch>/P <scratch>/hb <scratch>/out <scratch>/resume.log; <scratch>/hb is this branch's build, round 2
+# date: 2026-11-15 22:53 UTC, Claude Code 2.1.325, model haiku
+# by: Opus 5.5 (implementer), on the operator's Mac. The reviewer's R4 and R6: each session, begun in one folder and resumed from the other, ran `cd <scratch>/P/proj && <scratch>/hb role [<role>] > <file>` itself; each file's first lines follow
+## 22:53:45 R4: begun in <scratch>/P; takes implementer from proj
+## 22:55:57 R4: session 66615780-f0d2-4c30-981f-f2fae5077d5c; closed; resumed from <scratch>/P/proj; handoff role from proj
+## 22:58:41 R6: begun in <scratch>/P/proj; takes reviewer from proj
+## 23:00:53 R6: session 2850cb8c-b5f6-4f92-8df8-08327033b72d; closed; resumed from <scratch>/P; handoff role from proj
+== R4-1 (begun in P)
+You are now implementer in proj.
+handoff: warning: this session started in <scratch>/P, outside proj. Its hooks run outside proj when it starts or resumes, and after /clear or /background, so it can miss its brief and the work sent to it. Tell the operator. They can close this session and resume it from proj (`cd <scratch>/P/proj && claude --resume 66615780-f0d2-4c30-981f-f2fae5077d5c`), which keeps this conversation, or start a session there and give it the role.
+== R4-2 (resumed from P/proj)
+You are implementer in proj.
+== R6-1 (begun in P/proj)
+You are now reviewer in proj.
+handoff brief: you are reviewer in proj. You and implementer, reviewer-2 hand work to each other through handoff. The operator decides.
+== R6-2 (resumed from P)
+You are reviewer in proj.
+handoff: warning: this session started in <scratch>/P, outside proj. Its hooks run outside proj when it starts or resumes, and after /clear or /background, so it can miss its brief and the work sent to it. Tell the operator. They can close this session and resume it from proj (`cd <scratch>/P/proj && claude --resume 2850cb8c-b5f6-4f92-8df8-08327033b72d`), which keeps this conversation, or start a session there and give it the role.

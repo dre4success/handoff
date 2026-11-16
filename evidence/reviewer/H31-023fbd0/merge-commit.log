@@ -1,0 +1,28 @@
+# command: git diff-tree --cc --name-only be95d21; git archive be95d21 | tar -x; diff -rq against the scratch clone of round 2 (main 78facf6 with 797808f merged and the two conflicts settled: both variables in the list, the rows in number order)
+# date: 2026-11-16 00:01:48 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the Mac of the operator
+# commit: 023fbd038e348404ff2c1d50e608829ba461b5db
+
+## the merge commit's parents: 797808f (round 2) and 78facf6 (main)
+## files that differ from both parents:
+   README.md
+   cmd/handoff/brief.go
+   cmd/handoff/hook.go
+   cmd/handoff/main_test.go
+   cmd/handoff/session.go
+   cmd/handoff/session_test.go
+   docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md
+## lines in the combined diff that neither parent has:
+   ++var sessionVars = []string{"CLAUDE_CODE_SESSION_ID", "CLAUDE_PID", "CODEX_THREAD_ID", "ANTIGRAVITY_CONVERSATION_ID", "CLAUDE_PROJECT_DIR"}
+## files that differ between the merge commit's tree and the reviewer's own settlement: 0
+## main (78facf6) is an ancestor of the commit: yes
+## since the merge:
+ README.md                                 |  2 +-
+ cmd/handoff/outside.go                    |  7 ++++++-
+ cmd/handoff/outside_test.go               | 25 +++++++++++++++++++++++++
+ docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md |  1 +
+ evidence/h31/README.md                    | 11 ++++++++---
+ evidence/h31/go-test-race.log             | 18 +++++++++---------
+ evidence/h31/mutate.py                    |  4 +++-
+ evidence/h31/mutations.log                | 12 +++++++-----
+ 8 files changed, 60 insertions(+), 20 deletions(-)

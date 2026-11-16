@@ -1,0 +1,55 @@
+# command: go test -race -count=1 -json ./... (no -timeout but go's own); the test names at the base and here; the H32 tests, -count=5; the implementer's mutate.py
+# date: 2026-11-15 23:17:26 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 82d04ea0aaff11f3b156ec621457dda4baa1b32b
+
+# (the full run was started at 2026-11-15 22:46:32 local time, in this worktree, with a scratch HOME, and its output is read here)
+pass  github.com/dre4success/handoff/cmd/handoff  428.53s
+pass  github.com/dre4success/handoff/internal/awake  1.374s
+pass  github.com/dre4success/handoff/internal/gitx  1.295s
+pass  github.com/dre4success/handoff/internal/notify  1.45s
+pass  github.com/dre4success/handoff/internal/record  3.95s
+pass  github.com/dre4success/handoff/internal/status  1.294s
+skip  github.com/dre4success/handoff/internal/term  0s
+pass  github.com/dre4success/handoff/internal/wait  1.846s
+# tests: passed 194, failed 0, skipped 2; subtests: passed 10, failed 0; data races: 0
+
+## the tests' names at the base that are not here, and here that are not at the base
+> TestH32ListenContinuesTheTurn
+> TestH32Settings
+> TestH32TheBriefOffersAntigravitysHooks
+> TestH32TheOperatorsCommandsRefuseAnAntigravitySession
+> TestH32TheStartBriefIsASystemMessage
+# tests at the base: 191; here: 196
+
+## the H32 tests, 5 times each under the race detector
+   5 --- PASS: TestH32ListenContinuesTheTurn
+   5 --- PASS: TestH32Settings
+   5 --- PASS: TestH32TheBriefOffersAntigravitysHooks
+   5 --- PASS: TestH32TheOperatorsCommandsRefuseAnAntigravitySession
+   5 --- PASS: TestH32TheStartBriefIsASystemMessage
+   1 ok  	github.com/dre4success/handoff/cmd/handoff
+
+## the implementer's evidence/h32/mutate.py, run in a scratch copy of the tree: each condition taken out in turn, then the H32 tests
+unchanged: exit 0
+C1 an Antigravity command is an agent's session: fails TestH32ListenContinuesTheTurn, TestH32TheBriefOffersAntigravitysHooks, TestH32TheOperatorsCommandsRefuseAnAntigravitySession, TestH32TheStartBriefIsASystemMessage
+C2 the CLI is known as antigravity: fails TestH32TheBriefOffersAntigravitysHooks
+C3 Antigravity's input names the session: fails TestH32TheStartBriefIsASystemMessage
+C4 the project is the agent's folder: fails TestH32ListenContinuesTheTurn, TestH32TheStartBriefIsASystemMessage
+C5 only an absolute folder: fails TestH32TheStartBriefIsASystemMessage
+C6 listen answers with a continue: fails TestH32ListenContinuesTheTurn
+C7 listen is Antigravity's for its input: fails TestH32ListenContinuesTheTurn
+C8 the brief is a system message: fails TestH32TheStartBriefIsASystemMessage
+C9 nothing to say is {}: fails TestH32TheStartBriefIsASystemMessage
+C10 no listening at the limit: fails TestH32ListenContinuesTheTurn
+C11 the operator is told at the limit: fails TestH32ListenContinuesTheTurn
+C12 settings knows antigravity: fails TestH32Settings
+C13 settings fixes no role for it: fails TestH32Settings
+C14 its user hooks are in ~/.gemini/config: fails TestH32Settings, TestH32TheBriefOffersAntigravitysHooks
+C15 its project hooks are in .agents/: fails TestH32TheBriefOffersAntigravitysHooks
+C16 a hook turned off doesn't listen: fails TestH32TheBriefOffersAntigravitysHooks
+C17 only handoff's listen counts: fails TestH32TheBriefOffersAntigravitysHooks
+C18 its brief by hand says not to wait: fails TestH32TheBriefOffersAntigravitysHooks
+C19 its brief offers its hooks: fails TestH32TheBriefOffersAntigravitysHooks
+C20 the operator's brief offers only the other two: fails TestH32TheBriefOffersAntigravitysHooks
+## the scratch copy's cmd and internal are as in the commit again: yes

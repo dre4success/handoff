@@ -1,0 +1,82 @@
+# command: go build ./...; go vet ./...; gofmt -l cmd internal; go.mod requires; go list -deps for net; the commits and diffstat from the base; what the later commits touch
+# date: 2026-11-15 23:17:21 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 82d04ea0aaff11f3b156ec621457dda4baa1b32b
+
+## go build ./...: ok
+## go vet ./...: clean
+## gofmt -l cmd internal: []
+## go.mod require lines: 0
+## packages in go list -deps ./... named net or under net/: 0
+## commits on the base (2967c9a):
+82d04ea docs: H32 evidence: Antigravity probes, a real run with the printed hooks, the operator check, mutations, tests
+ffc2291 docs: §17 row 102, Antigravity sessions
+729e77d docs: README: Antigravity, Esc before typing to a waiting session, and its limit of 10
+7b45319 feat: Antigravity sessions: its hooks get the brief and listen, and handoff settings antigravity prints them
+3c65449 fix: an Antigravity session is an agent's session, so decide, fyi, away and back refuse it
+## diffstat:
+ README.md                                 |   7 +-
+ cmd/handoff/antigravity_test.go           | 228 ++++++++++++++++++++++++++++++
+ cmd/handoff/brief.go                      |  13 +-
+ cmd/handoff/codex_test.go                 |   2 +-
+ cmd/handoff/hook.go                       |  67 +++++++++
+ cmd/handoff/main_test.go                  |   2 +-
+ cmd/handoff/session.go                    |  19 ++-
+ cmd/handoff/session_test.go               |   2 +-
+ cmd/handoff/settings.go                   |  56 +++++++-
+ cmd/handoff/setup.go                      |  43 +++++-
+ docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md |   1 +
+ evidence/h32/README.md                    |  31 ++++
+ evidence/h32/agy-probe.py                 |  70 +++++++++
+ evidence/h32/agy-probe2.py                |  40 ++++++
+ evidence/h32/agy-probe3.py                |  39 +++++
+ evidence/h32/agy-probe4.py                |  34 +++++
+ evidence/h32/agy-real.py                  |  80 +++++++++++
+ evidence/h32/agy-tty.py                   |  29 ++++
+ evidence/h32/dump.sh                      |  19 +++
+ evidence/h32/dump2.sh                     |  15 ++
+ evidence/h32/go-test-race.log             |  14 ++
+ evidence/h32/mutate.py                    |  45 ++++++
+ evidence/h32/mutations.log                |  24 ++++
+ evidence/h32/operator-check.log           |  10 ++
+ evidence/h32/probe1-hooks.log             |  26 ++++
+ evidence/h32/probe2-hooks.log             |  23 +++
+ evidence/h32/probe3-hooks.log             |  14 ++
+ evidence/h32/probe4-hooks.log             |   8 ++
+ evidence/h32/real.log                     |  32 +++++
+ evidence/h32/tty.log                      |   4 +
+ evidence/h32/withtty.py                   |  18 +++
+ 31 files changed, 998 insertions(+), 17 deletions(-)
+## the implementer's test and mutation logs were made before the evidence commit; what it adds to ffc2291:
+ evidence/h32/README.md          | 31 ++++++++++++++++
+ evidence/h32/agy-probe.py       | 70 ++++++++++++++++++++++++++++++++++++
+ evidence/h32/agy-probe2.py      | 40 +++++++++++++++++++++
+ evidence/h32/agy-probe3.py      | 39 ++++++++++++++++++++
+ evidence/h32/agy-probe4.py      | 34 ++++++++++++++++++
+ evidence/h32/agy-real.py        | 80 +++++++++++++++++++++++++++++++++++++++++
+ evidence/h32/agy-tty.py         | 29 +++++++++++++++
+ evidence/h32/dump.sh            | 19 ++++++++++
+ evidence/h32/dump2.sh           | 15 ++++++++
+ evidence/h32/go-test-race.log   | 14 ++++++++
+ evidence/h32/mutate.py          | 45 +++++++++++++++++++++++
+ evidence/h32/mutations.log      | 24 +++++++++++++
+ evidence/h32/operator-check.log | 10 ++++++
+ evidence/h32/probe1-hooks.log   | 26 ++++++++++++++
+ evidence/h32/probe2-hooks.log   | 23 ++++++++++++
+ evidence/h32/probe3-hooks.log   | 14 ++++++++
+ evidence/h32/probe4-hooks.log   |  8 +++++
+ evidence/h32/real.log           | 32 +++++++++++++++++
+ evidence/h32/tty.log            |  4 +++
+ evidence/h32/withtty.py         | 18 ++++++++++
+ 20 files changed, 575 insertions(+)
+## files under cmd or internal that differ from the base:
+ cmd/handoff/antigravity_test.go | 228 ++++++++++++++++++++++++++++++++++++++++
+ cmd/handoff/brief.go            |  13 ++-
+ cmd/handoff/codex_test.go       |   2 +-
+ cmd/handoff/hook.go             |  67 ++++++++++++
+ cmd/handoff/main_test.go        |   2 +-
+ cmd/handoff/session.go          |  19 +++-
+ cmd/handoff/session_test.go     |   2 +-
+ cmd/handoff/settings.go         |  56 +++++++++-
+ cmd/handoff/setup.go            |  43 +++++++-
+## the worktree is clean: []

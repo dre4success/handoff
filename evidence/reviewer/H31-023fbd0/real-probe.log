@@ -1,0 +1,28 @@
+# command: bash codex-probe.sh <scratch>
+# date: 2026-11-16, 00:01 UTC
+# by: Fable 5.2 (reviewer), on the Mac of the operator. A throwaway session of Codex 0.169.0.
+# commit: 023fbd038e348404ff2c1d50e608829ba461b5db, built to a scratch folder
+#
+# Round 2 X1 again, since round 3 changes how a turn_context is looked for: <P> is a scratch folder in no git
+# repository, <P/proj> a repository in it after `handoff init`; a shim first on PATH (shim-handoff.txt) runs this
+# build for Codex's hooks. This session's own CLAUDE_ variables are taken out. Alerts went to a scratch file;
+# none were written. The rollout is deleted.
+
+## 1. codex exec, started in <P>
+workdir: <P>
+session id: 01a1e1a8-388a-7b13-88b3-14c57386db33
+   the rollout: 18 lines; its turn_context lines: line 10: <P>
+## 2. this build's handoff role reviewer-2, as that session, from <P/proj>:
+   handoff: warning: this session started in <P>, outside proj. Its hooks run outside proj always, so it can miss its brief and the work sent to it. Tell the operator. They can close this session and resume it from proj (`cd <P/proj> && codex resume 01a1e1a8-388a-7b13-88b3-14c57386db33`), which keeps this conversation, or start a session there and give it the role.
+## 3. codex exec resume <id>, from <P/proj>, until its Stop hook has started
+workdir: <P/proj>
+   the rollout: 31 lines; its turn_context lines: line 10: <P>; line 24: <P/proj>
+## 4. the runs of handoff by Codex's hooks: the hook, the folder it ran in, and what a brief said
+00:01:02 handoff hook brief   ran in <P>  SessionStart(startup) stdin cwd=<P>
+      the brief: no warning; first line: (nothing)
+00:01:04 handoff hook listen  ran in <P>  Stop(None) stdin cwd=<P>
+00:01:06 handoff hook brief   ran in <P/proj>  SessionStart(resume) stdin cwd=<P/proj>
+      the brief: no warning; first line: handoff brief: you are reviewer-2 in proj. You and implementer, reviewer hand wo
+00:01:08 handoff hook listen  ran in <P/proj>  Stop(None) stdin cwd=<P/proj>
+## 5. this build's handoff role, as that session, from <P/proj>, after the resumed turn:
+   no warning

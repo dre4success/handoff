@@ -1,0 +1,24 @@
+# command: python3 -I evidence/h31/outside-probe.py <scratch>/P <scratch>/hooks.log, with <scratch>/P/.claude/settings.local.json running dump.sh at SessionStart, UserPromptSubmit, Stop and SessionEnd
+# date: 2026-11-15 21:33 UTC, Claude Code 2.1.325, model haiku; <scratch>/P is no git repository, <scratch>/P/proj is one, after handoff init
+# by: Opus 5.5 (implementer), on the operator's Mac. Each hook line: the time, the event, the folder the hook ran in (pwd -P), CLAUDE_PROJECT_DIR, and the stdin's cwd; '##' lines are the probe's own
+21:33:05 SessionStart     source=startup hook ran in=<scratch>/P  CLAUDE_PROJECT_DIR=<scratch>/P  stdin cwd=<scratch>/P  session=212a4283-80ee-47bf-836e-c1a0f134ca23
+## turn 1: reply only
+21:33:16 UserPromptSubmit source=-       hook ran in=<scratch>/P  CLAUDE_PROJECT_DIR=<scratch>/P  stdin cwd=<scratch>/P  session=212a4283-80ee-47bf-836e-c1a0f134ca23
+21:33:17 Stop             source=-       hook ran in=<scratch>/P  CLAUDE_PROJECT_DIR=<scratch>/P  stdin cwd=<scratch>/P  session=212a4283-80ee-47bf-836e-c1a0f134ca23
+## turn 2: cd proj
+21:33:46 UserPromptSubmit source=-       hook ran in=<scratch>/P  CLAUDE_PROJECT_DIR=<scratch>/P  stdin cwd=<scratch>/P  session=212a4283-80ee-47bf-836e-c1a0f134ca23
+21:33:50 Stop             source=-       hook ran in=<scratch>/P/proj  CLAUDE_PROJECT_DIR=<scratch>/P  stdin cwd=<scratch>/P/proj  session=212a4283-80ee-47bf-836e-c1a0f134ca23
+## process cwd of claude: ['<scratch>/P']
+## turn 3: pwd
+21:34:24 UserPromptSubmit source=-       hook ran in=<scratch>/P/proj  CLAUDE_PROJECT_DIR=<scratch>/P  stdin cwd=<scratch>/P/proj  session=212a4283-80ee-47bf-836e-c1a0f134ca23
+21:34:27 Stop             source=-       hook ran in=<scratch>/P/proj  CLAUDE_PROJECT_DIR=<scratch>/P  stdin cwd=<scratch>/P/proj  session=212a4283-80ee-47bf-836e-c1a0f134ca23
+## session 212a4283-80ee-47bf-836e-c1a0f134ca23; exit
+21:34:45 SessionEnd       source=-       hook ran in=<scratch>/P/proj  CLAUDE_PROJECT_DIR=<scratch>/P  stdin cwd=<scratch>/P/proj  session=212a4283-80ee-47bf-836e-c1a0f134ca23
+## resume from P
+21:34:48 SessionStart     source=resume  hook ran in=<scratch>/P  CLAUDE_PROJECT_DIR=<scratch>/P  stdin cwd=<scratch>/P  session=212a4283-80ee-47bf-836e-c1a0f134ca23
+## process cwd of resumed claude: ['<scratch>/P']
+## turn 4 after resume: pwd
+21:35:11 UserPromptSubmit source=-       hook ran in=<scratch>/P  CLAUDE_PROJECT_DIR=<scratch>/P  stdin cwd=<scratch>/P  session=212a4283-80ee-47bf-836e-c1a0f134ca23
+21:35:15 Stop             source=-       hook ran in=<scratch>/P  CLAUDE_PROJECT_DIR=<scratch>/P  stdin cwd=<scratch>/P  session=212a4283-80ee-47bf-836e-c1a0f134ca23
+## exit
+21:35:32 SessionEnd       source=-       hook ran in=<scratch>/P  CLAUDE_PROJECT_DIR=<scratch>/P  stdin cwd=<scratch>/P  session=212a4283-80ee-47bf-836e-c1a0f134ca23

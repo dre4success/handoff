@@ -1,0 +1,69 @@
+# command: bash probes.sh <the build of c57d29e> <an empty scratch folder>
+# date: 2026-11-15 22:37:27 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the Mac of the operator (darwin arm64, go1.25.3, git 2.55.0)
+# commit: c57d29eed941ff63acb91cce953dfc62d421fc94
+
+## N1. the same folder, spelt another way
+a. started in a link to the project                                            not warned
+b. started in the project; the command runs through a link to it               not warned
+c. started in the project, spelt in capitals (this volume ignores case)        not warned
+d. started in the project, spelt with /./ and a last /                         not warned
+e. started in a folder in the project, through the link                        not warned
+
+## N2. repositories
+a. started in a submodule of the project (its git folder is in the project's)  not warned
+   what handoff says when run there: handoff inbox: the common git directory <scratch>/proj/.git/modules/vendor/lib is not a .git directory inside a worktree; handoff needs a non-bare repository
+b. started in a repository of its own inside the project                       WARNED
+c. started in a bare repository                                                not warned
+d. started in a folder whose .git file points nowhere                          not warned
+e. started in a folder in another worktree of the project                      not warned
+f. started in the folder above, which is a repository too                      WARNED
+g. started in a folder that can't be entered                                   not warned
+h. the folder named is a file                                                  not warned
+i. started in the project's .handoff folder                                    not warned
+j. started in the project's .git folder                                        not warned
+k. started in the home folder, no repository                                   WARNED
+
+## N3. transcripts
+a. the first cwd is null; the next line names /somewhere/else (gone)           not warned
+b. the first cwd is a number; the next line names a folder outside             WARNED
+c. an outside cwd inside a message only; the next line names the project       not warned
+d. a transcript that can't be read                                             not warned
+e. a folder in the transcript's place                                          not warned (exit 0)
+f. the start brief (a hook), given the session's transcript                    WARNED
+g. the start brief, given a path named for the session where no file is        not warned
+h. the start brief, given no transcript                                        WARNED
+
+## N4. where the warning stands in what each command prints (first 60 characters of each line)
+-- handoff role implementer
+You are now implementer in proj.
+(an empty line)
+handoff: warning: this session started in <scratch>/out, out
+(an empty line)
+handoff brief: you are implementer in proj. You and reviewer
+(an empty line)
+-- handoff role
+You are implementer in proj.
+handoff: warning: this session started in <scratch>/out, out
+(an empty line)
+-- handoff brief
+handoff: warning: this session started in <scratch>/out, out
+(an empty line)
+handoff brief: you are implementer in proj. You and reviewer
+(an empty line)
+Listening: Run `<the build> wait --for implementer --timeout
+(an empty line)
+-- the whole warning:
+handoff: warning: this session started in <scratch>/out, outside proj. Its hooks run outside proj when it starts or resumes, and may at other times, so it can miss its brief and the work sent to it. Tell the operator, who can start a session in <scratch>/proj and give it the role there.
+
+## N5. with no session
+handoff role: handoff role: handoff role is for a Claude Code or Codex session: the operator tells a session its role, and t
+HANDOFF_ROLE=reviewer handoff brief: 0 warnings
+
+## N6. time, with many folders to look through (handoff role, asked; best of 5, in ms)
+Claude Code, 2 project folders: 17 ms
+Claude Code, 3000 project folders: 95 ms
+Codex, 1008 day folders with 20160 rollouts: 89 ms; warned: 1
+with no session id (nothing looked for): 10 ms for handoff inbox
+
+alerts sent to the scratch file: 0

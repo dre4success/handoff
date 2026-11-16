@@ -1,0 +1,14 @@
+# command: python3 -I agy-probe3.py <scratch>/proj <scratch>/hooks3.log <scratch>/mode <scratch>/screen3.txt (the same hook)
+# date: 2026-11-15 22:03 UTC, Antigravity CLI 1.5.9, model gemini-3.8-flash-low
+# by: Opus 5.5 (implementer), on the operator's Mac; HANDOFF_TEST_NOTIFY set
+## 22:03:32 run A: hold 60
+22:03:42 stop #1 ppid=30637 Stop continuationActive=False executionNum=0 terminationReason=NO_TOOL_CALL fullyIdle=True lastUserInput='Reply with the word ALPHA only.'
+## 22:03:52 Esc
+## 22:03:55 type TYPEDA, Enter
+22:04:04 stop #2 ppid=30637 Stop continuationActive=False executionNum=0 terminationReason=NO_TOOL_CALL fullyIdle=True lastUserInput='Reply with the word TYPEDA only.'
+## 22:05:12 run B: hold 60
+22:05:21 stop #3 ppid=30637 Stop continuationActive=False executionNum=0 terminationReason=NO_TOOL_CALL fullyIdle=True lastUserInput='Reply with the word BRAVO only.'
+## 22:05:32 type TYPEDB, alt+m
+22:06:21 stop #3 held 60 s; continues
+22:06:23 stop #4 ppid=30637 Stop continuationActive=False executionNum=1 terminationReason=NO_TOOL_CALL fullyIdle=True lastUserInput='Reply with the word TYPEDB only.'
+## 22:06:46 seen: ALPHA, TYPEDA, BRAVO

@@ -1,0 +1,31 @@
+# command: python3 -I on-this-mac.py (read-only; it prints counts and sizes only: no path, no id, no text)
+# date: 2026-11-15 22:38:46 UTC
+# by: Fable 5.2 (reviewer), Claude Code 2.1.325, Codex 0.169.0, on the Mac of the operator
+# (run after the probe sessions and their data were removed, so these are the transcripts that were here before)
+
+## Claude Code: ~/.claude/projects/*/<id>.jsonl
+project folders: 27; transcripts: 56
+with no cwd on any line: 0 (their sizes: all under 64 KiB)
+the first line naming a cwd is line: median 5, 99% 20, most 20; over 200: 0
+bytes before it: median 517, 99% 161760, most 161760; over 4 MiB: 0
+type of that line: {'user': 28, 'attachment': 22, 'system': 6}
+transcripts not filed under the folder their first cwd encodes to: 0
+ids with more than one transcript: 0
+transcripts naming more than one cwd: 28
+
+## Codex: ~/.codex/sessions/<y>/<m>/<d>/rollout-<time>-<id>.jsonl
+day folders: 89; rollouts: 8
+type of the first line: {'session_meta': 8}
+first line with no payload.cwd: 0
+first line's size in bytes: median 22331, most 22672; over 64 KiB: 0; over 4 MiB: 0
+file named after the id in its first line: 8 of 8
+session_meta lines per rollout: {1: 8}
+ids with more than one rollout: 0
+rollouts whose turns name a cwd other than the first line's: 0
+
+## Claude Code: a continued-in line (/background) whose two transcripts are both here
+  old 1636 lines, new 1962 lines; lines of the old one in the new one (by uuid): 1220; the new one begins with the old one's first message: True; same first cwd: True
+  old 5015 lines, new 1564 lines; lines of the old one in the new one (by uuid): 956; the new one begins with the old one's first message: False; same first cwd: True
+  old 2608 lines, new 21176 lines; lines of the old one in the new one (by uuid): 423; the new one begins with the old one's first message: False; same first cwd: True
+  old 11409 lines, new 1381 lines; lines of the old one in the new one (by uuid): 1089; the new one begins with the old one's first message: False; same first cwd: True
+pairs: 4

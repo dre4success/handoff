@@ -1,0 +1,14 @@
+# command: go build ./... && go vet ./... && gofmt -l cmd internal && go test -count=1 -race -timeout 30m ./...
+# date: 2026-11-15 22:36:24 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac (go1.25.3), branch h32-antigravity
+## vet: clean
+## gofmt -l: []
+ok  	github.com/dre4success/handoff/cmd/handoff	411.598s
+ok  	github.com/dre4success/handoff/internal/awake	1.310s
+ok  	github.com/dre4success/handoff/internal/gitx	1.212s
+ok  	github.com/dre4success/handoff/internal/notify	1.563s
+ok  	github.com/dre4success/handoff/internal/record	3.625s
+ok  	github.com/dre4success/handoff/internal/status	1.273s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	1.958s
+## go test exit: 0

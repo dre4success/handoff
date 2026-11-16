@@ -9,7 +9,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"sync"
 	"testing"
 	"time"
 
@@ -29,15 +28,12 @@ func cli(t *testing.T) int {
 	return pid
 }
 
-// cliEnds is cli, with a way to end the process sooner.
+// cliEnds is cli, with a way to end the process sooner. The process is in a
+// folder of its own, as Claude Code's is in the folder its run started in
+// (row 103), not in this repository.
 func cliEnds(t *testing.T) (pid int, end func()) {
 	t.Helper()
-	p := exec.Command("sleep", "300")
-	if err := p.Start(); err != nil {
-		t.Fatal(err)
-	}
-	var once sync.Once
-	return p.Process.Pid, func() { once.Do(func() { p.Process.Kill(); p.Wait() }) }
+	return cliAtEnds(t, t.TempDir())
 }
 
 // claude is a Claude Code session's environment; codex a Codex thread's.
@@ -321,7 +317,7 @@ func TestH12AnAgentSessionNeverAnswersForTheOperator(t *testing.T) {
 
 func TestH12RoleRefusals(t *testing.T) {
 	r := newRepo(t)
-	r.refused(t, "", "is for a Claude Code or Codex session", "role", "reviewer")
+	r.refused(t, "", "is for a Claude Code, Codex or Antigravity session", "role", "reviewer")
 	s := codex("t-x")
 	r.refusedIn(t, s, `unknown role "nobody"`, "role", "nobody")
 	r.refusedIn(t, s, "operator is the person who decides", "role", "operator")

@@ -1,0 +1,153 @@
+# command: python3 -I agy-probe.py <scratch>; agy -p … twice (below); python3 -I agy-limit.py <scratch>; python3 -I agy-resume.py <scratch> <conversation>
+# date: 2026-11-15, 22:48 to 23:20 UTC
+# by: Fable 5.2 (reviewer), on the operator's Mac. Throwaway sessions of the Antigravity CLI 1.5.9, model gemini-3.8-flash-low.
+# commit: 82d04ea0aaff11f3b156ec621457dda4baa1b32b, built to a scratch folder; "handoff-base" is the base's build (2967c9a)
+#
+# <proj> is a scratch git repository after `handoff init`. Its .agents/hooks.json is what this build's
+# `handoff settings antigravity` printed, with a shim in the build's place (shim-handoff.txt): the shim notes
+# each run and runs the build, with exec for a hook, so the hook's parent stays Antigravity's process.
+# Each line of a run: the time, the build, the arguments, whether stdin was a terminal, whether
+# ANTIGRAVITY_CONVERSATION_ID was set and how many ANTIGRAVITY_ names in all, whether the parent was the
+# agy process; for a hook, its event, executionNum, the stdin's cwd and the folder it ran in. Under a
+# command: its exit status and the first line it printed. '##' lines are the driver's own.
+# Alerts went to a scratch file. The conversations and their data are deleted, and the scratch folder is
+# out of Antigravity's trusted workspaces again.
+
+====================================================================================================
+A1 (agy-probe.py): role; the operator's commands run by the agent; a request wakes it; Esc; a second request wakes it
+====================================================================================================
+22:48:32 ## Antigravity asks whether to trust the folder; Enter
+22:48:36 ## 1. agy runs; the session is told its role
+22:49:13  handoff      hook brief                         stdin a terminal: no  ANTIGRAVITY_CONVERSATION_ID: yes (of 1 ANTIGRAVITY_ names) parent is agy: True | SessionStart executionNum=- stdin cwd=<proj>, ran in <proj>/.agents
+22:49:16  handoff      role reviewer                      stdin a terminal: yes ANTIGRAVITY_CONVERSATION_ID: yes (of 10 ANTIGRAVITY_ names) parent is agy: True
+            exit 0: You are now reviewer in proj.
+22:49:18  handoff      hook listen                        stdin a terminal: no  ANTIGRAVITY_CONVERSATION_ID: yes (of 1 ANTIGRAVITY_ names) parent is agy: True | Stop executionNum=0 stdin cwd=<proj>, ran in <proj>/.agents
+22:49:22 ## binding: 5a1ef7c7 has reviewer (host is agy) | listeners of this build running: 1
+22:49:22 ## 2. Esc, then the operator's commands, run by the agent
+22:50:59  handoff      fyi hello                          stdin a terminal: yes ANTIGRAVITY_CONVERSATION_ID: yes (of 10 ANTIGRAVITY_ names) parent is agy: True
+            exit 2: handoff fyi: fyi is the operator's, in a terminal of the operator's own, never in an agent's session
+22:51:02  handoff      away gone                          stdin a terminal: yes ANTIGRAVITY_CONVERSATION_ID: yes (of 10 ANTIGRAVITY_ names) parent is agy: True
+            exit 2: handoff away: away is the operator's, in a terminal of the operator's own, never in an agent's session
+22:51:04  handoff      back                               stdin a terminal: yes ANTIGRAVITY_CONVERSATION_ID: yes (of 10 ANTIGRAVITY_ names) parent is agy: True
+            exit 2: handoff back: back is the operator's, in a terminal of the operator's own, never in an agent's session
+22:51:07  handoff      decide W1 --approve                stdin a terminal: yes ANTIGRAVITY_CONVERSATION_ID: yes (of 10 ANTIGRAVITY_ names) parent is agy: True
+            exit 2: handoff decide: decide is the operator's, in a terminal of the operator's own or the pop-up, never in an agent's session
+22:51:09  handoff                                         stdin a terminal: yes ANTIGRAVITY_CONVERSATION_ID: yes (of 10 ANTIGRAVITY_ names) parent is agy: True
+            exit 0: inbox for reviewer
+22:51:12  handoff      note --as operator --to implemente stdin a terminal: yes ANTIGRAVITY_CONVERSATION_ID: yes (of 10 ANTIGRAVITY_ names) parent is agy: True
+            exit 2: handoff note: --as operator, but this session's role is reviewer (handoff role); refused
+22:51:15  handoff-base fyi hello                          stdin a terminal: yes ANTIGRAVITY_CONVERSATION_ID: yes (of 10 ANTIGRAVITY_ names) parent is agy: True
+            exit 0: told reviewer (#1)
+22:51:23  handoff      hook listen                        stdin a terminal: no  ANTIGRAVITY_CONVERSATION_ID: yes (of 1 ANTIGRAVITY_ names) parent is agy: True | Stop executionNum=0 stdin cwd=<proj>, ran in <proj>/.agents
+22:51:26  handoff      show 1                             stdin a terminal: yes ANTIGRAVITY_CONVERSATION_ID: yes (of 10 ANTIGRAVITY_ names) parent is agy: True
+            exit 0: #1 fyi
+22:51:28  handoff      hook listen                        stdin a terminal: no  ANTIGRAVITY_CONVERSATION_ID: yes (of 1 ANTIGRAVITY_ names) parent is agy: True | Stop executionNum=1 stdin cwd=<proj>, ran in <proj>/.agents
+22:51:31 ## the record's entries now: #1 fyi operator>reviewer
+22:52:31 ## did not see: a Stop hook after the fyi was delivered
+22:52:35 ## 3. a request posted from outside: posted #2 request W1 implementer → reviewer: probe one @ b5a314237ec6
+22:52:37  handoff      show 2                             stdin a terminal: yes ANTIGRAVITY_CONVERSATION_ID: yes (of 10 ANTIGRAVITY_ names) parent is agy: True
+            exit 0: #2 request W1
+22:52:40  handoff      hook listen                        stdin a terminal: no  ANTIGRAVITY_CONVERSATION_ID: yes (of 1 ANTIGRAVITY_ names) parent is agy: True | Stop executionNum=2 stdin cwd=<proj>, ran in <proj>/.agents
+22:52:44 ## binding: 5a1ef7c7 has reviewer (host is agy) | listeners running: 1
+22:52:44 ## 4. Esc while it listens
+22:52:47 ## listeners before Esc: 1; 3 s after: 0 (the same process still there: False)
+22:52:52  handoff      hook listen                        stdin a terminal: no  ANTIGRAVITY_CONVERSATION_ID: yes (of 1 ANTIGRAVITY_ names) parent is agy: True | Stop executionNum=0 stdin cwd=<proj>, ran in <proj>/.agents
+22:52:55 ## HELLO on the screen: True | listeners running: 1 (a new process: True)
+22:52:55 ## a second request: posted #3 request W2 implementer → reviewer: probe two @ b5a314237ec6
+22:52:58  handoff      show 3                             stdin a terminal: yes ANTIGRAVITY_CONVERSATION_ID: yes (of 10 ANTIGRAVITY_ names) parent is agy: True
+            exit 0: #3 request W2
+22:53:00  handoff      hook listen                        stdin a terminal: no  ANTIGRAVITY_CONVERSATION_ID: yes (of 1 ANTIGRAVITY_ names) parent is agy: True | Stop executionNum=1 stdin cwd=<proj>, ran in <proj>/.agents
+22:53:04 ## binding: 5a1ef7c7 has reviewer (host is agy) | listeners running: 1
+22:53:13 ## agy closed; listeners running: 0
+22:53:13 ## done
+
+====================================================================================================
+A2 (print mode): agy -p "Run this exact shell command and reply with its output only: python3 <scratch>/envcheck.py ; handoff fyi hello" --model gemini-3.8-flash-low --dangerously-skip-permissions, then the same with --sandbox; agy's own stdin was /dev/null
+====================================================================================================
+envcheck.py prints whether stdin and stdout are terminals, whether ANTIGRAVITY_CONVERSATION_ID is set, and how many ANTIGRAVITY_ names are.
+## agy -p:           the agent's reply: STDIN_TTY=True STDOUT_TTY=True CONVERSATION_ID=True ANTIGRAVITY_NAMES=10
+## agy -p --sandbox: the agent's reply: STDIN_TTY=True STDOUT_TTY=True CONVERSATION_ID=True ANTIGRAVITY_NAMES=10
+## the runs of handoff in those two:
+22:53:40  handoff  hook brief   stdin a terminal: no  ANTIGRAVITY_ names: 1  SessionStart
+22:53:43  handoff  fyi hello    stdin a terminal: yes ANTIGRAVITY_ names: 10  | exit 2: handoff fyi: fyi is the operator's, in a terminal of the operator's own, never in an agent's session
+22:53:46  handoff  hook listen  stdin a terminal: no  ANTIGRAVITY_ names: 1  Stop
+22:53:48  handoff  hook brief   stdin a terminal: no  ANTIGRAVITY_ names: 1  SessionStart
+22:53:52  handoff  fyi hello    stdin a terminal: yes ANTIGRAVITY_ names: 10  | exit 2: handoff fyi: fyi is the operator's, in a terminal of the operator's own, never in an agent's session
+22:53:56  handoff  hook listen  stdin a terminal: no  ANTIGRAVITY_ names: 1  Stop
+
+====================================================================================================
+A3 (agy-limit.py): ten notes wake the session ten times; then the limit
+====================================================================================================
+23:06:24 ## 1. the session is told its role
+23:06:59  handoff      hook brief                         stdin a terminal: no  ANTIGRAVITY_CONVERSATION_ID: yes (of 1 ANTIGRAVITY_ names) parent is agy: True | SessionStart executionNum=- stdin cwd=<proj>, ran in <proj>/.agents
+23:07:02  handoff      role reviewer                      stdin a terminal: yes ANTIGRAVITY_CONVERSATION_ID: yes (of 10 ANTIGRAVITY_ names) parent is agy: True
+            exit 0: You are now reviewer in proj.
+23:07:04  handoff      hook listen                        stdin a terminal: no  ANTIGRAVITY_CONVERSATION_ID: yes (of 1 ANTIGRAVITY_ names) parent is agy: True | Stop executionNum=0 stdin cwd=<proj>, ran in <proj>/.agents
+23:07:07 ## 2. ten notes, each posted when the session listens again
+23:07:10  handoff      show 5                             stdin a terminal: yes ANTIGRAVITY_CONVERSATION_ID: yes (of 10 ANTIGRAVITY_ names) parent is agy: True
+            exit 0: #5 note W1
+23:07:12  handoff      hook listen                        stdin a terminal: no  ANTIGRAVITY_CONVERSATION_ID: yes (of 1 ANTIGRAVITY_ names) parent is agy: True | Stop executionNum=1 stdin cwd=<proj>, ran in <proj>/.agents
+23:07:13 ## note 1: posted #5 note W1 implementer → reviewer: note 1 | the Stop hook after it has executionNum 1 | listeners running: 1
+23:07:16  handoff      show 6                             stdin a terminal: yes ANTIGRAVITY_CONVERSATION_ID: yes (of 10 ANTIGRAVITY_ names) parent is agy: True
+            exit 0: #6 note W1
+23:07:18  handoff      hook listen                        stdin a terminal: no  ANTIGRAVITY_CONVERSATION_ID: yes (of 1 ANTIGRAVITY_ names) parent is agy: True | Stop executionNum=2 stdin cwd=<proj>, ran in <proj>/.agents
+23:07:20 ## note 2: posted #6 note W1 implementer → reviewer: note 2 | the Stop hook after it has executionNum 2 | listeners running: 1
+23:07:24  handoff      show 7                             stdin a terminal: yes ANTIGRAVITY_CONVERSATION_ID: yes (of 10 ANTIGRAVITY_ names) parent is agy: True
+            exit 0: #7 note W1
+23:07:27  handoff      hook listen                        stdin a terminal: no  ANTIGRAVITY_CONVERSATION_ID: yes (of 1 ANTIGRAVITY_ names) parent is agy: True | Stop executionNum=3 stdin cwd=<proj>, ran in <proj>/.agents
+23:07:29 ## note 3: posted #7 note W1 implementer → reviewer: note 3 | the Stop hook after it has executionNum 3 | listeners running: 1
+23:07:32  handoff      show 8                             stdin a terminal: yes ANTIGRAVITY_CONVERSATION_ID: yes (of 10 ANTIGRAVITY_ names) parent is agy: True
+            exit 0: #8 note W1
+23:07:33  handoff      hook listen                        stdin a terminal: no  ANTIGRAVITY_CONVERSATION_ID: yes (of 1 ANTIGRAVITY_ names) parent is agy: True | Stop executionNum=4 stdin cwd=<proj>, ran in <proj>/.agents
+23:07:35 ## note 4: posted #8 note W1 implementer → reviewer: note 4 | the Stop hook after it has executionNum 4 | listeners running: 1
+23:07:38  handoff      show 9                             stdin a terminal: yes ANTIGRAVITY_CONVERSATION_ID: yes (of 10 ANTIGRAVITY_ names) parent is agy: True
+            exit 0: #9 note W1
+23:07:40  handoff      hook listen                        stdin a terminal: no  ANTIGRAVITY_CONVERSATION_ID: yes (of 1 ANTIGRAVITY_ names) parent is agy: True | Stop executionNum=5 stdin cwd=<proj>, ran in <proj>/.agents
+23:07:42 ## note 5: posted #9 note W1 implementer → reviewer: note 5 | the Stop hook after it has executionNum 5 | listeners running: 1
+23:07:45  handoff      show 10                            stdin a terminal: yes ANTIGRAVITY_CONVERSATION_ID: yes (of 10 ANTIGRAVITY_ names) parent is agy: True
+            exit 0: #10 note W1
+23:07:47  handoff      hook listen                        stdin a terminal: no  ANTIGRAVITY_CONVERSATION_ID: yes (of 1 ANTIGRAVITY_ names) parent is agy: True | Stop executionNum=6 stdin cwd=<proj>, ran in <proj>/.agents
+23:07:50 ## note 6: posted #10 note W1 implementer → reviewer: note 6 | the Stop hook after it has executionNum 6 | listeners running: 1
+23:07:53  handoff      show 11                            stdin a terminal: yes ANTIGRAVITY_CONVERSATION_ID: yes (of 10 ANTIGRAVITY_ names) parent is agy: True
+            exit 0: #11 note W1
+23:07:55  handoff      hook listen                        stdin a terminal: no  ANTIGRAVITY_CONVERSATION_ID: yes (of 1 ANTIGRAVITY_ names) parent is agy: True | Stop executionNum=7 stdin cwd=<proj>, ran in <proj>/.agents
+23:07:57 ## note 7: posted #11 note W1 implementer → reviewer: note 7 | the Stop hook after it has executionNum 7 | listeners running: 1
+23:08:00  handoff      show 12                            stdin a terminal: yes ANTIGRAVITY_CONVERSATION_ID: yes (of 10 ANTIGRAVITY_ names) parent is agy: True
+            exit 0: #12 note W1
+23:08:03  handoff      hook listen                        stdin a terminal: no  ANTIGRAVITY_CONVERSATION_ID: yes (of 1 ANTIGRAVITY_ names) parent is agy: True | Stop executionNum=8 stdin cwd=<proj>, ran in <proj>/.agents
+23:08:05 ## note 8: posted #12 note W1 implementer → reviewer: note 8 | the Stop hook after it has executionNum 8 | listeners running: 1
+23:08:10  handoff      show 13                            stdin a terminal: yes ANTIGRAVITY_CONVERSATION_ID: yes (of 10 ANTIGRAVITY_ names) parent is agy: True
+            exit 0: #13 note W1
+23:08:14  handoff      hook listen                        stdin a terminal: no  ANTIGRAVITY_CONVERSATION_ID: yes (of 1 ANTIGRAVITY_ names) parent is agy: True | Stop executionNum=9 stdin cwd=<proj>, ran in <proj>/.agents
+23:08:15 ## note 9: posted #13 note W1 implementer → reviewer: note 9 | the Stop hook after it has executionNum 9 | listeners running: 1
+23:08:21  handoff      show 14                            stdin a terminal: yes ANTIGRAVITY_CONVERSATION_ID: yes (of 10 ANTIGRAVITY_ names) parent is agy: True
+            exit 0: #14 note W1
+23:08:24  handoff      hook listen                        stdin a terminal: no  ANTIGRAVITY_CONVERSATION_ID: yes (of 1 ANTIGRAVITY_ names) parent is agy: True | Stop executionNum=10 stdin cwd=<proj>, ran in <proj>/.agents
+23:08:26 ## note 10: posted #14 note W1 implementer → reviewer: note 10 | the Stop hook after it has executionNum 10 | listeners running: 0
+23:08:29 ## 3. at the limit: listeners running: 0 | binding: 36445fe5 has reviewer (host is agy)
+23:08:29 ## the operator was told (to the scratch file): proj: handoff can't wake reviewer's Antigravity session for new work until you type in it: Antigravity lets hooks continue a turn 10 times in a row.
+23:08:29 ## 4. an eleventh note; all the sender is told: posted #15 note W1 implementer → reviewer: note 11
+23:08:54 ## 25 s later: runs of handoff by the session since: 0 | listeners running: 0 | told since: 0
+23:08:54 ## 5. a message is typed
+23:09:00  handoff      hook listen                        stdin a terminal: no  ANTIGRAVITY_CONVERSATION_ID: yes (of 1 ANTIGRAVITY_ names) parent is agy: True | Stop executionNum=0 stdin cwd=<proj>, ran in <proj>/.agents
+23:09:05  handoff      show 15                            stdin a terminal: yes ANTIGRAVITY_CONVERSATION_ID: yes (of 10 ANTIGRAVITY_ names) parent is agy: True
+            exit 0: #15 note W1
+23:09:10  handoff      hook listen                        stdin a terminal: no  ANTIGRAVITY_CONVERSATION_ID: yes (of 1 ANTIGRAVITY_ names) parent is agy: True | Stop executionNum=1 stdin cwd=<proj>, ran in <proj>/.agents
+23:09:14 ## listeners running: 1 | told in all: 1
+23:09:23 ## agy closed; listeners running: 0
+23:09:23 ## done
+
+====================================================================================================
+A4 (agy-resume.py): A3's conversation opened again with nothing typed; then in print mode
+====================================================================================================
+23:17:37 ## 1. agy --conversation <id>, nothing typed
+23:17:57 ## 20 s on: runs of handoff by its hooks: 0 | listeners running: 0
+23:17:57 ## a note to reviewer; all the sender is told: posted #16 note W1 implementer → reviewer: after reopening | handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+23:18:12 ## 15 s later: runs of handoff: 0 | listeners running: 0
+23:18:17 ## 2. agy -p --conversation <id> "Reply with the word READY only.", given 60 s
+23:19:17 ## still running after 60 s | runs of handoff by its hooks: 3 | listeners running: 1
+23:19:17 ## a note to reviewer: posted #17 note W1 implementer → reviewer: to the print run
+23:20:02 ## still running 45 s after the note; killed
+23:20:04 ## listeners running: 0
+23:20:04 ## done
+

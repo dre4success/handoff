@@ -48,12 +48,18 @@ type session struct {
 }
 
 // callerSession is the session a command runs in, from its environment.
+// Antigravity gives every command its agent runs, and every hook, the
+// conversation's id (row 102). Its commands run with a terminal on stdin, so
+// without the id, decide would take an Antigravity agent for the operator.
 func callerSession() session {
 	if id := os.Getenv("CLAUDE_CODE_SESSION_ID"); id != "" {
 		pid, _ := strconv.Atoi(os.Getenv("CLAUDE_PID"))
 		return session{ID: id, PID: pid}
 	}
-	return session{ID: os.Getenv("CODEX_THREAD_ID")}
+	if id := os.Getenv("CODEX_THREAD_ID"); id != "" {
+		return session{ID: id}
+	}
+	return session{ID: os.Getenv("ANTIGRAVITY_CONVERSATION_ID")}
 }
 
 // hookInput is what both CLIs write to a hook's stdin, as far as handoff
@@ -66,6 +72,15 @@ type hookInput struct {
 	Message string `json:"message"`
 	// Transcript is the session's transcript, which Claude Code gives every hook.
 	Transcript string `json:"transcript_path"`
+
+	// Antigravity names the session and the event otherwise, and gives the
+	// folder the agent is in, and how many times in a row a hook has continued
+	// its turn (row 102).
+	Conversation  string `json:"conversationId"`
+	EventName     string `json:"hookEventName"`
+	Cwd           string `json:"cwd"`
+	Continuations int    `json:"executionNum"`
+	agy           bool   // the input is Antigravity's
 }
 
 // hookSession is the session a hook runs for: the id on its stdin; Claude
@@ -505,7 +520,7 @@ func (a *app) cmdRole(args []string) (int, error) {
 	}
 	s := callerSession()
 	if s.ID == "" {
-		return 0, errors.New("handoff role is for a Claude Code or Codex session: the operator tells a session its role, and the session runs it")
+		return 0, errors.New("handoff role is for a Claude Code, Codex or Antigravity session: the operator tells a session its role, and the session runs it")
 	}
 	project := filepath.Base(filepath.Dir(a.dir))
 	if len(pos) == 0 {
@@ -514,6 +529,7 @@ func (a *app) cmdRole(args []string) (int, error) {
 			return 0, err
 		}
 		fmt.Fprintf(a.stdout, "You are %s in %s.\n", role, project)
+		a.warnOutside(a.stdout, s, "")
 		return exitOK, nil
 	}
 	name := pos[0]
@@ -535,5 +551,6 @@ func (a *app) cmdRole(args []string) (int, error) {
 		fmt.Fprintf(a.stdout, " Another session had %s; it has no role now.", name)
 	}
 	fmt.Fprint(a.stdout, "\n\n")
+	a.warnOutside(a.stdout, s, "")
 	return exitOK, a.writeBrief(a.stdout, name, listenMaybe)
 }

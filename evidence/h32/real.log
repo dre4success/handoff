@@ -1,0 +1,32 @@
+# command: python3 -I agy-real.py <scratch>/real <scratch>/hb <scratch>/real.log <scratch>/screen-real.txt; <scratch>/real/.agents/hooks.json is what this branch's `handoff settings antigravity` printed, with this branch's build as <scratch>/hb
+# date: 2026-11-15 22:15 UTC, Antigravity CLI 1.5.9, model gemini-3.8-flash-low
+# by: Opus 5.5 (implementer), on the operator's Mac; HANDOFF_TEST_NOTIFY set
+## 22:15:53 agy pid 55219; turn 1: take the role
+## 22:18:24 brief at the first message: not seen
+## 22:18:24 bindings: ['reviewer 24a0d643 host=55219']
+## 22:18:24 post a request to the reviewer from outside: ['posted #1 request W1 implementer → reviewer: probe one @ 885de6d8d771']
+## 22:19:09 woken with it: False; GOT: True
+## 22:19:09 bindings: ['reviewer 24a0d643 host=55219']
+## 22:19:09 while it listens: Esc, then a message
+## 22:19:48 HELLO answered: True
+## 22:19:48 close; resume conversation 24a0d643
+## 22:20:06 resumed: agy pid 59407; a message so its turn ends once
+## 22:20:43 bindings: ['reviewer 24a0d643 host=59407']
+## 22:20:43 post a second request: ['posted #2 request W2 implementer → reviewer: probe two @ 885de6d8d771']
+## 22:21:28 woken with it: False; GOT: True
+## 22:21:28 operator told: nothing
+## note: the second 'GOT: True' matched text already on the screen; the probe stopped the session while it answered. The conversation's own transcript, below, shows both answers.
+## the conversation's transcript (~/.gemini/antigravity-cli/brain/<id>/.system_generated/logs/transcript_full.jsonl), in order, the steps naming handoff's words:
+USER_INPUT: GOT
+SYSTEM_MESSAGE: has no role in it
+GENERIC: handoff brief: you are reviewer
+SYSTEM_MESSAGE: handoff: new for reviewer
+PLANNER_RESPONSE: show 1
+PLANNER_RESPONSE: GOT
+USER_INPUT: HELLO
+PLANNER_RESPONSE: HELLO
+USER_INPUT: READY
+PLANNER_RESPONSE: READY
+SYSTEM_MESSAGE: handoff: new for reviewer
+PLANNER_RESPONSE: show 2
+PLANNER_RESPONSE: GOT

@@ -1,0 +1,15 @@
+# command: python3 -I evidence/h31/bg-probe.py <scratch>/P <scratch>/hooks-bg.log, with <scratch>/P/.claude/settings.local.json running dump2.sh at SessionStart, UserPromptSubmit, Stop and SessionEnd
+# date: 2026-11-15 22:42 UTC, Claude Code 2.1.325, model haiku
+# by: Opus 5.5 (implementer), on the operator's Mac. A session begun in <scratch>/P runs cd proj, then a 20 s sleep, and is sent to the background. Each hook line: time, event, source, session, CLAUDE_PID, the folder the hook ran in, CLAUDE_PROJECT_DIR; the probe's lines give each process's own folder, from lsof
+22:42:00 SessionStart     source=startup session=83c08b99 CLAUDE_PID=17110 ran in=<scratch>/P CLAUDE_PROJECT_DIR=<scratch>/P
+## turn 1: cd proj
+22:42:19 UserPromptSubmit source=-       session=83c08b99 CLAUDE_PID=17110 ran in=<scratch>/P CLAUDE_PROJECT_DIR=<scratch>/P
+22:42:23 Stop             source=-       session=83c08b99 CLAUDE_PID=17110 ran in=<scratch>/P/proj CLAUDE_PROJECT_DIR=<scratch>/P
+## foreground claude pid 17110, its folder ['<scratch>/P']
+## turn 2: sleep 20, then /background
+22:42:59 UserPromptSubmit source=-       session=83c08b99 CLAUDE_PID=17110 ran in=<scratch>/P/proj CLAUDE_PROJECT_DIR=<scratch>/P
+22:43:07 SessionEnd       source=-       session=83c08b99 CLAUDE_PID=17110 ran in=<scratch>/P/proj CLAUDE_PROJECT_DIR=<scratch>/P
+22:43:08 SessionStart     source=fork    session=4f2162df CLAUDE_PID=21253 ran in=<scratch>/P CLAUDE_PROJECT_DIR=<scratch>/P
+## foreground ended: True
+22:43:35 Stop             source=-       session=4f2162df CLAUDE_PID=21253 ran in=<scratch>/P CLAUDE_PROJECT_DIR=<scratch>/P
+## background worker pid 21253, its folder ['<scratch>/P']

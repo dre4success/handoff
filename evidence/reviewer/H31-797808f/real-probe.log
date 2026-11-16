@@ -1,0 +1,153 @@
+# command: python3 -I real-probe.py <scratch> <mode>, once for each mode below; bash codex-probe.sh <scratch>
+# date: 2026-11-15, 23:25 to 23:42 UTC
+# by: Fable 5.2 (reviewer), on the operator's Mac. Throwaway sessions: Claude Code 2.1.325 (model haiku), Codex 0.169.0.
+# commit: 797808f943440139cd8da86683c3e044b32c7f70, built to a scratch folder
+#
+# The same set-up as round 1's (evidence/reviewer/H31-c57d29e/real-probe.log): <P> is a scratch folder in no
+# git repository, <P/proj> a repository in it after `handoff init`; a shim first on the sessions' PATH notes
+# each run of handoff by a hook or the agent and runs this build. Each line: the time, what ran, the folder
+# it ran in, CLAUDE_PROJECT_DIR, and for a hook its event (source), session, the stdin's cwd, and the folder
+# its transcript_path is in. Under a brief or a command: the first line it printed, and whether it warned.
+# A first try of R2 missed /compact (the driver's typing); this is the second. A first try of X1 ran Codex
+# from this session's shell, whose CLAUDE_ variables its hooks inherited; this one takes them out.
+# Alerts went to a scratch file; none were written. The sessions' data and the two rollouts are deleted.
+
+====================================================================================================
+R4 (inside): started in P; cd proj; handoff role implementer; closed; resumed with claude --resume <id> from P/proj; handoff role; closed; resumed from P again
+====================================================================================================
+23:25:38 ## started: claude  in <P>
+23:25:44 ## the folder-trust question is shown; answering yes
+23:25:47 ## session bf14fb01-4022-4e4a-a136-7195247d67fc
+23:25:45  handoff hook listen            ran in <P>       CLAUDE_PROJECT_DIR=<P>  SessionStart(startup) session=bf14fb01 stdin cwd=<P> transcript in <P, as a folder name>
+23:25:45  handoff hook brief             ran in <P>       CLAUDE_PROJECT_DIR=<P>  SessionStart(startup) session=bf14fb01 stdin cwd=<P> transcript in <P, as a folder name>
+            printed: (nothing)
+            no warning
+23:25:56  handoff hook listen            ran in <P/proj>  CLAUDE_PROJECT_DIR=<P>  Stop session=bf14fb01 stdin cwd=<P/proj> transcript in <P, as a folder name>
+23:26:17  handoff role implementer       ran in <P/proj>  CLAUDE_PROJECT_DIR=-   
+            printed: You are now implementer in proj.
+            WARNED: handoff: warning: this session started in <P>, outside proj. Its hooks run outside proj when it starts or resumes, and after /clear or /background, so it can miss its brief and the work sent to it. Tell the operator. They can close this session and resume it from proj (`cd <P/proj> && claude --resume bf14fb01-4022-4e4a-a136-7195247d67fc`), which keeps this conversation, or start a session there and give it the role.
+23:26:21  handoff hook listen            ran in <P/proj>  CLAUDE_PROJECT_DIR=<P>  Stop session=bf14fb01 stdin cwd=<P/proj> transcript in <P, as a folder name>
+23:26:23 ## what the session said:
+23:26:23 ## binding: bf14fb01 has implementer (pid running); 01a1e14e has reviewer-2 (pid ended)
+23:26:23 ## transcript of bf14fb01 in the folder <P, as a folder name>: 62 lines; the first cwd is on line 6: <P>; the folders it names, in order: <P> > <P/proj>
+23:26:25 ## the session's process has ended
+23:26:26 ## started: claude --resume bf14fb01-4022-4e4a-a136-7195247d67fc in <P/proj>
+23:26:32 ## the folder-trust question is shown; answering yes
+23:26:33  handoff hook brief             ran in <P/proj>  CLAUDE_PROJECT_DIR=<P/proj> SessionStart(resume) session=bf14fb01 stdin cwd=<P/proj> transcript in <P/proj, as a folder name>
+            printed: handoff brief: you are implementer in proj. You and reviewer, reviewer-2 hand work to each other through handoff. The operator decides.
+            no warning
+23:26:33  handoff hook listen            ran in <P/proj>  CLAUDE_PROJECT_DIR=<P/proj> SessionStart(resume) session=bf14fb01 stdin cwd=<P/proj> transcript in <P/proj, as a folder name>
+23:26:39 ## resumed from P/proj: the session is bf14fb01-4022-4e4a-a136-7195247d67fc (the same id: True)
+23:26:39 ## transcript of bf14fb01 in the folder <P, as a folder name>: 72 lines; the first cwd is on line 6: <P>; the folders it names, in order: <P> > <P/proj>
+23:26:56  handoff role                   ran in <P/proj>  CLAUDE_PROJECT_DIR=-   
+            printed: You are implementer in proj.
+            no warning
+23:26:57  handoff hook listen            ran in <P/proj>  CLAUDE_PROJECT_DIR=<P/proj> Stop session=bf14fb01 stdin cwd=<P/proj> transcript in <P, as a folder name>
+23:26:59 ## transcript of bf14fb01 in the folder <P, as a folder name>: 94 lines; the first cwd is on line 6: <P>; the folders it names, in order: <P> > <P/proj>
+23:26:59 ## binding: bf14fb01 has implementer (pid running); 01a1e14e has reviewer-2 (pid ended)
+23:27:01 ## the session's process has ended
+23:27:03 ## started: claude --resume bf14fb01-4022-4e4a-a136-7195247d67fc in <P>
+23:27:03  handoff hook listen            ran in <P>       CLAUDE_PROJECT_DIR=<P>  SessionStart(resume) session=bf14fb01 stdin cwd=<P> transcript in <P, as a folder name>
+23:27:03  handoff hook brief             ran in <P>       CLAUDE_PROJECT_DIR=<P>  SessionStart(resume) session=bf14fb01 stdin cwd=<P> transcript in <P, as a folder name>
+            printed: (nothing)
+            no warning
+23:27:12 ## transcript of bf14fb01 in the folder <P, as a folder name>: 98 lines; the first cwd is on line 6: <P>; the folders it names, in order: <P> > <P/proj>
+23:27:13 ## the session's process has ended
+23:27:15 ## done
+
+====================================================================================================
+R6 (born-inside): started in P/proj; handoff role implementer; closed; resumed with claude --resume <id> from P; cd proj; handoff role
+====================================================================================================
+23:27:28 ## started: claude  in <P/proj>
+23:27:34 ## session e013151d-fcfe-459d-b35e-7b4e25506292
+23:27:29  handoff hook listen            ran in <P/proj>  CLAUDE_PROJECT_DIR=<P/proj> SessionStart(startup) session=e013151d stdin cwd=<P/proj> transcript in <P/proj, as a folder name>
+23:27:29  handoff hook brief             ran in <P/proj>  CLAUDE_PROJECT_DIR=<P/proj> SessionStart(startup) session=e013151d stdin cwd=<P/proj> transcript in <P/proj, as a folder name>
+            printed: handoff: proj hands work between agents through handoff, and this session has no role in it. When the operator gives you one, run `<the build>
+            no warning
+23:27:51  handoff role implementer       ran in <P/proj>  CLAUDE_PROJECT_DIR=-   
+            printed: You are now implementer in proj.
+            no warning
+23:27:53  handoff hook listen            ran in <P/proj>  CLAUDE_PROJECT_DIR=<P/proj> Stop session=e013151d stdin cwd=<P/proj> transcript in <P/proj, as a folder name>
+23:27:55 ## binding: e013151d has implementer (pid running); 01a1e14e has reviewer-2 (pid ended)
+23:27:55 ## transcript of e013151d in the folder <P/proj, as a folder name>: 47 lines; the first cwd is on line 6: <P/proj>; the folders it names, in order: <P/proj>
+23:27:57 ## the session's process has ended
+23:27:58 ## started: claude --resume e013151d-fcfe-459d-b35e-7b4e25506292 in <P>
+23:27:59  handoff hook brief             ran in <P>       CLAUDE_PROJECT_DIR=<P>  SessionStart(resume) session=e013151d stdin cwd=<P> transcript in <P, as a folder name>
+            printed: (nothing)
+            no warning
+23:27:59  handoff hook listen            ran in <P>       CLAUDE_PROJECT_DIR=<P>  SessionStart(resume) session=e013151d stdin cwd=<P> transcript in <P, as a folder name>
+23:28:07 ## resumed from P: the session is e013151d-fcfe-459d-b35e-7b4e25506292 (the same id: True) | binding: e013151d has implementer (pid ended); 01a1e14e has reviewer-2 (pid ended)
+23:28:16  handoff hook listen            ran in <P/proj>  CLAUDE_PROJECT_DIR=<P>  Stop session=e013151d stdin cwd=<P/proj> transcript in <P/proj, as a folder name>
+23:28:33  handoff role                   ran in <P/proj>  CLAUDE_PROJECT_DIR=-   
+            printed: You are implementer in proj.
+            WARNED: handoff: warning: this session started in <P>, outside proj. Its hooks run outside proj when it starts or resumes, and after /clear or /background, so it can miss its brief and the work sent to it. Tell the operator. They can close this session and resume it from proj (`cd <P/proj> && claude --resume e013151d-fcfe-459d-b35e-7b4e25506292`), which keeps this conversation, or start a session there and give it the role.
+23:28:37  handoff hook listen            ran in <P/proj>  CLAUDE_PROJECT_DIR=<P>  Stop session=e013151d stdin cwd=<P/proj> transcript in <P/proj, as a folder name>
+23:28:39 ## transcript of e013151d in the folder <P/proj, as a folder name>: 91 lines; the first cwd is on line 6: <P/proj>; the folders it names, in order: <P/proj> > <P> > <P/proj>
+23:28:39 ## binding: e013151d has implementer (pid running); 01a1e14e has reviewer-2 (pid ended)
+23:28:41 ## the session's process has ended
+23:28:43 ## done
+
+====================================================================================================
+R2 (clear): started in P; cd proj; handoff role implementer; /compact; /clear; the new id runs handoff role; closed; the new id resumed from P
+====================================================================================================
+23:39:58 ## started: claude  in <P>
+23:40:04 ## session a8202f83-7645-46a1-be19-2b9bdaeac17f
+23:39:58  handoff hook listen            ran in <P>       CLAUDE_PROJECT_DIR=<P>  SessionStart(startup) session=a8202f83 stdin cwd=<P> transcript in <P, as a folder name>
+23:39:58  handoff hook brief             ran in <P>       CLAUDE_PROJECT_DIR=<P>  SessionStart(startup) session=a8202f83 stdin cwd=<P> transcript in <P, as a folder name>
+            printed: (nothing)
+            no warning
+23:40:13  handoff hook listen            ran in <P/proj>  CLAUDE_PROJECT_DIR=<P>  Stop session=a8202f83 stdin cwd=<P/proj> transcript in <P, as a folder name>
+23:40:35  handoff role implementer       ran in <P/proj>  CLAUDE_PROJECT_DIR=-   
+            printed: You are now implementer in proj.
+            WARNED: handoff: warning: this session started in <P>, outside proj. Its hooks run outside proj when it starts or resumes, and after /clear or /background, so it can miss its brief and the work sent to it. Tell the operator. They can close this session and resume it from proj (`cd <P/proj> && claude --resume a8202f83-7645-46a1-be19-2b9bdaeac17f`), which keeps this conversation, or start a session there and give it the role.
+23:40:39  handoff hook listen            ran in <P/proj>  CLAUDE_PROJECT_DIR=<P>  Stop session=a8202f83 stdin cwd=<P/proj> transcript in <P, as a folder name>
+23:40:41 ## what the session said:
+23:40:41 ## binding: a8202f83 has implementer (pid running)
+23:40:41 ## transcript of a8202f83 in the folder <P, as a folder name>: 62 lines; the first cwd is on line 6: <P>; the folders it names, in order: <P> > <P/proj>
+23:40:57  handoff hook listen            ran in <P/proj>  CLAUDE_PROJECT_DIR=<P>  SessionStart(compact) session=a8202f83 stdin cwd=<P/proj> transcript in <P, as a folder name>
+23:40:57  handoff hook brief             ran in <P/proj>  CLAUDE_PROJECT_DIR=<P>  SessionStart(compact) session=a8202f83 stdin cwd=<P/proj> transcript in <P, as a folder name>
+            printed: handoff: warning: this session started in <P>, outside proj. Its hooks run outside proj when it starts or resumes, and after /clear or /background, so
+            WARNED: handoff: warning: this session started in <P>, outside proj. Its hooks run outside proj when it starts or resumes, and after /clear or /background, so it can miss its brief and the work sent to it. Tell the operator. They can close this session and resume it from proj (`cd <P/proj> && claude --resume a8202f83-7645-46a1-be19-2b9bdaeac17f`), which keeps this conversation, or start a session there and give it the role.
+23:41:01  handoff hook brief             ran in <P>       CLAUDE_PROJECT_DIR=<P>  SessionStart(clear) session=adc11d9e stdin cwd=<P> transcript in <P, as a folder name>
+            printed: (nothing)
+            no warning
+23:41:01  handoff hook listen            ran in <P>       CLAUDE_PROJECT_DIR=<P>  SessionStart(clear) session=adc11d9e stdin cwd=<P> transcript in <P, as a folder name>
+23:41:05 ## after /clear the session is adc11d9e-eb02-4e46-8bc7-0b6488fcd70a | binding: a8202f83 has implementer (pid running)
+23:41:05 ## transcript of adc11d9e in the folder <P, as a folder name>: 6 lines; the first cwd is on line 4: <P>; the folders it names, in order: <P>
+23:41:20  handoff role                   ran in <P>       CLAUDE_PROJECT_DIR=-   
+            printed: (nothing)
+            no warning
+23:41:23  handoff hook listen            ran in <P>       CLAUDE_PROJECT_DIR=<P>  Stop session=adc11d9e stdin cwd=<P> transcript in <P, as a folder name>
+23:41:25 ## transcript of adc11d9e in the folder <P, as a folder name>: 49 lines; the first cwd is on line 4: <P>; the folders it names, in order: <P>
+23:41:27 ## the session's process has ended
+23:41:29 ## started: claude --resume adc11d9e-eb02-4e46-8bc7-0b6488fcd70a in <P>
+23:41:29  handoff hook listen            ran in <P>       CLAUDE_PROJECT_DIR=<P>  SessionStart(resume) session=adc11d9e stdin cwd=<P> transcript in <P, as a folder name>
+23:41:29  handoff hook brief             ran in <P>       CLAUDE_PROJECT_DIR=<P>  SessionStart(resume) session=adc11d9e stdin cwd=<P> transcript in <P, as a folder name>
+            printed: (nothing)
+            no warning
+23:41:38 ## binding after the resume from P: a8202f83 has implementer (pid ended)
+23:41:39 ## the session's process has ended
+23:41:41 ## done
+
+====================================================================================================
+X1 (codex-probe.sh): codex exec started in P; given reviewer-2 from P/proj; codex exec resume <id> from P/proj; handoff role again
+====================================================================================================
+## 1. codex exec, started in <P>
+workdir: <P>
+session id: 01a1e193-00b1-79c1-8029-76b4ffc22299
+   the rollout: 18 lines; its turn_context lines: line 10: <P>
+## 2. this build's handoff role reviewer-2, as that session, from <P/proj>:
+   handoff: warning: this session started in <P>, outside proj. Its hooks run outside proj always, so it can miss its brief and the work sent to it. Tell the operator. They can close this session and resume it from proj (`cd <P/proj> && codex resume 01a1e193-00b1-79c1-8029-76b4ffc22299`), which keeps this conversation, or start a session there and give it the role.
+## 3. codex exec resume <id>, from <P/proj>, until its Stop hook has started
+workdir: <P/proj>
+   the rollout: 31 lines; its turn_context lines: line 10: <P>; line 24: <P/proj>
+## 4. the runs of handoff by Codex's hooks: the hook, the folder it ran in, and what a brief said
+23:37:51 handoff hook brief   ran in <P>  SessionStart(startup) stdin cwd=<P>
+      the brief: no warning; first line: (nothing)
+23:37:52 handoff hook listen  ran in <P>  Stop(None) stdin cwd=<P>
+23:37:55 handoff hook brief   ran in <P/proj>  SessionStart(resume) stdin cwd=<P/proj>
+      the brief: no warning; first line: handoff brief: you are reviewer-2 in proj. You and implementer, reviewer hand wo
+23:37:58 handoff hook listen  ran in <P/proj>  Stop(None) stdin cwd=<P/proj>
+## 5. this build's handoff role, as that session, from <P/proj>, after the resumed turn:
+   no warning
+

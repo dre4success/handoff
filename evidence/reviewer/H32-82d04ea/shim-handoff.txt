@@ -1,0 +1,18 @@
+#!/bin/sh
+# shim: what the probe's Antigravity session runs as handoff, in its hooks and its agent's commands.
+# It notes each run (the time, the arguments, the folder, whether stdin is a terminal, which
+# ANTIGRAVITY_ variables are set, its parent process, a hook's stdin), then runs the build.
+BIN=<the build of 82d04ea>
+LOGD=<scratch>/log
+export HANDOFF_TEST_NOTIFY=<scratch>/alerts.txt HANDOFF_TEST_AWAKE=<scratch>/awake.txt
+f="$LOGD/$(date -u +%H%M%S).$$"
+tty=no; [ -t 0 ] && tty=yes
+names=$(env | sed -n 's/^\(ANTIGRAVITY_[A-Z_]*\)=.*/\1/p' | sort | tr '\n' ' ')
+if [ "$1" = hook ]; then
+  cat > "$f.in"
+  printf '{"t":"%s","bin":"handoff","args":"%s","pwd":"%s","tty":"%s","names":"%s","ppid":%s,"f":"%s","in":%s}\n' "$(date -u +%H:%M:%S)" "$*" "$(pwd -P)" "$tty" "$names" "$PPID" "$f" "$(cat "$f.in")" >> "$LOGD/runs.jsonl"
+  exec "$BIN" "$@" < "$f.in"
+fi
+printf '{"t":"%s","bin":"handoff","args":"%s","pwd":"%s","tty":"%s","names":"%s","ppid":%s,"f":"%s","in":null}\n' "$(date -u +%H:%M:%S)" "$*" "$(pwd -P)" "$tty" "$names" "$PPID" "$f" >> "$LOGD/runs.jsonl"
+"$BIN" "$@" > "$f.out" 2> "$f.err"; code=$?
+echo "$code" > "$f.code"; cat "$f.out"; cat "$f.err" >&2; exit $code

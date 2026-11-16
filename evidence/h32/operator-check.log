@@ -1,0 +1,10 @@
+# command: in a throwaway project with no agent sessions, `python3 -I withtty.py handoff fyi "…"` with ANTIGRAVITY_CONVERSATION_ID set and no other agent's variable: a terminal on stdin, as Antigravity gives its agent's commands (tty.log). fyi, away, back and decide share the check that refuses an agent's session, before the one for a terminal (cmds.go, operator). decide itself isn't run: this session's settings forbid it. First the installed build, then this branch's.
+# date: 2026-11-15 22:12:09 UTC
+# by: Opus 5.5 (implementer), on the operator's Mac; HANDOFF_TEST_NOTIFY set
+## installed (handoff v0.0.0-20261114070435-22ea906cfabe):
+handoff fyi: no agent has a session now, so no one was told; nothing written
+[exit 2; stdin was a terminal]
+## this branch:
+handoff fyi: fyi is the operator's, in a terminal of the operator's own, never in an agent's session
+[exit 2; stdin was a terminal]
+## entries in the record: 0

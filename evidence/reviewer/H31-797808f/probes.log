@@ -1,0 +1,50 @@
+# command: bash probes.sh <the build of 797808f> <an empty scratch folder>
+# date: 2026-11-15 23:44:20 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the Mac of the operator (darwin arm64, go1.25.3, git 2.55.0)
+# commit: 797808f943440139cd8da86683c3e044b32c7f70
+
+## M1. a Claude Code command: the folder of the session's process (lsof)
+a. its process is in the project                                           not warned
+b. in a folder in the project                                              not warned
+c. in the project, entered through a link                                  not warned
+d. in another worktree of the project                                      not warned
+e. in a folder in no repository                                            WARNED
+f. in the folder above the project                                         WARNED
+g. in a repository of its own inside the project                           WARNED
+h. in the project; the command runs in a folder in the project             not warned
+i. its process has ended                                                   not warned
+j. CLAUDE_PID is not a number                                              not warned
+k. its process is in a folder since removed                                not warned
+l. an lsof first on PATH that sleeps 30 s is not the one run (the build names /usr/sbin/lsof):
+   handoff role took 0.1 s                                                 WARNED
+m. time of handoff role with the lsof call, best of 5: 10 ms
+
+## M2. a Claude Code hook: CLAUDE_PROJECT_DIR (the start brief after /compact)
+a. CLAUDE_PROJECT_DIR outside; the process is outside too                  WARNED
+b. CLAUDE_PROJECT_DIR is the project; the process is outside               not warned
+c. CLAUDE_PROJECT_DIR outside; the process is in the project               WARNED
+d. no CLAUDE_PROJECT_DIR; the process is outside (falls to lsof)           WARNED
+e. CLAUDE_PROJECT_DIR is not absolute                                      not warned
+
+## M3. Codex: the rollout's last turn_context
+a. begun outside, one turn outside                                         WARNED
+b. begun outside, the last turn in the project                             not warned
+c. begun in the project, the last turn outside                             WARNED
+d. begun outside, no turn yet (only the first line)                        not warned
+e. the last turn in the project, then a message quoting an outside turn    not warned
+f. the last turn outside, written with spaces after the colons             not warned
+g. the last turn outside, with 17 MiB written after it                     not warned
+h. the same with 15 MiB after it                                           WARNED
+i. time of handoff role for h, best of 5: 41 ms
+j. a Codex session whose shell also has a Claude Code session's variables  WARNED
+
+## M4. the words
+a. Claude Code:
+handoff: warning: this session started in <scratch>/out, outside proj. Its hooks run outside proj when it starts or resumes, and after /clear or /background, so it can miss its brief and the work sent to it. Tell the operator. They can close this session and resume it from proj (`cd <scratch>/proj && claude --resume s-words`), which keeps this conversation, or start a session there and give it the role.
+b. Codex:
+handoff: warning: this session started in <scratch>/out, outside proj. Its hooks run outside proj always, so it can miss its brief and the work sent to it. Tell the operator. They can close this session and resume it from proj (`cd <scratch>/proj && codex resume 019a-a`), which keeps this conversation, or start a session there and give it the role.
+c. a project whose path a shell would split; the command it offers, run by sh -c with claude swapped for pwd:
+   cd '<scratch>/it'\''s a proj' && claude --resume s-q
+   -> <scratch>/it's a proj
+
+alerts written to the scratch file: 0

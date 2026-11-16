@@ -84,7 +84,7 @@ var gitEnv = []string{
 }
 
 // sessionVars are the variables by which a CLI tells a command its session.
-var sessionVars = []string{"CLAUDE_CODE_SESSION_ID", "CLAUDE_PID", "CODEX_THREAD_ID"}
+var sessionVars = []string{"CLAUDE_CODE_SESSION_ID", "CLAUDE_PID", "CODEX_THREAD_ID", "ANTIGRAVITY_CONVERSATION_ID", "CLAUDE_PROJECT_DIR"}
 
 func env(extra ...string) []string {
 	var out []string

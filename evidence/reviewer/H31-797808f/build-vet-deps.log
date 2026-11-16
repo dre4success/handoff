@@ -1,0 +1,82 @@
+# command: go build ./...; go vet ./...; gofmt -l cmd internal; go.mod requires; go list -deps for net; the commits and diffstat from the base; what the later commits touch
+# date: 2026-11-15 23:41:09 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 797808f943440139cd8da86683c3e044b32c7f70
+
+## go build ./...: ok
+## go vet ./...: clean
+## gofmt -l cmd internal: []
+## go.mod require lines: 0
+## packages in go list -deps ./... named net or under net/: 0
+## commits on the base (37e341b):
+797808f docs: H31 round 2 evidence: a backgrounded session's process, the reviewer's resume cases on real sessions, mutations, tests
+457eba1 docs: §17 row 103, corrections to row 101 from the H31 review
+6dc9616 fix: H31 round 2: the folder this run of the session started in, not where its conversation began
+c57d29e docs: H31 evidence: where hooks run after a cd and a resume, a replay, the check on this Mac, mutations, tests
+2576877 docs: §17 row 101, a session started outside the project is warned
+e260eb0 docs: README: start each session in the project's folder
+6f16143 feat: warn a session started outside the project when it takes a role or reads its brief
+## diffstat:
+ README.md                                 |   2 +-
+ cmd/handoff/brief.go                      |   1 +
+ cmd/handoff/hook.go                       |   1 +
+ cmd/handoff/main_test.go                  |   2 +-
+ cmd/handoff/outside.go                    | 201 +++++++++++++++++++
+ cmd/handoff/outside_test.go               | 322 ++++++++++++++++++++++++++++++
+ cmd/handoff/session.go                    |   2 +
+ cmd/handoff/session_test.go               |  12 +-
+ docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md |   2 +
+ evidence/h31/README.md                    |  22 ++
+ evidence/h31/background.log               |  15 ++
+ evidence/h31/bg-probe.py                  |  52 +++++
+ evidence/h31/dump.sh                      |   3 +
+ evidence/h31/dump2.sh                     |   3 +
+ evidence/h31/go-test-race.log             |  14 ++
+ evidence/h31/mutate.py                    |  47 +++++
+ evidence/h31/mutations.log                |  26 +++
+ evidence/h31/on-this-mac.txt              |  11 +
+ evidence/h31/outside-probe.py             |  54 +++++
+ evidence/h31/probe-hooks.log              |  24 +++
+ evidence/h31/replay.log                   |  15 ++
+ evidence/h31/resume-probe.py              |  56 ++++++
+ evidence/h31/resume.log                   |  18 ++
+ evidence/h31/settings.local.json.txt      |   6 +
+ internal/gitx/gitx.go                     |   4 +
+ 25 files changed, 905 insertions(+), 10 deletions(-)
+## the implementer's test and mutation logs were made before the evidence commit; what it adds to 457eba1:
+ evidence/h31/README.md        | 18 ++++++++++----
+ evidence/h31/background.log   | 15 ++++++++++++
+ evidence/h31/bg-probe.py      | 52 ++++++++++++++++++++++++++++++++++++++++
+ evidence/h31/dump2.sh         |  3 +++
+ evidence/h31/go-test-race.log | 18 +++++++-------
+ evidence/h31/mutate.py        | 44 ++++++++++++++++++----------------
+ evidence/h31/mutations.log    | 40 +++++++++++++++++--------------
+ evidence/h31/resume-probe.py  | 56 +++++++++++++++++++++++++++++++++++++++++++
+ evidence/h31/resume.log       | 18 ++++++++++++++
+ 9 files changed, 213 insertions(+), 51 deletions(-)
+## since round 1 (c57d29e):
+ cmd/handoff/main_test.go                  |   2 +-
+ cmd/handoff/outside.go                    | 201 +++++++++++-------
+ cmd/handoff/outside_test.go               | 327 +++++++++++++++++-------------
+ cmd/handoff/session_test.go               |  12 +-
+ docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md |   1 +
+ evidence/h31/README.md                    |  18 +-
+ evidence/h31/background.log               |  15 ++
+ evidence/h31/bg-probe.py                  |  52 +++++
+ evidence/h31/dump2.sh                     |   3 +
+ evidence/h31/go-test-race.log             |  18 +-
+ evidence/h31/mutate.py                    |  44 ++--
+ evidence/h31/mutations.log                |  40 ++--
+ evidence/h31/resume-probe.py              |  56 +++++
+ evidence/h31/resume.log                   |  18 ++
+ 14 files changed, 536 insertions(+), 271 deletions(-)
+## files under cmd or internal that differ from the base:
+ cmd/handoff/brief.go        |   1 +
+ cmd/handoff/hook.go         |   1 +
+ cmd/handoff/main_test.go    |   2 +-
+ cmd/handoff/outside.go      | 201 +++++++++++++++++++++++++++
+ cmd/handoff/outside_test.go | 322 ++++++++++++++++++++++++++++++++++++++++++++
+ cmd/handoff/session.go      |   2 +
+ cmd/handoff/session_test.go |  12 +-
+ internal/gitx/gitx.go       |   4 +
+## the worktree is clean: []

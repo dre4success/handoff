@@ -17,8 +17,13 @@ import (
 // says "if".
 
 // userConfig is the folder of a CLI's user settings: CLAUDE_CONFIG_DIR or
-// ~/.claude for Claude Code, CODEX_HOME or ~/.codex for Codex.
+// ~/.claude for Claude Code, CODEX_HOME or ~/.codex for Codex, and
+// ~/.gemini/config for Antigravity, whose user hooks.json is there.
 func userConfig(cli string) string {
+	home, _ := os.UserHomeDir()
+	if cli == "antigravity" {
+		return filepath.Join(home, ".gemini", "config")
+	}
 	env, dir := "CLAUDE_CONFIG_DIR", ".claude"
 	if cli == "codex" {
 		env, dir = "CODEX_HOME", ".codex"
@@ -26,13 +31,15 @@ func userConfig(cli string) string {
 	if d := os.Getenv(env); d != "" {
 		return d
 	}
-	home, _ := os.UserHomeDir()
 	return filepath.Join(home, dir)
 }
 
 // hookFiles are the files cli reads hooks from, for a session started at
 // root: the user's first.
 func hookFiles(cli, root string) []string {
+	if cli == "antigravity" {
+		return []string{filepath.Join(userConfig(cli), "hooks.json"), filepath.Join(root, ".agents", "hooks.json")}
+	}
 	if cli == "codex" {
 		return []string{filepath.Join(userConfig(cli), "hooks.json"), filepath.Join(root, ".codex", "hooks.json")}
 	}
@@ -46,6 +53,12 @@ func hookedIn(cli, root string) string {
 	for _, f := range hookFiles(cli, root) {
 		b, err := os.ReadFile(f)
 		if err != nil {
+			continue
+		}
+		if cli == "antigravity" {
+			if agyListens(b) {
+				return f
+			}
 			continue
 		}
 		var s struct {
@@ -85,4 +98,30 @@ func tilde(path string) string {
 		return "~" + strings.TrimPrefix(path, home)
 	}
 	return path
+}
+
+// agyListens says whether an Antigravity hooks.json runs handoff's listen at
+// Stop, in a hook that isn't turned off. Each top-level key names a hook,
+// whose events list their commands.
+func agyListens(b []byte) bool {
+	var hooks map[string]struct {
+		Enabled *bool `json:"enabled"`
+		Stop    []struct {
+			Command string `json:"command"`
+		} `json:"Stop"`
+	}
+	if json.Unmarshal(b, &hooks) != nil {
+		return false
+	}
+	for _, h := range hooks {
+		if h.Enabled != nil && !*h.Enabled {
+			continue
+		}
+		for _, c := range h.Stop {
+			if strings.Contains(c.Command, "hook listen") {
+				return true
+			}
+		}
+	}
+	return false
 }

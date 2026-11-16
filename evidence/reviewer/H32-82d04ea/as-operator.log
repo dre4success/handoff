@@ -1,0 +1,20 @@
+-- CLAUDE_CODE_SESSION_ID
+   note --as operator     exit 0: posted #4 note W1 operator → implementer: hello-16211
+   reply --as operator    exit 2: handoff reply: operator does not review (reviews is false in config.json), so it cannot give a verdict
+   inbox --as operator    exit 0: inbox for operator
+   brief --for implementer exit 0: handoff brief: you are implementer in q1. You and reviewer, reviewer-2 hand work to each other through handoff. The operator decides
+-- CODEX_THREAD_ID
+   note --as operator     exit 2: handoff note: identical to #4; nothing written (to retry a post safely, give it a --key)
+   reply --as operator    exit 2: handoff reply: operator does not review (reviews is false in config.json), so it cannot give a verdict
+   inbox --as operator    exit 0: inbox for operator
+   brief --for implementer exit 0: handoff brief: you are implementer in q1. You and reviewer, reviewer-2 hand work to each other through handoff. The operator decides
+-- ANTIGRAVITY_CONVERSATION_ID
+   note --as operator     exit 2: handoff note: identical to #4; nothing written (to retry a post safely, give it a --key)
+   reply --as operator    exit 2: handoff reply: operator does not review (reviews is false in config.json), so it cannot give a verdict
+   inbox --as operator    exit 0: inbox for operator
+   brief --for implementer exit 0: handoff brief: you are implementer in q1. You and reviewer, reviewer-2 hand work to each other through handoff. The operator decides
+-- NOTHING
+   note --as operator     exit 2: handoff note: identical to #4; nothing written (to retry a post safely, give it a --key)
+   reply --as operator    exit 2: handoff reply: operator does not review (reviews is false in config.json), so it cannot give a verdict
+   inbox --as operator    exit 0: inbox for operator
+   brief --for implementer exit 0: handoff brief: you are implementer in q1. You and reviewer, reviewer-2 hand work to each other through handoff. The operator decides

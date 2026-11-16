@@ -1,0 +1,285 @@
+# command: python3 -I real-probe.py <scratch> <mode>, once for each mode below; python3 -I attach-probe.py <scratch> <job> <session>; bash codex-probe.sh <scratch>
+# date: 2026-11-15, 22:07 to 22:37 UTC
+# by: Fable 5.2 (reviewer), on the operator's Mac. Throwaway sessions: Claude Code 2.1.325 (model haiku), Codex 0.169.0.
+# commit: c57d29eed941ff63acb91cce953dfc62d421fc94, built to a scratch folder
+#
+# <P> is a scratch folder in no git repository. <P/proj> is a git repository in it, after `handoff init`.
+# The hooks are the ones in the user's settings, which run `handoff` by name; a shim first on the sessions'
+# PATH (shim-handoff.txt) notes each run and runs this build in the same folder with the same stdin.
+# Each line of a run: the time, what ran, the folder it ran in, CLAUDE_PROJECT_DIR, and for a hook its
+# event (source), session, the stdin's cwd, and the folder its transcript_path is in. Under a brief or a
+# command: the first line it printed, and whether it warned. '##' lines are the driver's own.
+# Alerts went to a scratch file; none were written. The sessions are stopped and removed, and their data deleted.
+
+====================================================================================================
+R1 (plain): started in P; cd proj; handoff role implementer; closed; resumed from P; a note is sent
+====================================================================================================
+22:07:07 ## started: claude  in <P>
+22:07:13 ## the folder-trust question is shown; answering yes
+22:07:17 ## session aa310683-8dc4-45ba-aaa6-8d81c992908a
+22:07:14  handoff hook listen            ran in <P>       CLAUDE_PROJECT_DIR=<P>  SessionStart(startup) session=aa310683 stdin cwd=<P> transcript in <P, as a folder name>
+22:07:14  handoff hook brief             ran in <P>       CLAUDE_PROJECT_DIR=<P>  SessionStart(startup) session=aa310683 stdin cwd=<P> transcript in <P, as a folder name>
+            printed: (nothing)
+            no warning
+22:07:26  handoff hook listen            ran in <P/proj>  CLAUDE_PROJECT_DIR=<P>  Stop session=aa310683 stdin cwd=<P/proj> transcript in <P, as a folder name>
+22:07:47  handoff role implementer       ran in <P/proj>  CLAUDE_PROJECT_DIR=-   
+            printed: You are now implementer in proj.
+            WARNED: handoff: warning: this session started in <P>, outside proj. Its hooks run outside proj when it starts or resumes, and may at other times, so it can miss its brief and the work sent to it. Tell the operator, who can start a session in <P/proj> and give it the role there.
+22:07:50  handoff hook listen            ran in <P/proj>  CLAUDE_PROJECT_DIR=<P>  Stop session=aa310683 stdin cwd=<P/proj> transcript in <P, as a folder name>
+22:07:53 ## what the session said:
+    | ⏺Thewarning meashis session strted in the P directory, outside proj,so
+    | handoff's hooks may not run for it atoher tes and itculd miss itsbrief
+    | andtheworksenttoit.Theoperatorshouldstartanewsessionin
+    |  <a scratch path> and give it the implementer role there.
+    | ✻Crunched for 5s · done 22:07
+    | ❯
+22:07:53 ## binding: aa310683 has implementer (pid running)
+22:07:53 ## transcript of aa310683 in the folder <P, as a folder name>: 61 lines; the first cwd is on line 6: <P>; the folders it names, in order: <P> > <P/proj>
+22:07:54 ## the session's process has ended
+22:07:56 ## started: claude --resume aa310683-8dc4-45ba-aaa6-8d81c992908a in <P>
+22:07:57  handoff hook brief             ran in <P>       CLAUDE_PROJECT_DIR=<P>  SessionStart(resume) session=aa310683 stdin cwd=<P> transcript in <P, as a folder name>
+            printed: (nothing)
+            no warning
+22:07:57  handoff hook listen            ran in <P>       CLAUDE_PROJECT_DIR=<P>  SessionStart(resume) session=aa310683 stdin cwd=<P> transcript in <P, as a folder name>
+22:08:05 ## binding after the resume from P: aa310683 has implementer (pid ended)
+22:08:05 ## a note to implementer from the reviewer's side: 0 posted #1 note H1 reviewer → implementer: are you there | handoff: no session has implementer now, so this waits until the operator gives one that role; tell the operator.
+22:08:13  handoff hook listen            ran in <P>       CLAUDE_PROJECT_DIR=<P>  Stop session=aa310683 stdin cwd=<P> transcript in <P, as a folder name>
+22:08:17 ## the session's process has ended
+22:08:19 ## done
+
+====================================================================================================
+R2 (clear): the same start; then /compact, then /clear; the new id runs handoff role; closed; the new id resumed from P
+====================================================================================================
+22:08:31 ## started: claude  in <P>
+22:08:37 ## session 4878798e-02c2-4dd1-82b8-ddfa1d08b810
+22:08:31  handoff hook listen            ran in <P>       CLAUDE_PROJECT_DIR=<P>  SessionStart(startup) session=4878798e stdin cwd=<P> transcript in <P, as a folder name>
+22:08:31  handoff hook brief             ran in <P>       CLAUDE_PROJECT_DIR=<P>  SessionStart(startup) session=4878798e stdin cwd=<P> transcript in <P, as a folder name>
+            printed: (nothing)
+            no warning
+22:08:46  handoff hook listen            ran in <P/proj>  CLAUDE_PROJECT_DIR=<P>  Stop session=4878798e stdin cwd=<P/proj> transcript in <P, as a folder name>
+22:09:07  handoff role implementer       ran in <P/proj>  CLAUDE_PROJECT_DIR=-   
+            printed: You are now implementer in proj.
+            WARNED: handoff: warning: this session started in <P>, outside proj. Its hooks run outside proj when it starts or resumes, and may at other times, so it can miss its brief and the work sent to it. Tell the operator, who can start a session in <P/proj> and give it the role there.
+22:09:11  handoff hook listen            ran in <P/proj>  CLAUDE_PROJECT_DIR=<P>  Stop session=4878798e stdin cwd=<P/proj> transcript in <P, as a folder name>
+22:09:13 ## what the session said:
+    | ⏺
+22:09:13 ## binding: 4878798e has implementer (pid running)
+22:09:13 ## transcript of 4878798e in the folder <P, as a folder name>: 72 lines; the first cwd is on line 6: <P>; the folders it names, in order: <P> > <P/proj>
+22:09:25  handoff hook listen            ran in <P/proj>  CLAUDE_PROJECT_DIR=<P>  Stop session=4878798e stdin cwd=<P/proj> transcript in <P, as a folder name>
+22:09:43  handoff hook brief             ran in <P/proj>  CLAUDE_PROJECT_DIR=<P>  SessionStart(compact) session=4878798e stdin cwd=<P/proj> transcript in <P, as a folder name>
+            printed: handoff: warning: this session started in <P>, outside proj. Its hooks run outside proj when it starts or resumes, and may at other times, so it can m
+            WARNED: handoff: warning: this session started in <P>, outside proj. Its hooks run outside proj when it starts or resumes, and may at other times, so it can miss its brief and the work sent to it. Tell the operator, who can start a session in <P/proj> and give it the role there.
+22:09:43  handoff hook listen            ran in <P/proj>  CLAUDE_PROJECT_DIR=<P>  SessionStart(compact) session=4878798e stdin cwd=<P/proj> transcript in <P, as a folder name>
+22:09:47  handoff hook brief             ran in <P>       CLAUDE_PROJECT_DIR=<P>  SessionStart(clear) session=abaedbd7 stdin cwd=<P> transcript in <P, as a folder name>
+            printed: (nothing)
+            no warning
+22:09:47  handoff hook listen            ran in <P>       CLAUDE_PROJECT_DIR=<P>  SessionStart(clear) session=abaedbd7 stdin cwd=<P> transcript in <P, as a folder name>
+22:09:50 ## after /clear the session is abaedbd7-497e-4ee3-b58c-f1fb8584da49 | binding: 4878798e has implementer (pid running)
+22:09:50 ## transcript of abaedbd7 in the folder <P, as a folder name>: 6 lines; the first cwd is on line 4: <P>; the folders it names, in order: <P>
+22:10:04  handoff role                   ran in <P>       CLAUDE_PROJECT_DIR=-   
+            printed: (nothing)
+            no warning
+22:10:06  handoff hook listen            ran in <P>       CLAUDE_PROJECT_DIR=<P>  Stop session=abaedbd7 stdin cwd=<P> transcript in <P, as a folder name>
+22:10:08 ## transcript of abaedbd7 in the folder <P, as a folder name>: 47 lines; the first cwd is on line 4: <P>; the folders it names, in order: <P>
+22:10:10 ## the session's process has ended
+22:10:12 ## started: claude --resume abaedbd7-497e-4ee3-b58c-f1fb8584da49 in <P>
+22:10:12  handoff hook listen            ran in <P>       CLAUDE_PROJECT_DIR=<P>  SessionStart(resume) session=abaedbd7 stdin cwd=<P> transcript in <P, as a folder name>
+22:10:12  handoff hook brief             ran in <P>       CLAUDE_PROJECT_DIR=<P>  SessionStart(resume) session=abaedbd7 stdin cwd=<P> transcript in <P, as a folder name>
+            printed: (nothing)
+            no warning
+22:10:21 ## binding after the resume from P: 4878798e has implementer (pid ended)
+22:10:22 ## the session's process has ended
+22:10:24 ## done
+
+====================================================================================================
+R3 (background): the same start; then /background with the turn over; a note is sent
+====================================================================================================
+22:10:37 ## started: claude  in <P>
+22:10:43 ## session 8c873a0a-2cb1-49af-b3f0-873d697d0328
+22:10:37  handoff hook listen            ran in <P>       CLAUDE_PROJECT_DIR=<P>  SessionStart(startup) session=8c873a0a stdin cwd=<P> transcript in <P, as a folder name>
+22:10:37  handoff hook brief             ran in <P>       CLAUDE_PROJECT_DIR=<P>  SessionStart(startup) session=8c873a0a stdin cwd=<P> transcript in <P, as a folder name>
+            printed: (nothing)
+            no warning
+22:10:51  handoff hook listen            ran in <P/proj>  CLAUDE_PROJECT_DIR=<P>  Stop session=8c873a0a stdin cwd=<P/proj> transcript in <P, as a folder name>
+22:11:12  handoff role implementer       ran in <P/proj>  CLAUDE_PROJECT_DIR=-   
+            printed: You are now implementer in proj.
+            WARNED: handoff: warning: this session started in <P>, outside proj. Its hooks run outside proj when it starts or resumes, and may at other times, so it can miss its brief and the work sent to it. Tell the operator, who can start a session in <P/proj> and give it the role there.
+22:11:16  handoff hook listen            ran in <P/proj>  CLAUDE_PROJECT_DIR=<P>  Stop session=8c873a0a stdin cwd=<P/proj> transcript in <P, as a folder name>
+22:11:18 ## what the session said:
+    | ⏺The warning means tis ession tared in the <a scratch path> directory, notin
+    | proj, sohandoff's hooks may mis its brief and any work sent to it. The
+    | operator should stat anew <a scratch path>
+    | ittheimplementerrolethere.
+    | ✻ Worked for 5s · done 22:11
+    | ❯
+22:11:18 ## binding: 8c873a0a has implementer (pid running)
+22:11:18 ## transcript of 8c873a0a in the folder <P, as a folder name>: 61 lines; the first cwd is on line 6: <P>; the folders it names, in order: <P> > <P/proj>
+22:11:21 ## the session's process has ended
+22:11:21  handoff hook brief             ran in <P>       CLAUDE_PROJECT_DIR=<P>  SessionStart(fork) session=91be9f88 stdin cwd=<P> transcript in <P, as a folder name>
+            printed: (nothing)
+            no warning
+22:11:21  handoff hook listen            ran in <P>       CLAUDE_PROJECT_DIR=<P>  SessionStart(fork) session=91be9f88 stdin cwd=<P> transcript in <P, as a folder name>
+22:11:25 ## after /background the session is 91be9f88-ac8e-42b4-b8fc-6499c2f7472e | binding: 8c873a0a has implementer (pid ended)
+22:11:25 ## transcript of 91be9f88 in the folder <P, as a folder name>: 2 lines; the first cwd is on line -: -; the folders it names, in order: 
+22:11:25 ## a note to implementer: 0 posted #3 note H1 reviewer → implementer: are you there | handoff: no session has implementer now, so this waits until the operator gives one that role; tell the operator.
+22:13:25 ## did not see: a Stop of the new session
+22:13:28 ## binding: 8c873a0a has implementer (pid ended)
+22:13:28 ## transcript of 91be9f88 in the folder <P, as a folder name>: 2 lines; the first cwd is on line -: -; the folders it names, in order: 
+22:13:28 ## done
+
+====================================================================================================
+R4 (inside): the same start; closed; resumed with claude --resume <id> from P/proj; handoff role; closed; resumed from P again
+====================================================================================================
+22:13:45 ## started: claude  in <P>
+22:13:51 ## session 2897e3c1-c40c-4ba2-b855-ed88b554c173
+22:13:46  handoff hook brief             ran in <P>       CLAUDE_PROJECT_DIR=<P>  SessionStart(startup) session=2897e3c1 stdin cwd=<P> transcript in <P, as a folder name>
+            printed: (nothing)
+            no warning
+22:13:46  handoff hook listen            ran in <P>       CLAUDE_PROJECT_DIR=<P>  SessionStart(startup) session=2897e3c1 stdin cwd=<P> transcript in <P, as a folder name>
+22:14:00  handoff hook listen            ran in <P/proj>  CLAUDE_PROJECT_DIR=<P>  Stop session=2897e3c1 stdin cwd=<P/proj> transcript in <P, as a folder name>
+22:14:21  handoff role implementer       ran in <P/proj>  CLAUDE_PROJECT_DIR=-   
+            printed: You are now implementer in proj.
+            WARNED: handoff: warning: this session started in <P>, outside proj. Its hooks run outside proj when it starts or resumes, and may at other times, so it can miss its brief and the work sent to it. Tell the operator, who can start a session in <P/proj> and give it the role there.
+22:14:24  handoff hook listen            ran in <P/proj>  CLAUDE_PROJECT_DIR=<P>  Stop session=2897e3c1 stdin cwd=<P/proj> transcript in <P, as a folder name>
+22:14:26 ## what the session said:
+    | ⏺Running 1 shell command…
+    |   ⎿  $ <a scratch path>
+    |     <a scratch path> show 3
+22:14:26 ## binding: 2897e3c1 has implementer (pid running)
+22:14:26 ## transcript of 2897e3c1 in the folder <P, as a folder name>: 73 lines; the first cwd is on line 6: <P>; the folders it names, in order: <P> > <P/proj>
+22:14:28 ## the session's process has ended
+22:14:29 ## started: claude --resume 2897e3c1-c40c-4ba2-b855-ed88b554c173 in <P/proj>
+22:14:35 ## the folder-trust question is shown; answering yes
+22:14:36  handoff hook brief             ran in <P/proj>  CLAUDE_PROJECT_DIR=<P/proj> SessionStart(resume) session=2897e3c1 stdin cwd=<P/proj> transcript in <P/proj, as a folder name>
+            printed: handoff brief: you are implementer in proj. You and reviewer, reviewer-2 hand work to each other through handoff. The operator decides.
+            no warning
+22:14:36  handoff hook listen            ran in <P/proj>  CLAUDE_PROJECT_DIR=<P/proj> SessionStart(resume) session=2897e3c1 stdin cwd=<P/proj> transcript in <P/proj, as a folder name>
+    | ⏺Stophookfeedback
+22:14:42 ## resumed from P/proj: the session is 2897e3c1-c40c-4ba2-b855-ed88b554c173 (the same id: True)
+22:14:42 ## transcript of 2897e3c1 in the folder <P, as a folder name>: 76 lines; the first cwd is on line 6: <P>; the folders it names, in order: <P> > <P/proj>
+22:14:59  handoff role                   ran in <P/proj>  CLAUDE_PROJECT_DIR=-   
+            printed: You are implementer in proj.
+            WARNED: handoff: warning: this session started in <P>, outside proj. Its hooks run outside proj when it starts or resumes, and may at other times, so it can miss its brief and the work sent to it. Tell the operator, who can start a session in <P/proj> and give it the role there.
+22:15:00  handoff hook listen            ran in <P/proj>  CLAUDE_PROJECT_DIR=<P/proj> Stop session=2897e3c1 stdin cwd=<P/proj> transcript in <P, as a folder name>
+22:15:02 ## transcript of 2897e3c1 in the folder <P, as a folder name>: 101 lines; the first cwd is on line 6: <P>; the folders it names, in order: <P> > <P/proj>
+22:15:02 ## binding: 2897e3c1 has implementer (pid running)
+22:15:04 ## the session's process has ended
+22:15:06 ## started: claude --resume 2897e3c1-c40c-4ba2-b855-ed88b554c173 in <P>
+22:15:06  handoff hook listen            ran in <P>       CLAUDE_PROJECT_DIR=<P>  SessionStart(resume) session=2897e3c1 stdin cwd=<P> transcript in <P, as a folder name>
+22:15:06  handoff hook brief             ran in <P>       CLAUDE_PROJECT_DIR=<P>  SessionStart(resume) session=2897e3c1 stdin cwd=<P> transcript in <P, as a folder name>
+            printed: (nothing)
+            no warning
+    | ⏺Stop hook feedback
+22:15:15 ## transcript of 2897e3c1 in the folder <P, as a folder name>: 105 lines; the first cwd is on line 6: <P>; the folders it names, in order: <P> > <P/proj>
+22:15:17 ## the session's process has ended
+22:15:18 ## done
+
+====================================================================================================
+R5 (compact-background): the same start; then /compact, then /background (the turn was over by then)
+====================================================================================================
+22:29:49 ## started: claude  in <P>
+22:29:55 ## session b9a591d3-2d30-4381-8762-c72a10681710
+22:29:50  handoff hook brief             ran in <P>       CLAUDE_PROJECT_DIR=<P>  SessionStart(startup) session=b9a591d3 stdin cwd=<P> transcript in <P, as a folder name>
+            printed: (nothing)
+            no warning
+22:29:50  handoff hook listen            ran in <P>       CLAUDE_PROJECT_DIR=<P>  SessionStart(startup) session=b9a591d3 stdin cwd=<P> transcript in <P, as a folder name>
+22:30:04  handoff hook listen            ran in <P/proj>  CLAUDE_PROJECT_DIR=<P>  Stop session=b9a591d3 stdin cwd=<P/proj> transcript in <P, as a folder name>
+22:30:25  handoff role implementer       ran in <P/proj>  CLAUDE_PROJECT_DIR=-   
+            printed: You are now implementer in proj.
+            WARNED: handoff: warning: this session started in <P>, outside proj. Its hooks run outside proj when it starts or resumes, and may at other times, so it can miss its brief and the work sent to it. Tell the operator, who can start a session in <P/proj> and give it the role there.
+22:30:29  handoff hook listen            ran in <P/proj>  CLAUDE_PROJECT_DIR=<P>  Stop session=b9a591d3 stdin cwd=<P/proj> transcript in <P, as a folder name>
+22:30:31 ## what the session said:
+    | ⏺The warning mens this sesion started in theP directory, not in proj, so
+    | handoff's hooks ay not run forit anditcouldmissitsbrieforincoming
+    | <a scratch path>
+    |  and assign the implementer role there.
+    | ✻Cogitated for 5s · done 22:30
+    | ❯
+22:30:31 ## binding: b9a591d3 has implementer (pid running); 01a1e14e has reviewer-2 (pid ended)
+22:30:31 ## transcript of b9a591d3 in the folder <P, as a folder name>: 61 lines; the first cwd is on line 6: <P>; the folders it names, in order: <P> > <P/proj>
+22:30:51  handoff hook listen            ran in <P/proj>  CLAUDE_PROJECT_DIR=<P>  SessionStart(compact) session=b9a591d3 stdin cwd=<P/proj> transcript in <P, as a folder name>
+22:30:51  handoff hook brief             ran in <P/proj>  CLAUDE_PROJECT_DIR=<P>  SessionStart(compact) session=b9a591d3 stdin cwd=<P/proj> transcript in <P, as a folder name>
+            printed: handoff: warning: this session started in <P>, outside proj. Its hooks run outside proj when it starts or resumes, and may at other times, so it can m
+            WARNED: handoff: warning: this session started in <P>, outside proj. Its hooks run outside proj when it starts or resumes, and may at other times, so it can miss its brief and the work sent to it. Tell the operator, who can start a session in <P/proj> and give it the role there.
+22:31:21 ## the session's process has ended
+22:31:09  handoff hook listen            ran in <P/proj>  CLAUDE_PROJECT_DIR=<P>  Stop session=b9a591d3 stdin cwd=<P/proj> transcript in <P, as a folder name>
+22:31:20  handoff hook listen            ran in <P>       CLAUDE_PROJECT_DIR=<P>  SessionStart(fork) session=739205cc stdin cwd=<P> transcript in <P, as a folder name>
+22:31:20  handoff hook brief             ran in <P>       CLAUDE_PROJECT_DIR=<P>  SessionStart(fork) session=739205cc stdin cwd=<P> transcript in <P, as a folder name>
+            printed: (nothing)
+            no warning
+22:31:23 ## after /background the session is 739205cc-753f-4c32-b2f6-03f471e257a3 | binding: b9a591d3 has implementer (pid ended); 01a1e14e has reviewer-2 (pid ended)
+22:33:24 ## did not see: the new session's Stop
+22:33:27 ## transcript of b9a591d3 in the folder <P, as a folder name>: 132 lines; the first cwd is on line 6: <P>; the folders it names, in order: <P> > <P/proj>
+22:33:27 ## this build's handoff role implementer, as the new session, from P/proj: You are now implementer in proj. | no warning
+22:33:27 ## done
+
+====================================================================================================
+R5, went on (attach-probe.py): claude attach to R5's background session, one turn, so that it writes its transcript; then handoff role implementer as that session from P/proj
+====================================================================================================
+22:34:36 ## attached to the background session and gave it one turn; its Stop hook ran in: <P> | CLAUDE_PROJECT_DIR=<P>
+22:34:39 ## its transcript: 69 lines; the first cwd is on line 12 (a system line, compact_boundary): <P>; the folders it names, in order: <P>
+22:34:39 ## this build's handoff role implementer, as that session, from P/proj: You are now implementer in proj. | WARNED
+
+====================================================================================================
+R6 (born-inside): started in P/proj; handoff role implementer; closed; resumed with claude --resume <id> from P; cd proj; handoff role
+====================================================================================================
+22:35:11 ## started: claude  in <P/proj>
+22:35:17 ## session 222a94f9-e375-4617-913b-a2292d2edaa9
+22:35:12  handoff hook brief             ran in <P/proj>  CLAUDE_PROJECT_DIR=<P/proj> SessionStart(startup) session=222a94f9 stdin cwd=<P/proj> transcript in <P/proj, as a folder name>
+            printed: handoff: proj hands work between agents through handoff, and this session has no role in it. When the operator gives you one, run `<the build>
+            no warning
+22:35:12  handoff hook listen            ran in <P/proj>  CLAUDE_PROJECT_DIR=<P/proj> SessionStart(startup) session=222a94f9 stdin cwd=<P/proj> transcript in <P/proj, as a folder name>
+22:35:35  handoff role implementer       ran in <P/proj>  CLAUDE_PROJECT_DIR=-   
+            printed: You are now implementer in proj.
+            no warning
+22:35:36  handoff hook listen            ran in <P/proj>  CLAUDE_PROJECT_DIR=<P/proj> Stop session=222a94f9 stdin cwd=<P/proj> transcript in <P/proj, as a folder name>
+22:35:38 ## binding: 01a1e14e has reviewer-2 (pid ended); 222a94f9 has implementer (pid running)
+22:35:38 ## transcript of 222a94f9 in the folder <P/proj, as a folder name>: 47 lines; the first cwd is on line 6: <P/proj>; the folders it names, in order: <P/proj>
+22:35:40 ## the session's process has ended
+22:35:41 ## started: claude --resume 222a94f9-e375-4617-913b-a2292d2edaa9 in <P>
+22:35:42  handoff hook brief             ran in <P>       CLAUDE_PROJECT_DIR=<P>  SessionStart(resume) session=222a94f9 stdin cwd=<P> transcript in <P, as a folder name>
+            printed: (nothing)
+            no warning
+22:35:42  handoff hook listen            ran in <P>       CLAUDE_PROJECT_DIR=<P>  SessionStart(resume) session=222a94f9 stdin cwd=<P> transcript in <P, as a folder name>
+22:35:50 ## resumed from P: the session is 222a94f9-e375-4617-913b-a2292d2edaa9 (the same id: True) | binding: 01a1e14e has reviewer-2 (pid ended); 222a94f9 has implementer (pid ended)
+22:35:59  handoff hook listen            ran in <P/proj>  CLAUDE_PROJECT_DIR=<P>  Stop session=222a94f9 stdin cwd=<P/proj> transcript in <P/proj, as a folder name>
+22:36:17  handoff role                   ran in <P/proj>  CLAUDE_PROJECT_DIR=-   
+            printed: You are implementer in proj.
+            no warning
+22:36:18  handoff hook listen            ran in <P/proj>  CLAUDE_PROJECT_DIR=<P>  Stop session=222a94f9 stdin cwd=<P/proj> transcript in <P/proj, as a folder name>
+22:36:21 ## transcript of 222a94f9 in the folder <P/proj, as a folder name>: 92 lines; the first cwd is on line 6: <P/proj>; the folders it names, in order: <P/proj> > <P> > <P/proj>
+22:36:21 ## binding: 01a1e14e has reviewer-2 (pid ended); 222a94f9 has implementer (pid running)
+22:36:22 ## the session's process has ended
+22:36:24 ## done
+
+====================================================================================================
+X1 (codex-probe.sh): codex exec started in P; codex exec resume <id> from P/proj; then this build's handoff role as that session
+====================================================================================================
+## 1. codex exec, started in <P>
+workdir: <P>
+sandbox: read-only
+session id: 01a1e14e-1e17-7200-a286-747982d749b7
+ALPHA
+ALPHA
+rollouts named for the session: 1
+  18 lines; session_meta on lines 1 (cwd <P>); its turns' folders, in order: <P>
+## 2. codex exec resume <id>, from <P/proj>
+workdir: <P/proj>
+sandbox: read-only
+session id: 01a1e14e-1e17-7200-a286-747982d749b7
+BRAVO
+BRAVO
+rollouts named for the session: 1
+  33 lines; session_meta on lines 1 (cwd <P>); its turns' folders, in order: <P> > <P/proj>
+## 3. this build's handoff role, as that session, from <P/proj> (it has no role, so this only reads), then handoff role reviewer-2
+handoff role: no role: when the operator gives this session one, run `handoff role <role>`
+You are now reviewer-2 in proj.
+
+handoff: warning: this session started in <P>, outside proj. Its hooks run outside proj when it starts or resumes, and may at other times, so it can miss its brief and the work sent to it. Tell the operator, who can start a session in <P/proj> and give it the role there.
+
+## 4. the runs of handoff by Codex's hooks: the hook, the folder it ran in, the stdin's cwd
+22:22:37 handoff hook brief   ran in <P>  SessionStart(startup) stdin cwd=<P> transcript_path given: True | printed: (nothing)
+22:22:38 handoff hook listen  ran in <P>  Stop(None) stdin cwd=<P> transcript_path given: True
+22:22:41 handoff hook brief   ran in <P/proj>  SessionStart(resume) stdin cwd=<P/proj> transcript_path given: True | printed: handoff: proj hands work between agents through handoff, and this session has no role in i
+22:22:43 handoff hook listen  ran in <P/proj>  Stop(None) stdin cwd=<P/proj> transcript_path given: True
+

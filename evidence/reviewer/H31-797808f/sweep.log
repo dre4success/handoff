@@ -1,0 +1,113 @@
+# command: git merge-tree --write-tree main <commit>, objects to a scratch directory; the name sweep over main, the commit, the merged tree and the reviewer's evidence folder
+# date: 2026-11-15 23:47:20 UTC
+# by: Fable 5.2 (reviewer), Claude Code, on the operator's Mac (darwin arm64, go1.25.3, 2.55.0)
+# commit: 797808f943440139cd8da86683c3e044b32c7f70
+
+## main is 78facf67cde89c0dce60ccd2f627d6095aad30e8; the request's base is 37e341b3ea84f72dcce589e760c22a34fa48fb97; commits on main since the base:
+78facf6 docs: the reviewer's correction to H32's A2, from note #177, as supplied
+3e84f87 docs(channel): board: H32 done, merged
+fe64d06 docs: the reviewer's H32 APPROVE evidence for 82d04ea, as supplied (reply #175)
+38d604e feat: H32 Antigravity sessions, and its agent's commands are an agent's session (merge h32-antigravity)
+1ca82b1 docs: the reviewer's H31 CHANGES evidence for c57d29e, as supplied (reply #171)
+65b607a docs(channel): board: H31 round 2 in review (#174)
+54a7c48 docs(channel): board: H32 in review (#172); H31 changes asked (#171)
+82d04ea docs: H32 evidence: Antigravity probes, a real run with the printed hooks, the operator check, mutations, tests
+ffc2291 docs: §17 row 102, Antigravity sessions
+729e77d docs: README: Antigravity, Esc before typing to a waiting session, and its limit of 10
+7b45319 feat: Antigravity sessions: its hooks get the brief and listen, and handoff settings antigravity prints them
+3c65449 fix: an Antigravity session is an agent's session, so decide, fyi, away and back refuse it
+2967c9a docs(channel): board: H31 in review (#169)
+ evidence/reviewer/H32-82d04ea/withtty.py          |  31 +++
+ 65 files changed, 3349 insertions(+), 17 deletions(-)
+## loose objects in the repository before: 36
+## merge-tree of main and the commit: exit 1
+aeee90798c05ab9d5c8d0d00367247c4f37d2b6f
+100644 d8638a064bd75e1c58fe880a0fbe5a444413c997 1	cmd/handoff/main_test.go
+100644 f71ba7e236ad9c62e6f12ec2a3ba4ec63d787aed 2	cmd/handoff/main_test.go
+100644 e64ab40bd58a5b5144e0f900670c85ff6014f0c6 3	cmd/handoff/main_test.go
+100644 c2b004eb818e54153cb5ab58ea80e04f41f31eaf 1	docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md
+100644 b9d596e591f07cb3064b769bbabe5bed547be02f 2	docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md
+100644 b015270721196454fabe7937c0403ed049a1b466 3	docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md
+
+Auto-merging README.md
+Auto-merging cmd/handoff/brief.go
+Auto-merging cmd/handoff/hook.go
+Auto-merging cmd/handoff/main_test.go
+CONFLICT (content): Merge conflict in cmd/handoff/main_test.go
+Auto-merging cmd/handoff/session.go
+Auto-merging cmd/handoff/session_test.go
+Auto-merging docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md
+CONFLICT (content): Merge conflict in docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md
+## loose objects in the repository after: 36
+## files that differ between main and the merged tree:
+Files main/README.md and merged/README.md differ
+Files main/cmd/handoff/brief.go and merged/cmd/handoff/brief.go differ
+Files main/cmd/handoff/hook.go and merged/cmd/handoff/hook.go differ
+Files main/cmd/handoff/main_test.go and merged/cmd/handoff/main_test.go differ
+Only in merged/cmd/handoff: outside.go
+Only in merged/cmd/handoff: outside_test.go
+Files main/cmd/handoff/session.go and merged/cmd/handoff/session.go differ
+Files main/cmd/handoff/session_test.go and merged/cmd/handoff/session_test.go differ
+Files main/docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md and merged/docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md differ
+Only in merged/evidence: h31
+Files main/internal/gitx/gitx.go and merged/internal/gitx/gitx.go differ
+## files that differ between the commit and the merged tree:
+Files commit/README.md and merged/README.md differ
+Only in merged/cmd/handoff: antigravity_test.go
+Files commit/cmd/handoff/brief.go and merged/cmd/handoff/brief.go differ
+Files commit/cmd/handoff/codex_test.go and merged/cmd/handoff/codex_test.go differ
+Files commit/cmd/handoff/hook.go and merged/cmd/handoff/hook.go differ
+Files commit/cmd/handoff/main_test.go and merged/cmd/handoff/main_test.go differ
+Files commit/cmd/handoff/session.go and merged/cmd/handoff/session.go differ
+Files commit/cmd/handoff/session_test.go and merged/cmd/handoff/session_test.go differ
+Files commit/cmd/handoff/settings.go and merged/cmd/handoff/settings.go differ
+Files commit/cmd/handoff/setup.go and merged/cmd/handoff/setup.go differ
+Files commit/docs/CHANNEL.md and merged/docs/CHANNEL.md differ
+Files commit/docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md and merged/docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md differ
+Only in merged/evidence: h32
+Only in merged/evidence/reviewer: H31-c57d29e
+Only in merged/evidence/reviewer: H32-82d04ea
+
+## sweep of main
+880 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder: 2 lines, 0 file names
+the names of the operator's other projects (the reviewer's list): 0 lines, 0 file names
+an email address: 38 lines, 0 file names
+a folder name on this Mac (the reviewer's list): 0 lines, 0 file names
+
+## sweep of commit
+843 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder: 2 lines, 0 file names
+the names of the operator's other projects (the reviewer's list): 0 lines, 0 file names
+an email address: 36 lines, 0 file names
+a folder name on this Mac (the reviewer's list): 0 lines, 0 file names
+
+## sweep of merged
+897 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder: 2 lines, 0 file names
+the names of the operator's other projects (the reviewer's list): 0 lines, 0 file names
+an email address: 38 lines, 0 file names
+a folder name on this Mac (the reviewer's list): 0 lines, 0 file names
+
+## added lines in git diff 37e341b <commit> that match any pattern:
+the operator's name, as a word, in a file name or inside an identifier: 0 lines
+the operator's account name, other than in the module path: 0 lines
+a path under a home folder: 0 lines
+the names of the operator's other projects (the reviewer's list): 0 lines
+an email address: 0 lines
+a folder name on this Mac (the reviewer's list): 0 lines
+
+## sweep of the reviewer's evidence folder
+7 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder: 0 lines, 0 file names
+the names of the operator's other projects (the reviewer's list): 0 lines, 0 file names
+an email address: 0 lines, 0 file names
+a folder name on this Mac (the reviewer's list): 0 lines, 0 file names
