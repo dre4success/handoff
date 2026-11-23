@@ -1,0 +1,73 @@
+# H35.1 round 3 tests, run by the implementer (Claude Code, Opus 5.5), 2026-11-23T09:01:56Z, on branch h35.1-spare at f09cb6c. Each command is followed only by what it printed.
+$ gofmt -l cmd internal; echo "exit $?"
+exit 0
+$ go vet ./...; echo "exit $?"
+exit 0
+$ go list -deps ./... | grep -cx net
+0
+$ go test -race -count=1 -timeout 30m ./...
+ok  	github.com/dre4success/handoff/cmd/handoff	344.828s
+ok  	github.com/dre4success/handoff/internal/awake	1.487s
+ok  	github.com/dre4success/handoff/internal/gitx	1.203s
+ok  	github.com/dre4success/handoff/internal/notify	1.591s
+ok  	github.com/dre4success/handoff/internal/record	4.000s
+ok  	github.com/dre4success/handoff/internal/status	1.421s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	2.387s
+$ go test -count=1 -run TestH35p1 -v ./cmd/handoff | grep -E "^(--- |    --- |ok|FAIL|    [a-z_]*_test.go:[0-9]*:)"
+--- PASS: TestH35p1ABlockedSpareIsListed (0.93s)
+--- PASS: TestH35p1AMoveCutShortToTheSessionIsHistory (1.28s)
+--- PASS: TestH35p1TheSparesListenerIsItsOwn (1.37s)
+--- PASS: TestH35p1HandoffRoleAndAsNeverNameTheSpare (1.38s)
+--- PASS: TestH35p1TheSpareResumedRunsAgain (1.45s)
+--- PASS: TestH35p1TheSpareCheckIsUnderTheBindingsLock (0.74s)
+--- PASS: TestH35p1OnlyASessionWithNoHistoryIsTheSpare (0.67s)
+--- PASS: TestH35p1RoleSpareAgainChangesNothingAndElsewhereMovesIt (0.83s)
+--- PASS: TestH35p1HandoffShowsTheSpareAndFyiSaysItIsntTold (2.41s)
+--- PASS: TestH35p1AWaitStopsWhenItsSessionBecomesTheSpare (2.42s)
+--- PASS: TestH35p1TheSpareHoldsNoWork (2.60s)
+ok  	github.com/dre4success/handoff/cmd/handoff	3.095s
+$ (a worktree of 00868d5, H34.8 round 3, the base, with this spare_test.go) go test -count=1 -run TestH35p1 -v ./cmd/handoff | grep -E "^(--- |    --- |ok|FAIL|    [a-z_]*_test.go:[0-9]*:)"
+    spare_test.go:220: handoff [role spare] in [CLAUDE_CODE_SESSION_ID=s-spare CLAUDE_PID=23145]: exit 2
+    spare_test.go:278: handoff [role spare] in [CLAUDE_CODE_SESSION_ID=s-spare CLAUDE_PID=23158]: exit 2
+--- FAIL: TestH35p1TheSpareResumedRunsAgain (0.77s)
+    spare_test.go:296: handoff [role spare] in [ANTIGRAVITY_CONVERSATION_ID=ag-spare]: exit 2
+    spare_test.go:37: handoff [role spare] in [CLAUDE_CODE_SESSION_ID=s-spare CLAUDE_PID=23166]: exit 2
+--- FAIL: TestH35p1HandoffShowsTheSpareAndFyiSaysItIsntTold (0.80s)
+--- FAIL: TestH35p1TheSpareHoldsNoWork (0.80s)
+--- FAIL: TestH35p1ABlockedSpareIsListed (0.80s)
+    spare_test.go:317: handoff [role spare] in [CLAUDE_CODE_SESSION_ID=s-1 CLAUDE_PID=23161]: exit 2
+    spare_test.go:210: role spare after a cut move: exit 2 "" "handoff role: spare isn't a role here (the roles are implementer, reviewer, reviewer-2). If the operator gave it to you, run `/private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-bin-3484323179/handoff roles add spare`, then `/private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-bin-3484323179/handoff role spare`\n"
+--- FAIL: TestH35p1AWaitStopsWhenItsSessionBecomesTheSpare (0.93s)
+--- FAIL: TestH35p1AMoveCutShortToTheSessionIsHistory (0.94s)
+    spare_test.go:134: the implementer: exit 2 "" "handoff role: spare isn't a role here (the roles are implementer, reviewer, reviewer-2). If the operator gave it to you, run `/private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-bin-3484323179/handoff roles add spare`, then `/private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-bin-3484323179/handoff role spare`\n"
+--- FAIL: TestH35p1OnlyASessionWithNoHistoryIsTheSpare (0.97s)
+    spare_test.go:242: HANDOFF_ROLE=spare role spare: exit 2 "" "handoff role: spare isn't a role here (the roles are implementer, reviewer, reviewer-2). If the operator gave it to you, run `/private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-bin-3484323179/handoff roles add spare`, then `/private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-bin-3484323179/handoff role spare`\n"
+--- FAIL: TestH35p1HandoffRoleAndAsNeverNameTheSpare (0.41s)
+    spare_test.go:99: handoff [role spare] in [CLAUDE_CODE_SESSION_ID=s-a CLAUDE_PID=23268]: exit 2
+    spare_test.go:155: handoff [role spare] in [CLAUDE_CODE_SESSION_ID=s-spare CLAUDE_PID=23270]: exit 2
+--- FAIL: TestH35p1RoleSpareAgainChangesNothingAndElsewhereMovesIt (0.40s)
+--- FAIL: TestH35p1TheSparesListenerIsItsOwn (0.40s)
+    spare_test.go:185: no process reached the pause point role in 30 s
+--- FAIL: TestH35p1TheSpareCheckIsUnderTheBindingsLock (30.72s)
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	31.212s
+FAIL
+$ (a worktree of ad210fc, round 2, with this spare_test.go) go test -count=1 -run TestH35p1 -v ./cmd/handoff | grep -E "^(--- |    --- |ok|FAIL|    [a-z_]*_test.go:[0-9]*:)"
+    spare_test.go:299: handoff on its own:
+--- FAIL: TestH35p1ABlockedSpareIsListed (0.80s)
+--- PASS: TestH35p1AMoveCutShortToTheSessionIsHistory (0.90s)
+    spare_test.go:320: the wait delivered after its session became the spare: exit 0 "#1 request W1 implementer → reviewer: W1 work @ b71c6fed9dff\n"
+--- FAIL: TestH35p1AWaitStopsWhenItsSessionBecomesTheSpare (0.97s)
+--- PASS: TestH35p1OnlyASessionWithNoHistoryIsTheSpare (1.08s)
+--- PASS: TestH35p1TheSparesListenerIsItsOwn (1.11s)
+--- PASS: TestH35p1TheSpareResumedRunsAgain (1.22s)
+--- PASS: TestH35p1RoleSpareAgainChangesNothingAndElsewhereMovesIt (1.36s)
+    spare_test.go:281: fyi: <nil>
+--- FAIL: TestH35p1HandoffShowsTheSpareAndFyiSaysItIsntTold (0.68s)
+--- PASS: TestH35p1TheSpareCheckIsUnderTheBindingsLock (0.59s)
+--- PASS: TestH35p1HandoffRoleAndAsNeverNameTheSpare (0.69s)
+--- PASS: TestH35p1TheSpareHoldsNoWork (2.37s)
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	3.002s
+FAIL

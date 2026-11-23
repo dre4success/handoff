@@ -1,0 +1,89 @@
+H34.6 round 7, request #443, commit 4cf3aed9c132c3479d6a725def66aedb150e10b6 (base 2cbcce7)
+Date: 2026-11-22/23. Run by: the reviewer (Claude Code session).
+The commit was built in a temporary worktree (git worktree add --detach), removed after.
+Every probe ran in a new scratch project with HANDOFF_TEST_NOTIFY set and the session
+variables unset. A session is simulated with CLAUDE_CODE_SESSION_ID and CLAUDE_PID (the
+pid of a sleep); a hook with its JSON on stdin and the same two variables.
+
+Verdict: CHANGES, for §3.
+
+== 1. Build, vet, format, dependencies (Run) ==
+$ go build -o handoff ./cmd/handoff && go vet ./... && gofmt -l cmd internal
+(no output)
+$ go list -deps ./... | grep -c '^net$'
+0
+$ git diff --check 541b7e5 4cf3aed
+(no output)
+
+== 2. The /clear race of #441 and #442 (Run) ==
+$ zsh probe-r6race.sh <dir> <binary> 100        (two hook brief at once; no other load)
+100 /clears, two SessionStart hooks at once each: 0 where a hook did not get the role
+$ zsh probe-r7race.sh <dir> <binary> 40         (brief, listen and brief at once; the suite running beside it)
+R1: /clear holding the role. R2: /clear of a marked session. R3: /background, §3.
+(The "bindings with a role now" counts in R1 and R2 of this run are wrong: my grep also
+matched the role named inside a mark. The script is corrected; R3's later runs use it.)
+## R1. /clear in a process that holds reviewer: brief, listen and brief at once, 40 times
+  40 /clears: 0 where a hook did not have the role
+  bindings with a role now: 41; marked cut: 0
+
+## R2. /clear in a process whose session is marked (lost reviewer to Z): the same three hooks at once, 40 times
+  40 /clears: 0 where the new id was not told it lost the role, or could act
+  bindings with reviewer now: 42 (Z's)
+
+## R3. /background from a session that holds reviewer: the three hooks at once, 40 times, each from the last
+  /background 15: brief: handoff: r3 hands work between agents through handoff, and t | brief: handoff brief: you are reviewer in r3. You and implementer h | listen: handoff: nothing new for reviewer in 1s. Just end your turn; (exit 2)
+  /background 27: brief: handoff brief: you are reviewer in r3. You and implementer h | brief: handoff: r3 hands work between agents through handoff, and t | listen: handoff: nothing new for reviewer in 1s. Just end your turn; (exit 2)
+  40 moves: 2 where a hook did not have the role
+  bindings with a role now: 41; marked cut: 0
+
+== 3. The same race after /background (Run) ==
+$ zsh probe-r7bg.sh <dir> <binary> 60           (R3 alone: 60 moves in a chain, three hooks at once each)
+-- on round 5, 3043862:
+## R3. /background from a session that holds reviewer: the three hooks at once, 60 times, each from the last
+  60 moves: 0 where a hook did not have the role
+  bindings with a role now: 1; marked cut: 0
+-- on round 6, 541b7e5:
+## R3. /background from a session that holds reviewer: the three hooks at once, 60 times, each from the last
+  /background 7: brief: handoff brief: you are reviewer in r3. You and implementer h | brief: handoff brief: you are reviewer in r3. You and implementer h | listen:  (exit 0)
+  /background 25: brief: handoff brief: you are reviewer in r3. You and implementer h | brief: handoff brief: you are reviewer in r3. You and implementer h | listen:  (exit 0)
+  60 moves: 2 where a hook did not have the role
+  bindings with a role now: 1; marked cut: 0
+-- on round 7, 4cf3aed (this run was still going when I posted; the lines so far):
+## R3. /background from a session that holds reviewer: the three hooks at once, 60 times, each from the last
+  /background 3: brief: handoff brief: you are reviewer in r3. You and implementer h | brief: handoff: r3 hands work between agents through handoff, and t | listen: handoff: nothing new for reviewer in 1s. Just end your turn; (exit 2)
+  /background 6: brief: handoff brief: you are reviewer in r3. You and implementer h | brief: handoff: r3 hands work between agents through handoff, and t | listen: handoff: nothing new for reviewer in 1s. Just end your turn; (exit 2)
+  /background 12: brief: handoff: r3 hands work between agents through handoff, and t | brief: handoff brief: you are reviewer in r3. You and implementer h | listen: handoff: nothing new for reviewer in 1s. Just end your turn; (exit 2)
+  /background 22: brief: handoff brief: you are reviewer in r3. You and implementer h | brief: handoff brief: you are reviewer in r3. You and implementer h | listen:  (exit 0)
+  60 moves: 4 where a hook did not have the role
+  bindings with a role now: 1; marked cut: 0
+
+Source, at 4cf3aed: wentOnFrom (session.go:704) reads the folder twice with no lock,
+bindings() and then marks(). While another hook's carry turns the old id's binding into
+a mark between the two readings, the old id is in both, so len(from) is 2.
+tryMoveContinued (session.go:666) then returns blocked without taking the lock. Round 5
+had no such early return: two candidates went on to the lock and were read again there.
+
+== 4. Every probe of rounds 1 to 6, run again (Run) ==
+probe-388.sh, probe-388m.sh, probe-r4.sh, probe-r4s.sh, probe-r5.sh, probe-r5y.sh, probe-r6.sh:
+no line differs from round 6, times and paths apart (diff of each output: 0 lines).
+
+== 3b. The round 7 run of probe-r7bg.sh, complete (Run) ==
+## R3. /background from a session that holds reviewer: the three hooks at once, 60 times, each from the last
+  /background 3: brief: handoff brief: you are reviewer in r3. You and implementer h | brief: handoff: r3 hands work between agents through handoff, and t | listen: handoff: nothing new for reviewer in 1s. Just end your turn; (exit 2)
+  /background 6: brief: handoff brief: you are reviewer in r3. You and implementer h | brief: handoff: r3 hands work between agents through handoff, and t | listen: handoff: nothing new for reviewer in 1s. Just end your turn; (exit 2)
+  /background 12: brief: handoff: r3 hands work between agents through handoff, and t | brief: handoff brief: you are reviewer in r3. You and implementer h | listen: handoff: nothing new for reviewer in 1s. Just end your turn; (exit 2)
+  /background 22: brief: handoff brief: you are reviewer in r3. You and implementer h | brief: handoff brief: you are reviewer in r3. You and implementer h | listen:  (exit 0)
+  60 moves: 4 where a hook did not have the role
+  bindings with a role now: 1; marked cut: 0
+
+== 5. The full suite (Run) ==
+$ go test ./... -count=1 -race -timeout 40m      (the worktree was at 4cf3aed and clean when it ended; my race probes ran beside it)
+ok  	github.com/dre4success/handoff/cmd/handoff	1058.649s
+ok  	github.com/dre4success/handoff/internal/awake	1.392s
+ok  	github.com/dre4success/handoff/internal/gitx	1.272s
+ok  	github.com/dre4success/handoff/internal/notify	1.881s
+ok  	github.com/dre4success/handoff/internal/record	7.101s
+ok  	github.com/dre4success/handoff/internal/status	1.457s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	2.824s
+exit 0

@@ -1,0 +1,147 @@
+H35.1 round 2, request #811, commit ad210fc91f52c4ea5e4994540fc6be5394ff5ef1 (base 00868d5, in main)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session).
+The commit was built in a temporary worktree (git worktree add --detach), removed after.
+Every probe ran in a new scratch git project with HANDOFF_TEST_NOTIFY set and the session
+variables unset. Sessions are simulated, as in round 1 (../H35.1-d6aa334/checks.log).
+
+Verdict: CHANGES.
+
+== 1. Build, vet, format, dependencies (Run) ==
+$ go build -o handoff ./cmd/handoff && go vet ./... && gofmt -l cmd internal
+(no output)
+$ go list -deps ./... | grep -c '^net$'
+0
+$ git diff --check 00868d5 ad210fc
+(no output)
+
+== 2. The full suite (Run) ==
+$ uptime; /usr/bin/time -p go test ./... -count=1 -race      (no -timeout; the worktree was at ad210fc and clean when it ended)
+ 8:54  up 23 days, 12:51, 15 users, load averages: 9.06 6.78 6.42
+ok  	github.com/dre4success/handoff/cmd/handoff	338.570s
+ok  	github.com/dre4success/handoff/internal/awake	1.644s
+ok  	github.com/dre4success/handoff/internal/gitx	1.345s
+ok  	github.com/dre4success/handoff/internal/notify	1.755s
+ok  	github.com/dre4success/handoff/internal/record	9.618s
+ok  	github.com/dre4success/handoff/internal/status	1.405s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	4.549s
+real 354.66
+user 132.20
+sys 112.06
+exit 0
+(The machine was busier than in round 1: load 9, and my own probes ran beside it.)
+
+== 3. Round 2's fixes in their real paths, and in races: probe-c.sh (Run) ==
+
+## U1. The spare's own listening, each way a session listens
+$ (sp) handoff wait --timeout 1s
+  [exit 3]
+$ (sp) handoff wait --for spare --timeout 1s
+  [exit 3]
+$ (sp, Stop hook) handoff hook listen --timeout 1s
+handoff: nothing new for spare in 1s. Just end your turn; listening starts again when it ends.
+  [exit 2]
+-- after /clear, the new id listens as the spare:
+$ (sp1) handoff wait --for spare --timeout 1s
+  [exit 3]
+-- the spare moves to another session; the old one may not wait for it:
+$ (sp1) handoff wait --for spare --timeout 1s
+handoff wait: you no longer hold spare: the operator gave it to session other at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>
+  [exit 2]
+-- a session with another role, and one with none, waiting for the spare; the spare waiting for a seat:
+$ (rv) handoff wait --for spare --timeout 1s
+handoff wait: only the spare's own session waits for the spare
+  [exit 2]
+$ handoff wait --for spare --timeout 1s   (no session)
+handoff wait: only the spare's own session waits for the spare
+$ (other) handoff wait --for reviewer --timeout 1s
+handoff wait: the spare listens only for the spare, not for reviewer: it holds no work until it takes a seat
+  [exit 2]
+-- reading stays open:
+$ (other) handoff inbox --for reviewer
+inbox for reviewer
+  [exit 0]
+$ (rv) handoff inbox --for spare
+inbox for spare
+  [exit 0]
+
+## U2. Antigravity as the spare: its hook with the id on stdin only, and its own background wait
+You are now the spare in u2.
+$ (Stop hook, stdin only, executionNum 3) handoff hook listen --timeout 1s
+    continue | handoff: nothing new for spare in 1s. Just end your turn; listening starts again when it ends. Before your turn ends, run `/private/tmp/claude-501/-Us
+$ (G's own command) handoff wait --for spare --timeout 1s
+  [exit 3]
+
+## U3. A project with a role already named spare: anyone may wait for it, as for any role
+$ handoff wait --for spare --timeout 1s   (no session)
+  [exit 3]
+
+## U4. role spare and role implementer in one session at once, 40 times: it must end as implementer, whichever ran first
+  40 runs: 0 ended as something other than implementer (22 times role spare ran first and was then replaced; the rest it was refused)
+
+## U5. role spare in two sessions at once, 40 times: one spare, the other marked
+  40 runs: 0 where the spare was not held by exactly one session
+
+## U6. The spare's start hooks at once after /clear (brief, listen, brief), 40 times: the role and its generation
+  40 /clears: 0 where a hook did not have the spare, or its generation changed
+
+## U7. A /clear of the spare cut between its two writes, then role spare in the new id
+  binding sp0: role spare | gen 038000 | gone False | lost -  
+  binding sp0: role - | gen 038000 | gone True | lost spare to sp1 /clear
+  binding sp1: (no file)
+$ (sp1) handoff role spare
+You are now the spare in u7.
+handoff brief: you are the spare in u7. implementer, reviewer and reviewer-2 hand work to each other through handoff, and the operator decides. You hold no work, and nothing is sent to you.
+Listening: if your session has handoff's hooks, a hook listens for spare when your turn ends, and you don't run wait. If not, run `handoff wait --for spare --timeout 25m` in the background. Exit 3: run it again. Exit 4: something 
+While the operator is away, if a seat gets stuck with work waiting for it, you'll be woken and told which seat, and how to take it. Until then there is nothing for you to do. Don't review or build anything, and write nothing to th
+Rules: never edit .handoff/ by hand. Never merge, push or deploy without the operator's decision.
+  [exit 0]
+  binding sp1: role spare | gen 067000 | gone False | lost -  
+
+== 4. U7 beside any other command after the same cut move: probe-d.sh (Run) ==
+A cut move loses the role for any role (row 107), and the session is told so. So role spare
+there is the operator's word again and gives a new binding: consistent, not a fault.
+(exit 141 on the last is my probe's head -1 closing the pipe, not handoff's exit.)
+
+## the spare's /clear is cut between its two writes; the new id's first command is: handoff inbox --quiet
+  binding sp0: role spare | gen 025000 | lost -  
+$ (sp1) handoff inbox --quiet
+handoff inbox: you no longer hold spare: its move to this session, by /clear at 2026-11-23T08:56:50Z, was cut short, so this session doesn't hold it. Stop work 
+  [exit 2]
+  binding sp1: (no file)
+
+## the spare's /clear is cut between its two writes; the new id's first command is: handoff role
+  binding sp0: role spare | gen 321000 | lost -  
+$ (sp1) handoff role
+handoff role: you no longer hold spare: its move to this session, by /clear at 2026-11-23T08:56:51Z, was cut short, so this session doesn't hold it. Stop work o
+  [exit 2]
+  binding sp1: (no file)
+
+## the spare's /clear is cut between its two writes; the new id's first command is: handoff role spare
+  binding sp0: role spare | gen 269000 | lost -  
+$ (sp1) handoff role spare
+You are now the spare in role_spare.
+  [exit 141]
+  binding sp1: role spare | gen 491000 | lost -  
+
+== 5. reviewer-2's #817, point 2, run again: probe-e.sh (Run) ==
+
+## V1. In the spare's own session, wait --for spare with --as spare or HANDOFF_ROLE=spare
+$ (sp) handoff wait --for spare --as spare --timeout 1s
+  [exit 3]
+$ (sp) HANDOFF_ROLE=spare handoff wait --for spare --timeout 1s
+  [exit 3]
+$ (sp) handoff wait --as spare --timeout 1s   (no --for)
+handoff wait: the spare is the session the operator names with `handoff role spare` in it; --as spare and HANDOFF_ROLE=spare are refused; or give --for <role>
+  [exit 2]
+
+== 6. Round 1's probes, run again (Run) ==
+probe.sh: the only lines that differ from round 1 are S4's two waits, now refused.
+probe-b.sh: T1, T2 and T3 are fixed (the cut move is refused as history; the resumed spare
+is no longer gone and has a pid; HANDOFF_ROLE and --as are refused).
+T4 is unchanged: a blocked spare is still not listed under "sessions" in handoff.
+S3 is unchanged: fyi's report still says nothing of the spare.
+
+== 7. Not run ==
+reviewer-2's #817, point 1 (a wait started before its session became the spare). I read the
+check in cmdWait: it runs once, before the listener starts, and did not run the paused case.

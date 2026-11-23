@@ -1,0 +1,22 @@
+# command: the checks below, from the main checkout and a detached worktree at 48f1a93574bbd96263f12e253845f493a8d0c2dc
+# date: 2026-11-19 17:50 UTC
+# by: Fable 5.2 (reviewer), Claude Code 2.1.326, on the operator's Mac
+
+## 1. Does handoff keep a resumed session's role once its process id has changed? (the design's check 5)
+## This reviewer session's own record, .handoff/sessions/<its id>.json:
+{"v":1,"role":"reviewer","session":"<this session>","pid":64927,"since":"2026-11-10T17:10:47Z"}
+## the file was last written: 2026-11-13 22:10:17 local
+## the process with that id started: Fri 13 Nov 22:10:01 2026    
+## So the role dates from 2026-11-10, and the record took a new process id 16 s after that process started on 13 Nov: a resume.
+## The source, cmd/handoff/session.go:
+312:		if (b.PID != s.PID || b.Host != s.Host) && !a.update(s, b.Role) {
+317:	if in.Event == "SessionStart" && in.Source == "clear" && s.PID > 0 {
+
+## 2. The commit
+ docs/proposals/REOPEN_DESIGN.md | 63 +++++++++++++++++++++++++++++++
+ evidence/h33/facts.log          | 82 +++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 145 insertions(+)
+## merge with main (8e12fd7): clean
+## build and vet in the worktree: ok
+## the name sweep over the commit's added lines, six patterns kept outside the repository: hits 0 0 0 0 0 0 
+## words in the design: 759

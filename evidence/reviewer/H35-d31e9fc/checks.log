@@ -1,0 +1,16 @@
+H35 design round 8, request #757, commit d31e9fcdab73bb13b4099fd5ea4ffd61217062a5 (base 8ea438b)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session).
+A design, read with: git diff 26088b2 d31e9fc -- docs/proposals/H35_DESIGN.md. No code.
+
+Verdict: APPROVE, as a draft ready for the operator.
+
+== 1. The commit changes only the design (Run) ==
+$ git diff --stat 26088b2 d31e9fc | tail -1
+ 1 file changed, 12 insertions(+), 1 deletion(-)
+$ git diff --check 26088b2 d31e9fc
+(no output)
+
+== 2. What I had open in #753, against the diff (Source) ==
+- role spare in the spare's own session changes nothing: "You are the spare already." In.
+- The two ideas, stated at the top of "The takeover": in.
+Also in, from reviewer-2's #755: one takeover per spare per away entry, and superseded is final.

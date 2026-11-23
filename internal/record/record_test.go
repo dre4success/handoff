@@ -261,7 +261,7 @@ func TestTornTailRefusesUntilRepair(t *testing.T) {
 		t.Fatalf("append on a torn tail: err = %v, want ErrTornTail", err)
 	}
 
-	rep, err := s.Repair("reviewer")
+	rep, err := s.Repair("reviewer", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -320,7 +320,7 @@ func TestEditedMiddleLineBreaksChain(t *testing.T) {
 	}); !errors.Is(err, ErrBroken) {
 		t.Fatalf("append on a broken chain: err = %v, want ErrBroken", err)
 	}
-	if _, err := s.Repair("implementer"); !errors.Is(err, ErrBroken) {
+	if _, err := s.Repair("implementer", nil); !errors.Is(err, ErrBroken) {
 		t.Fatalf("repair of a middle edit: err = %v, want ErrBroken", err)
 	}
 	if !bytes.Equal(edited, readRecord(t, s)) {
@@ -427,7 +427,7 @@ func TestCutTailIsAnAdvisoryNotARefusal(t *testing.T) {
 	if adv := load(t, s).Advisories(); len(adv) != 1 {
 		t.Fatalf("the advisory must stay until repair; got %v", adv)
 	}
-	rep, err := s.Repair("implementer")
+	rep, err := s.Repair("implementer", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -464,7 +464,7 @@ func TestHeadBehindAfterCrashIsAnAdvisory(t *testing.T) {
 	if e := appendNote(t, s, "body 5"); e.ID != 5 {
 		t.Fatalf("id = %d, want 5", e.ID)
 	}
-	if _, err := s.Repair("implementer"); err != nil {
+	if _, err := s.Repair("implementer", nil); err != nil {
 		t.Fatal(err)
 	}
 	if adv := load(t, s).Advisories(); len(adv) != 0 {
@@ -500,7 +500,7 @@ func TestEditedLastLineIsABreak(t *testing.T) {
 	}); !errors.Is(err, ErrBroken) {
 		t.Fatalf("append after an edited last line: err = %v, want ErrBroken", err)
 	}
-	if _, err := s.Repair("implementer"); !errors.Is(err, ErrBroken) {
+	if _, err := s.Repair("implementer", nil); !errors.Is(err, ErrBroken) {
 		t.Fatalf("repair after an edited last line: err = %v, want ErrBroken", err)
 	}
 	if !bytes.Equal(edited, readRecord(t, s)) {
@@ -544,7 +544,7 @@ func TestAppendAfterACutThatStopsBeforeHeadIsNotAnEdit(t *testing.T) {
 	if e := appendNote(t, s, "body 4"); e.ID != 4 {
 		t.Fatalf("next id = %d, want 4", e.ID)
 	}
-	if _, err := s.Repair("implementer"); err != nil {
+	if _, err := s.Repair("implementer", nil); err != nil {
 		t.Fatal(err)
 	}
 	if adv := load(t, s).Advisories(); len(adv) != 0 {
@@ -555,7 +555,7 @@ func TestAppendAfterACutThatStopsBeforeHeadIsNotAnEdit(t *testing.T) {
 func TestRepairWithNothingToRepair(t *testing.T) {
 	s := newStore(t)
 	appendNote(t, s, "fine")
-	if _, err := s.Repair("implementer"); !errors.Is(err, ErrNothingToRepair) {
+	if _, err := s.Repair("implementer", nil); !errors.Is(err, ErrNothingToRepair) {
 		t.Fatalf("err = %v, want ErrNothingToRepair", err)
 	}
 	assertIntact(t, load(t, s), 1)

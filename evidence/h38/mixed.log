@@ -1,0 +1,49 @@
+# H38 mixed versions, run by the implementer (Claude Code, Opus 5.5), 2026-11-23T16:08:56Z, on branch h38-withdraw at 6c0bb13. A listener built at 22791ca (main, before H38) waits for the implementer while commands built at a later commit withdraw a request under the go-ahead and the reviewer then approves it (reviewer-2, #906). The script is evidence/h38/mixed.sh; each command is followed only by what it printed.
+## commands built at dc109a9, round 1
+$ HANDOFF_ROLE=implementer new post --item W1 --to reviewer --commit A
+posted #1 request W1 implementer → reviewer: W1 @ a7868f0001fb
+handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+exit 0
+$ (at a terminal) new away "Merge when approved."
+away (#2): your go-ahead stands until you run handoff back
+Under it, an item is approved once every reviewer it was sent to approves the same commit; one approval is enough for an item sent to one reviewer. handoff doesn't read your words: to tell the agents something without approving anything, use handoff fyi.
+No spare: if a seat gets stuck, you'll be told, as now. To have one, start a session and give it the role spare.
+not told, no session: implementer, reviewer
+no agent has a session now; each session's brief shows your go-ahead when it starts
+handoff: told the operator: Your go-ahead is recorded (#2): Merge when approved. Until you run handoff back, items are approved without asking you.
+exit 0
+$ HANDOFF_ROLE=implementer old wait --timeout 8s &   (the listener built at the old commit, already waiting)
+$ HANDOFF_ROLE=implementer new withdraw 1
+posted #3 withdraw W1 implementer → reviewer: withdrew #1
+exit 0
+$ HANDOFF_ROLE=reviewer new reply 1 --verdict APPROVE --commit A
+posted #4 reply W1 reviewer → implementer: APPROVE on #1 @ a7868f0001fb
+handoff: request #1 was withdrawn by implementer (#3); this reply is recorded and changes nothing
+exit 0
+the old listener: exit 0 (3 is a timeout), and it printed:
+#4 reply W1 reviewer → implementer: APPROVE on #1 @ a7868f0001fb
+  W1 is approved under the operator's go-ahead #2: that is the operator's approve
+handoff: told the operator: W1: approved under your go-ahead #2, by reviewer (#1).
+(end of what it printed)
+## commands built at 6c0bb13, this round
+$ HANDOFF_ROLE=implementer new post --item W1 --to reviewer --commit A
+posted #1 request W1 implementer → reviewer: W1 @ 4b18fcb908d0
+handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+exit 0
+$ (at a terminal) new away "Merge when approved."
+away (#2): your go-ahead stands until you run handoff back
+Under it, an item is approved once every reviewer it was sent to approves the same commit; one approval is enough for an item sent to one reviewer. handoff doesn't read your words: to tell the agents something without approving anything, use handoff fyi.
+No spare: if a seat gets stuck, you'll be told, as now. To have one, start a session and give it the role spare.
+not told, no session: implementer, reviewer
+no agent has a session now; each session's brief shows your go-ahead when it starts
+handoff: told the operator: Your go-ahead is recorded (#2): Merge when approved. Until you run handoff back, items are approved without asking you.
+exit 0
+$ HANDOFF_ROLE=implementer old wait --timeout 8s &   (the listener built at the old commit, already waiting)
+$ HANDOFF_ROLE=implementer new withdraw 1
+posted #3 withdraw W1 implementer → reviewer: withdrew #1
+exit 0
+$ HANDOFF_ROLE=reviewer new reply 1 --verdict APPROVE --commit A
+handoff reply: request #1 was withdrawn by implementer (#3), so nothing is owed on it; nothing written
+exit 2
+the old listener: exit 3 (3 is a timeout), and it printed:
+(end of what it printed)

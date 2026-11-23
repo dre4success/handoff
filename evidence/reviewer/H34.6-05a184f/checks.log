@@ -1,0 +1,180 @@
+# H34.6 review, round 3, request #380, commit 05a184f31ee61772ad14dec2da77a6af3a8aaac9 (base 2cbcce7)
+# Run by: the reviewer (Claude Code, Fable 5.2), 2026-11-22T13:57:12Z
+# The commit was checked out in a temporary worktree and built there. Every probe ran in a scratch project with HANDOFF_TEST_NOTIFY
+# set. A session is stood in for by CLAUDE_CODE_SESSION_ID and CLAUDE_PID, the pid of a sleep.
+# The scripts are those of the earlier rounds: probe.sh in ../H34.6-458a36b/, probe-hi.sh in ../H34.6-cd71bcf/.
+
+## 1. probe.sh (A to F) run again: what differs from round 2's results (../H34.6-cd71bcf/checks.log)
+$ diff <(round 2's output) <(this commit's)
+(no difference)
+
+## 2. probe-hi.sh (H and I) run again: what differs from round 2's results
+$ diff <(round 2's output) <(this commit's)
+44c44
+<   .handoff/sessions: A[role reviewer-3, gone, no pid] B[role implementer, pid] 
+---
+>   .handoff/sessions: A[role reviewer-3, pid] B[role implementer, pid] 
+
+## 3. The mark probe C leaves on this commit (A's binding was gone, then its role was given on)
+$ cat c/.handoff/sessions/A.json   (times and generation folded)
+{"v":1,"role":"","session":"A","since":"T","lost":{"role":"reviewer-3","to":"C","at":"T","gen":G},"gone":true}
+
+
+## 4. Source: every place a role is resolved, none inside a write, so update's sessions lock is never taken under the record's
+$ grep -n "a\.role(\|a\.roleOf(\|roleOfSession(" cmd/handoff/*.go | grep -v _test
+cmd/handoff/cmds.go:259:	from, err := a.role(*as)
+cmd/handoff/cmds.go:750:	role, err := a.role(*as)
+cmd/handoff/cmds.go:803:	role, err := a.role(*as)
+cmd/handoff/cmds.go:886:	from, err := a.role(*as)
+cmd/handoff/cmds.go:1033:	role, err := a.role(as)
+cmd/handoff/cmds.go:1480:		r, given, err := a.roleOf(as)
+cmd/handoff/cmds.go:1748:	role, err := a.role(*as)
+cmd/handoff/hook.go:94:	role, given, err = a.roleOfSession(hookSession(in), as)
+cmd/handoff/main.go:224:	r, _, err := a.roleOf(as)
+cmd/handoff/main.go:231:	return a.roleOfSession(callerSession(), as)
+cmd/handoff/main.go:236:func (a *app) roleOfSession(s session, as string) (string, bool, error) {
+cmd/handoff/session.go:733:		role, err := a.role("")
+
+## The suite at the commit
+$ go build ./... && go vet ./...   # 13:46:26Z
+ok
+$ go list -deps ./... | grep -x net
+exit 1 (1 = no net)
+$ gofmt -l cmd internal
+(end)
+$ go test ./... -count=1 -race -timeout 30m
+exit 0   # 13:56:52Z
+ok  	github.com/dre4success/handoff/cmd/handoff	624.741s
+ok  	github.com/dre4success/handoff/internal/awake	1.285s
+ok  	github.com/dre4success/handoff/internal/gitx	1.210s
+ok  	github.com/dre4success/handoff/internal/notify	1.328s
+ok  	github.com/dre4success/handoff/internal/record	3.857s
+ok  	github.com/dre4success/handoff/internal/status	1.213s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	1.776s
+
+================================================================================
+After my APPROVE (#386): reviewer-2's CHANGES #388, checked by the reviewer
+Date: 2026-11-22 (about 20:30Z). Run by: the reviewer (Claude Code session), on
+commit 05a184f31ee61772ad14dec2da77a6af3a8aaac9 built in a temporary worktree.
+Command: zsh probe-388.sh <a new scratch dir> <the built binary>
+HANDOFF_TEST_NOTIFY set; session variables unset. A hook is simulated with its
+JSON on stdin and CLAUDE_CODE_SESSION_ID and CLAUDE_PID in its environment.
+
+Result: #388 point 1 reproduces (J, K). Point 3 reproduces (L; L2 is the fenced
+path for comparison). Point 2: no failing run found; see my note to the
+implementer. My rounds 1 to 3 probes did not cover a marked session that is
+moved by /clear or /background and then resumed under its old id, nor a hook
+with a fixed role.
+
+## J. A marked session does /clear, and is later resumed under its old id (#388 point 1)
+$ (X) handoff role reviewer
+You are now reviewer in j.
+  [exit 0]
+$ (Z) handoff role reviewer
+You are now reviewer in j. Another session had reviewer; it has no role now.
+  [exit 0]
+  .handoff/sessions: X[lost reviewer, pid] Z[role reviewer, pid] 
+-- X is refused, as it should be:
+$ (X) handoff note --as reviewer --to implementer --item P1 --title from X, marked --body ../body.md
+handoff note: you no longer hold reviewer: the operator gave it to session Z at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>
+  [exit 2]
+-- /clear in X's process: a SessionStart with source clear and a new id, Y
+$ (Y, hook, {"session_id":"Y","hook_event_name":"SessionStart","source":"clear"}) handoff hook brief
+handoff: you no longer hold reviewer: the operator gave it to session Z at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>.
+  [exit 0]
+  .handoff/sessions: Y[lost reviewer, pid] Z[role reviewer, pid] 
+$ (Y) handoff note --as reviewer --to implementer --item P1 --title from Y --body ../body.md
+handoff note: you no longer hold reviewer: the operator gave it to session Z at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>
+  [exit 2]
+-- the operator resumes X by its id, in a new process:
+$ (X) handoff role
+handoff role: no role: when the operator gives this session one, run `handoff role <role>`
+  [exit 2]
+$ (X) handoff note --as reviewer --to implementer --item P1 --title from X, resumed after its /clear --body ../body.md
+posted #1 note P1 reviewer → implementer: from X, resumed after its /clear
+handoff: no session has implementer now, so this waits until the operator gives one that role; tell the operator.
+  [exit 0]
+
+## K. A marked session goes on by /background, and is later resumed under its old id (#388 point 1)
+$ (X) handoff role reviewer
+You are now reviewer in k.
+  [exit 0]
+$ (Z) handoff role reviewer
+You are now reviewer in k. Another session had reviewer; it has no role now.
+  [exit 0]
+-- X goes on as Y: X's transcript ends with a continued-in line, and X's process ends
+$ (Y, hook, {"session_id":"Y","hook_event_name":"SessionStart","source":"fork","transcript_path":"D/k-transcripts/Y.jsonl"}) handoff hook brief
+handoff: you no longer hold reviewer: the operator gave it to session Z at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>.
+  [exit 0]
+  .handoff/sessions: Y[lost reviewer, pid] Z[role reviewer, pid] 
+$ (Y) handoff note --as reviewer --to implementer --item P1 --title from Y --body ../body.md
+handoff note: you no longer hold reviewer: the operator gave it to session Z at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>
+  [exit 2]
+-- the operator resumes X by its id, in a new process:
+$ (X) handoff role
+handoff role: no role: when the operator gives this session one, run `handoff role <role>`
+  [exit 2]
+$ (X) handoff note --as reviewer --to implementer --item P1 --title from X, resumed after /background --body ../body.md
+posted #1 note P1 reviewer → implementer: from X, resumed after /background
+handoff: no session has implementer now, so this waits until the operator gives one that role; tell the operator.
+  [exit 0]
+
+## L. A hook with a fixed role (--as), started before its session had a binding (#388 point 3)
+$ (S, Stop hook, in the background) handoff hook listen --as reviewer --timeout 25s
+$ (S) handoff role reviewer
+You are now reviewer in l.
+  [exit 0]
+$ (Z) handoff role reviewer
+You are now reviewer in l. Another session had reviewer; it has no role now.
+  [exit 0]
+  .handoff/sessions: S[lost reviewer, pid] Z[role reviewer, pid] 
+-- S's commands are refused:
+$ (S) handoff inbox --quiet
+handoff inbox: you no longer hold reviewer: the operator gave it to session Z at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>; or give --for <role>
+  [exit 2]
+-- a note for the reviewer, which is Z now:
+posted #1 note P1 implementer → reviewer: for the reviewer
+-- what S's old hook said:
+  handoff: new for reviewer:
+  #1 note P1 implementer → reviewer: for the reviewer
+  Read each with `…/handoff show <id>` and act on it as your brief says.
+    [exit 2]
+-- what Z, the reviewer, gets:
+$ (Z) handoff wait --timeout 3s
+  [exit 3]
+
+## L2. The same, with the hook started after the binding (the fenced path, for comparison)
+$ (S) handoff role reviewer
+You are now reviewer in l2.
+  [exit 0]
+$ (S, Stop hook, in the background) handoff hook listen --timeout 25s
+$ (Z) handoff role reviewer
+You are now reviewer in l2. Another session had reviewer; it has no role now.
+  [exit 0]
+posted #1 note P1 implementer → reviewer: for the reviewer
+-- what S's old hook said:
+    [exit 0]
+-- what Z, the reviewer, gets:
+$ (Z) handoff wait --timeout 3s
+#1 note P1 implementer → reviewer: for the reviewer
+  [exit 0]
+
+Command: zsh probe-388m.sh <a new scratch dir> <the built binary>   (same date, same runner)
+
+## M. A session with a role, not marked, goes on by /background; its old id is resumed
+$ (X) handoff role reviewer
+You are now reviewer in m.
+  [exit 0]
+  .handoff/sessions: Y[role reviewer] 
+$ (Y) handoff role
+You are reviewer in m.
+  [exit 0]
+-- the operator resumes X by its id:
+$ (X) handoff role
+handoff role: no role: when the operator gives this session one, run `handoff role <role>`
+  [exit 2]
+$ (X) handoff note --as reviewer --to implementer --item P1 --title from X, resumed; Y has its role --body ../body.md
+posted #1 note P1 reviewer → implementer: from X, resumed; Y has its role
+handoff: no session has implementer now, so this waits until the operator gives one that role; tell the operator.
+  [exit 0]

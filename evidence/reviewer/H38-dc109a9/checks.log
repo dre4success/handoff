@@ -1,0 +1,192 @@
+H38, request #902, commit dc109a96088ae47d290f8854c28cd70424eabd60 (base 22791ca, main)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session).
+The commit was built in a temporary worktree (git worktree add --detach), removed after. So
+was main at 22791ca, as "the build before H38". Every probe ran in a new scratch git project
+with HANDOFF_TEST_NOTIFY set and the session variables unset.
+
+Verdict: CHANGES, on one point (reviewer-2's #906, which reproduces).
+
+== 1. Build, vet, format, dependencies (Run) ==
+$ go build -o handoff ./cmd/handoff && go vet ./... && gofmt -l cmd internal
+(no output)
+$ go list -deps ./... | grep -c '^net$'
+0
+$ git diff --check 22791ca dc109a9
+(no output)
+
+== 2. The full suite (Run) ==
+$ uptime; /usr/bin/time -p go test ./... -count=1 -race      (no -timeout; the worktree was at dc109a9 and clean when it ended)
+15:55  up 23 days, 19:52, 6 users, load averages: 4.51 5.51 15.95
+ok  	github.com/dre4success/handoff/cmd/handoff	346.826s
+ok  	github.com/dre4success/handoff/internal/awake	1.322s
+ok  	github.com/dre4success/handoff/internal/gitx	1.244s
+ok  	github.com/dre4success/handoff/internal/notify	1.403s
+ok  	github.com/dre4success/handoff/internal/record	3.832s
+ok  	github.com/dre4success/handoff/internal/status	1.242s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	2.565s
+real 349.76
+user 89.60
+sys 76.15
+exit 0
+
+== 3. Can a withdrawal approve an item without the operator? probe.sh (Run) ==
+"no session has ... now" lines are from my probe running roles with --as and no sessions.
+
+## A. Away. A round to two reviewers; reviewer-2 asks for changes; its request is withdrawn; the reviewer approves
+posted #2 request W1 implementer → reviewer: W1 @ 44b76a6add13
+posted #3 request W1 implementer → reviewer-2: W1 @ 44b76a6add13
+  (requests #2 to reviewer, #3 to reviewer-2)
+posted #4 reply W1 reviewer-2 → implementer: CHANGES on #3 @ 44b76a6add13
+handoff: no session has implementer now, so this waits until the operator gives one that role; tell the operator.
+$ handoff withdraw --as implementer 3 --note reviewer-2 is out
+posted #5 withdraw W1 implementer → reviewer-2: withdrew #3: reviewer-2 is out
+handoff: W1 is still in review (#2). While reviewer-2 isn't asked again on it, the operator's go-ahead doesn't approve it: the operator decides it.
+  [exit 0]
+posted #6 reply W1 reviewer → implementer: APPROVE on #2 @ 44b76a6add13
+handoff: no session has implementer now, so this waits until the operator gives one that role; tell the operator.
+  alerts to the operator:
+    a: W1: reviewer approved #2, but implementer withdrew its request #3 to reviewer-2, so your go-ahead doesn't cover it. Your decision.
+  implementer's "approved, to merge": (none) 
+-- the operator decides it:
+$ (the operator, at a terminal, answering y) handoff decide 2 --approve
+    #2 request W1 implementer → reviewer: W1 @ 44b76a6add13
+      #6 reply W1 reviewer → implementer: APPROVE on #2 @ 44b76a6add13
+      on W1: implementer withdrew its request #3 to reviewer-2
+    Approve W1 (#2)? [y/N] y
+    posted #7 decision W1 operator → implementer: approve #2
+  implementer's "approved, to merge": approved, to merge:   W1 @ 44b76a6add13, approved by the operator (#7) on the APPROVE of reviewer (#2): not in main yet; not yet delivered 
+$ handoff show 3   (its state)
+state: withdrawn by implementer (#5)
+
+## B. Away. The reviewer approves first; then reviewer-2's open request is withdrawn
+posted #2 request W1 implementer → reviewer: W1 @ 40a7286fcfae
+posted #3 request W1 implementer → reviewer-2: W1 @ 40a7286fcfae
+posted #4 reply W1 reviewer → implementer: APPROVE on #2 @ 40a7286fcfae
+handoff: no session has implementer now, so this waits until the operator gives one that role; tell the operator.
+$ handoff withdraw --as implementer 3
+posted #5 withdraw W1 implementer → reviewer-2: withdrew #3
+handoff: told the operator: W1: reviewer approved #2, but implementer withdrew its request #3 to reviewer-2, so your go-ahead doesn't cover it. Your decision.
+handoff: W1 is still in review (#2). While reviewer-2 isn't asked again on it, the operator's go-ahead doesn't approve it: the operator decides it.
+  [exit 0]
+  alerts to the operator:
+    b: W1: reviewer approved #2, but implementer withdrew its request #3 to reviewer-2, so your go-ahead doesn't cover it. Your decision.
+  implementer's "approved, to merge": (none) 
+-- reviewer-2 is asked again on the item, and approves:
+posted #6 request W1 implementer → reviewer-2: W1 @ 40a7286fcfae
+handoff: no session has reviewer-2 now, so this waits until the operator gives one that role; tell the operator.
+posted #7 reply W1 reviewer-2 → implementer: APPROVE on #6 @ 40a7286fcfae
+handoff: no session has implementer now, so this waits until the operator gives one that role; tell the operator.
+  alerts to the operator:
+    b: W1: approved under your go-ahead #1, by reviewer and reviewer-2 (#2, #6).
+  implementer's "approved, to merge": approved, to merge:   W1 @ 40a7286fcfae, approved under the operator's go-ahead #1 on the APPROVE of reviewer and reviewer-2 (#2, #6): not in main yet; not yet delivered 
+
+## C. Away. Two separate requests on one item (no round); reviewer-2's is withdrawn; the reviewer approves
+posted #2 request W1 implementer → reviewer: W1 @ 40a7286fcfae
+handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+posted #3 request W1 implementer → reviewer-2: W1 @ 40a7286fcfae
+handoff: no session has reviewer-2 now, so this waits until the operator gives one that role; tell the operator.
+posted #4 withdraw W1 implementer → reviewer-2: withdrew #3
+handoff: W1 is still in review (#2). While reviewer-2 isn't asked again on it, the operator's go-ahead doesn't approve it: the operator decides it.
+posted #5 reply W1 reviewer → implementer: APPROVE on #2 @ 40a7286fcfae
+handoff: no session has implementer now, so this waits until the operator gives one that role; tell the operator.
+  alerts to the operator:
+    c: W1: reviewer approved #2, but implementer withdrew its request #3 to reviewer-2, so your go-ahead doesn't cover it. Your decision.
+  implementer's "approved, to merge": (none) 
+
+## D. Away. After a withdrawal, a new round to the reviewer alone replaces its request; it approves
+posted #2 request W1 implementer → reviewer: W1 @ 3b8791ce9bde
+posted #3 request W1 implementer → reviewer-2: W1 @ 3b8791ce9bde
+posted #4 reply W1 reviewer-2 → implementer: CHANGES on #3 @ 3b8791ce9bde
+handoff: no session has implementer now, so this waits until the operator gives one that role; tell the operator.
+posted #5 withdraw W1 implementer → reviewer-2: withdrew #3
+handoff: W1 is still in review (#2). While reviewer-2 isn't asked again on it, the operator's go-ahead doesn't approve it: the operator decides it.
+posted #6 request W1 implementer → reviewer: W1 @ 3b8791ce9bde (supersedes #2)
+handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+posted #7 reply W1 reviewer → implementer: APPROVE on #6 @ 3b8791ce9bde
+handoff: no session has implementer now, so this waits until the operator gives one that role; tell the operator.
+  alerts to the operator:
+    d: W1: reviewer approved #6, but implementer withdrew its request #3 to reviewer-2, so your go-ahead doesn't cover it. Your decision.
+  implementer's "approved, to merge": (none) 
+
+## E. Not away. The withdrawal comes first, the approval next, and then the operator runs away
+posted #1 request W1 implementer → reviewer: W1 @ 3b8791ce9bde
+posted #2 request W1 implementer → reviewer-2: W1 @ 3b8791ce9bde
+posted #3 reply W1 reviewer-2 → implementer: CHANGES on #2 @ 3b8791ce9bde
+handoff: no session has implementer now, so this waits until the operator gives one that role; tell the operator.
+posted #4 withdraw W1 implementer → reviewer-2: withdrew #2
+handoff: W1 is still in review (#1). While reviewer-2 isn't asked again on it, the operator's go-ahead doesn't approve it: the operator decides it.
+posted #5 reply W1 reviewer → implementer: APPROVE on #1 @ 3b8791ce9bde
+handoff: no session has implementer now, so this waits until the operator gives one that role; tell the operator.
+  alerts to the operator:
+    e: W1: reviewer approved #1; implementer withdrew its request #2 to reviewer-2. Your decision.
+$ (the operator, at a terminal, answering n) handoff away carry on
+    away (#6): your go-ahead stands until you run handoff back
+    handoff: told the operator: Your go-ahead is recorded (#6): carry on Until you run handoff back, items are approved without asking you.
+  implementer's "approved, to merge": (none) 
+
+## F. A verdict on a withdrawn request, and who may withdraw
+posted #1 request W1 implementer → reviewer: W1 @ 3b8791ce9bde
+handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+$ handoff withdraw --as reviewer 1
+handoff withdraw: #1 was asked for by implementer; only it can withdraw it
+  [exit 2]
+$ handoff withdraw --as implementer 1
+posted #2 withdraw W1 implementer → reviewer: withdrew #1
+  [exit 0]
+$ handoff withdraw --as implementer 1
+exists #2 withdraw W1 implementer → reviewer: withdrew #1
+  [exit 0]
+$ handoff reply --as reviewer 1 --verdict APPROVE --commit 3b8791ce9bde80bd7dd24cf4b20207df3faaa848 --body f
+posted #3 reply W1 reviewer → implementer: APPROVE on #1 @ 3b8791ce9bde
+handoff: request #1 was withdrawn by implementer (#2); this reply is recorded and changes nothing
+handoff: no session has implementer now, so this waits until the operator gives one that role; tell the operator.
+  [exit 0]
+  alerts to the operator:
+$ (the operator, at a terminal) handoff decide 1 --approve
+    handoff decide: request #1 is withdrawn, not awaiting the operator
+  implementer's "approved, to merge": (none) 
+$ handoff inbox --for reviewer --quiet
+  [exit 0]
+posted #4 request W2 implementer → reviewer: W2 @ 3b8791ce9bde
+handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+posted #5 reply W2 reviewer → implementer: APPROVE on #4 @ 3b8791ce9bde
+handoff: no session has implementer now, so this waits until the operator gives one that role; tell the operator.
+$ handoff withdraw --as implementer 4
+handoff withdraw: #4 is approved and waits for the operator's decision, so it is theirs to end now; nothing written
+  [exit 2]
+$ (the build of main, without H38) handoff inbox --for reviewer   (needs my review)
+  (none)
+  [the older build reads the record: exit 0]
+
+== 4. reviewer-2's #906, run again: probe-b.sh (Run) ==
+
+## The implementer's listener is the old build
+posted #1 request W1 implementer → reviewer: W1 @ 2fe4c8b06193
+away (#2): your go-ahead stands until you run handoff back
+posted #3 withdraw W1 implementer → reviewer: withdrew #1
+posted #4 reply W1 reviewer → implementer: APPROVE on #1 @ 2fe4c8b06193
+handoff: request #1 was withdrawn by implementer (#3); this reply is recorded and changes nothing
+  what the listener gave the implementer:
+    #4 reply W1 reviewer → implementer: APPROVE on #1 @ 2fe4c8b06193
+      W1 is approved under the operator's go-ahead #2: that is the operator's approve
+    exit 0
+  alerts to the operator: old: W1: approved under your go-ahead #2, by reviewer (#1).|
+
+## The implementer's listener is the new build
+posted #1 request W1 implementer → reviewer: W1 @ 4f8e135d1796
+away (#2): your go-ahead stands until you run handoff back
+posted #3 withdraw W1 implementer → reviewer: withdrew #1
+posted #4 reply W1 reviewer → implementer: APPROVE on #1 @ 4f8e135d1796
+handoff: request #1 was withdrawn by implementer (#3); this reply is recorded and changes nothing
+  what the listener gave the implementer:
+    #4 reply W1 reviewer → implementer: APPROVE on #1 @ 4f8e135d1796
+    exit 0
+  alerts to the operator: 
+
+== 5. The wake for a seat that may be implementing: probe-h.sh, from H35.2 round 4 (Run) ==
+The two wakes it draws, a reviewer seat and the implementer seat:
+
+reviewer's seat is stuck: nothing has been heard from it for N seconds. #3 waits for it. Take it with `handoff role reviewer`: the operator's cover is their word for it.
+implementer's seat is stuck: its session's process has ended. #4 waits for it. Take it with `handoff role implementer`: the operator's cover is their word for it. Its old session may have left changes it didn't commit: don't discard, stash or overwrite them; t
+Refusals of the old session after the spare took its seat, as in round 4: 6 (6 then).

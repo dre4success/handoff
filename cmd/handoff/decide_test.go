@@ -94,6 +94,7 @@ func (r *repo) decision(t *testing.T, re string) (decision, body string) {
 // The operator names the item, not an entry number, gives no role and no note, and
 // answers y.
 func TestH9DecideByItemWithNoRole(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	req := r.approved(t, "W1")
 	out, err := r.atTerminal(t, "", []step{{"[y/N]", "y"}}, "decide", "W1", "--approve")
@@ -109,6 +110,7 @@ func TestH9DecideByItemWithNoRole(t *testing.T) {
 }
 
 func TestH9DenyWithANote(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	req := r.approved(t, "W1")
 	if out, err := r.atTerminal(t, "", []step{{"[y/N]", "yes"}}, "decide", "W1", "--deny", "--note", "fix the docs first"); err != nil {
@@ -120,6 +122,7 @@ func TestH9DenyWithANote(t *testing.T) {
 }
 
 func TestH9NotConfirmedWritesNothing(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	req := r.approved(t, "W1")
 	out, err := r.atTerminal(t, "", []step{{"[y/N]", ""}}, "decide", "W1", "--approve")
@@ -134,6 +137,7 @@ func TestH9NotConfirmedWritesNothing(t *testing.T) {
 // An item with two things awaiting the operator is ambiguous; the ids are listed, and
 // either id still works, with or without #.
 func TestH9ItemWithTwoEntriesNeedsTheId(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	req := r.approved(t, "W1")
 	note := idOf(t, r.ok(t, "implementer", "note", "--item", "W1", "--to", "operator", "--title", "May I deploy?", "--body", r.body(t, "after the merge")))
@@ -154,6 +158,7 @@ func TestH9ItemWithTwoEntriesNeedsTheId(t *testing.T) {
 // handoff on its own, at a terminal: each decision in turn, approve, deny or
 // skip, with an optional note.
 func TestH9HandoffOnItsOwnAsksAboutEach(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	req := r.approved(t, "W1")
 	note := idOf(t, r.ok(t, "implementer", "note", "--item", "W2", "--to", "operator", "--title", "May I deploy?", "--body", r.body(t, "to staging")))
@@ -225,6 +230,7 @@ func TestH9HandoffOnItsOwnOutsideAProject(t *testing.T) {
 // An agent's role is still refused, terminal or not; with no role and no
 // terminal, the terminal is what's missing.
 func TestH9DecideRefusals(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	r.approved(t, "W1")
 	r.refused(t, "", "terminal", "decide", "W1", "--approve")

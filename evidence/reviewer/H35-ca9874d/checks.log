@@ -1,0 +1,26 @@
+H35 design round 2, request #656, commit ca9874d377c86894e62257f1a9e2754b8470dec6 (base 8ea438b)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session).
+A design, read with: git diff 05437fd ca9874d -- docs/proposals/H35_DESIGN.md. No code.
+
+Verdict: APPROVE, as a draft ready for the operator. Not an approval under the go-ahead.
+
+== 1. The commit changes only the design (Run) ==
+$ git show ca9874d --stat | tail -2
+ docs/proposals/H35_DESIGN.md | 61 +++++++++++++++++++++++++-------------------
+ 1 file changed, 35 insertions(+), 26 deletions(-)
+$ git diff --check 05437fd ca9874d
+(no output)
+
+== 2. My five points of #655, each against the diff (Source) ==
+1, 2. "When a seat is stuck" is now a table: the cap and an ended process are exact, and
+      act at quiet_after on any seat; a permission prompt and silence act at twice that, on
+      reviewer seats only. "Silence never takes the implementer seat", with tonight's 69
+      and 65 minutes as the reason. It is the operator's question 3, with both answers.
+3.    Step 0 of the takeover: away shows the cover line, the away entry records cover and
+      the spare's session, only a spare bound before it may take, take rechecks it, and the
+      takeover entry cites it.
+4.    role spare is refused in a session that ever held another role, lineage included.
+5.    One spare; the two-spare tests are gone.
+Smaller: the question at back in plain words, asked again while a session stays shut out;
+the implementer seat's line in the brief; an ended process on the fast path; the approval
+line naming the spare. All there.

@@ -1,0 +1,150 @@
+H35.1 round 3, request #834, commit 741cc66e72e6c0a8c3ff2cce5faff647b5bd3506 (base 00868d5, in main)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session).
+The commit was built in a temporary worktree (git worktree add --detach), removed after.
+Every probe ran in a new scratch git project with HANDOFF_TEST_NOTIFY set and the session
+variables unset. Sessions are simulated, as in rounds 1 and 2.
+
+Verdict: APPROVE.
+
+== 1. Build, vet, format, dependencies (Run) ==
+$ go build -o handoff ./cmd/handoff && go vet ./... && gofmt -l cmd internal
+(no output)
+$ go list -deps ./... | grep -c '^net$'
+0
+$ git diff --check 00868d5 741cc66
+(no output)
+
+== 2. The full suite (Run) ==
+$ uptime; /usr/bin/time -p go test ./... -count=1 -race      (no -timeout; the worktree was at 741cc66 and clean when it ended)
+ 9:08  up 23 days, 13:05, 12 users, load averages: 10.40 12.29 10.09
+ok  	github.com/dre4success/handoff/cmd/handoff	366.931s
+ok  	github.com/dre4success/handoff/internal/awake	1.352s
+ok  	github.com/dre4success/handoff/internal/gitx	1.260s
+ok  	github.com/dre4success/handoff/internal/notify	1.668s
+ok  	github.com/dre4success/handoff/internal/record	4.699s
+ok  	github.com/dre4success/handoff/internal/status	1.266s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	2.541s
+real 370.29
+user 147.65
+sys 122.87
+exit 0
+(Load 10 when it began, and my probes ran beside it. 367 s is the longest I have seen
+cmd/handoff take; Go's limit is 600 s.)
+
+== 3. Round 3's changes: probe-f.sh (Run) ==
+F1 uses the tool's own pause point: HANDOFF_TEST_PAUSE=deliver=<dir>, released by <dir>/deliver.go.
+
+## F1. reviewer-2's #817 point 1: a wait of a session with no role, held before a delivery; the session becomes the spare
+posted #1 request W1 implementer → reviewer: W1 @ 24b265d8a21d
+  (the wait is held at its delivery)
+You are now the spare in f1.
+  the wait, after: handoff wait: this session no longer holds reviewer: the operator gave it another role, or gave reviewer to another session|exit 2|
+  reviewer's cursor: none
+$ handoff wait --for reviewer --timeout 2s   (another listener)
+#1 request W1 implementer → reviewer: W1 @ 24b265d8a21d
+  [exit 0]
+
+## F2. The same with nothing held: the wait is idle when its session becomes the spare
+You are now the spare in f2.
+  the wait ended 1.0 s after role spare: handoff wait: this session no longer holds reviewer: the operator gave it another role, or gave reviewer to another session|exit 2|
+posted #1 request W2 implementer → reviewer: W2 @ 78971acc4cf0
+$ handoff wait --for reviewer --timeout 2s   (another listener)
+#1 request W2 implementer → reviewer: W2 @ 78971acc4cf0
+  [exit 0]
+
+## F3. The spare's own wait, when the operator gives its session a seat (role reviewer)
+You are now reviewer in f3.
+  the spare's wait ended 1.0 s after: handoff wait: this session no longer holds spare: the operator gave it another role, or gave spare to another session|exit 2|
+posted #1 request W3 implementer → reviewer: W3 @ 6135f8b07fa4
+$ (sp, now reviewer) handoff wait --timeout 2s
+#1 request W3 implementer → reviewer: W3 @ 6135f8b07fa4
+  [exit 0]
+
+## F4. The spare in handoff's own view
+-- no spare:
+$ handoff   (the "sessions" part)
+  (no such part)
+-- a spare that has just been named:
+$ handoff   (the "sessions" part)
+sessions:
+  spare: not listening now (never listened)
+-- after quiet_after (2 s here) with no listener:
+$ handoff   (the "sessions" part)
+sessions:
+  spare: not listening now (never listened)
+-- while its wait runs:
+$ handoff   (the "sessions" part)
+  (no such part)
+-- a permission prompt in it (Notification hook):
+$ handoff   (the "sessions" part)
+sessions:
+  blocked: the spare's session is at a permission prompt: Claude needs your permission to use Bash, since HH:MM, so it can't cover a stuck seat until you answer it
+-- its process ends:
+$ handoff   (the "sessions" part)
+  (no such part)
+-- an Antigravity spare at its cap:
+$ handoff   (the "sessions" part)
+sessions:
+  blocked: the spare can't be woken until you type in its session (Antigravity's 10 wakes used, since HH:MM), so it can't cover a stuck seat
+  alerts to the operator (2):
+    f4: spare is waiting for your permission: Claude needs your permission to use Bash
+    f4: handoff can't wake spare's Antigravity session for new work until you type in it: Antigravity lets hooks continue a turn 10 times in a row.
+
+## F5. What fyi, away and back say of the spare
+-- no spare:
+$ (the operator, at a terminal) handoff fyi one
+    told implementer (#1)
+    not told, no session: reviewer, reviewer-2
+-- with a spare:
+$ (the operator, at a terminal) handoff fyi two
+    told implementer (#2)
+    not told, no session: reviewer, reviewer-2
+    the spare isn't told: it holds no work
+$ (the operator, at a terminal) handoff away carry on
+    told implementer (#4)
+    not told, no session: reviewer, reviewer-2
+    the spare isn't told: it holds no work
+    handoff: told the operator: Your go-ahead is recorded (#3): carry on Until you run handoff back, items are approved without asking you.
+$ (the operator, at a terminal) handoff back
+    told implementer (#6)
+    not told, no session: reviewer, reviewer-2
+    the spare isn't told: it holds no work
+  entries addressed to the spare: 0
+-- the spare's process has ended:
+$ (the operator, at a terminal) handoff fyi three
+    told implementer (#7)
+    not told, no session: reviewer, reviewer-2
+
+-- a seat (reviewer) just named, for comparison:
+sessions:
+  reviewer: not listening now (never listened)
+
+== 4. reviewer-2's #817 point 2 again: probe-e.sh (Run) ==
+
+## V1. In the spare's own session, wait --for spare with --as spare or HANDOFF_ROLE=spare
+$ (sp) handoff wait --for spare --as spare --timeout 1s
+handoff wait: the spare is the session the operator names with `/private/tmp/claude-501/-Users-me-handoff/ed41c714-77b0-4a59-a1e9-19eae2ced3c2/scratchpad/wt-h351c.5nHu/hand
+  [exit 2]
+$ (sp) HANDOFF_ROLE=spare handoff wait --for spare --timeout 1s
+handoff wait: the spare is the session the operator names with `/private/tmp/claude-501/-Users-me-handoff/ed41c714-77b0-4a59-a1e9-19eae2ced3c2/scratchpad/wt-h351c.5nHu/hand
+  [exit 2]
+$ (sp) handoff wait --as spare --timeout 1s   (no --for)
+handoff wait: the spare is the session the operator names with `handoff role spare` in it; --as spare and HANDOFF_ROLE=spare are refused; or give --for <role>
+  [exit 2]
+
+== 5. Rounds 1 and 2's probes, run again (Run) ==
+probe.sh: differs from round 2 only by the new "the spare isn't told" line at fyi and away
+(S3) and the blocked spare now listed (S5).
+probe-b.sh: differs only by the refusal's wording (no review reference) and the blocked
+spare now listed (T4).
+probe-c.sh: no line differs. Its three races again, 40 runs each:
+  40 runs: 0 ended as something other than implementer (22 times role spare ran first and was then replaced; the rest it was refused)
+  40 runs: 0 where the spare was not held by exactly one session
+  40 /clears: 0 where a hook did not have the spare, or its generation changed
+
+== 6. Source ==
+cmd/handoff/session.go, holds and waitFence: the new checks sit only in the branch for a
+wait whose session did not hold the role when it began (!held). The spare's own wait is
+held, so it is untouched (U1, F3). waitFence's check runs under the record's read lock,
+which bind takes for writing, so a delivery and a session's becoming the spare can't cross.

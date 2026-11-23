@@ -108,13 +108,15 @@ func TestH30RoleFollowsBackground(t *testing.T) {
 	if out := r.as(t, moved, "role"); !strings.Contains(out, "You are implementer") {
 		t.Fatalf("role after /background: %s", out)
 	}
-	r.refusedIn(t, claude("s-old", oldPID), "no role", "inbox")
+	// The old id can be resumed: it is marked, detached from its process,
+	// so it can't act as the role next to the new one (reviewer-2, #388).
+	r.refusedIn(t, claude("s-old", oldPID), "you no longer hold implementer: this conversation went on in session s-new at ", "inbox")
 	b, ok := boundTo(t, r, "s-new")
-	if !ok || b.Role != "implementer" || b.PID != newPID || b.Since != given.Since || !slices.Equal(b.Was, []string{"s-old"}) {
+	if !ok || b.Role != "implementer" || b.PID != newPID || b.Since != given.Since || b.Gen != given.Gen || !slices.Equal(b.Was, []string{"s-old"}) {
 		t.Fatalf("binding after /background: %+v (given %+v)", b, given)
 	}
-	if _, ok := boundTo(t, r, "s-old"); ok {
-		t.Fatal("the old session's binding is still there")
+	if old, ok := boundTo(t, r, "s-old"); !ok || old.Role != "" || old.Lost == nil || old.Lost.Went != "/background" || old.Lost.To != "s-new" || old.PID != 0 || !old.Gone {
+		t.Fatalf("the old session's binding after /background: %+v", old)
 	}
 }
 

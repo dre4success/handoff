@@ -1,0 +1,95 @@
+# command: python3 real-probe.py c1|c2|c3 <session id>, in a scratch project (git init, handoff init), with shim-handoff.txt first on the sessions' PATH as handoff
+# date: 2026-11-19, 17:39 to 17:49 UTC
+# by: Fable 5.2 (reviewer), Claude Code 2.1.326, on the operator's Mac; throwaway sessions on Haiku; handoff is the installed build of main (09ece7d)
+# Times are when the driver read the shim's notes, not when each hook ran.
+
+## C1, first try: my mistake in the flags. The run ended before any message; the start hooks had run.
+17:39:26 ## C1 print mode: claude -p --session-id e937e4ee, told to run `handoff role reviewer`
+17:39:28    handoff hook listen                  SessionStart startup session=e937e4ee
+17:39:28    handoff hook brief                   SessionStart startup session=e937e4ee
+17:39:28 ## C1 the run is over, exit 1; stopping it (its Stop hook listens, so it would not end)
+17:39:28 ## C1 printed: '"Run this exact command with the Bash to…" was read as a value of --allowedTools, not as a prompt · put a prompt before --allowedTools or after --\nError: Input must be provided either through stdin or'
+17:39:28 ## C1 binding: none
+17:39:31 ## done
+
+## C1
+17:39:37 ## C1 print mode: claude -p --session-id 48c61222, told to run `handoff role reviewer`
+17:39:43    handoff hook brief                   SessionStart startup session=48c61222
+17:39:43    handoff hook listen                  SessionStart startup session=48c61222
+17:39:43    handoff role reviewer                  session=
+17:39:43    handoff hook listen                  Stop  session=48c61222
+17:39:43 ## C1 the run is still running; stopping it (its Stop hook listens, so it would not end)
+17:39:44 ## C1 printed: 'done'
+17:39:44 ## C1 binding: {"v":1,"role":"reviewer","session":"48c61222-b675-4a82-8e18-ce5d6f4372b3","pid":<n>,"since":"2026-11-19T17:39:41.854125Z"}
+17:39:47 ## done
+
+## C2, first try: my driver answered the folder's trust question with Enter, which is No. Claude Code did not start,
+## so nothing here is about a resumed session. Its request #1 was written and waited.
+17:39:51 ## C2 the same session in a terminal: claude --resume 48c61222, nothing typed
+17:39:52    (the folder's trust question: answered with Enter)
+17:40:08 ## C2 15 s after the start, nothing typed: 0 `handoff hook listen` of this probe running
+17:40:08 ## C2 presence for reviewer: a file, how=hook
+17:40:08 ## C2 a request from the implementer's side: exit 0 | posted #1 request W1 implementer → reviewer: probe: are you listening @ 755af229cf33 | handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+17:41:38 ## C2 no handoff command from the session in 90 s
+17:41:38 ## C2 the screen's last lines: 
+17:41:38 ## C2 closed; process ended
+17:41:38 ## done
+
+## C2, second try: the session started, and request #1 was already waiting
+17:42:18 ## C2 the same session in a terminal: claude --resume 48c61222, nothing typed
+17:42:19    (the folder's trust question: answered Yes, with Down and Enter)
+17:42:35    handoff hook listen                  SessionStart resume session=48c61222
+17:42:35    handoff hook brief                   SessionStart resume session=48c61222
+17:42:35 ## C2 15 s after the start, nothing typed: 0 `handoff hook listen` of this probe running
+17:42:35 ## C2 presence for reviewer: a file, how=hook
+17:42:35 ## C2 a request from the implementer's side: exit 2 | handoff post: identical to #1; nothing written (to retry a post safely, give it a --key)
+17:44:08    handoff hook listen                  Stop  session=48c61222
+17:44:08 ## C2 no handoff command from the session in 90 s
+17:44:08 ## C2 the screen's last lines: ✻Crunching… (20s · ↓ 1.7k tokens) / running Stophoks… 1/2 · 20s · ↓1.7k tokens) / ✻Crunched for 20s · done 5:42 PM / ❯ / ← 2agents / try the claim again
+17:44:13 ## C2 closed; process still alive
+17:44:13 ## done
+## What the session's transcript held for this run, printed before the scratch data was purged (cut to the first words):
+17:42:20 SessionStart:resume hook success: "handoff brief: ..."
+17:42:20 user turn, nothing typed: Stop hook feedback / blocking error from command "SessionStart:resume": handoff: new for reviewer: #1 request W1 implementer → reviewer: probe: are you listening
+17:42:22 the agent ran: <home>/go/bin/handoff show 1
+17:42:28 the agent ran: handoff claim --as reviewer 1 (with more); denied by the session's own permission check, twice
+17:42:41 the agent's answer: it could not claim request #1
+## The agent ran handoff by the full path its hook named, past the shim, so the shim noted only the hooks.
+
+## C2, third try: nothing new waited; my request was refused, being a second one on W1. The listener count is the result here.
+17:44:41 ## C2 the same session in a terminal: claude --resume 48c61222, nothing typed
+17:45:20    handoff hook listen                  SessionStart resume session=48c61222
+17:45:20    handoff hook brief                   SessionStart resume session=48c61222
+17:45:20 ## C2 15 s after the start, nothing typed: 1 `handoff hook listen` of this probe running
+17:45:20 ## C2 presence for reviewer: a file, how=hook
+17:45:20 ## C2 a request from the implementer's side: exit 2 | handoff post: request #1 on W1 to reviewer is still open (open); to replace it, pass --supersedes 1
+17:46:53 ## C2 no turn in 90 s
+17:46:53 ## C2 `handoff hook listen` below the session now: 1
+17:46:53 ## C2 the screen's last lines: 
+17:46:58 ## C2 closed; process still alive
+17:46:58 ## done
+
+## C2, fourth try: a request on a new item, sent 15 s after the start, nothing typed
+17:47:08 ## C2 the same session in a terminal: claude --resume 48c61222, nothing typed
+17:47:48    handoff hook brief                   SessionStart resume session=48c61222
+17:47:48    handoff hook listen                  SessionStart resume session=48c61222
+17:47:48 ## C2 15 s after the start, nothing typed: 1 `handoff hook listen` of this probe running
+17:47:48 ## C2 presence for reviewer: a file, how=hook
+17:47:48 ## C2 a request from the implementer's side: exit 0 | posted #2 request W2 implementer → reviewer: probe: are you listening @ 755af229cf33
+17:48:14    handoff hook listen                  Stop  session=48c61222
+17:48:14 ## C2 the session took a turn with nothing typed (its Stop hook ran): it was woken
+17:48:14 ## C2 `handoff hook listen` below the session now: 1
+17:48:14 ## C2 the screen's last lines: 2. Not now / 3. Don'tshowagain / Enter to confirm · Esc to cancel / ❯ / ← 2agents / claim request 1
+17:48:20 ## C2 closed; process still alive
+17:48:20 ## done
+## 'process still alive' is the driver's check, made before the process was reaped. ps showed no process of the probe afterwards.
+
+## C3
+17:48:27 ## C3 a new session in a terminal, nothing typed, then closed: claude --session-id 853fb900
+17:49:03    handoff hook listen                  SessionStart startup session=853fb900
+17:49:03    handoff hook brief                   SessionStart startup session=853fb900
+17:49:11 ## C3 transcripts named for it under the CLI's projects folder: 0
+17:49:12 ## C3 claude -p --resume of it: exit 1 | No conversation found with session ID: 853fb900-02fc-47ef-bee6-f8fd96960c0f
+17:49:12 ## done
+
+## Afterwards: claude purge of the scratch project (2 items); no entry for it left in the CLI's projects folder or its settings; no alert was written; no probe process left.

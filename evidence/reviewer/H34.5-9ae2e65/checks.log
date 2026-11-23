@@ -1,0 +1,93 @@
+H34.5 round 3, request #676, commit 9ae2e65a18842c0081bdadf85b00b2839f0ab6e2 (base 0e31248, H34.4 round 4)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session).
+The commit was built in a temporary worktree (git worktree add --detach), removed after.
+Every probe ran in a new scratch git project with HANDOFF_TEST_NOTIFY set and the session
+variables unset. quiet_after is set to 2s or 3s in the scratch project's own config.
+
+== 1. Build, vet, format, dependencies (Run) ==
+$ go build -o handoff ./cmd/handoff && go vet ./... && gofmt -l cmd internal
+(no output)
+$ go list -deps ./... | grep -c '^net$'
+0
+$ git diff --check 0e31248 9ae2e65
+(no output)
+
+== 2. The other project's replay: p2-probe-g.sh (Run) ==
+One line differs from round 2 (../H34.5-480b5d2/checks.log): in the last step, the hook
+that listens once the operator types no longer says "hasn't been given your fyi #5"
+before it delivers #5.
+
+## G. An Antigravity implementer at its cap, the operator away, three reviewers approve
+You are now implementer in g.
+posted #1 request W1 implementer → reviewer: W1 @ 3e39440c3698
+posted #2 request W1 implementer → reviewer-2: W1 @ 3e39440c3698
+posted #3 request W1 implementer → reviewer-3: W1 @ 3e39440c3698
+$ (Antigravity A, Stop hook, executionNum 10) handoff hook listen --timeout 2s
+    (no wake) | 
+  alerts to the operator (1):
+    g: implementer can't be woken until you type in its session (Antigravity's 10 wakes used, since HH:MM), and work waits for it (#5).
+posted #6 reply W1 reviewer → implementer: APPROVE on #1 @ 3e39440c3698
+handoff: implementer can't be woken until the operator types in its session (Antigravity's 10 wakes used, since HH:MM). This waits.
+posted #7 reply W1 reviewer-2 → implementer: APPROVE on #2 @ 3e39440c3698
+handoff: implementer can't be woken until the operator types in its session (Antigravity's 10 wakes used, since HH:MM). This waits.
+posted #8 reply W1 reviewer-3 → implementer: APPROVE on #3 @ 3e39440c3698
+handoff: told the operator: implementer can't be woken until you type in its session (Antigravity's 10 wakes used, since HH:MM), and work waits for it (#8).
+handoff: told the operator: W1: approved under your go-ahead #4, by reviewer, reviewer-2 and reviewer-3 (#1, #2, #3).
+handoff: implementer can't be woken until the operator types in its session (Antigravity's 10 wakes used, since HH:MM). This waits.
+  alerts to the operator (2):
+    g: implementer can't be woken until you type in its session (Antigravity's 10 wakes used, since HH:MM), and work waits for it (#8).
+    g: W1: approved under your go-ahead #4, by reviewer, reviewer-2 and reviewer-3 (#1, #2, #3).
+$ handoff inbox --for implementer
+inbox for implementer
+
+blocked: implementer can't be woken until the operator types in its session (Antigravity's 10 wakes used, since HH:MM). This waits.
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+approved, to merge:
+  W1 @ 3e39440c3698, approved under the operator's go-ahead #4 on the APPROVE of reviewer, reviewer-2 and reviewer-3 (#1, #2, #3): not in main yet; not yet delivered
+
+$ handoff   (the operator's view)
+You're away (#4, since 2026-11-23T06:03:50Z), with this go-ahead: merge once the reviewers approve
+Run handoff back to end it.
+
+Nothing needs your decision.
+
+sessions:
+  blocked: implementer can't be woken until the operator types in its session (Antigravity's 10 wakes used, since HH:MM). This waits.
+
+approved, to merge:
+  W1 @ 3e39440c3698, approved under the operator's go-ahead #4 on the APPROVE of reviewer, reviewer-2 and reviewer-3 (#1, #2, #3) for implementer: not in main yet; not yet delivered
+-- three seconds later, any listener's pass:
+  alerts to the operator (1):
+    g: W1: implementer hasn't merged 3e39440c3698, approved under the operator's go-ahead #4 on the APPROVE of reviewer, reviewer-2 and reviewer-3 (#1, #2, #3) (4 s), and its session can't be woken (Antigravity's 10 wakes used, since HH:MM)
+-- the operator types in the session; its next Stop hook:
+$ (Antigravity A, Stop hook, executionNum 0) handoff hook listen --timeout 2s
+    continue | handoff: new for implementer: / #5 fyi - operator → implementer: merge once the reviewers approve (re #4) / #6 reply W1 reviewer → implementer: APPROVE on #1 @ 3e39440c3698 /   W1 is approved under the operator's go-ahead #4: that is the operato
+
+== 3. Rounds 1 and 2's probes, run again: probe.sh (W1 to W3), probe-b.sh (W1b, W3b) (Run) ==
+No line differs from round 2, commit ids, paths and times apart. W2 still shows the alert
+for a note left undelivered to a role nothing listens for, once.
+
+== 4. The full suite (Run) ==
+$ uptime; /usr/bin/time -p go test ./... -count=1 -race      (no -timeout; the worktree was at 9ae2e65 and clean when it ended)
+ 6:03  up 23 days, 10 hrs, 15 users, load averages: 5.10 5.14 4.95
+ok  	github.com/dre4success/handoff/cmd/handoff	293.654s
+ok  	github.com/dre4success/handoff/internal/awake	1.312s
+ok  	github.com/dre4success/handoff/internal/gitx	1.418s
+ok  	github.com/dre4success/handoff/internal/notify	1.386s
+ok  	github.com/dre4success/handoff/internal/record	4.052s
+ok  	github.com/dre4success/handoff/internal/status	1.233s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	2.613s
+real 295.50
+user 78.25
+sys 62.02
+exit 0

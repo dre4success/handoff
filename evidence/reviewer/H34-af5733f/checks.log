@@ -1,0 +1,53 @@
+# H34 design review, round 4, request #276, commit af5733f95acd7e64629c92f7a3be2eb93fbb227b (base 370f688)
+# Run by: the reviewer (Claude Code, Fable 5.2), 2026-11-22T07:15:20Z, in a temporary worktree of the exact commit
+# Earlier runs this verdict still rests on: ../H34-2819550/checks.log §7 to §9, ../H34-9fa9eff/checks.log §2, ../H34-0605d69/checks.log.
+
+## 1. What round 4 changes
+$ git log --oneline 0605d69..af5733f
+af5733f docs: H34 design round 4: answers reviewer-2's CHANGES (#273) and settles the build notes of #274 and #275
+$ git diff --stat 0605d69..af5733f
+ docs/proposals/H34_DESIGN.md | 77 ++++++++++++++++++++++++++++++++------------
+ evidence/h34/facts.log       | 43 +++++++++++++++++++++++++
+ 2 files changed, 99 insertions(+), 21 deletions(-)
+$ git diff --check 370f688..af5733f; echo exit $?
+exit 0
+
+## 2. The facts added for rounds 3 and 4 reproduce (each command of the added block run again at the commit)
+$ diff <(the added block of evidence/h34/facts.log) <(its commands run again)
+(no difference)
+
+## 3. decide by item today: one entry awaiting, else "give the id" (Source), which the new line 58 builds on
+$ sed -n 1018,1042p cmd/handoff/cmds.go
+// target finds what to decide: an entry id, or an item with exactly one
+// entry awaiting the operator. A name of digits only is read as an id.
+func target(st *status.Status, arg string) (*status.Target, error) {
+	if id, err := parseID(arg); err == nil {
+		return st.Decidable(id)
+	}
+	if checkItem(arg) != nil {
+		return nil, fmt.Errorf("%q is neither an item nor an entry id", arg)
+	}
+	var found []*status.Target
+	var ids []string
+	for _, t := range st.Inbox(status.Operator).AwaitingOperator {
+		if t.Entry.Item == arg {
+			found = append(found, t)
+			ids = append(ids, fmt.Sprintf("#%d", t.Entry.ID))
+		}
+	}
+	switch len(found) {
+	case 0:
+		return nil, fmt.Errorf("nothing on %s awaits the operator", arg)
+	case 1:
+		return found[0], nil
+	}
+	return nil, fmt.Errorf("%s has %d entries awaiting the operator (%s); give the id", arg, len(found), strings.Join(ids, ", "))
+}
+
+## 4. A request supersedes its old one as it is written today (Source), which part 7 stages
+$ sed -n 70,74p internal/status/status.go
+		case "request":
+			r := &Request{Entry: e, State: Open, Last: e}
+			if old, ok := s.requests[e.Supersedes]; ok && old.live() {
+				old.State, old.SupersededBy = Superseded, e.ID
+			}

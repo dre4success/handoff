@@ -1,0 +1,42 @@
+H34.3 round 7, request #661, commit c32c9a5d6239173aad0eda7874c8d2c04045ea92 (base 6f2f908, H34.2 round 7)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session).
+The commit was built in a temporary worktree (git worktree add --detach), removed after.
+Every probe ran in a new scratch git project with HANDOFF_TEST_NOTIFY set and the session
+variables unset. The 6 s build for A6 and A7 is round 5's (../H34.3-24b8ca5): the listener
+has not changed since.
+
+== 1. Build, vet, format, dependencies (Run) ==
+$ go build -o handoff ./cmd/handoff && go vet ./... && gofmt -l cmd internal
+(no output)
+$ go list -deps ./... | grep -c '^net$'
+0
+$ git diff --check 6f2f908 c32c9a5
+(no output)
+
+== 2. The rebase (Run) ==
+Part 3's code, on round 6's base and on this one, as sorted changed lines:
+$ diff <(git diff a1f5644 f1d48f6 -- cmd internal | grep '^[+-]' | grep -v '^+++\|^---' | sort) \
+       <(git diff 6f2f908 c32c9a5 -- cmd internal | grep '^[+-]' | grep -v '^+++\|^---' | sort)
+(no output)
+The same for docs and README.md: (no output)
+
+== 3. Probes, run again (Run) ==
+probe.sh (A1 to A7), probe-a4.sh, probe-a8.sh, probe-a9.sh, probe-a10.sh, and the other project's
+replay p2-probe-g.sh: no line differs from round 6 (../H34.3-f1d48f6/checks.log), commit
+ids, paths and times apart.
+
+== 4. The full suite (Run) ==
+$ uptime; /usr/bin/time -p go test ./... -count=1 -race      (no -timeout; the worktree was at c32c9a5 and clean when it ended; two other suites ran beside it)
+ 5:52  up 23 days,  9:49, 15 users, load averages: 4.39 4.35 4.47
+ok  	github.com/dre4success/handoff/cmd/handoff	286.642s
+ok  	github.com/dre4success/handoff/internal/awake	1.348s
+ok  	github.com/dre4success/handoff/internal/gitx	1.270s
+ok  	github.com/dre4success/handoff/internal/notify	1.433s
+ok  	github.com/dre4success/handoff/internal/record	4.005s
+ok  	github.com/dre4success/handoff/internal/status	1.270s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	2.599s
+real 288.37
+user 80.61
+sys 64.11
+exit 0

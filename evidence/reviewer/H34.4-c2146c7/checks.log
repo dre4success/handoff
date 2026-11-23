@@ -1,0 +1,120 @@
+H34.4 round 2, request #618, commit c2146c766d0a53e6892a5d68bde287d153f740da (base f1d48f6, H34.3 round 6)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session).
+The commit was built in a temporary worktree (git worktree add --detach), removed after.
+Every probe ran in a new scratch git project with HANDOFF_TEST_NOTIFY set and the session
+variables unset.
+
+== 1. Build, vet, format, dependencies (Run) ==
+$ go build -o handoff ./cmd/handoff && go vet ./... && gofmt -l cmd internal
+(no output)
+$ go list -deps ./... | grep -c '^net$'
+0
+$ git diff --check f1d48f6 c2146c7
+(no output)
+
+== 2. The rebase (Run) ==
+Part 4 round 1's code, on its old base and rebased, as sorted changed lines:
+$ diff <(git diff 76c7e0b c1c8db5 -- cmd internal | grep '^[+-]' | grep -v '^+++\|^---' | sort) \
+       <(git diff f1d48f6 e4698d2 -- cmd internal | grep '^[+-]' | grep -v '^+++\|^---' | sort)
+(no output)
+
+== 3. New for round 2: probe-e5.sh (Run) ==
+
+## E5. fyi and away say when a session that can't take it now gets it
+You are now implementer in e5.
+You are now reviewer in e5.
+You are now reviewer-2 in e5.
+You are now reviewer-3 in e5.
+-- implementer: Antigravity, at its cap. reviewer: never listened. reviewer-2: listening. reviewer-3: at a permission prompt.
+$ (the operator, at a terminal) handoff fyi "hold all merges"
+    told implementer, reviewer, reviewer-2 and reviewer-3 (#1, #2, #3, #4)
+    implementer's session can't be woken; it gets this when you type in it. To reach the role now, give it to another session and send again.
+    reviewer's session isn't listening now; it gets this the next time it listens.
+    reviewer-3's session is at a permission prompt; it gets this once you answer it.
+    handoff: told the operator: implementer can't be woken until you type in its session (Antigravity's 10 wakes used, since 04:50), and work waits for it (#1).
+    handoff: told the operator: reviewer-3 is at a permission prompt: allow Bash, since 04:50, and work waits for it (#4).
+$ (the operator, at a terminal) handoff away "carry on"
+    away (#5): your go-ahead stands until you run handoff back
+    told implementer, reviewer, reviewer-2 and reviewer-3 (#6, #7, #8, #9)
+    implementer's session can't be woken; it gets this when you type in it. To reach the role now, give it to another session and send again.
+    reviewer's session isn't listening now; it gets this the next time it listens.
+    reviewer-3's session is at a permission prompt; it gets this once you answer it.
+    implementer is an Antigravity session: handoff can wake it 10 times before you type in it.
+
+## E4. Usage
+  settings claude|codex|antigravity [--global | --as <role>]   settings that keep a CLI's sessions
+          on duty: --global for every project, else this one; without --as,
+          each session takes the role the operator gives it (Antigravity
+          takes no --as)
+
+== 4. Round 1's probes, run again: probe.sh (Run) ==
+E1 and E3: no line differs. E2: away now also says, of the two sessions that had not
+listened, when each gets it. E4: usage has the --as note. The output on this commit:
+
+## E1. Antigravity's wakes count down, on a wake for time running out and on one with work
+You are now implementer in e1.
+$ (Antigravity A, Stop hook, executionNum 5) handoff hook listen --timeout 1s
+    continue | handoff: nothing new for implementer in 1s. Just end your turn; listening starts again when it ends. / 
+$ (Antigravity A, Stop hook, executionNum 6) handoff hook listen --timeout 1s
+    continue | handoff: nothing new for implementer in 1s. Just end your turn; listening starts again when it ends. handoff can wake this session 3 more times before the operator types in it; if the operator is with you, say so. / 
+$ (Antigravity A, Stop hook, executionNum 7) handoff hook listen --timeout 1s
+    continue | handoff: nothing new for implementer in 1s. Just end your turn; listening starts again when it ends. handoff can wake this session 2 more times before the operator types in it; if the operator is with you, say so. / 
+$ (Antigravity A, Stop hook, executionNum 8) handoff hook listen --timeout 1s
+    continue | handoff: nothing new for implementer in 1s. Just end your turn; listening starts again when it ends. handoff can wake this session 1 more time before the operator types in it; if the operator is with you, say so. / 
+$ (Antigravity A, Stop hook, executionNum 9) handoff hook listen --timeout 1s
+    continue | handoff: nothing new for implementer in 1s. Just end your turn; listening starts again when it ends. This is the last time handoff can wake this session before the operator types in it; if the operator is with you, say so. / 
+$ (Antigravity A, Stop hook, executionNum 10) handoff hook listen --timeout 1s
+    (no decision) | 
+-- with a note to deliver, at executionNum 8:
+posted #1 note P1 reviewer → implementer: one
+$ (Antigravity A, Stop hook, executionNum 8) handoff hook listen --timeout 1s
+    continue | -19eae2ced3c2/scratchpad/wt-h344b.ayO6/handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends. handoff can wake this session 1 more time before the operator types in it; if the operator is with you, say so. / 
+-- a Claude Code session's wake has no count:
+You are now reviewer in e1.
+    handoff: nothing new for reviewer in 1s. Just end your turn; listening starts again when it ends.
+
+## E2. away warns of an Antigravity session, and not of the Claude Code one
+$ (the operator, at a terminal) handoff away "carry on"
+    away (#2): your go-ahead stands until you run handoff back
+    Under it, an item is approved once every reviewer it was sent to approves the same commit; one approval is enough for an item sent to one reviewer. handoff doesn't read your words: to tell the agents something without approving anything, use handoff fyi.
+    told implementer and reviewer (#3, #4)
+    implementer's session isn't listening now; it gets this the next time it listens.
+    reviewer's session isn't listening now; it gets this the next time it listens.
+    implementer is an Antigravity session: handoff can wake it 10 times before you type in it.
+    handoff: told the operator: Your go-ahead is recorded (#2): carry on Until you run handoff back, items are approved without asking you.
+  binding A | role implementer | cli antigravity
+  binding R | role reviewer | cli claude
+
+## E3. A role the project doesn't have
+$ (S) handoff role reviewer-3
+    handoff role: reviewer-3 isn't a role here (the roles are implementer, reviewer). If the operator gave it to you, run `handoff roles add reviewer-3`, then `handoff role reviewer-3`
+$ (S) handoff role Reviewer_3
+    handoff role: role "Reviewer_3": use lower-case letters, digits and '-'
+$ (S) handoff role operator
+    handoff role: operator is the person who decides; give the session one of the agents' roles
+$ (S) handoff roles add reviewer-3
+    Added reviewer-3.
+    Roles: implementer, reviewer and reviewer-3; reviewer and reviewer-3 review.
+$ (S) handoff role reviewer-3
+    You are now reviewer-3 in e3.
+    
+
+## E4. Usage
+29:  settings claude|codex|antigravity [--global | --as <role>]   settings that keep a CLI's sessions
+33:  hook    listen|brief|notify   run by a CLI's hooks, as settings prints
+
+== 5. The full suite (Run) ==
+$ uptime; /usr/bin/time -p go test ./... -count=1 -race      (no -timeout; the worktree was at c2146c7 and clean when it ended)
+ 4:50  up 23 days,  8:47, 15 users, load averages: 7.73 6.09 5.50
+ok  	github.com/dre4success/handoff/cmd/handoff	279.595s
+ok  	github.com/dre4success/handoff/internal/awake	1.312s
+ok  	github.com/dre4success/handoff/internal/gitx	1.210s
+ok  	github.com/dre4success/handoff/internal/notify	1.402s
+ok  	github.com/dre4success/handoff/internal/record	4.007s
+ok  	github.com/dre4success/handoff/internal/status	1.228s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	2.624s
+real 281.90
+user 75.66
+sys 57.98
+exit 0

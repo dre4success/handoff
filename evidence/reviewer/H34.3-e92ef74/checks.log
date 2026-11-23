@@ -1,0 +1,110 @@
+H34.3 round 3, request #558, commit e92ef7411bc83ae640a9701908b6e27d27286c49 (base cfedab6)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session).
+The commit was built in a temporary worktree (git worktree add --detach), removed after.
+Every probe ran in a new scratch git project with HANDOFF_TEST_NOTIFY set and the session
+variables unset. The 6 s build for A6 and A7 is round 2's (../H34.3-e85aeb4); round 3
+changes only cmd/handoff/hook.go, so its wait code is the same.
+
+Verdict: CHANGES, for A10 (reviewer-2's #563; it reproduces).
+
+== 1. Build, vet, format, dependencies (Run) ==
+$ go build -o handoff ./cmd/handoff && go vet ./... && gofmt -l cmd internal
+(no output)
+$ go list -deps ./... | grep -c '^net$'
+0
+$ git diff --check cfedab6 e92ef74
+(no output)
+
+== 2. A Stop hook at a break: probe-a9.sh (Run) ==
+The forged line is appended to the scratch project's own record.
+
+## A9. A held APPROVE, then the record is broken after it; the session's Stop hook
+posted #1 request W1 implementer → reviewer: W1 @ 09c8a2c7c8b8
+posted #2 request W1 implementer → reviewer-2: W1 @ 09c8a2c7c8b8
+posted #3 reply W1 reviewer → implementer: APPROVE on #1 @ 09c8a2c7c8b8
+$ (I, Stop hook) handoff hook listen --timeout 2s
+    [exit 2; cursor ]
+-- a forged line is appended to the record (this scratch project's own):
+$ (I, Stop hook) handoff hook listen --timeout 2s
+    handoff: told the operator: implementer's session stopped listening: the record's hash chain does not verify at line 4; wait stops without delivering anything from line 4 on; the operator decides
+    handoff: new for implementer:
+    handoff: the hash chain fails at line 4: does not parse as an entry: schema version 0, want 1; entries from line 4 on are withheld from inbox and wait, and posting stops until the operator decides
+    handoff: advisory: head.json disagrees with the record: it counts 3 lines ending in fa006eda0bba, the record has 4 ending in 162987dab60c (a cut tail, or an edited last line); `handoff repair` acknowl
+    #3 reply W1 reviewer → implementer: APPROVE on #1 @ 09c8a2c7c8b8
+    Read each with `…/handoff show <id>` and act on it as your brief says.
+    [exit 2; cursor {"v":1,"id":3}]
+-- the next Stop hook, with nothing new given:
+$ (I, Stop hook) handoff hook listen --timeout 2s
+    [exit 0; cursor {"v":1,"id":3}]
+  alerts to the operator: 2
+    a9: implementer's session stopped listening: the record's hash chain does not verify at line 4; wait stops without delivering anything from line 4 on; the operator decides
+
+== 3. The cursor can't be written: probe-a10.sh (Run) ==
+On this commit: three wakes with the same note, each saying the record is broken, and the
+cursor not moved.
+
+## A10. The cursor can't be written (its folder is read-only); a note waits; the Stop hook, three times
+    [exit 2; cursor ]
+posted #1 note P1 reviewer → implementer: one note
+$ (I, Stop hook) handoff hook listen --timeout 2s
+    handoff: told the operator: implementer's session stopped listening: open …/scratchpad/p343c/ru
+    handoff: new for implementer:
+    #1 note P1 reviewer → implementer: one note
+    Read each with `…/handoff show <id>` and act on it as your brief says.
+    [exit 2; cursor ]
+$ (I, Stop hook) handoff hook listen --timeout 2s
+    handoff: told the operator: implementer's session stopped listening: open …/scratchpad/p343c/ru
+    handoff: new for implementer:
+    #1 note P1 reviewer → implementer: one note
+    Read each with `…/handoff show <id>` and act on it as your brief says.
+    [exit 2; cursor ]
+$ (I, Stop hook) handoff hook listen --timeout 2s
+    handoff: told the operator: implementer's session stopped listening: open …/scratchpad/p343c/ru
+    handoff: new for implementer:
+    #1 note P1 reviewer → implementer: one note
+    Read each with `…/handoff show <id>` and act on it as your brief says.
+    [exit 2; cursor ]
+-- the folder is writable again:
+$ (I, Stop hook) handoff hook listen --timeout 2s
+    handoff: new for implementer:
+    #1 note P1 reviewer → implementer: one note
+    Read each with `…/handoff show <id>` and act on it as your brief says.
+    [exit 2; cursor {"v":1,"id":1}]
+$ (I, Stop hook) handoff hook listen --timeout 2s
+    [exit 2; cursor {"v":1,"id":1}]
+  alerts to the operator: 3
+
+The same script with round 2's hook code (the 6 s build of e85aeb4): one wake in all, after the folder is writable again.
+    [exit 2; cursor ]
+$ (I, Stop hook) handoff hook listen --timeout 2s
+    [exit 0; cursor ]
+$ (I, Stop hook) handoff hook listen --timeout 2s
+    [exit 0; cursor ]
+$ (I, Stop hook) handoff hook listen --timeout 2s
+    [exit 0; cursor ]
+-- the folder is writable again:
+$ (I, Stop hook) handoff hook listen --timeout 2s
+    handoff: new for implementer:
+    [exit 2; cursor {"v":1,"id":1}]
+$ (I, Stop hook) handoff hook listen --timeout 2s
+    [exit 2; cursor {"v":1,"id":1}]
+
+== 4. Rounds 1 and 2's probes, run again (Run) ==
+probe.sh (A1 to A7), probe-a4.sh, probe-a8.sh: no line differs from round 2, commit ids
+and seconds apart.
+
+== 5. The full suite (Run) ==
+$ uptime; /usr/bin/time -p go test ./... -count=1 -race      (no -timeout; the worktree was at e92ef74 and clean when it ended)
+ 3:25  up 23 days,  7:22, 15 users, load averages: 4.94 4.86 5.01
+ok  	github.com/dre4success/handoff/cmd/handoff	250.266s
+ok  	github.com/dre4success/handoff/internal/awake	1.289s
+ok  	github.com/dre4success/handoff/internal/gitx	1.213s
+ok  	github.com/dre4success/handoff/internal/notify	1.401s
+ok  	github.com/dre4success/handoff/internal/record	4.038s
+ok  	github.com/dre4success/handoff/internal/status	1.216s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	2.612s
+real 252.33
+user 73.06
+sys 54.23
+exit 0

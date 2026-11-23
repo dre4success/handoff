@@ -1,0 +1,118 @@
+H34.1 round 5, request #537, commit 08681bab427cd34a959e6d0dc378a2e3f6756aed (base 694df99)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session).
+The commit was built in a temporary worktree (git worktree add --detach), removed after.
+Every probe ran in a new scratch git project with HANDOFF_TEST_NOTIFY set and the session
+variables unset. The operator's commands ran with a pseudo-terminal (atterm_y.py).
+
+Verdict: CHANGES, for V in section 2 (reviewer-2's #542; it reproduces).
+
+== 1. Build, vet, format, dependencies (Run) ==
+$ go build -o handoff ./cmd/handoff && go vet ./... && gofmt -l cmd internal
+(no output)
+$ go list -deps ./... | grep -c '^net$'
+0
+$ git diff --check 694df99 08681ba
+(no output)
+
+== 2. Reviewer-2's #542: probe-v.sh (Run) ==
+("told the operator" lines are left out; the alerts are listed from the notify log.)
+
+## V. Approved, held, approved again, merged; then another review is opened at the same commit
+posted #1 request W1 implementer → reviewer: W1 @ 29c17e2f147f
+posted #2 reply W1 reviewer → implementer: APPROVE on #1 @ 29c17e2f147f
+posted #5 request W1 implementer → reviewer: W1 again @ 29c17e2f147f
+posted #6 reply W1 reviewer → implementer: APPROVE on #5 @ 29c17e2f147f
+  after the merge: alerts 0
+$ handoff
+Nothing needs your decision.
+-- a follow-up review at the same commit, to another reviewer:
+posted #8 request W1 implementer → reviewer-2: W1 @ 29c17e2f147f
+  alerts now: 2
+    v: W1: you held implementer's work @ 29c17e2f147f (#4), and its commit is in main
+    v: W1: reviewer-2 hasn't picked up #8 (2 s)
+$ handoff
+Nothing needs your decision.
+
+held by you, but in main:
+  W1 @ 29c17e2f147f for implementer (held in #4)
+
+gone quiet:
+  W1: reviewer-2 hasn't picked up #8 (3 s)
+
+== 3. Round 4's U1, U1b and U2, run again: probe-u.sh (Run) ==
+U1 is no longer listed; U2 raises the held-in-main alert and the operator's view lists it.
+
+## U1. A round of two; the operator denies the first; a third reviewer is asked alone at the same commit while the second is open; the second and third are approved
+posted #1 request W1 implementer → reviewer: W1 @ 6b3974dd559c
+posted #2 request W1 implementer → reviewer-2: W1 @ 6b3974dd559c
+posted #3 reply W1 reviewer → implementer: APPROVE on #1 @ 6b3974dd559c
+handoff: told the operator: W1: reviewer approved #1. Your decision.
+posted #5 request W1 implementer → reviewer-3: W1 @ 6b3974dd559c
+posted #6 reply W1 reviewer-2 → implementer: APPROVE on #2 @ 6b3974dd559c
+handoff: told the operator: W1: reviewer-2 approved #2. Your decision.
+posted #7 reply W1 reviewer-3 → implementer: APPROVE on #5 @ 6b3974dd559c
+handoff: told the operator: W1: reviewer-3 approved #5. Your decision.
+posted #8 decision W1 operator → implementer: approve #2
+posted #9 decision W1 operator → implementer: approve #5
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+  (no such section)
+  [inbox --quiet: exit 0]
+
+## U1b. The same without the third reviewer: the round alone, first denied, second approved
+posted #1 request W1 implementer → reviewer: W1 @ 245606206387
+posted #2 request W1 implementer → reviewer-2: W1 @ 245606206387
+posted #3 reply W1 reviewer → implementer: APPROVE on #1 @ 245606206387
+handoff: told the operator: W1: reviewer approved #1. Your decision.
+posted #5 reply W1 reviewer-2 → implementer: APPROVE on #2 @ 245606206387
+handoff: told the operator: W1: reviewer-2 approved #2. Your decision.
+posted #6 decision W1 operator → implementer: approve #2
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+  (no such section)
+  [inbox --quiet: exit 0]
+
+## U2. Held, then asked again as a round of two, one approved and one denied; the held commit reaches main
+posted #1 request W1 implementer → reviewer: W1 @ 245606206387
+posted #2 reply W1 reviewer → implementer: APPROVE on #1 @ 245606206387
+handoff: told the operator: W1: reviewer approved #1. Your decision.
+posted #5 request W1 implementer → reviewer: W1 again @ 245606206387
+posted #6 request W1 implementer → reviewer-2: W1 again @ 245606206387
+posted #7 reply W1 reviewer → implementer: APPROVE on #5 @ 245606206387
+handoff: told the operator: W1: reviewer approved #5. Your decision.
+posted #8 reply W1 reviewer-2 → implementer: APPROVE on #6 @ 245606206387
+handoff: told the operator: W1: reviewer-2 approved #6. Your decision.
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+  (no such section)
+  [inbox --quiet: exit 0]
+  alerts after the merge: 1
+    u2: W1: you held implementer's work @ 245606206387 (#4), and its commit is in main
+$ handoff (the operator's view)
+Nothing needs your decision.
+
+held by you, but in main:
+  W1 @ 245606206387 for implementer (held in #4)
+
+== 4. Every earlier probe, run again (Run) ==
+probe.sh (M1 to M8), probe-m3.sh, probe-m10.sh, probe-m12.sh, probe-n.sh (N1 to N4),
+probe-p.sh (P1, P3), probe-s.sh (S1 to S3), probe-t.sh (T1 to T5): no line differs from
+round 4, commit ids, hashes and times apart (diff of each normalised output: 0 lines).
+
+== 5. This project's own record (Run) ==
+A scratch clone of this repository, with a copy of the record (542 entries) and
+tracking.json written as {"v":1,"since":0}: handoff inbox --for implementer and handoff
+list nothing approved to merge, recorded as merged, or held; no alert raised.
+
+== 6. The full suite (Run) ==
+$ uptime; /usr/bin/time -p go test ./... -count=1 -race      (no -timeout; the worktree was at 08681ba and clean when it ended)
+ 3:02  up 23 days,  6:59, 15 users, load averages: 4.61 5.22 5.75
+ok  	github.com/dre4success/handoff/cmd/handoff	259.300s
+ok  	github.com/dre4success/handoff/internal/awake	1.297s
+ok  	github.com/dre4success/handoff/internal/gitx	1.211s
+ok  	github.com/dre4success/handoff/internal/notify	1.360s
+ok  	github.com/dre4success/handoff/internal/record	3.720s
+ok  	github.com/dre4success/handoff/internal/status	1.215s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	1.801s
+real 260.87
+user 72.17
+sys 55.50
+exit 0

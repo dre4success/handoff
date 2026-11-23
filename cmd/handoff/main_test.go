@@ -243,6 +243,7 @@ func TestInitRefusesASecondTime(t *testing.T) {
 
 // Check 1: fifty processes posting twenty entries each.
 func TestCheck1FiftyProcessesTwentyPostsEach(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	const procs, each = 50, 20
 	var wg sync.WaitGroup
@@ -518,6 +519,7 @@ func TestCheck16Roles(t *testing.T) {
 // decide with a real terminal, through script(1), with the operator's role
 // set and a body file, as before H9. atTerminal is in decide_test.go.
 func TestDecideWithATerminal(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	req := r.approved(t, "W1")
 	out, err := r.atTerminal(t, "operator", []step{{"[y/N]", "y"}}, "decide", req, "--approve", "--body", r.body(t, "merge it"))
@@ -684,6 +686,7 @@ func TestH5ForgedLineDuringAnEmittingWait(t *testing.T) {
 // QUESTION, is edited in place. It is not delivered, not listed, marked
 // unverified, and posting stops until the operator decides.
 func TestH6EditedLastLineIsWithheld(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	req := r.request(t, "W31", r.commitA)
 	q := idOf(t, r.ok(t, "reviewer", "reply", req, "--verdict", "QUESTION", "--commit", r.commitA, "--body", r.body(t, "Which label?")))

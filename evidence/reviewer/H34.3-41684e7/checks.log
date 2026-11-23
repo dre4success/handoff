@@ -1,0 +1,90 @@
+H34.3 round 4, request #577, commit 41684e7591f786dfc45b43d68f853dc863930536 (base cfedab6)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session).
+The commit was built in a temporary worktree (git worktree add --detach), removed after.
+Every probe ran in a new scratch git project with HANDOFF_TEST_NOTIFY set and the session
+variables unset. The 6 s build for A6 and A7 is round 2's (../H34.3-e85aeb4); rounds 3
+and 4 change only cmd/handoff/hook.go, so its wait code is the same.
+
+== 1. Build, vet, format, dependencies (Run) ==
+$ go build -o handoff ./cmd/handoff && go vet ./... && gofmt -l cmd internal
+(no output)
+$ go list -deps ./... | grep -c '^net$'
+0
+$ git diff --check cfedab6 41684e7
+(no output)
+
+== 2. The cursor can't be written: probe-a10.sh (Run) ==
+Three Stop hooks wake no one; the note is delivered once when the folder is writable.
+Round 3 woke the session three times (../H34.3-e92ef74/checks.log, section 3).
+
+## A10. The cursor can't be written (its folder is read-only); a note waits; the Stop hook, three times
+    [exit 2; cursor ]
+posted #1 note P1 reviewer → implementer: one note
+$ (I, Stop hook) handoff hook listen --timeout 2s
+    handoff: told the operator: implementer's session stopped listening: open …/scratchpad/p343d/ru
+    [exit 0; cursor ]
+$ (I, Stop hook) handoff hook listen --timeout 2s
+    handoff: told the operator: implementer's session stopped listening: open …/scratchpad/p343d/ru
+    [exit 0; cursor ]
+$ (I, Stop hook) handoff hook listen --timeout 2s
+    handoff: told the operator: implementer's session stopped listening: open …/scratchpad/p343d/ru
+    [exit 0; cursor ]
+-- the folder is writable again:
+$ (I, Stop hook) handoff hook listen --timeout 2s
+    handoff: new for implementer:
+    #1 note P1 reviewer → implementer: one note
+    Read each with `…/handoff show <id>` and act on it as your brief says.
+    [exit 2; cursor {"v":1,"id":1}]
+$ (I, Stop hook) handoff hook listen --timeout 2s
+    [exit 2; cursor {"v":1,"id":1}]
+  alerts to the operator: 3
+
+What the operator was told in that run, from the notify log (the same fault, three times,
+since the temporary file's name is in the text):
+a10: implementer's session stopped listening: open …/p343d/run.08KN/a10/.handoff/cursors/.implementer.json.3036147229: permission denied
+a10: implementer's session stopped listening: open …/p343d/run.08KN/a10/.handoff/cursors/.implementer.json.841653352: permission denied
+a10: implementer's session stopped listening: open …/p343d/run.08KN/a10/.handoff/cursors/.implementer.json.1598783619: permission denied
+
+== 3. A Stop hook at a break: probe-a9.sh (Run) ==
+As round 3: the session is woken with the held APPROVE, and the next hook wakes no one.
+
+## A9. A held APPROVE, then the record is broken after it; the session's Stop hook
+posted #1 request W1 implementer → reviewer: W1 @ b574a12cd8fc
+posted #2 request W1 implementer → reviewer-2: W1 @ b574a12cd8fc
+posted #3 reply W1 reviewer → implementer: APPROVE on #1 @ b574a12cd8fc
+$ (I, Stop hook) handoff hook listen --timeout 2s
+    [exit 2; cursor ]
+-- a forged line is appended to the record (this scratch project's own):
+$ (I, Stop hook) handoff hook listen --timeout 2s
+    handoff: told the operator: implementer's session stopped listening: the record's hash chain does not verify at line 4; wait stops without delivering anything from line 4 on; the operator decides
+    handoff: new for implementer:
+    handoff: the hash chain fails at line 4: does not parse as an entry: schema version 0, want 1; entries from line 4 on are withheld from inbox and wait, and posting stops until the operator decides
+    handoff: advisory: head.json disagrees with the record: it counts 3 lines ending in a33a2a5e2fa9, the record has 4 ending in 162987dab60c (a cut tail, or an edited last line); `handoff repair` acknowl
+    #3 reply W1 reviewer → implementer: APPROVE on #1 @ b574a12cd8fc
+    Read each with `…/handoff show <id>` and act on it as your brief says.
+    [exit 2; cursor {"v":1,"id":3}]
+-- the next Stop hook, with nothing new given:
+$ (I, Stop hook) handoff hook listen --timeout 2s
+    [exit 0; cursor {"v":1,"id":3}]
+  alerts to the operator: 2
+    a9: implementer's session stopped listening: the record's hash chain does not verify at line 4; wait stops without delivering anything from line 4 on; the operator decides
+
+== 4. Rounds 1 and 2's probes, run again (Run) ==
+probe.sh (A1 to A7), probe-a4.sh, probe-a8.sh: no line differs from round 3, commit ids
+and seconds apart.
+
+== 5. The full suite (Run) ==
+$ uptime; /usr/bin/time -p go test ./... -count=1 -race      (no -timeout; the worktree was at 41684e7 and clean when it ended)
+ 3:41  up 23 days,  7:38, 15 users, load averages: 5.35 5.62 5.30
+ok  	github.com/dre4success/handoff/cmd/handoff	248.098s
+ok  	github.com/dre4success/handoff/internal/awake	1.283s
+ok  	github.com/dre4success/handoff/internal/gitx	1.213s
+ok  	github.com/dre4success/handoff/internal/notify	1.351s
+ok  	github.com/dre4success/handoff/internal/record	3.890s
+ok  	github.com/dre4success/handoff/internal/status	1.212s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	2.536s
+real 249.60
+user 68.66
+sys 51.29
+exit 0

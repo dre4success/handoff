@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"maps"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -148,6 +149,8 @@ func checkRoleName(name string) error {
 		return fmt.Errorf("role %q: use lower-case letters, digits and '-'", name)
 	case name == status.Operator:
 		return errors.New("operator is built in; do not list it")
+	case name == status.Spare:
+		return errors.New("spare is built in: it is the session that can take over a stuck seat while the operator is away; do not list it")
 	}
 	return nil
 }
@@ -255,7 +258,7 @@ func (a *app) cmdPost(args []string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	from, err := a.role(*as)
+	from, err := a.writer(*as)
 	if err != nil {
 		return 0, err
 	}
@@ -268,20 +271,26 @@ func (a *app) cmdPost(args []string) (int, error) {
 	if strings.TrimSpace(*title) == "" || strings.ContainsAny(*title, "\r\n") {
 		return 0, errors.New("--title is required, on one line")
 	}
-	if err := a.addressee(*to, from, false); err != nil {
+	roles, err := a.addressees(*to, from)
+	if err != nil {
 		return 0, err
 	}
-	e := &record.Entry{Kind: "request", Item: *item, From: from, To: *to, Title: strings.TrimSpace(*title), Key: *key}
+	olds, err := parseIDs(*supersedes)
+	if err != nil {
+		return 0, err
+	}
+	if len(roles) == 1 && len(olds) > 1 {
+		return 0, fmt.Errorf("--supersedes takes one id for each role in --to, and --to names one")
+	}
+	e := &record.Entry{Kind: "request", Item: *item, From: from, To: roles[0], Title: strings.TrimSpace(*title), Key: *key}
 	if e.Body, err = a.readBody(*bodyPath); err != nil {
 		return 0, err
 	}
 	if e.Commit, err = gitx.ResolveCommit(a.cwd, *ref); err != nil {
 		return 0, err
 	}
-	if *supersedes != "" {
-		if e.Supersedes, err = parseID(*supersedes); err != nil {
-			return 0, err
-		}
+	if len(olds) > 0 {
+		e.Supersedes = olds[0]
 	}
 	if e.Base, err = a.base(*baseRef, e.Commit, e.Supersedes); err != nil {
 		return 0, err
@@ -302,16 +311,37 @@ func (a *app) cmdPost(args []string) (int, error) {
 			return 0, err
 		}
 	}
+	if len(roles) > 1 {
+		e.Supersedes = 0
+		return a.postRound(e, roles, olds, *baseRef != "" || *parentRefs != "")
+	}
 
 	var warnings []string
 	got, existed, err := a.store.Append(func(snap *record.Snapshot) (*record.Entry, *record.Entry, error) {
+		if err := a.fenced(); err != nil {
+			return nil, nil, err
+		}
 		warnings = snap.Warnings()
 		if x, err := checkKey(snap, e); x != nil || err != nil {
 			return nil, x, err
 		}
+		if e.Key != "" {
+			for i := range snap.Entries {
+				if x := &snap.Entries[i]; roundKey(x) == e.Key {
+					return nil, nil, fmt.Errorf("key %q was used by round #%d; nothing written", e.Key, x.Round)
+				}
+			}
+		}
 		st := status.Compute(snap.Entries)
 		if err := checkDuplicate(snap, st, e); err != nil {
 			return nil, nil, err
+		}
+		if rd := st.PendingRound(e.Item, e.From); rd != nil {
+			if rd.Broken() {
+				return nil, nil, fmt.Errorf("round #%d on %s is broken: its requests don't match each other, which posting again can't repair; tell the operator; nothing written", rd.ID, e.Item)
+			}
+			return nil, nil, fmt.Errorf("round #%d on %s, to %s at %.12s, is incomplete: post it again as it was, to complete it; nothing written",
+				rd.ID, e.Item, listOf(rd.Panel, "and"), rd.Commit)
 		}
 		live, hasLive := st.Live(e.Item, e.From, e.To)
 		switch {
@@ -321,6 +351,9 @@ func (a *app) cmdPost(args []string) (int, error) {
 		case e.Supersedes != 0 && (!hasLive || live.Entry.ID != e.Supersedes):
 			if old, ok := st.Request(e.Supersedes); ok && old.State == status.Superseded {
 				return nil, nil, fmt.Errorf("#%d is already superseded by #%d", e.Supersedes, old.SupersededBy)
+			}
+			if old, ok := st.Request(e.Supersedes); ok && old.State == status.Withdrawn && !hasLive {
+				return nil, nil, fmt.Errorf("#%d was withdrawn (#%d), so there is nothing to supersede; post without --supersedes", e.Supersedes, old.WithdrawnBy.ID)
 			}
 			return nil, nil, fmt.Errorf("#%d is not the open request on %s from %s to %s", e.Supersedes, e.Item, e.From, e.To)
 		}
@@ -336,11 +369,270 @@ func (a *app) cmdPost(args []string) (int, error) {
 	return exitOK, nil
 }
 
+// addressees checks --to for a request: one role, or several separated by
+// commas, each named once (row 106).
+func (a *app) addressees(to, from string) ([]string, error) {
+	if to == "" {
+		return nil, a.addressee(to, from, false)
+	}
+	var roles []string
+	for _, r := range strings.Split(to, ",") {
+		r = strings.TrimSpace(r)
+		if err := a.addressee(r, from, false); err != nil {
+			return nil, err
+		}
+		if slices.Contains(roles, r) {
+			return nil, fmt.Errorf("--to names %s twice", r)
+		}
+		roles = append(roles, r)
+	}
+	return roles, nil
+}
+
+// parseIDs reads --supersedes: none, one id, or several separated by commas.
+func parseIDs(list string) ([]int64, error) {
+	if strings.TrimSpace(list) == "" {
+		return nil, nil
+	}
+	var ids []int64
+	for _, x := range strings.Split(list, ",") {
+		id, err := parseID(strings.TrimSpace(x))
+		if err != nil {
+			return nil, err
+		}
+		if slices.Contains(ids, id) {
+			return nil, fmt.Errorf("--supersedes names #%d twice", id)
+		}
+		ids = append(ids, id)
+	}
+	return ids, nil
+}
+
+// postRound posts one request to each of several reviewers, all in one
+// write, as one round (row 106). Each is an entry of kind round, so a
+// handoff older than row 106 counts none of them, and names the round, the
+// id of its first request, and the panel, the roles asked. A round is
+// complete only once every role has its request, so a write cut short
+// leaves an incomplete round, which nothing approves under the go-ahead.
+// The same post again writes only what is missing, from the request already
+// written: its title, body, base and parents. Posted again once complete,
+// in whatever state, it writes nothing. A new round replaces the last: olds
+// are the requests it supersedes, one for each role that has a live one,
+// superseded only when the new round is complete. explicit says --base or
+// --parents was given, so a retry must give the same.
+func (a *app) postRound(tmpl *record.Entry, roles []string, olds []int64, explicit bool) (int, error) {
+	tmpl.Kind = "round"
+	// A listener from a handoff older than row 106 counts none of a round's
+	// requests, so it can't see a round replace the requests before it, and
+	// could announce one of those approved under the go-ahead. So no round
+	// is posted while one listens, for any role (reviewer-2, #331).
+	// The operator's own wait runs the project's alert pass too (reviewer-2,
+	// #355). This sees the listeners of now; the README's upgrade steps
+	// cover one started later from an older binary.
+	names := []string{status.Operator}
+	for _, r := range a.cfg.Roles {
+		names = append(names, r.Name)
+	}
+	if old := wait.Older(a.dir, names); len(old) > 0 {
+		return 0, fmt.Errorf("an older handoff listens for %s, which can't see a round; nothing written. An idle listener ends once something is delivered to its role, and the next one is this handoff's: send that role a note, then post again", listOf(old, "and"))
+	}
+	var warnings []string
+	var existed []record.Entry
+	errSame := errors.New("the round is complete")
+	got, err := a.store.AppendAll(func(snap *record.Snapshot) ([]*record.Entry, error) {
+		if err := a.fenced(); err != nil {
+			return nil, err
+		}
+		warnings, existed = snap.Warnings(), nil
+		st := status.Compute(snap.Entries)
+		replaces := map[string]int64{}
+		for _, id := range olds {
+			r, ok := st.Request(id)
+			switch {
+			case !ok:
+				return nil, fmt.Errorf("#%d is not a request", id)
+			case r.Entry.Item != tmpl.Item || r.Entry.From != tmpl.From || !slices.Contains(roles, r.Entry.To):
+				return nil, fmt.Errorf("#%d is not a request on %s from %s to %s", id, tmpl.Item, tmpl.From, listOf(roles, "or"))
+			case replaces[r.Entry.To] != 0:
+				return nil, fmt.Errorf("#%d and #%d both go to %s; --supersedes takes one for each role", replaces[r.Entry.To], id, r.Entry.To)
+			}
+			replaces[r.Entry.To] = id
+		}
+		// sameAs says this post is the one that wrote the round: the same
+		// requester, item, commit, panel and supersessions, as the round's
+		// first request records them, the same title, body and key, and,
+		// when given, the same base and parents.
+		sameAs := func(rd *status.Round) bool {
+			if rd.Item != tmpl.Item || rd.From != tmpl.From || rd.Commit != tmpl.Commit || !slices.Equal(rd.Panel, roles) ||
+				len(rd.Replaces) != len(replaces) || !maps.Equal(rd.Replaces, replaces) {
+				return false
+			}
+			for role, m := range rd.Members {
+				x := m.Entry
+				if x.Title != tmpl.Title || x.Body != tmpl.Body || x.Key != memberKey(tmpl.Key, role) ||
+					(explicit && (x.Base != tmpl.Base || !slices.Equal(x.Parents, tmpl.Parents))) {
+					return false
+				}
+			}
+			return true
+		}
+		member := func(role string, round int64, from *record.Entry) (*record.Entry, error) {
+			m := *tmpl
+			if from != nil {
+				// Completing a round: what its first request asked, word
+				// for word, not what this run computed again.
+				m.Title, m.Body, m.Base, m.Parents = from.Title, from.Body, from.Base, from.Parents
+			}
+			m.To, m.Round, m.Panel, m.Supersedes, m.Key = role, round, roles, replaces[role], memberKey(tmpl.Key, role)
+			if len(replaces) > 0 {
+				m.Replaces = replaces
+			}
+			// Until the round is complete, the request it replaces is
+			// still the live one. Completing a round, a request it replaces
+			// that the operator has decided since, or that was withdrawn
+			// since, is no obstacle: the round is completed as it was
+			// posted, and the decision or withdrawal stands.
+			live, hasLive := st.Live(m.Item, m.From, role)
+			if old, ok := st.Request(m.Supersedes); from != nil && m.Supersedes != 0 && ok && (old.State == status.Decided || old.State == status.Withdrawn) && !hasLive {
+				return &m, nil
+			}
+			switch {
+			case m.Supersedes == 0 && hasLive:
+				return nil, fmt.Errorf("request #%d on %s to %s is still open (%s); to replace it, pass its id in --supersedes", live.Entry.ID, m.Item, role, live.State)
+			case m.Supersedes != 0 && (!hasLive || live.Entry.ID != m.Supersedes):
+				if old, ok := st.Request(m.Supersedes); ok && old.State == status.Superseded {
+					return nil, fmt.Errorf("#%d is already superseded by #%d", m.Supersedes, old.SupersededBy)
+				}
+				if old, ok := st.Request(m.Supersedes); ok && old.State == status.Withdrawn && !hasLive {
+					return nil, fmt.Errorf("#%d was withdrawn (#%d), so there is nothing to supersede; leave it out of --supersedes", m.Supersedes, old.WithdrawnBy.ID)
+				}
+				return nil, fmt.Errorf("#%d is not the open request on %s from %s to %s", m.Supersedes, m.Item, m.From, role)
+			}
+			if x, err := checkKey(snap, &m); x != nil || err != nil {
+				if err == nil {
+					err = fmt.Errorf("key %q was used by #%d; nothing written", m.Key, x.ID)
+				}
+				return nil, err
+			}
+			return &m, nil
+		}
+		// A key is the agent's guard for a retry it can't see the end of, so
+		// it works as for one request: the same post again finds its round,
+		// below, whatever its state; a key used for anything else refuses.
+		// Any request of a round with this key counts, whatever its role,
+		// so a key can't open a second round with another panel
+		// (reviewer-2, #331); so does an entry keyed as this key, or as one
+		// of this round's requests would be. A key that only begins the same
+		// is another key (#355).
+		if tmpl.Key != "" {
+			for i := range snap.Entries {
+				x := &snap.Entries[i]
+				if roundKey(x) != tmpl.Key && x.Key != tmpl.Key && !slices.ContainsFunc(roles, func(r string) bool { return x.Key == memberKey(tmpl.Key, r) }) {
+					continue
+				}
+				if r, ok := st.Request(x.ID); !ok || r.Round == nil || !sameAs(r.Round) {
+					return nil, fmt.Errorf("key %q was used by #%d with different content; nothing written", x.Key, x.ID)
+				}
+			}
+		}
+		if rd := st.PendingRound(tmpl.Item, tmpl.From); rd != nil {
+			switch {
+			case rd.Broken():
+				return nil, fmt.Errorf("round #%d on %s is broken: its requests don't match each other, which posting again can't repair; nothing on %s is approved under the go-ahead; tell the operator; nothing written", rd.ID, tmpl.Item, tmpl.Item)
+			case !sameAs(rd):
+				return nil, fmt.Errorf("round #%d on %s, to %s at %.12s, is incomplete: post it again as it was, with the same title, body and key, to complete it; nothing written",
+					rd.ID, tmpl.Item, listOf(rd.Panel, "and"), rd.Commit)
+			}
+			var first *record.Entry
+			for _, role := range rd.Panel {
+				if m := rd.Members[role]; m != nil && first == nil {
+					first = &m.Entry
+				}
+			}
+			var es []*record.Entry
+			for _, role := range rd.Panel {
+				if m := rd.Members[role]; m != nil {
+					existed = append(existed, m.Entry)
+					continue
+				}
+				m, err := member(role, rd.ID, first)
+				if err != nil {
+					return nil, err
+				}
+				es = append(es, m)
+			}
+			return es, nil
+		}
+		// The same post again, once complete, whatever has been decided on
+		// it since, writes nothing. A post that differs, in its title or
+		// body say, is a new round.
+		for _, rd := range st.Rounds {
+			if rd.Complete && rd.Item == tmpl.Item && rd.From == tmpl.From && sameAs(rd) {
+				for _, role := range rd.Panel {
+					existed = append(existed, rd.Members[role].Entry)
+				}
+				return nil, errSame
+			}
+		}
+		round := snap.NextID()
+		var es []*record.Entry
+		for _, role := range roles {
+			m, err := member(role, round, nil)
+			if err != nil {
+				return nil, err
+			}
+			es = append(es, m)
+		}
+		return es, nil
+	})
+	if err != nil && !errors.Is(err, errSame) {
+		return 0, err
+	}
+	for _, e := range existed {
+		a.receipt(e, true)
+	}
+	for _, e := range got {
+		a.receipt(e, false)
+	}
+	a.alert()
+	a.printWarnings(warnings)
+	for _, role := range roles {
+		a.noSession(role)
+	}
+	return exitOK, nil
+}
+
+// roundKey is the key a round's request was posted with: its own key less
+// the exact "/<role>" it was given for its role; "" for anything else.
+func roundKey(x *record.Entry) string {
+	if x.Kind != "round" || x.Key == "" || !strings.HasSuffix(x.Key, "/"+x.To) {
+		return ""
+	}
+	return strings.TrimSuffix(x.Key, "/"+x.To)
+}
+
+// memberKey is a round's key for one of its requests.
+func memberKey(key, role string) string {
+	if key == "" {
+		return ""
+	}
+	return key + "/" + role
+}
+
 // noSession tells an agent that what it sent waits, when no session has the
 // role it went to (row 89).
 func (a *app) noSession(role string) {
-	if role != status.Operator && !a.hasSession(role) {
+	if role == status.Operator {
+		return
+	}
+	d, ok := a.deliveryTo(role)
+	if !ok {
 		fmt.Fprintf(a.stderr, "handoff: no session has %s now, so this waits until the operator gives one that role; tell the operator.\n", role)
+		return
+	}
+	// A session that can't take its work now says so (row 110).
+	if line := blockedLine(role, d); line != "" {
+		fmt.Fprintf(a.stderr, "handoff: %s\n", line)
 	}
 }
 
@@ -369,7 +661,7 @@ func (a *app) base(ref, commit string, supersedes int64) (string, error) {
 			if supersedes != 0 {
 				if snap, lerr := a.store.Load(); lerr == nil {
 					for _, x := range snap.Entries {
-						if x.ID == supersedes && x.Kind == "request" && x.Base == "" {
+						if x.ID == supersedes && (x.Kind == "request" || x.Kind == "round") && x.Base == "" {
 							return "", nil
 						}
 					}
@@ -441,7 +733,7 @@ func sameContent(x, e *record.Entry) bool {
 	return x.Kind == e.Kind && x.Item == e.Item && x.From == e.From && x.To == e.To &&
 		x.Title == e.Title && x.Commit == e.Commit && x.Base == e.Base && slices.Equal(x.Parents, e.Parents) &&
 		x.Re == e.Re && x.Supersedes == e.Supersedes && x.Verdict == e.Verdict && x.Decision == e.Decision &&
-		x.Body == e.Body
+		slices.Equal(x.Panel, e.Panel) && maps.Equal(x.Replaces, e.Replaces) && x.Body == e.Body
 }
 
 // checkDuplicate refuses an entry identical, in the fields proposal §5
@@ -473,12 +765,15 @@ func (a *app) cmdClaim(args []string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	role, err := a.role(*as)
+	role, err := a.writer(*as)
 	if err != nil {
 		return 0, err
 	}
 	var warnings []string
 	got, existed, err := a.store.Append(func(snap *record.Snapshot) (*record.Entry, *record.Entry, error) {
+		if err := a.fenced(); err != nil {
+			return nil, nil, err
+		}
 		warnings = snap.Warnings()
 		r, ok := status.Compute(snap.Entries).Request(id)
 		if !ok {
@@ -523,7 +818,7 @@ func (a *app) cmdReply(args []string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	role, err := a.role(*as)
+	role, err := a.writer(*as)
 	if err != nil {
 		return 0, err
 	}
@@ -545,6 +840,9 @@ func (a *app) cmdReply(args []string) (int, error) {
 	var warnings []string
 	var effect string
 	got, existed, err := a.store.Append(func(snap *record.Snapshot) (*record.Entry, *record.Entry, error) {
+		if err := a.fenced(); err != nil {
+			return nil, nil, err
+		}
 		warnings = snap.Warnings()
 		st := status.Compute(snap.Entries)
 		r, ok := st.Request(id)
@@ -560,6 +858,12 @@ func (a *app) cmdReply(args []string) (int, error) {
 		}
 		if commit != r.Entry.Commit {
 			return nil, nil, fmt.Errorf("--commit %.12s differs from the request's %.12s; a verdict names the exact commit it reviewed", commit, r.Entry.Commit)
+		}
+		if r.State == status.Withdrawn {
+			// Refused, not recorded: a listener older than H38, still
+			// running, doesn't know the withdrawal, and would take a late
+			// APPROVE for one (reviewer-2, #906).
+			return nil, nil, fmt.Errorf("request #%d was withdrawn by %s (#%d), so nothing is owed on it; nothing written", id, r.Entry.From, r.WithdrawnBy.ID)
 		}
 		if err := checkDuplicate(snap, st, e); err != nil {
 			return nil, nil, err
@@ -581,6 +885,7 @@ func (a *app) cmdReply(args []string) (int, error) {
 		fmt.Fprintln(a.stderr, "handoff: "+effect)
 	}
 	a.printWarnings(warnings)
+	a.noSession(got.To) // reply gets the sender's check too (row 110)
 	return exitOK, nil
 }
 
@@ -603,7 +908,7 @@ func (a *app) cmdNote(args []string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	from, err := a.role(*as)
+	from, err := a.writer(*as)
 	if err != nil {
 		return 0, err
 	}
@@ -633,6 +938,9 @@ func (a *app) cmdNote(args []string) (int, error) {
 
 	var warnings []string
 	got, existed, err := a.store.Append(func(snap *record.Snapshot) (*record.Entry, *record.Entry, error) {
+		if err := a.fenced(); err != nil {
+			return nil, nil, err
+		}
 		warnings = snap.Warnings()
 		e := &record.Entry{Kind: "note", Item: *item, From: from, To: *to, Re: re, Title: strings.TrimSpace(*title), Key: *key, Body: body}
 		if re != 0 {
@@ -711,11 +1019,44 @@ func (a *app) cmdDecide(args []string) (int, error) {
 		return 0, err
 	}
 	a.warn(snap)
-	t, err := target(status.Compute(snap.Entries), pos[0])
+	st := a.status(snap)
+	t, err := target(st, pos[0])
 	if err != nil {
-		return 0, err
+		// Nothing on it awaits the operator: work approved and not merged
+		// is held by a deny (row 108). With something on it awaiting, the
+		// error says what to give instead (the reviewer, #468).
+		ap, herr := holdable(st, pos[0])
+		var amb ambiguous
+		switch {
+		case awaitsOn(st, pos[0]):
+			return 0, err
+		case errors.As(herr, &amb):
+			return 0, herr // several approvals: give the id (reviewer-3, #475)
+		case herr != nil:
+			return 0, err
+		}
+		if decision != "deny" {
+			return 0, fmt.Errorf("%s @ %.12s is approved already, and not merged; --deny holds it", orDash(ap.Item), ap.Commit)
+		}
+		a.describeHold(ap)
+		fmt.Fprintf(a.stderr, "Hold %s @ %.12s? %s is told not to merge it. [y/N] ", orDash(ap.Item), ap.Commit, ap.From)
+		line, _ := bufio.NewReader(a.stdin).ReadString('\n')
+		if ans := strings.ToLower(strings.TrimSpace(line)); ans != "y" && ans != "yes" {
+			return 0, errors.New("not confirmed; nothing written")
+		}
+		got, existed, err := a.writeHold(ap.Requests[0].Entry.ID, body)
+		if err != nil {
+			return 0, err
+		}
+		a.receipt(got, existed)
+		return exitOK, nil
 	}
-	a.describe(t)
+	a.describe(st, t)
+	for _, ap := range st.ToMerge() {
+		if ap.Item != "" && ap.Item == t.Entry.Item {
+			fmt.Fprintf(a.stdout, "  also on %s, approved and not merged: %s; to hold it, handoff decide %d --deny\n", ap.Item, ap.Line(), ap.Requests[0].Entry.ID)
+		}
+	}
 	fmt.Fprintf(a.stderr, "%s %s? [y/N] ", verbs[decision], label(t))
 	line, _ := bufio.NewReader(a.stdin).ReadString('\n')
 	if ans := strings.ToLower(strings.TrimSpace(line)); ans != "y" && ans != "yes" {
@@ -783,12 +1124,16 @@ func (a *app) cmdFyi(args []string) (int, error) {
 	if err := a.atOperatorsTerminal("fyi"); err != nil {
 		return 0, err
 	}
-	told, sessions, idle := a.sessions()
-	if len(told) == 0 {
-		return 0, errors.New("no agent has a session now, so no one was told; nothing written")
-	}
+	var told, sessions, idle []string
 	var warnings []string
 	got, err := a.store.AppendAll(func(snap *record.Snapshot) ([]*record.Entry, error) {
+		// Who has each role is read under the record's lock, which a role's
+		// move holds for writing, so it is read before the move or after,
+		// never between its two writes (the reviewer, #451).
+		told, sessions, idle = a.sessions()
+		if len(told) == 0 {
+			return nil, errors.New("no agent has a session now, so no one was told; nothing written")
+		}
 		warnings = snap.Warnings()
 		return fyis(told, sessions, msg, 0), nil
 	})
@@ -869,8 +1214,23 @@ func (a *app) printTold(told, idle []string, got []record.Entry) {
 	if len(told) > 0 {
 		fmt.Fprintf(a.stdout, "told %s (%s)\n", listOf(told, "and"), strings.Join(ids, ", "))
 	}
+	// When a session told can't take its fyi now, say when it will (row 112).
+	testPause("told") // for tests: the receipt held after the write
+	for _, e := range got {
+		if e.Kind == "fyi" {
+			if l := a.whenFyiGets(e); l != "" {
+				fmt.Fprintln(a.stdout, l)
+			}
+		}
+	}
 	if len(idle) > 0 {
 		fmt.Fprintf(a.stdout, "not told, no session: %s\n", strings.Join(idle, ", "))
+	}
+	// An fyi goes to every agent with a session, but the spare holds no
+	// work and is sent nothing, so the operator is told it wasn't (the
+	// reviewer, #810).
+	if _, ok := a.spareBinding(); ok {
+		fmt.Fprintln(a.stdout, "the spare isn't told: it holds no work")
 	}
 }
 
@@ -896,20 +1256,45 @@ func (a *app) cmdAway(args []string) (int, error) {
 		return 0, err
 	}
 	a.warn(snap)
+	in := bufio.NewReader(a.stdin)
+	yes := func() bool {
+		line, _ := in.ReadString('\n')
+		ans := strings.ToLower(strings.TrimSpace(line))
+		return ans == "y" || ans == "yes"
+	}
 	now := approvedByAway(snap)
 	if len(now) > 0 {
 		fmt.Fprintf(a.stderr, "Your go-ahead approves now: %s. Go ahead? [y/N] ", approvedList(now))
-		line, _ := bufio.NewReader(a.stdin).ReadString('\n')
-		if ans := strings.ToLower(strings.TrimSpace(line)); ans != "y" && ans != "yes" {
+		if !yes() {
 			return 0, errors.New("not confirmed; nothing written")
 		}
 	}
-	told, sessions, idle := a.sessions()
+	// With a spare, away always asks whether it covers, approved work or not,
+	// so the operator's yes is recorded for it alone (H35; reviewer-2, #703).
+	spare, hasSpare := a.spareBinding()
+	cover := false
+	if hasSpare {
+		// A spare that can't be woken can't cover: the operator hears so
+		// before answering, in handoff's own words (the reviewer, #854).
+		if d, ok := a.deliveryTo(status.Spare); ok && d.block != nil {
+			fmt.Fprintf(a.stderr, "Note: %s.\n", spareBlocked(d))
+		}
+		fmt.Fprint(a.stderr, "Cover: the spare can take any seat that gets stuck while you're away. Turn cover on? [y/N] ")
+		cover = yes()
+		testPause("cover") // for tests: away held after the question, as a spare moves
+	}
+	var told, sessions, idle []string
 	var warnings []string
 	got, err := a.store.AppendAll(func(snap *record.Snapshot) ([]*record.Entry, error) {
+		told, sessions, idle = a.sessions() // under the lock, as fyi reads it (the reviewer, #451)
 		warnings = snap.Warnings()
 		if again := approvedByAway(snap); approvedList(again) != approvedList(now) {
 			return nil, errors.New("what your go-ahead approves now changed while you were asked; nothing written; run it again")
+		}
+		// Only a cover the operator said yes to depends on the spare asked
+		// about (reviewer-3, #855).
+		if cur, ok := a.spareBinding(); cover && (!ok || cur.Session != spare.Session || cur.Gen != spare.Gen) {
+			return nil, errors.New("the spare changed while you were asked; nothing written; run it again")
 		}
 		id := snap.NextID()
 		body := fmt.Sprintf("%s\n\nThis is the operator's go-ahead while away (#%d). %s", msg, id, goAheadRule)
@@ -917,6 +1302,9 @@ func (a *app) cmdAway(args []string) (int, error) {
 			body += " Approved under it now: " + approvedList(now) + "."
 		}
 		away := &record.Entry{Kind: "away", From: status.Operator, Body: msg}
+		if cover {
+			away.Cover = &record.Cover{Session: spare.Session, Gen: spare.Gen}
+		}
 		return append([]*record.Entry{away}, fyis(told, sessions, body, id)...), nil
 	})
 	if err != nil {
@@ -929,9 +1317,31 @@ func (a *app) cmdAway(args []string) (int, error) {
 	if len(now) > 0 {
 		fmt.Fprintf(a.stdout, "approved under it now: %s\n", approvedList(now))
 	}
+	switch {
+	case cover:
+		fmt.Fprintln(a.stdout, "Cover: on. The spare can take a seat that gets stuck while you're away; you'll be told if it does.")
+	case hasSpare:
+		fmt.Fprintln(a.stdout, "Away without cover: if a seat gets stuck, you'll be told, as now.")
+	case a.isSpare(status.Spare):
+		// Not in a project whose config has a role named spare, where that
+		// name gives the ordinary role (the reviewer, #854).
+		fmt.Fprintln(a.stdout, "No spare: if a seat gets stuck, you'll be told, as now. To have one, start a session and give it the role spare.")
+	}
 	a.printTold(told, idle, got)
 	if len(told) == 0 {
 		fmt.Fprintln(a.stdout, "no agent has a session now; each session's brief shows your go-ahead when it starts")
+	}
+	// Antigravity lets hooks wake a session 10 times before someone types
+	// in it (row 102); while away, that is how far it can go (row 112).
+	for i, role := range told {
+		if b, ok := a.readBinding(sessions[i]); ok && b.CLI == "antigravity" {
+			fmt.Fprintf(a.stdout, "%s is an Antigravity session: it listens with a wait it runs in the background. If it stops running one, handoff can wake it only %d times before you type in it.\n", role, agyContinuations)
+		}
+	}
+	if hasSpare && spare.CLI == "antigravity" {
+		// The spare is told nothing, so it isn't in told: its line too (the
+		// reviewer, #854).
+		fmt.Fprintf(a.stdout, "The spare is an Antigravity session: it listens with a wait it runs in the background. If it stops running one, handoff can wake it only %d times before you type in it.\n", agyContinuations)
 	}
 	a.alert()
 	a.printWarnings(warnings)
@@ -979,12 +1389,13 @@ func (a *app) cmdBack(args []string) (int, error) {
 	if err := a.atOperatorsTerminal("back"); err != nil {
 		return 0, err
 	}
-	told, sessions, idle := a.sessions()
+	var told, sessions, idle []string
 	var warnings []string
 	var away int64
 	var approved []*status.Request
 	var waiting int
 	got, err := a.store.AppendAll(func(snap *record.Snapshot) ([]*record.Entry, error) {
+		told, sessions, idle = a.sessions() // under the lock, as fyi reads it (the reviewer, #451)
 		warnings = snap.Warnings()
 		st := status.Compute(snap.Entries)
 		if st.Away == nil {
@@ -1049,13 +1460,21 @@ func label(t *status.Target) string {
 }
 
 // describe prints what the operator is deciding: the request and the verdict that
-// approved it, or the note and what it asks.
-func (a *app) describe(t *status.Target) {
+// approved it, with where the item's other requests stand, or the note and
+// what it asks.
+func (a *app) describe(st *status.Status, t *status.Target) {
 	w := a.stdout
 	fmt.Fprintf(w, "\n%s\n", status.Summary(t.Entry))
 	if t.Request != nil {
 		if t.Request.Verdict != nil {
 			fmt.Fprintf(w, "  %s\n", status.Summary(*t.Request.Verdict))
+		}
+		if rd := t.Request.Round; rd != nil && rd.Pending() {
+			// The approval is of a round a cut write left incomplete (row 106).
+			fmt.Fprintf(w, "  but %s\n", rd.MissingText())
+		}
+		if others := st.OthersOn(t.Request); others != "" {
+			fmt.Fprintf(w, "  on %s: %s\n", t.Entry.Item, others)
 		}
 		return
 	}
@@ -1099,6 +1518,9 @@ func (a *app) cmdHome() (int, error) {
 		if _, ok := a.bound(s); ok {
 			return a.cmdInbox(nil)
 		}
+		if m, ok := a.marked(s); ok {
+			return 0, lostErr(m)
+		}
 		a.writeNoRole(a.stdout)
 		return exitOK, nil
 	}
@@ -1107,7 +1529,7 @@ func (a *app) cmdHome() (int, error) {
 		return 0, err
 	}
 	a.warn(snap)
-	st := status.Compute(snap.Entries)
+	st := a.status(snap)
 	waiting := st.Inbox(status.Operator).AwaitingOperator
 	if g := st.Away; g != nil {
 		fmt.Fprintf(a.stdout, "You're away (#%d, since %s), with this go-ahead: %s\nRun handoff back to end it.\n", g.ID, g.TS, firstLine(g.Body))
@@ -1121,7 +1543,7 @@ func (a *app) cmdHome() (int, error) {
 	atTerminal := term.IsTerminal(a.stdin)
 	in := bufio.NewReader(a.stdin)
 	for _, t := range waiting {
-		a.describe(t)
+		a.describe(st, t)
 		if !atTerminal {
 			continue
 		}
@@ -1143,6 +1565,62 @@ func (a *app) cmdHome() (int, error) {
 	}
 	if len(waiting) > 0 && !atTerminal {
 		fmt.Fprintln(a.stdout, "\nRun handoff in a terminal to decide.")
+	}
+	// A role's session that can't take its work, or hasn't listened for
+	// longer than quiet_after (row 110). A healthy session doesn't listen
+	// while it works on its turn, so a shorter gap isn't shown (the reviewer,
+	// #495).
+	var states []string
+	names := make([]string, 0, len(a.cfg.Roles)+1)
+	for _, r := range a.cfg.Roles {
+		names = append(names, r.Name)
+	}
+	if _, ok := a.spareBinding(); ok {
+		// Cover rests on a spare that can be woken, so the operator who
+		// looks before leaving sees a blocked or silent one too (the
+		// reviewer, #810).
+		names = append(names, status.Spare)
+	}
+	for _, name := range names {
+		d, ok := a.deliveryTo(name)
+		switch {
+		case !ok:
+		case d.block != nil && a.isSpare(name):
+			states = append(states, "blocked: "+spareBlocked(d))
+		case d.block != nil:
+			states = append(states, "blocked: "+blockedLine(name, d))
+		case !d.listening && time.Since(d.last) > a.quiet:
+			states = append(states, fmt.Sprintf("%s: not listening now (%s)", name, lastListened(d.last)))
+		}
+	}
+	// Cover names the spare by its generation; once no session holds the
+	// spare at it, as after a /clear of the spare cut short, no seat is
+	// covered, and the operator should know (the reviewer, #822).
+	if g := st.Away; g != nil && g.Cover != nil {
+		if why := a.coverGone(g.Cover); why != "" {
+			states = append(states, fmt.Sprintf("cover: the spare your go-ahead #%d names %s, so no seat is covered. To cover with the spare there is now, run handoff away again", g.ID, why))
+		}
+	}
+	if len(states) > 0 {
+		fmt.Fprintf(a.stdout, "\nsessions:\n")
+		for _, l := range states {
+			fmt.Fprintf(a.stdout, "  %s\n", l)
+		}
+	}
+	// Approved and not merged, and merges recorded on an agent's word
+	// (row 108).
+	a.printToMerge(a.stdout, "approved, to merge", st.ToMerge(), true)
+	if held := st.HeldInMain(); len(held) > 0 {
+		fmt.Fprintf(a.stdout, "\nheld by you, but in main:\n")
+		for _, ap := range held {
+			fmt.Fprintf(a.stdout, "  %s @ %.12s for %s (held in #%d)\n", orDash(ap.Item), ap.Commit, ap.From, ap.Hold.ID)
+		}
+	}
+	if rec := a.recordedMerges(st); len(rec) > 0 {
+		fmt.Fprintf(a.stdout, "\nrecorded as merged by their requester (not checked against the approved commit):\n")
+		for _, l := range rec {
+			fmt.Fprintf(a.stdout, "  %s\n", l)
+		}
 	}
 	if gone := quietAlerts(st, a.quiet); len(gone) > 0 {
 		fmt.Fprintf(a.stdout, "\ngone quiet:\n")
@@ -1193,7 +1671,11 @@ func (a *app) inboxRoleOf(forRole, as string) (string, bool, error) {
 		}
 		return r, given, nil
 	}
-	if _, ok := a.cfg.role(forRole); !ok && forRole != status.Operator {
+	if a.isSpare(as) || a.isSpare(os.Getenv("HANDOFF_ROLE")) {
+		// As roleOfSession refuses them, with --for too (reviewer-2, #817).
+		return "", false, fmt.Errorf("the spare is the session the operator names with `%s role spare` in it; --as spare and HANDOFF_ROLE=spare are refused", shellQuote(selfCommand()))
+	}
+	if _, ok := a.cfg.role(forRole); !ok && forRole != status.Operator && !a.isSpare(forRole) {
 		return "", false, fmt.Errorf("unknown role %q; the roles are %s", forRole, a.roleNames())
 	}
 	b, ok := a.bound(callerSession())
@@ -1224,7 +1706,7 @@ func (a *app) cmdInbox(args []string) (int, error) {
 		return 0, err
 	}
 	a.warn(snap)
-	st := status.Compute(snap.Entries)
+	st := a.status(snap)
 	in := st.Inbox(role)
 	if *quiet {
 		if in.Waiting() {
@@ -1233,6 +1715,15 @@ func (a *app) cmdInbox(args []string) (int, error) {
 		return exitOK, nil
 	}
 	fmt.Fprintf(a.stdout, "inbox for %s\n", role)
+	if a.isSpare(role) {
+		fmt.Fprintln(a.stdout, "\nNothing is sent to the spare: it holds no work until it takes a seat.")
+		return exitOK, nil
+	}
+	if d, ok := a.deliveryTo(role); ok {
+		if line := blockedLine(role, d); line != "" {
+			fmt.Fprintf(a.stdout, "\nblocked: %s\n", line) // row 110
+		}
+	}
 	a.printInbox(a.stdout, st, in)
 	return exitOK, nil
 }
@@ -1254,6 +1745,20 @@ func (a *app) printInbox(w io.Writer, st *status.Status, in status.Inbox) {
 	list("needs my review", in.NeedsReview, false)
 	list("being reviewed by me", in.BeingReviewed, true)
 	list("needs my response", in.NeedsResponse, true)
+	if len(in.Incomplete) > 0 {
+		// Only when there is one: a cut write is rare (row 106).
+		fmt.Fprintf(w, "\nincomplete, to post again as it was:\n")
+		for _, rd := range in.Incomplete {
+			if rd.Broken() {
+				fmt.Fprintf(w, "  round #%d on %s is broken: its requests don't match each other, which posting again can't repair; tell the operator\n", rd.ID, rd.Item)
+				continue
+			}
+			fmt.Fprintf(w, "  round #%d on %s, to %s @ %.12s: no request to %s\n", rd.ID, rd.Item, listOf(rd.Panel, "and"), rd.Commit, listOf(rd.Missing(), "or"))
+		}
+	}
+	// Only when there is one: a role that never asks for work never has one
+	// (row 108).
+	a.printToMerge(w, "approved, to merge", in.ToMerge, false)
 	fmt.Fprintf(w, "\nawaiting the operator:\n")
 	if len(in.AwaitingOperator) == 0 {
 		fmt.Fprintln(w, "  (none)")
@@ -1292,7 +1797,16 @@ func (a *app) cmdWait(args []string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	role, given, err := a.inboxRoleOf(*forRole, *as)
+	// wait takes the role's lock and moves its cursor: not a read, so a
+	// session that lost its role may not, whatever --for says (reviewer-3,
+	// #371).
+	// One reading of the session's binding, marked or bound, never a moment
+	// between (reviewer-3, #378).
+	start, bound := a.readBinding(callerSession().ID)
+	if m, lost := a.markOf(start, bound, callerSession().ID); lost {
+		return 0, lostErr(m)
+	}
+	role, _, err := a.inboxRoleOf(*forRole, *as)
 	if err != nil {
 		return 0, err
 	}
@@ -1300,10 +1814,23 @@ func (a *app) cmdWait(args []string) (int, error) {
 		return 0, errors.New("--timeout must be positive")
 	}
 	// A wait by a session that holds its role by the operator's word stops when the
-	// role moves, as its hook would, even before it starts (rows 74, 75).
+	// role moves, as its hook would, even before it starts (rows 74, 75). Any
+	// other wait of a session stops when the session is marked (row 107).
+	given := bound && start.Role == role
+	// A wait takes the role's lock and moves its cursor, so the spare is
+	// listened for only by its own session, and listens for nothing else
+	// (H35; reviewer-2, #803). Reading an inbox stays open to either.
+	switch {
+	case a.isSpare(role) && !given:
+		return 0, errors.New("only the spare's own session waits for the spare")
+	case bound && a.isSpare(start.Role) && !a.isSpare(role):
+		return 0, fmt.Errorf("the spare listens only for the spare, not for %s: it holds no work until it takes a seat", role)
+	}
 	var holds func() bool
-	if given {
-		holds = a.holds(callerSession(), role)
+	var fence func(func() error) error
+	if s := callerSession(); s.ID != "" {
+		fence = a.waitFence(s, role, start, given)
+		holds = a.holds(s, start, given)
 	}
 	startupDelay()
 	lock, err := a.listen(role, "wait", given)
@@ -1314,9 +1841,15 @@ func (a *app) cmdWait(args []string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	defer lock.Close()
+	defer wait.Release(lock, a.dir, role)
+	if given {
+		a.listened(callerSession(), start) // and any block it had is over (row 110)
+	}
 	code, err := wait.Run(a.store, wait.Options{Role: role, Session: callerSession().ID, Was: a.was(callerSession()), Timeout: *timeout, Emit: *emit, Interval: time.Second, Clock: wait.Real, Out: a.stdout, Err: a.stderr,
-		Quiet: a.quiet, Notify: a.notifier().Send, Alive: holds, Awake: awake.New().Set})
+		Quiet: a.quiet, Notify: a.notifier().Send, Alive: holds, Awake: awake.New().Set, Fence: fence, Check: a.checkMerge, Wake: a.spareWake(role, start)})
+	if m, ok := a.marked(callerSession()); err == nil && code == wait.ExitTimeout && ok {
+		return 0, lostErr(m)
+	}
 	if err == nil && code == wait.ExitTimeout && holds != nil && !holds() {
 		return 0, fmt.Errorf("this session no longer holds %s: the operator gave it another role, or gave %s to another session", role, role)
 	}
@@ -1354,7 +1887,7 @@ func (a *app) cmdShow(args []string) (int, error) {
 		to = "-"
 	}
 	// An fyi or a repair has no item, and the line ends at its kind.
-	head := fmt.Sprintf("#%d %s", e.ID, e.Kind)
+	head := fmt.Sprintf("#%d %s", e.ID, status.KindName(e.Kind))
 	if e.Item != "" {
 		head += " " + e.Item
 	}
@@ -1378,9 +1911,19 @@ func (a *app) cmdShow(args []string) (int, error) {
 	field("parents", strings.Join(e.Parents, " "))
 	idField("re", e.Re)
 	idField("supersedes", e.Supersedes)
+	if e.Round != 0 {
+		field("round", fmt.Sprintf("#%d, to %s", e.Round, listOf(e.Panel, "and")))
+	}
 	field("verdict", e.Verdict)
-	if g, ok := status.Compute(snap.Entries).UnderGoAhead(*e); ok {
-		field("approved under", fmt.Sprintf("#%d, the operator's go-ahead while away: that is the operator's approve", g.ID))
+	if st := status.Compute(snap.Entries); st != nil {
+		if g, ok := st.UnderGoAhead(*e); ok {
+			if h := st.HeldBy(*e); h != nil {
+				// Held since (reviewer-3, #475).
+				field("approved under", fmt.Sprintf("#%d, the operator's go-ahead while away; then held by the operator (#%d): don't merge it", g.ID, h.ID))
+			} else {
+				field("approved under", fmt.Sprintf("#%d, the operator's go-ahead while away: that is the operator's approve", g.ID))
+			}
+		}
 	}
 	field("decision", e.Decision)
 	field("key", e.Key)
@@ -1390,10 +1933,26 @@ func (a *app) cmdShow(args []string) (int, error) {
 	}
 	if r, ok := status.Compute(snap.Entries).Request(id); ok && verified {
 		state := string(r.State)
-		if r.State == status.Superseded {
+		switch r.State {
+		case status.Superseded:
 			state = fmt.Sprintf("superseded by #%d", r.SupersededBy)
+		case status.Withdrawn:
+			state = fmt.Sprintf("withdrawn by %s (#%d)", r.Entry.From, r.WithdrawnBy.ID)
 		}
 		field("state", state)
+		// What ended an approval before git saw it in main (row 108; the
+		// reviewer, #468).
+		if r.Held != nil {
+			field("approval", fmt.Sprintf("approved, then held by the operator (#%d)", r.Held.ID))
+		}
+		if m := r.Merged; m != nil {
+			field("approval", fmt.Sprintf("merged as %.12s, recorded by %s (#%d)", m.Commit, m.From, m.ID))
+		}
+		if rd := r.Round; rd != nil && rd.Broken() {
+			field("round state", fmt.Sprintf("broken: its requests don't match each other, so nothing on %s is approved under the go-ahead; posting again can't repair it, and only the operator can sort it out", rd.Item))
+		} else if rd != nil && rd.Pending() {
+			field("round state", fmt.Sprintf("incomplete: no request to %s, so nothing on %s is approved under the go-ahead; %s posts the same again to complete it", listOf(rd.Missing(), "or"), rd.Item, rd.From))
+		}
 		if r.Verdict != nil {
 			field("standing verdict", fmt.Sprintf("%s in #%d", r.Verdict.Verdict, r.Verdict.ID))
 		}
@@ -1419,11 +1978,11 @@ func (a *app) cmdRepair(args []string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	role, err := a.role(*as)
+	role, err := a.writer(*as)
 	if err != nil {
 		return 0, err
 	}
-	e, err := a.store.Repair(role)
+	e, err := a.store.Repair(role, a.fenced)
 	if errors.Is(err, record.ErrNothingToRepair) {
 		fmt.Fprintln(a.stdout, "nothing to repair: the chain verifies and head.json agrees with it")
 		return exitOK, nil
@@ -1460,7 +2019,7 @@ func (a *app) alert() {
 	if err != nil {
 		return
 	}
-	a.notifier().Send(status.Compute(snap.Entries).Alerts(time.Now(), a.quiet))
+	a.notifier().Send(a.status(snap).Alerts(time.Now(), a.quiet))
 }
 
 // quietAlerts is what the operator was, or will be, told has gone quiet.

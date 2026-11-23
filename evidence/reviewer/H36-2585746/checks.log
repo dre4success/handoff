@@ -1,0 +1,72 @@
+H36, request #469, commit 25857463469fac1bd9d58c3a14e8a359249a3be7 (base 0553216)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session).
+The commit was built in a temporary worktree (git worktree add --detach), removed after.
+
+== 1. Build, vet, format, dependencies (Run) ==
+$ go build -o handoff ./cmd/handoff && go vet ./... && gofmt -l cmd internal
+(no output)
+$ go list -deps ./... | grep -c '^net$'
+0
+$ git diff --check 0553216 2585746
+(no output)
+
+== 2. Source: what changed outside the tests ==
+$ git diff 0553216 2585746 -- cmd/handoff/main.go cmd/handoff/session.go
+Only testPause, in place of testDelay at its three calls (main.go:255, session.go:387,
+session.go:816). With HANDOFF_TEST_PAUSE unset it returns at once.
+
+== 3. Mutation checks: do the reworked tests still fail for the faults they are for? (Run) ==
+For each, a scratch copy of the tree (cp -R, its .git file removed), one fault put in with
+mutate.py, then: go test ./cmd/handoff -count=1 -run TestH34p6 -timeout 20m
+a: round 6's /clear race (cutShort and moveCleared answer "none" when the other hook's
+   binding is there). c: no fence on a note's write. d: no fence on a held role's delivery.
+
+mutation a: exit 1
+--- FAIL: TestH34p6BothClearHooksHaveTheRole (0.88s)
+    shutout_test.go:949: a /clear hook of s-1:
+        handoff: 001 hands work between agents through handoff, and this session has no role in it. When the operator gives you one, run `/private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-bin-3432970600/handoff role
+mutation c: exit 1
+--- FAIL: TestH34p6AWritePausedAcrossTheMoveIsRefused (0.48s)
+    shutout_test.go:185: the paused note: <nil>
+        handoff: no session has implementer now, so this waits until the operator gives one that role; tell the operator.
+mutation d: exit 1
+--- FAIL: TestH34p6TheOldListenerTakesNothingFromItsSuccessor (1.45s)
+    shutout_test.go:214: the old listener delivered #1:
+        handoff: new for reviewer:
+
+(My first try at mutation a didn't compile, an unused variable; the result above is from the corrected mutate.py.)
+
+== 4. The suite, timed, and repeats (Run) ==
+$ uptime; /usr/bin/time -p go test ./... -count=1 -race; uptime      (no -timeout; my mutation runs beside it)
+ 1:30  up 23 days,  5:27, 15 users, load averages: 5.68 5.19 7.07
+ok  	github.com/dre4success/handoff/cmd/handoff	245.676s
+ok  	github.com/dre4success/handoff/internal/awake	1.285s
+ok  	github.com/dre4success/handoff/internal/gitx	1.205s
+ok  	github.com/dre4success/handoff/internal/notify	1.343s
+ok  	github.com/dre4success/handoff/internal/record	3.775s
+ok  	github.com/dre4success/handoff/internal/status	1.206s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	1.763s
+real 247.21
+user 68.37
+sys 50.58
+exit 0
+ 1:34  up 23 days,  5:31, 15 users, load averages: 5.49 5.41 6.70
+
+$ go test -race -count=3 -run 'TestH34p6|TestH34p7' ./cmd/handoff
+ok  	github.com/dre4success/handoff/cmd/handoff	174.236s
+exit 0
+
+$ /usr/bin/time -p go test ./... -count=1 -race      (a second full run)
+ok  	github.com/dre4success/handoff/cmd/handoff	247.143s
+ok  	github.com/dre4success/handoff/internal/awake	1.344s
+ok  	github.com/dre4success/handoff/internal/gitx	1.245s
+ok  	github.com/dre4success/handoff/internal/notify	1.391s
+ok  	github.com/dre4success/handoff/internal/record	3.737s
+ok  	github.com/dre4success/handoff/internal/status	1.245s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	1.730s
+real 247.41
+user 65.84
+sys 51.50
+exit 0

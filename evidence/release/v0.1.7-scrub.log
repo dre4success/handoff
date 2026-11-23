@@ -1,0 +1,50 @@
+# command: the name sweep before v0.1.7, and the cleanup it led to (spec row 119)
+# date: 2026-11-23 18:24:09 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac
+# the public tree is v0.1.6 = 09ece7d; the cleanup is 63d04e7, on main at e4c670f; the patterns stay outside the repository
+## git diff --numstat e4c670f 63d04e7: 29 files, 46 lines in, 45 lines out (the extra line in is row 119)
+## what each change put in, with how often (from the cleanup script; the text taken out isn't repeated here)
+  24 ~/  for the operator's home folder, in evidence/h34/agy-probe/hook-stdin.log (12 lines)
+  10 The operator set it up  for the operator named in the probe's prompt, in the same 10 of those lines
+   8 claude-501/-Users-me-handoff/  for the account name in the reviewers' scratchpad paths (H34.2, H34.7, H35.1, H37 checks.log)
+the other project's name, 25 lines:
+   1 after a night in another project when  (docs/CHANNEL.md, the H34 row)
+   1 On the night of 2026-11-21, in another project, the implementer  (docs/proposals/H34_DESIGN.md)
+   1 On this project and that one, every approval  (H34_DESIGN.md)
+   1 Replaying that night from 23:28  (H34_DESIGN.md)
+   1 In that project, the old Antigravity session  (H34_DESIGN.md)
+   1 (a night in another project, H34)  (the spec, row 111)
+  10 the other project's night again  (the reviewer's probe-g.sh and p2-probe-g.sh, a comment)
+   2 The other project's replay:  (reviewer checks.log)
+   2 and the other project's  (reviewer checks.log)
+   1 (in the other project) for each request  (reviewer checks.log)
+   1 replayed on the other project, the night  (reviewer checks.log)
+   1 as the night in the other project went  (reviewer checks.log)
+   1 (the other project's replay)  (reviewer checks.log)
+   1 the other project - entries with a key  (reviewer checks.log)
+## the sweep after the cleanup, the public tree (09ece7d) against it
+## 09ece7d: 925 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder: 2 lines, 0 file names
+the names of the operator's other projects: 14 lines, 0 file names
+an email address or mail domain: 42 lines, 0 file names
+the operator's server: 0 lines, 0 file names
+## 63d04e7: 1305 files
+the operator's name, as a word, in a file name or inside an identifier: 0 lines, 0 file names
+the operator's account name, other than in the module path: 0 lines, 0 file names
+a path under a home folder: 2 lines, 0 file names
+the names of the operator's other projects: 15 lines, 0 file names
+an email address or mail domain: 130 lines, 0 file names
+the operator's server: 0 lines, 0 file names
+## added lines in git diff 09ece7d 63d04e7 that match:
+the operator's name, as a word, in a file name or inside an identifier: 0 added lines
+the operator's account name, other than in the module path: 0 added lines
+a path under a home folder: 0 added lines
+the names of the operator's other projects: 1 added lines
+an email address or mail domain: 88 added lines
+the operator's server: 0 added lines
+# what still matches among the added lines: made-up addresses in probe scripts and tests (t@example.invalid, t@example.com, probe@example.invalid), and the predecessor's name in row 105, public since H29
+## added lines with a key, a token, a password or an IP address: 0
+## hashes (git blob, sha256, sha1, md5, full or 12 characters) of the 29 changed files' bytes before the cleanup, found in any file of 63d04e7: 0
+## the 12 lines (over 20 characters, not headings) H29 dropped from CLAUDE.md, found in any file of 63d04e7: 0

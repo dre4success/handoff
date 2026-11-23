@@ -150,7 +150,9 @@ func TestH32ListenContinuesTheTurn(t *testing.T) {
 	if res.code != 0 || strings.TrimSpace(res.out) != "{}" || time.Since(start) > 10*time.Second {
 		t.Fatalf("at the limit: exit %d after %v, %q %q", res.code, time.Since(start), res.out, res.err)
 	}
-	if b, _ := os.ReadFile(told); !strings.Contains(string(b), "handoff can't wake reviewer's Antigravity session for new work until you type in it") {
+	// With work waiting, the operator hears of the block and the work
+	// (row 110); with none, of the limit, as TestH34p2 has it.
+	if b, _ := os.ReadFile(told); !strings.Contains(string(b), "reviewer can't be woken until you type in its session (Antigravity's 10 wakes used, since ") || !strings.Contains(string(b), "work waits for it (#1)") {
 		t.Fatalf("the operator wasn't told at the limit: %q", b)
 	}
 }
@@ -197,7 +199,7 @@ func TestH32TheBriefOffersAntigravitysHooks(t *testing.T) {
 	agy := append(antigravity("0a1b-offer"), "HOME="+home)
 	r.as(t, agy, "role", "reviewer")
 	offer := "settings antigravity --global` prints them"
-	if out := r.as(t, agy, "brief"); !strings.Contains(out, offer) || !strings.Contains(out, "Listening: Don't run `") {
+	if out := r.as(t, agy, "brief"); !strings.Contains(out, offer) || !strings.Contains(out, "Listening: Run `") || !strings.Contains(out, "wait --for reviewer --timeout 60m` in the background") { // row 114
 		t.Fatalf("the brief with no hooks:\n%s", out)
 	}
 	listens := func(enabled bool) string {

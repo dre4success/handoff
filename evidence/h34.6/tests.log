@@ -1,0 +1,164 @@
+# H34.6 round 8 tests, run by the implementer (Claude Code, Opus 5.5), 2026-11-22T23:42:29Z, on branch h34.6-shutout (the tree committed next). Each command is followed only by what it printed.
+$ gofmt -l cmd internal; echo "exit $?"
+exit 0
+$ go vet ./...; echo "exit $?"
+exit 0
+$ go list -deps ./... | grep -cx net
+0
+$ go test -race -count=1 -timeout 30m ./...
+ok  	github.com/dre4success/handoff/cmd/handoff	826.628s
+ok  	github.com/dre4success/handoff/internal/awake	1.309s
+ok  	github.com/dre4success/handoff/internal/gitx	1.234s
+ok  	github.com/dre4success/handoff/internal/notify	1.417s
+ok  	github.com/dre4success/handoff/internal/record	3.771s
+ok  	github.com/dre4success/handoff/internal/status	1.221s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	1.800s
+$ go test -count=1 -run TestH34p6 -v ./cmd/handoff | grep -E "^(--- |ok|FAIL)"
+--- PASS: TestH34p6ASessionThatLostItsRoleCantActAsAny (0.81s)
+--- PASS: TestH34p6TheMarkOutlivesTheProcessAndMovesWithTheSession (0.71s)
+--- PASS: TestH34p6TheBackgroundedSessionCarriesItsMark (0.39s)
+--- PASS: TestH34p6ARoleWithNoBindingPassesAsBefore (0.32s)
+--- PASS: TestH34p6AWritePausedAcrossTheMoveIsRefused (1.79s)
+--- PASS: TestH34p6TheOldListenerTakesNothingFromItsSuccessor (3.32s)
+--- PASS: TestH34p6MovesAndWritesNeverDeadlock (0.34s)
+--- PASS: TestH34p6AMarkedSessionCantWaitForAnyRole (0.44s)
+--- PASS: TestH34p6TheFenceKeepsWhatWasDelivered (2.76s)
+--- PASS: TestH34p6AntigravityIsToldOnATurnItCanHear (0.31s)
+--- PASS: TestH34p6RepairIsFenced (1.78s)
+--- PASS: TestH34p6AHookWithAFixedRoleSeesItsSessionsMark (0.29s)
+--- PASS: TestH34p6ClearMovesTheMarkOfTheConversationInTheProcess (0.51s)
+--- PASS: TestH34p6AnEndedSessionIsMarkedWhenItsRoleIsGivenOn (0.43s)
+--- PASS: TestH34p6ABackgroundedSessionIsNotGone (0.49s)
+--- PASS: TestH34p6AGoneSessionsMarkMovesWithBackground (0.47s)
+--- PASS: TestH34p6AWaitForAnotherRoleStopsWhenItsSessionIsMarked (2.80s)
+--- PASS: TestH34p6AResumedSessionIsLiveFromItsFirstCommand (0.38s)
+--- PASS: TestH34p6TheOldIdKeepsItsMarkWhenAMoveCarriesIt (0.97s)
+--- PASS: TestH34p6ClearAndBackgroundMoveUnderTheRecordsLock (3.65s)
+--- PASS: TestH34p6AMoveCutShortLeavesTheOldIdMarked (0.56s)
+--- PASS: TestH34p6AFixedRoleHookTakesWhatTheConversationCarried (1.65s)
+--- PASS: TestH34p6AFixedRoleHookStartedUnboundIsFenced (3.24s)
+--- PASS: TestH34p6AHookKeepsTheGenerationItResolved (1.80s)
+--- PASS: TestH34p6ARoleGivenAgainAfterBackgroundGoesOnWithIt (1.03s)
+--- PASS: TestH34p6AFinishedMoveIsNeverTakenForACutOne (0.54s)
+--- PASS: TestH34p6AFixedRoleWaitsForACarriedMoveToSettle (1.48s)
+--- PASS: TestH34p6BothClearHooksHaveTheRole (22.94s)
+--- PASS: TestH34p6BothBackgroundHooksHaveTheRole (20.73s)
+--- PASS: TestH34p6AnFyiDuringAMoveGoesToTheNewSession (1.80s)
+ok  	github.com/dre4success/handoff/cmd/handoff	79.213s
+$ (a worktree of main, with this shutout_test.go) go test -count=1 -run TestH34p6 ./cmd/handoff | grep -E "^(--- |ok|FAIL)"
+# at d26ce8e
+--- FAIL: TestH34p6ASessionThatLostItsRoleCantActAsAny (0.62s)
+--- FAIL: TestH34p6TheMarkOutlivesTheProcessAndMovesWithTheSession (0.38s)
+--- FAIL: TestH34p6TheBackgroundedSessionCarriesItsMark (0.36s)
+--- FAIL: TestH34p6AWritePausedAcrossTheMoveIsRefused (0.87s)
+--- FAIL: TestH34p6TheOldListenerTakesNothingFromItsSuccessor (1.78s)
+--- FAIL: TestH34p6AMarkedSessionCantWaitForAnyRole (0.43s)
+--- FAIL: TestH34p6AntigravityIsToldOnATurnItCanHear (0.29s)
+--- FAIL: TestH34p6RepairIsFenced (0.84s)
+--- FAIL: TestH34p6AHookWithAFixedRoleSeesItsSessionsMark (0.31s)
+--- FAIL: TestH34p6ClearMovesTheMarkOfTheConversationInTheProcess (0.48s)
+--- FAIL: TestH34p6AnEndedSessionIsMarkedWhenItsRoleIsGivenOn (0.42s)
+--- FAIL: TestH34p6ABackgroundedSessionIsNotGone (0.38s)
+--- FAIL: TestH34p6AGoneSessionsMarkMovesWithBackground (0.44s)
+--- FAIL: TestH34p6AWaitForAnotherRoleStopsWhenItsSessionIsMarked (1.39s)
+--- FAIL: TestH34p6AResumedSessionIsLiveFromItsFirstCommand (0.37s)
+--- FAIL: TestH34p6TheOldIdKeepsItsMarkWhenAMoveCarriesIt (0.39s)
+--- FAIL: TestH34p6ClearAndBackgroundMoveUnderTheRecordsLock (0.71s)
+--- FAIL: TestH34p6AMoveCutShortLeavesTheOldIdMarked (0.35s)
+--- FAIL: TestH34p6AFixedRoleHookTakesWhatTheConversationCarried (1.57s)
+--- FAIL: TestH34p6AFixedRoleHookStartedUnboundIsFenced (1.72s)
+--- FAIL: TestH34p6AHookKeepsTheGenerationItResolved (0.80s)
+--- FAIL: TestH34p6ARoleGivenAgainAfterBackgroundGoesOnWithIt (0.98s)
+--- FAIL: TestH34p6AFinishedMoveIsNeverTakenForACutOne (0.43s)
+--- FAIL: TestH34p6AFixedRoleWaitsForACarriedMoveToSettle (0.87s)
+--- FAIL: TestH34p6BothClearHooksHaveTheRole (4.16s)
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	45.183s
+FAIL
+$ (a worktree of 458a36b, with this shutout_test.go) go test -count=1 -run TestH34p6 ./cmd/handoff | grep -E "^(--- |ok|FAIL)"
+# at 458a36b
+--- FAIL: TestH34p6AMarkedSessionCantWaitForAnyRole (0.43s)
+--- FAIL: TestH34p6TheFenceKeepsWhatWasDelivered (2.77s)
+--- FAIL: TestH34p6AntigravityIsToldOnATurnItCanHear (0.27s)
+--- FAIL: TestH34p6RepairIsFenced (1.76s)
+--- FAIL: TestH34p6AHookWithAFixedRoleSeesItsSessionsMark (0.29s)
+--- FAIL: TestH34p6ClearMovesTheMarkOfTheConversationInTheProcess (0.45s)
+--- FAIL: TestH34p6AnEndedSessionIsMarkedWhenItsRoleIsGivenOn (0.42s)
+--- FAIL: TestH34p6ABackgroundedSessionIsNotGone (0.35s)
+--- FAIL: TestH34p6AGoneSessionsMarkMovesWithBackground (0.43s)
+--- FAIL: TestH34p6AWaitForAnotherRoleStopsWhenItsSessionIsMarked (1.36s)
+--- FAIL: TestH34p6AResumedSessionIsLiveFromItsFirstCommand (0.33s)
+--- FAIL: TestH34p6TheOldIdKeepsItsMarkWhenAMoveCarriesIt (0.40s)
+--- FAIL: TestH34p6ClearAndBackgroundMoveUnderTheRecordsLock (0.67s)
+--- FAIL: TestH34p6AMoveCutShortLeavesTheOldIdMarked (0.35s)
+--- FAIL: TestH34p6AFixedRoleHookTakesWhatTheConversationCarried (1.54s)
+--- FAIL: TestH34p6AFixedRoleHookStartedUnboundIsFenced (1.72s)
+--- FAIL: TestH34p6AHookKeepsTheGenerationItResolved (1.77s)
+--- FAIL: TestH34p6ARoleGivenAgainAfterBackgroundGoesOnWithIt (0.96s)
+--- FAIL: TestH34p6AFinishedMoveIsNeverTakenForACutOne (0.44s)
+--- FAIL: TestH34p6AFixedRoleWaitsForACarriedMoveToSettle (0.82s)
+--- FAIL: TestH34p6BothClearHooksHaveTheRole (3.10s)
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	49.162s
+FAIL
+$ (a worktree of cd71bcf, with this shutout_test.go) go test -count=1 -run TestH34p6 ./cmd/handoff | grep -E "^(--- |ok|FAIL)"
+# at cd71bcf
+--- FAIL: TestH34p6ABackgroundedSessionIsNotGone (0.47s)
+--- FAIL: TestH34p6AGoneSessionsMarkMovesWithBackground (5.43s)
+--- FAIL: TestH34p6AWaitForAnotherRoleStopsWhenItsSessionIsMarked (1.32s)
+--- FAIL: TestH34p6AResumedSessionIsLiveFromItsFirstCommand (0.37s)
+--- FAIL: TestH34p6TheOldIdKeepsItsMarkWhenAMoveCarriesIt (0.39s)
+--- FAIL: TestH34p6ClearAndBackgroundMoveUnderTheRecordsLock (0.68s)
+--- FAIL: TestH34p6AMoveCutShortLeavesTheOldIdMarked (0.33s)
+--- FAIL: TestH34p6AFixedRoleHookTakesWhatTheConversationCarried (1.49s)
+--- FAIL: TestH34p6AFixedRoleHookStartedUnboundIsFenced (1.72s)
+--- FAIL: TestH34p6AHookKeepsTheGenerationItResolved (1.78s)
+--- FAIL: TestH34p6ARoleGivenAgainAfterBackgroundGoesOnWithIt (0.98s)
+--- FAIL: TestH34p6AFinishedMoveIsNeverTakenForACutOne (0.41s)
+--- FAIL: TestH34p6AFixedRoleWaitsForACarriedMoveToSettle (0.80s)
+--- FAIL: TestH34p6BothClearHooksHaveTheRole (2.08s)
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	53.262s
+FAIL
+$ (a worktree of 05a184f, with this shutout_test.go) go test -count=1 -run TestH34p6 ./cmd/handoff | grep -E "^(--- |ok|FAIL)"
+# at 05a184f
+--- FAIL: TestH34p6TheOldIdKeepsItsMarkWhenAMoveCarriesIt (0.37s)
+--- FAIL: TestH34p6ClearAndBackgroundMoveUnderTheRecordsLock (0.67s)
+--- FAIL: TestH34p6AMoveCutShortLeavesTheOldIdMarked (0.33s)
+--- FAIL: TestH34p6AFixedRoleHookTakesWhatTheConversationCarried (1.49s)
+--- FAIL: TestH34p6AFixedRoleHookStartedUnboundIsFenced (1.70s)
+--- FAIL: TestH34p6AHookKeepsTheGenerationItResolved (1.78s)
+--- FAIL: TestH34p6ARoleGivenAgainAfterBackgroundGoesOnWithIt (0.98s)
+--- FAIL: TestH34p6AFinishedMoveIsNeverTakenForACutOne (0.41s)
+--- FAIL: TestH34p6AFixedRoleWaitsForACarriedMoveToSettle (0.78s)
+--- FAIL: TestH34p6BothClearHooksHaveTheRole (2.09s)
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	49.761s
+FAIL
+$ (a worktree of 6f1b853, with this shutout_test.go) go test -count=1 -run TestH34p6 ./cmd/handoff | grep -E "^(--- |ok|FAIL)"
+# at 6f1b853
+--- FAIL: TestH34p6AMoveCutShortLeavesTheOldIdMarked (0.28s)
+--- FAIL: TestH34p6AFixedRoleHookTakesWhatTheConversationCarried (1.46s)
+--- FAIL: TestH34p6ARoleGivenAgainAfterBackgroundGoesOnWithIt (0.84s)
+--- FAIL: TestH34p6AFinishedMoveIsNeverTakenForACutOne (0.41s)
+--- FAIL: TestH34p6AFixedRoleWaitsForACarriedMoveToSettle (0.82s)
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	74.432s
+FAIL
+$ (a worktree of 3043862, with this shutout_test.go) go test -count=1 -run TestH34p6 ./cmd/handoff | grep -E "^(--- |ok|FAIL)"
+# at 3043862
+--- FAIL: TestH34p6AMoveCutShortLeavesTheOldIdMarked (0.30s)
+--- FAIL: TestH34p6AFixedRoleWaitsForACarriedMoveToSettle (1.13s)
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	75.066s
+FAIL
+$ (a worktree of 541b7e5, with this shutout_test.go) go test -count=1 -run TestH34p6 ./cmd/handoff | grep -E "^(--- |ok|FAIL)"
+# at 541b7e5
+ok  	github.com/dre4success/handoff/cmd/handoff	75.993s
+$ (a worktree of 4cf3aed, with this shutout_test.go) go test -count=1 -run TestH34p6 ./cmd/handoff | grep -E "^(--- |ok|FAIL)"
+# at 4cf3aed
+--- FAIL: TestH34p6AnFyiDuringAMoveGoesToTheNewSession (0.67s)
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	77.985s
+FAIL

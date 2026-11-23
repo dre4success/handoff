@@ -1,0 +1,38 @@
+# H34.8 round 3 tests, run by the implementer (Claude Code, Opus 5.5), 2026-11-23T08:21:52Z, on branch h34.8-agy-wait at 0b9e83a. Each command is followed only by what it printed.
+$ gofmt -l cmd internal; echo "exit $?"
+exit 0
+$ go vet ./...; echo "exit $?"
+exit 0
+$ go list -deps ./... | grep -cx net
+0
+$ go test -race -count=1 -timeout 30m ./...
+ok  	github.com/dre4success/handoff/cmd/handoff	315.913s
+ok  	github.com/dre4success/handoff/internal/awake	1.304s
+ok  	github.com/dre4success/handoff/internal/gitx	1.219s
+ok  	github.com/dre4success/handoff/internal/notify	1.412s
+ok  	github.com/dre4success/handoff/internal/record	4.089s
+ok  	github.com/dre4success/handoff/internal/status	1.225s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	2.600s
+$ go test -count=1 -run 'TestH34p8|TestH34p4AwayWarns' -v ./cmd/handoff | grep -E "^(--- |    --- |ok|FAIL|    [a-z_]*_test.go:[0-9]*:)"
+--- PASS: TestH34p4AwayWarnsOfAntigravitySessions (0.55s)
+--- PASS: TestH34p8AntigravityListensWithABackgroundWait (0.64s)
+--- PASS: TestH34p8TheHooksWakeSaysToWaitInTheBackground (0.65s)
+ok  	github.com/dre4success/handoff/cmd/handoff	1.043s
+$ (a worktree of df9885f, H34.5 round 4, the base, with this agywait_test.go) go test -count=1 -run TestH34p8 -v ./cmd/handoff | grep -E "^(--- |    --- |ok|FAIL|    [a-z_]*_test.go:[0-9]*:)"
+    agywait_test.go:28: with no hooks: Listening: Don't run `/private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-bin-1573017017/handoff wait`. Instead, end your turn. If work waits for you, the operator hears of it and tells you. If your session has no handoff hooks, offer to set them up for every project: `/private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-bin-1573017017/handoff settings antigravity --global` prints them and where they go. With the operator's OK, add them. They work once the operator starts this session again.
+--- FAIL: TestH34p8AntigravityListensWithABackgroundWait (0.47s)
+    agywait_test.go:77: the Antigravity wake: "{\"decision\":\"continue\",\"reason\":\"handoff: new for implementer:\\n#1 note W1 reviewer → implementer: n\\nRead each with `/private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-bin-1573017017/handoff show \\u003cid\\u003e` and act on it as your brief says. Listening starts again when your turn ends.\\n\"}\n"
+--- FAIL: TestH34p8TheHooksWakeSaysToWaitInTheBackground (0.50s)
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	1.106s
+FAIL
+$ (a worktree of 0b573b1, round 2 rebased onto the base, with this agywait_test.go and small_test.go) go test -count=1 -run 'TestH34p8|TestH34p4AwayWarns' -v ./cmd/handoff | grep -E "^(--- |    --- |ok|FAIL|    [a-z_]*_test.go:[0-9]*:)"
+    small_test.go:47: away: <nil>
+--- FAIL: TestH34p4AwayWarnsOfAntigravitySessions (0.57s)
+    agywait_test.go:56: the hook's brief, the session named only on stdin: Listening: you don't run `/private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-bin-117437188/handoff wait`. When your turn ends, a hook listens for reviewer and brings you what arrives.
+--- FAIL: TestH34p8AntigravityListensWithABackgroundWait (0.58s)
+--- PASS: TestH34p8TheHooksWakeSaysToWaitInTheBackground (0.65s)
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	1.235s
+FAIL

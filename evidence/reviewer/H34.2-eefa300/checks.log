@@ -1,0 +1,256 @@
+H34.2 round 5, request #591, commit eefa3004c98c3e3269534d7e40464399610319ed (base 1079641, H34.1 round 6)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session).
+The commit was built in a temporary worktree (git worktree add --detach), removed after.
+Every probe ran in a new scratch git project with HANDOFF_TEST_NOTIFY set and the session
+variables unset.
+
+== 1. Build, vet, format, dependencies (Run) ==
+$ go build -o handoff ./cmd/handoff && go vet ./... && gofmt -l cmd internal
+(no output)
+$ go list -deps ./... | grep -c '^net$'
+0
+$ git diff --check 1079641 eefa300
+(no output)
+
+== 2. My probes of rounds 1, 3 and 4, run again: probe.sh, probe-b.sh, probe-g.sh (Run) ==
+No line differs from round 4 (../H34.2-29c7443/checks.log), commit ids, paths and times
+apart. Their outputs on this commit:
+
+## B1. Antigravity's cap: the block, who sees it, and what clears it
+You are now implementer in b1.
+$ (Antigravity A, Stop hook, executionNum 10) handoff hook listen --timeout 2s
+{}
+  [exit 0]
+  binding A: role implementer | block: cap  | listened: no
+  alerts to the operator (1):
+    b1: handoff can't wake implementer's Antigravity session for new work until you type in it: Antigravity lets hooks continue a turn 10 times in a row.
+-- a note for the blocked role:
+posted #1 note P1 reviewer → implementer: one
+handoff: told the operator: implementer can't be woken until you type in its session (Antigravity's 10 wakes used, since HH:MM), and work waits for it (#1).
+handoff: implementer can't be woken until the operator types in its session (Antigravity's 10 wakes used, since HH:MM). This waits.
+  alerts to the operator (1):
+    b1: implementer can't be woken until you type in its session (Antigravity's 10 wakes used, since HH:MM), and work waits for it (#1).
+$ handoff inbox --for implementer (top)
+inbox for implementer
+
+blocked: implementer can't be woken until the operator types in its session (Antigravity's 10 wakes used, since HH:MM). This waits.
+
+$ handoff brief --for implementer (the Blocked line)
+Blocked: implementer can't be woken until the operator types in its session (Antigravity's 10 wakes used, since HH:MM). This waits. It clears once this session listens again.
+$ handoff   (the "sessions" part)
+sessions:
+  blocked: implementer can't be woken until the operator types in its session (Antigravity's 10 wakes used, since HH:MM). This waits.
+-- a read sends nothing more; a second note sends one more:
+  alerts to the operator (0):
+posted #2 note P1 reviewer → implementer: two
+handoff: told the operator: implementer can't be woken until you type in its session (Antigravity's 10 wakes used, since HH:MM), and work waits for it (#2).
+handoff: implementer can't be woken until the operator types in its session (Antigravity's 10 wakes used, since HH:MM). This waits.
+  alerts to the operator (1):
+    b1: implementer can't be woken until you type in its session (Antigravity's 10 wakes used, since HH:MM), and work waits for it (#2).
+-- the operator types in the session; the count starts again, and its next Stop hook listens:
+$ (Antigravity A, Stop hook, executionNum 0) handoff hook listen --timeout 2s
+{"decision":"continue","reason":"handoff: new for implementer:\n#1 note P1 reviewer → implementer: one\n#2 note P1 reviewer → implementer: two\nRead each with `/private/tmp/claude-501/-Users-me-handoff/ed41c714-7
+  [exit 0]
+  binding A: role implementer | block: none  | listened: yes
+$ handoff   (the "sessions" part)
+posted #3 note P1 reviewer → implementer: three
+
+## B2. The cap while something already listens for the role, and from a session with no binding
+You are now implementer in b2.
+$ (Antigravity A, Stop hook, executionNum 10) handoff hook listen --timeout 2s
+{}
+  [exit 0]
+  binding A: role implementer | block: none  | listened: no
+-- a fixed role, no binding (hook listen --as reviewer), at the cap:
+{}
+A.json 
+  alerts to the operator (1):
+    b2: handoff can't wake reviewer's Antigravity session for new work until you type in it: Antigravity lets hooks continue a turn 10 times in a row.
+
+## B3. A permission prompt: the block, a reply's sender, and what clears it
+You are now implementer in b3.
+posted #1 request W1 implementer → reviewer: W1 @ 237ca230d6c5
+$ (I, Notification hook, permission_prompt) handoff hook notify
+  binding I: role implementer | block: none  | listened: no
+  alerts to the operator (0):
+$ handoff reply --as reviewer 1 --verdict CHANGES --commit 237ca230d6c556517de04961457aff9fecdb3c10 --body f
+posted #2 reply W1 reviewer → implementer: CHANGES on #1 @ 237ca230d6c5
+  [exit 0]
+  alerts to the operator (0):
+$ handoff   (the "sessions" part)
+sessions:
+  implementer: not listening now (never listened)
+-- the operator answers the prompt, and the session runs a handoff command:
+  [inbox --quiet: exit 1]
+  binding I: role implementer | block: none  | listened: no
+posted #3 note P1 reviewer → implementer: after
+
+## B4. Antigravity says its own task still runs (fullyIdle false)
+You are now implementer in b4.
+posted #1 note P1 reviewer → implementer: one
+$ (Antigravity A, Stop hook, executionNum 3, fullyIdle false) handoff hook listen --timeout 2s
+{}
+  [exit 0]
+$ (Antigravity A, Stop hook, executionNum 10, fullyIdle false) handoff hook listen --timeout 2s
+{}
+  [exit 0]
+  binding A: role implementer | block: none  | listened: no
+$ (Antigravity A, Stop hook, executionNum 3, fullyIdle true) handoff hook listen --timeout 2s
+{"decision":"continue","reason":"handoff: new for implementer:\n#1 note P1 reviewer → implementer: one\nRead each with `…/scratchpad/wt
+  [exit 0]
+
+## B5. A blocked session loses its role: the block doesn't follow the role
+You are now implementer in b5.
+  binding A: role implementer | block: cap  | listened: no
+You are now implementer in b5. Another session had implementer; it has no role now.
+  binding Z: role implementer | block: none  | listened: no
+posted #1 note P1 reviewer → implementer: one
+$ handoff   (the "sessions" part)
+sessions:
+  implementer: not listening now (never listened)
+
+## B6. What counts as work waiting for a blocked role: a request, a note, a decision
+You are now reviewer in b6.
+  binding A: role reviewer | block: cap  | listened: no
+  alerts to the operator (1):
+    b6: handoff can't wake reviewer's Antigravity session for new work until you type in it: Antigravity lets hooks continue a turn 10 times in a row.
+-- a note to it:
+posted #1 note P1 implementer → reviewer: please hold
+handoff: told the operator: reviewer can't be woken until you type in its session (Antigravity's 10 wakes used, since HH:MM), and work waits for it (#1).
+handoff: reviewer can't be woken until the operator types in its session (Antigravity's 10 wakes used, since HH:MM). This waits.
+  alerts to the operator (1):
+    b6: reviewer can't be woken until you type in its session (Antigravity's 10 wakes used, since HH:MM), and work waits for it (#1).
+-- a request to it:
+posted #2 request W1 implementer → reviewer: W1 @ b168af9ff42c
+handoff: told the operator: reviewer can't be woken until you type in its session (Antigravity's 10 wakes used, since HH:MM), and work waits for it (#2).
+handoff: reviewer can't be woken until the operator types in its session (Antigravity's 10 wakes used, since HH:MM). This waits.
+  alerts to the operator (1):
+    b6: reviewer can't be woken until you type in its session (Antigravity's 10 wakes used, since HH:MM), and work waits for it (#2).
+-- another note, with the request still waiting:
+posted #3 note P1 implementer → reviewer: and this
+handoff: told the operator: reviewer can't be woken until you type in its session (Antigravity's 10 wakes used, since HH:MM), and work waits for it (#3).
+handoff: reviewer can't be woken until the operator types in its session (Antigravity's 10 wakes used, since HH:MM). This waits.
+  alerts to the operator (1):
+    b6: reviewer can't be woken until you type in its session (Antigravity's 10 wakes used, since HH:MM), and work waits for it (#3).
+-- the same notes to a blocked role with nothing else waiting, then the operator's view:
+You are now implementer in b6b.
+posted #1 note P1 reviewer → implementer: hold the merge
+handoff: told the operator: implementer can't be woken until you type in its session (Antigravity's 10 wakes used, since HH:MM), and work waits for it (#1).
+handoff: implementer can't be woken until the operator types in its session (Antigravity's 10 wakes used, since HH:MM). This waits.
+  alerts to the operator (1):
+    b6b: implementer can't be woken until you type in its session (Antigravity's 10 wakes used, since HH:MM), and work waits for it (#1).
+  the implementer's cursor: channel.jsonl config.json head.json lock notified presence sessions tracking.json 
+
+## B3. A permission prompt: the block, a reply's sender, and what clears it
+You are now implementer in b3.
+posted #1 request W1 implementer → reviewer: W1 @ 7e372a67efe5
+$ (I, Notification hook, permission_prompt) handoff hook notify
+  binding I: role implementer | block: permission Claude needs your permission to use Bash | listened: no
+  alerts to the operator (1):
+    b3: implementer is waiting for your permission: Claude needs your permission to use Bash
+$ handoff reply --as reviewer 1 --verdict CHANGES --commit 7e372a67efe5063e0c780aa29b2962ebdc0fb1df --body f
+posted #2 reply W1 reviewer → implementer: CHANGES on #1 @ 7e372a67efe5
+handoff: told the operator: implementer is at a permission prompt: Claude needs your permission to use Bash, since HH:MM, and work waits for it (#2).
+handoff: implementer's session is at a permission prompt: Claude needs your permission to use Bash, since HH:MM. This waits until the operator answers it.
+  [exit 0]
+  alerts to the operator (1):
+    b3: implementer is at a permission prompt: Claude needs your permission to use Bash, since HH:MM, and work waits for it (#2).
+$ handoff   (the "sessions" part)
+sessions:
+  blocked: implementer's session is at a permission prompt: Claude needs your permission to use Bash, since HH:MM. This waits until the operator answers it.
+-- the operator answers the prompt, and the session runs a handoff command:
+  [inbox --quiet: exit 1]
+  binding I: role implementer | block: none  | listened: no
+posted #3 note P1 reviewer → implementer: after
+
+## G. An Antigravity implementer at its cap, the operator away, three reviewers approve
+You are now implementer in g.
+posted #1 request W1 implementer → reviewer: W1 @ 878e28c7749d
+posted #2 request W1 implementer → reviewer-2: W1 @ 878e28c7749d
+posted #3 request W1 implementer → reviewer-3: W1 @ 878e28c7749d
+$ (Antigravity A, Stop hook, executionNum 10) handoff hook listen --timeout 2s
+    (no wake) | 
+  alerts to the operator (1):
+    g: implementer can't be woken until you type in its session (Antigravity's 10 wakes used, since HH:MM), and work waits for it (#5).
+posted #6 reply W1 reviewer → implementer: APPROVE on #1 @ 878e28c7749d
+handoff: told the operator: implementer can't be woken until you type in its session (Antigravity's 10 wakes used, since HH:MM), and work waits for it (#6).
+handoff: implementer can't be woken until the operator types in its session (Antigravity's 10 wakes used, since HH:MM). This waits.
+posted #7 reply W1 reviewer-2 → implementer: APPROVE on #2 @ 878e28c7749d
+handoff: told the operator: implementer can't be woken until you type in its session (Antigravity's 10 wakes used, since HH:MM), and work waits for it (#7).
+handoff: implementer can't be woken until the operator types in its session (Antigravity's 10 wakes used, since HH:MM). This waits.
+posted #8 reply W1 reviewer-3 → implementer: APPROVE on #3 @ 878e28c7749d
+handoff: told the operator: implementer can't be woken until you type in its session (Antigravity's 10 wakes used, since HH:MM), and work waits for it (#8).
+handoff: told the operator: W1: approved under your go-ahead #4, by reviewer, reviewer-2 and reviewer-3 (#1, #2, #3).
+handoff: implementer can't be woken until the operator types in its session (Antigravity's 10 wakes used, since HH:MM). This waits.
+  alerts to the operator (4):
+    g: implementer can't be woken until you type in its session (Antigravity's 10 wakes used, since HH:MM), and work waits for it (#6).
+    g: implementer can't be woken until you type in its session (Antigravity's 10 wakes used, since HH:MM), and work waits for it (#7).
+    g: implementer can't be woken until you type in its session (Antigravity's 10 wakes used, since HH:MM), and work waits for it (#8).
+    g: W1: approved under your go-ahead #4, by reviewer, reviewer-2 and reviewer-3 (#1, #2, #3).
+$ handoff inbox --for implementer
+inbox for implementer
+
+blocked: implementer can't be woken until the operator types in its session (Antigravity's 10 wakes used, since HH:MM). This waits.
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+approved, to merge:
+  W1 @ 878e28c7749d, approved under the operator's go-ahead #4 on the APPROVE of reviewer, reviewer-2 and reviewer-3 (#1, #2, #3): not in main yet; not yet delivered
+
+$ handoff   (the operator's view)
+You're away (#4, since 2026-11-23T04:17:58Z), with this go-ahead: merge once the reviewers approve
+Run handoff back to end it.
+
+Nothing needs your decision.
+
+sessions:
+  blocked: implementer can't be woken until the operator types in its session (Antigravity's 10 wakes used, since HH:MM). This waits.
+
+approved, to merge:
+  W1 @ 878e28c7749d, approved under the operator's go-ahead #4 on the APPROVE of reviewer, reviewer-2 and reviewer-3 (#1, #2, #3) for implementer: not in main yet; not yet delivered
+-- three seconds later, any listener's pass:
+  alerts to the operator (1):
+    g: W1: implementer hasn't merged 878e28c7749d, approved under the operator's go-ahead #4 on the APPROVE of reviewer, reviewer-2 and reviewer-3 (#1, #2, #3) (4 s)
+-- the operator types in the session; its next Stop hook:
+$ (Antigravity A, Stop hook, executionNum 0) handoff hook listen --timeout 2s
+    continue | handoff: new for implementer: / #5 fyi - operator → implementer: merge once the reviewers approve (re #4) / #6 reply W1 reviewer → implementer: APPROVE on #1 @ 878e28c7749d /   W1 is approved under the operator's go-ahead #4: that is the operato
+
+== 3. New for round 5: probe-b7.sh (Run) ==
+
+## B7. A permission prompt: a hook of the session leaves it; any command from the session clears it; an older sighting can't replace a newer
+You are now implementer in b7.
+posted #1 request W1 implementer → reviewer: W1 @ f2c02486d91a
+  binding I: role implementer | block: permission allow A | listened: no
+-- the session's SessionStart hook runs (a compaction, say):
+Blocked: implementer's session is at a permission prompt: allow A, since HH:MM. This waits until the operator answers it. It clears once this session listens again.
+  binding I: role implementer | block: permission allow A | listened: no
+-- the session runs handoff show 1:
+  binding I: role implementer | block: none  | listened: no
+-- a second prompt, then handoff on its own from the session:
+  binding I: role implementer | block: permission allow B | listened: no
+  binding I: role implementer | block: none  | listened: no
+-- a command from another session, or from no session, clears nothing:
+  binding I: role implementer | block: permission allow C | listened: no
+
+== 4. The full suite (Run) ==
+$ uptime; /usr/bin/time -p go test ./... -count=1 -race      (no -timeout; the worktree was at eefa300 and clean when it ended)
+ 4:17  up 23 days,  8:14, 15 users, load averages: 4.51 4.60 4.73
+ok  	github.com/dre4success/handoff/cmd/handoff	274.002s
+ok  	github.com/dre4success/handoff/internal/awake	1.320s
+ok  	github.com/dre4success/handoff/internal/gitx	1.212s
+ok  	github.com/dre4success/handoff/internal/notify	1.352s
+ok  	github.com/dre4success/handoff/internal/record	5.468s
+ok  	github.com/dre4success/handoff/internal/status	1.222s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	2.047s
+real 276.73
+user 77.35
+sys 61.04
+exit 0

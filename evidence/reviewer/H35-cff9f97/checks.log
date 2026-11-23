@@ -1,0 +1,28 @@
+H35 design round 5, request #729, commit cff9f97ff4908cd291cd5322858db04ef6a3637e (base 8ea438b)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session).
+A design, read with: git diff 3d4eb8f cff9f97 -- docs/proposals/H35_DESIGN.md. No code.
+
+Verdict: APPROVE, as a draft for the operator.
+
+== 1. The commit changes only the design (Run) ==
+$ git diff --stat 3d4eb8f cff9f97 | tail -1
+ 1 file changed, 28 insertions(+), 16 deletions(-)
+$ git diff --check 3d4eb8f cff9f97
+(no output)
+
+== 2. The three points I agreed with in #726, against the diff (Source) ==
+1. A late retry yields: on a run after a cut, take checks under both locks that the spare
+   is still the spare at the generation the entry names, that the seat is held by the old
+   session at its generation or by no one, with no binding at a later one, and that no
+   later takeover of the seat is in the record. Otherwise the takeover is superseded:
+   nothing written, nothing moved, the reason said, and back lists it so.
+2. Decided from the record: after any error, take looks in the verified record for its own
+   entry. The table's rows are "before the entry" and "after the entry, whatever the append
+   returned". A torn record refuses take until repaired.
+3. away stays terminal-only: "or no terminal to ask at" is gone.
+Also in: my note from #719, that the spare's binding is written last so its listener can
+still wake it; and the lock order under the fences.
+
+== 3. No longer at this commit (Run) ==
+$ git show cff9f97:docs/proposals/H35_DESIGN.md | grep -c "no terminal to ask at\|its append fails"
+0

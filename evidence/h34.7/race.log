@@ -1,0 +1,28 @@
+# H34.7: the go-ahead race, run by the implementer (Claude Code, Opus 5.5), 2026-11-22T11:58:44Z
+
+## On main (772c04d), installed handoff handoff v0.0.0-20261116001742-09ece7deb45f: three separate posts
+$ handoff away (at a terminal)
+away (#1): your go-ahead stands until you run handoff back
+$ ~/go/bin/handoff post --as implementer --item W1 --to reviewer --commit w1 --title W1 --body ../body.md
+posted #2 request W1 implementer → reviewer: W1 @ 3f4a68b415dc
+$ ~/go/bin/handoff reply 2 --as reviewer --verdict APPROVE --commit w1 --body ../body.md
+posted #3 reply W1 reviewer → implementer: APPROVE on #2 @ 3f4a68b415dc
+handoff: told the operator: W1: approved under your go-ahead #1, by reviewer (#2).
+$ ~/go/bin/handoff post --as implementer --item W1 --to reviewer-2 --commit w1 --title W1 --body ../body.md
+posted #4 request W1 implementer → reviewer-2: W1 @ 3f4a68b415dc
+$ ~/go/bin/handoff post --as implementer --item W1 --to reviewer-3 --commit w1 --title W1 --body ../body.md
+posted #5 request W1 implementer → reviewer-3: W1 @ 3f4a68b415dc
+$ handoff show 2 | grep -E '^state|approved under'
+state: decided
+
+## On this branch (the tree committed next): one post to all three
+$ handoff away (at a terminal)
+away (#1): your go-ahead stands until you run handoff back
+$ <scratch>/handoff-branch post --as implementer --item W1 --to reviewer,reviewer-2,reviewer-3 --commit w1 --title W1 --body ../body.md
+posted #2 request W1 implementer → reviewer: W1 @ 3f4a68b415dc
+posted #3 request W1 implementer → reviewer-2: W1 @ 3f4a68b415dc
+posted #4 request W1 implementer → reviewer-3: W1 @ 3f4a68b415dc
+$ <scratch>/handoff-branch reply 2 --as reviewer --verdict APPROVE --commit w1 --body ../body.md
+posted #5 reply W1 reviewer → implementer: APPROVE on #2 @ 3f4a68b415dc
+$ handoff show 2 | grep -E '^state|approved under'
+state: awaiting operator

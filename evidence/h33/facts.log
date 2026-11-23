@@ -1,0 +1,82 @@
+# command: each CLI's resume and model options from its --help, and which hook starts handoff's listener, from handoff settings --global
+# date: 2026-11-19 17:31:06 UTC
+# by: Opus 5.5 (implementer), Claude Code, on the operator's Mac
+## claude --version: 2.1.328 (Claude Code)
+## claude --help, the option lines for --resume, --model, --fork-session and --name, three lines after each
+  --fork-session                        When resuming, create a new session ID
+                                        instead of reusing the original (use
+                                        with --resume or --continue)
+  --forward-subagent-text               Forward subagent text and thinking
+--
+  --model <model>                       Model for the current session. Use an
+                                        alias for the latest model (e.g.
+                                        'fable', 'opus', or 'sonnet') or a
+                                        model's full name.
+  -n, --name <name>                     Set a display name for this session
+                                        (shown in the prompt box, /resume
+                                        picker, and terminal title)
+  --no-chrome                           Turn off Claude in Chrome
+--
+  -r, --resume [value]                  Resume a conversation by session ID or
+                                        name, or pick from a list (optionally
+                                        with a search term)
+  --safe-mode                           Start with all customizations
+## codex resume --help (first 40 lines)
+## codex --version: codex-cli 0.169.0
+Resume a previous interactive session (picker by default; use --last to continue the most recent)
+
+Usage: codex resume [OPTIONS] [SESSION_ID] [PROMPT]
+
+Arguments:
+  [SESSION_ID]
+          Session id (UUID) or session name. UUIDs take precedence if it parses. If omitted, use
+          --last to pick the most recent recorded session
+
+  [PROMPT]
+          Optional user prompt to start the session
+
+Options:
+  -c, --config <key=value>
+          Override a configuration value that would otherwise be loaded from `~/.codex/config.toml`.
+          Use a dotted path (`foo.bar.baz`) to override nested values. The `value` portion is parsed
+          as TOML. If it fails to parse as TOML, the raw string is used as a literal.
+          
+          Examples: - `-c model="o3"` - `-c 'sandbox_permissions=["disk-full-read-access"]'` - `-c
+          shell_environment_policy.inherit=all`
+
+      --last
+          Continue the most recent session without showing the picker
+
+      --all
+          Show all sessions (disables cwd filtering and shows CWD column)
+
+      --enable <FEATURE>
+          Enable a feature (repeatable). Equivalent to `-c features.<name>=true`
+
+      --disable <FEATURE>
+          Disable a feature (repeatable). Equivalent to `-c features.<name>=false`
+
+      --include-non-interactive
+          Include non-interactive sessions in the resume picker and --last selection
+
+      --remote <ADDR>
+          Connect the TUI to a remote app server endpoint.
+          
+          Accepted forms: `ws://host:port`, `wss://host:port`, `unix://`, or `unix://PATH`.
+## agy --help | grep -iE 'conversation|resume|model|continue'
+## agy --version: 1.5.9
+  -c                              Short alias for --continue
+  --continue                      Continue the most recent conversation
+  --conversation                  Resume a previous conversation by ID
+  --model                         Model for the current CLI session
+  --prompt-interactive            Run an initial prompt interactively and continue the session
+  --remote-agent                  Run this session's conversations using remote agents; --project then names a remote project by ID or name, otherwise they open in this machine's default remote project
+  models          List available models
+## handoff settings claude --global: the hooks that run handoff hook listen
+  Notification: handoff hook notify
+  SessionStart: handoff hook brief, handoff hook listen (asyncRewake)
+  Stop: handoff hook listen (asyncRewake)
+## handoff settings codex --global: the hooks
+  SessionStart: exec handoff hook brief
+  Stop: exec handoff hook listen
+# so a resumed Claude Code session listens from its start; a resumed Codex session listens once a turn ends (Antigravity likewise: antigravity's Stop hook, row 102)

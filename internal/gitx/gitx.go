@@ -90,6 +90,8 @@ func MergeBase(dir, a, b string) (string, error) {
 func IsAncestor(dir, a, b string) (bool, error) {
 	cmd := exec.Command("git", "merge-base", "--is-ancestor", "--end-of-options", a, b)
 	cmd.Dir = dir
+	var stderr strings.Builder
+	cmd.Stderr = &stderr
 	err := cmd.Run()
 	var exit *exec.ExitError
 	switch {
@@ -97,9 +99,20 @@ func IsAncestor(dir, a, b string) (bool, error) {
 		return true, nil
 	case errors.As(err, &exit) && exit.ExitCode() == 1:
 		return false, nil
-	default:
-		return false, fmt.Errorf("git merge-base --is-ancestor %.12s %.12s: %w", a, b, err)
 	}
+	// A ref whole, a commit shortened, and git's own first line, which says
+	// whether the branch or the commit is missing (the reviewer, #468).
+	short := func(s string) string {
+		if len(s) == 40 && strings.Trim(s, "0123456789abcdef") == "" {
+			return s[:12]
+		}
+		return s
+	}
+	why, _, _ := strings.Cut(strings.TrimSpace(stderr.String()), "\n")
+	if why == "" {
+		why = err.Error()
+	}
+	return false, fmt.Errorf("git merge-base --is-ancestor %s %s: %s", short(a), short(b), why)
 }
 
 // Parents returns a commit's parents, in order.

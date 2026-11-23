@@ -1,0 +1,369 @@
+# H34.7 review, round 2, request #323, commit 9baa65ad7ebea8f124a0a349c0e6e56c43f75809 (base 2bee103)
+# Run by: the reviewer (Claude Code, Fable 5.2), 2026-11-22T11:25:07Z
+# The commit was checked out in a temporary worktree and built there. Every probe ran in a scratch project with HANDOFF_TEST_NOTIFY
+# set and no session variables. 'handoff' is this commit's build; 'old' is the installed build. The 'head.json is behind' advisory
+# after each cut write is left out. probe2.sh and probe3.sh are beside this file; atterm_y.py answers decide's y/N.
+
+## Q1 to Q4 (probe2.sh): the failures reproduced on round 1 (../H34.7-d37ec70/checks.log), run again on this commit
+
+## Q1. (#308 point 1) A replacement round cut after one request; the operator decides that one request; the old round is then approved
+$ handoff post --as implementer --item W1 --to reviewer,reviewer-2,reviewer-3 --title W1 --body ../body.md --commit 457d365894a61ea3ab70f0f5cc09d2b93ae6a9d4
+posted #1 round W1 implementer → reviewer: W1 @ 457d365894a6
+posted #2 round W1 implementer → reviewer-2: W1 @ 457d365894a6
+posted #3 round W1 implementer → reviewer-3: W1 @ 457d365894a6
+  [exit 0]
+away (#4): your go-ahead stands until you run handoff back
+$ HANDOFF_TEST_FAULT=first-line handoff post ... --commit Y --supersedes 1,2,3
+  [exit 137]
+  states: #1=open #2=open #3=open #5=open 
+$ handoff reply 5 --as reviewer --verdict APPROVE --commit 892200a578850c2c0d186d609ae28cf5bdd114b7 --body ../body.md
+posted #6 reply W1 reviewer → implementer: APPROVE on #5 @ 892200a57885
+  [exit 0]
+$ handoff decide 5 --deny --note probe   (the operator, at a terminal)
+Deny W1 (#5)? [y/N] y
+posted #7 decision W1 operator → implementer: deny #5
+  states: #1=open #2=open #3=open #5=decided 
+$ handoff inbox --for implementer
+inbox for implementer
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+incomplete, to post again as it was:
+  round #5 on W1, to reviewer, reviewer-2 and reviewer-3 @ 892200a57885: no request to reviewer-2 or reviewer-3
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+  [exit 0]
+$ handoff reply 1 --as reviewer --verdict APPROVE --commit 457d365894a61ea3ab70f0f5cc09d2b93ae6a9d4 --body ../body.md
+posted #8 reply W1 reviewer → implementer: APPROVE on #1 @ 457d365894a6
+  [exit 0]
+$ handoff reply 2 --as reviewer-2 --verdict APPROVE --commit 457d365894a61ea3ab70f0f5cc09d2b93ae6a9d4 --body ../body.md
+posted #9 reply W1 reviewer-2 → implementer: APPROVE on #2 @ 457d365894a6
+  [exit 0]
+$ handoff reply 3 --as reviewer-3 --verdict APPROVE --commit 457d365894a61ea3ab70f0f5cc09d2b93ae6a9d4 --body ../body.md
+posted #10 reply W1 reviewer-3 → implementer: APPROVE on #3 @ 457d365894a6
+handoff: told the operator: W1: reviewer approved #1, but the round #5 to reviewer, reviewer-2 and reviewer-3 has no request to reviewer-2 or reviewer-3, so your go-ahead doesn't cover it. Your decision.
+handoff: told the operator: W1: reviewer-2 approved #2, but the round #5 to reviewer, reviewer-2 and reviewer-3 has no request to reviewer-2 or reviewer-3, so your go-ahead doesn't cover it. Your decision.
+handoff: told the operator: W1: reviewer-3 approved #3, but the round #5 to reviewer, reviewer-2 and reviewer-3 has no request to reviewer-2 or reviewer-3, so your go-ahead doesn't cover it. Your decision.
+  [exit 0]
+  states: #1=awaiting operator #2=awaiting operator #3=awaiting operator #5=decided 
+$ handoff show 1 | grep 'approved under'
+
+## Q2. (#314 point 1) A keyed round, approved under the go-ahead, then the very same post again
+away (#1): your go-ahead stands until you run handoff back
+$ handoff post --as implementer --item W1 --to reviewer,reviewer-2,reviewer-3 --title W1 --body ../body.md --commit 940d6b332ca12becfe1607d5ccf50147178b3ac5 --key k1
+posted #2 round W1 implementer → reviewer: W1 @ 940d6b332ca1
+posted #3 round W1 implementer → reviewer-2: W1 @ 940d6b332ca1
+posted #4 round W1 implementer → reviewer-3: W1 @ 940d6b332ca1
+  [exit 0]
+  states: #2=decided #3=decided #4=decided 
+$ handoff post --as implementer --item W1 --to reviewer,reviewer-2,reviewer-3 --title W1 --body ../body.md --commit 940d6b332ca12becfe1607d5ccf50147178b3ac5 --key k1
+exists #2 round W1 implementer → reviewer: W1 @ 940d6b332ca1
+exists #3 round W1 implementer → reviewer-2: W1 @ 940d6b332ca1
+exists #4 round W1 implementer → reviewer-3: W1 @ 940d6b332ca1
+  [exit 0]
+
+## Q3. (#314 point 1) A keyed round, complete and open, posted again with the same key and another title and body
+$ handoff post --as implementer --item W1 --to reviewer,reviewer-2,reviewer-3 --title W1 --body ../body.md --commit 940d6b332ca12becfe1607d5ccf50147178b3ac5 --key k1
+posted #1 round W1 implementer → reviewer: W1 @ 940d6b332ca1
+posted #2 round W1 implementer → reviewer-2: W1 @ 940d6b332ca1
+posted #3 round W1 implementer → reviewer-3: W1 @ 940d6b332ca1
+  [exit 0]
+$ handoff post --as implementer --item W1 --to reviewer,reviewer-2,reviewer-3 --title OTHER --body ../body2.md --commit 940d6b332ca12becfe1607d5ccf50147178b3ac5 --key k1
+handoff post: key "k1/reviewer" was used by #1 with different content; nothing written
+  [exit 2]
+-- for comparison, one request with a key, then the same key with another body:
+$ handoff post --as implementer --item W2 --to reviewer --title W2 --body ../body.md --commit 940d6b332ca12becfe1607d5ccf50147178b3ac5 --key k2
+posted #4 request W2 implementer → reviewer: W2 @ 940d6b332ca1
+  [exit 0]
+$ handoff post --as implementer --item W2 --to reviewer --title W2 --body ../body2.md --commit 940d6b332ca12becfe1607d5ccf50147178b3ac5 --key k2
+handoff post: key "k2" was used by #4 with different content; nothing written
+  [exit 2]
+
+## Q4. (#308 point 3) An unkeyed round, approved under the go-ahead, then the same post again
+away (#1): your go-ahead stands until you run handoff back
+$ handoff post --as implementer --item W1 --to reviewer,reviewer-2,reviewer-3 --title W1 --body ../body.md --commit 9ad24316119e4ca87d2c09cc290bfe6bc6fb0b97
+posted #2 round W1 implementer → reviewer: W1 @ 9ad24316119e
+posted #3 round W1 implementer → reviewer-2: W1 @ 9ad24316119e
+posted #4 round W1 implementer → reviewer-3: W1 @ 9ad24316119e
+  [exit 0]
+  states: #2=decided #3=decided #4=decided 
+$ handoff post --as implementer --item W1 --to reviewer,reviewer-2,reviewer-3 --title W1 --body ../body.md --commit 9ad24316119e4ca87d2c09cc290bfe6bc6fb0b97
+exists #2 round W1 implementer → reviewer: W1 @ 9ad24316119e
+exists #3 round W1 implementer → reviewer-2: W1 @ 9ad24316119e
+exists #4 round W1 implementer → reviewer-3: W1 @ 9ad24316119e
+  [exit 0]
+  requests on W1 in the record: 0
+-- for comparison, one request, approved under the go-ahead, then the same post again:
+$ handoff post --as implementer --item W2 --to reviewer --title W2 --body ../body.md --commit 9ad24316119e4ca87d2c09cc290bfe6bc6fb0b97
+posted #8 request W2 implementer → reviewer: W2 @ 9ad24316119e
+  [exit 0]
+  states: #8=decided 
+$ handoff post --as implementer --item W2 --to reviewer --title W2 --body ../body.md --commit 9ad24316119e4ca87d2c09cc290bfe6bc6fb0b97
+posted #10 request W2 implementer → reviewer: W2 @ 9ad24316119e
+  [exit 0]
+  requests on W2 in the record: 2
+
+## R1 to R4 (probe3.sh)
+
+## R1. Completing a cut round with another body, or another key, is refused; as it was, it completes
+$ handoff post --as implementer --item W1 --to reviewer,reviewer-2,reviewer-3 --title W1 --body ../body2.md --commit 62066fb732857a01570d248f56509f49d073bfaa
+handoff post: round #1 on W1, to reviewer, reviewer-2 and reviewer-3 at 62066fb73285, is incomplete: post it again as it was, with the same title, body and key, to complete it; nothing written
+  [exit 2]
+$ handoff post --as implementer --item W1 --to reviewer,reviewer-2,reviewer-3 --title W1 --body ../body.md --commit 62066fb732857a01570d248f56509f49d073bfaa --key k9
+handoff post: round #1 on W1, to reviewer, reviewer-2 and reviewer-3 at 62066fb73285, is incomplete: post it again as it was, with the same title, body and key, to complete it; nothing written
+  [exit 2]
+$ handoff post --as implementer --item W1 --to reviewer,reviewer-2,reviewer-3 --title W1 --body ../body.md --commit 62066fb732857a01570d248f56509f49d073bfaa
+exists #1 round W1 implementer → reviewer: W1 @ 62066fb73285
+posted #2 round W1 implementer → reviewer-2: W1 @ 62066fb73285
+posted #3 round W1 implementer → reviewer-3: W1 @ 62066fb73285
+  [exit 0]
+  kinds on W1: round round round 
+
+## R2. A complete round; the operator denies one approved request; under a go-ahead the other two approve
+$ handoff decide 1 --deny --note no   (the operator)
+posted #5 decision W1 operator → implementer: deny #1
+away (#6): your go-ahead stands until you run handoff back
+$ handoff reply 3 --as reviewer-3 --verdict APPROVE --commit 43434a318ced7a4ebd7442d22b81cb26c9b717e9 --body ../body.md
+posted #8 reply W1 reviewer-3 → implementer: APPROVE on #3 @ 43434a318ced
+handoff: told the operator: W1: reviewer-2 approved #2, but you denied a request of the round #1, so its panel is smaller than it asked, so your go-ahead doesn't cover it. Your decision.
+handoff: told the operator: W1: reviewer-3 approved #3, but you denied a request of the round #1, so its panel is smaller than it asked, so your go-ahead doesn't cover it. Your decision.
+  [exit 0]
+  states: #1=decided #2=awaiting operator #3=awaiting operator 
+  what the operator was told:
+    r2: W1: reviewer-2 approved #2, but you denied a request of the round #1, so its panel is smaller than it asked, so your go-ahead doesn't cover it. Your decision.
+    r2: W1: reviewer-3 approved #3, but you denied a request of the round #1, so its panel is smaller than it asked, so your go-ahead doesn't cover it. Your decision.
+
+## R3. A cut first round whose one request the operator approves: what is left for the requester
+  what the operator was told:
+    r3: W1: reviewer approved #1, but the round #1 to reviewer, reviewer-2 and reviewer-3 has no request to reviewer-2 or reviewer-3. Your decision.
+$ handoff decide 1 --approve   (the operator; what decide shows first)
+#1 round W1 implementer → reviewer: W1 @ 7424be314ee7
+  #2 reply W1 reviewer → implementer: APPROVE on #1 @ 7424be314ee7
+  but the round #1 to reviewer, reviewer-2 and reviewer-3 has no request to reviewer-2 or reviewer-3
+Approve W1 (#1)? [y/N] y
+posted #3 decision W1 operator → implementer: approve #1
+  states: #1=decided 
+$ handoff inbox --for implementer
+inbox for implementer
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+incomplete, to post again as it was:
+  round #1 on W1, to reviewer, reviewer-2 and reviewer-3 @ 7424be314ee7: no request to reviewer-2 or reviewer-3
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+  [exit 0]
+$ handoff inbox --for implementer --quiet
+  [exit 1]
+$ handoff post --as implementer --item W1 --to reviewer --title next --body ../body.md --commit 82440df72c4a15b69b6e43c5c7fe49540beb3c16
+handoff post: round #1 on W1, to reviewer, reviewer-2 and reviewer-3 at 7424be314ee7, is incomplete: post it again as it was, to complete it; nothing written
+  [exit 2]
+$ handoff post --as implementer --item W1 --to reviewer,reviewer-2,reviewer-3 --title W1 --body ../body.md --commit 7424be314ee7b1381f8839cbcb21389aba2b3cb5
+exists #1 round W1 implementer → reviewer: W1 @ 7424be314ee7
+posted #4 round W1 implementer → reviewer-2: W1 @ 7424be314ee7
+posted #5 round W1 implementer → reviewer-3: W1 @ 7424be314ee7
+  [exit 0]
+  states: #1=decided #2= #3= 
+$ handoff inbox --for reviewer-2
+inbox for reviewer-2
+
+needs my review:
+  #4 round W1 implementer → reviewer-2: W1 @ 7424be314ee7
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+  [exit 0]
+
+## R4. A round's request through the usual moves: what each role reads, claim, CHANGES, QUESTION and its answer, a single post replacing one, a round replacing a single
+$ handoff post --as implementer --item W1 --to reviewer,reviewer-2,reviewer-3 --title W1 --body ../body.md --commit 7424be314ee7b1381f8839cbcb21389aba2b3cb5
+posted #1 round W1 implementer → reviewer: W1 @ 7424be314ee7
+posted #2 round W1 implementer → reviewer-2: W1 @ 7424be314ee7
+posted #3 round W1 implementer → reviewer-3: W1 @ 7424be314ee7
+  [exit 0]
+$ handoff inbox --for reviewer
+inbox for reviewer
+
+needs my review:
+  #1 round W1 implementer → reviewer: W1 @ 7424be314ee7
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+  [exit 0]
+$ handoff wait --for reviewer --timeout 1s
+#1 round W1 implementer → reviewer: W1 @ 7424be314ee7
+  [exit 0]
+$ handoff show 1
+#1 round W1
+from: implementer → reviewer
+ts: 2026-11-22T11:23:38Z
+title: W1
+commit: 7424be314ee7b1381f8839cbcb21389aba2b3cb5
+base: ffba1d96b8bf59d6fbc47b7c894d3ee531e944e5
+round: #1, to reviewer, reviewer-2 and reviewer-3
+state: open
+prev: genesis
+---
+body
+  [exit 0]
+$ handoff claim --as reviewer 1
+posted #4 claim W1 reviewer → -: claimed #1
+  [exit 0]
+$ handoff reply 1 --as reviewer --verdict QUESTION --commit 7424be314ee7b1381f8839cbcb21389aba2b3cb5 --body ../body.md
+posted #5 reply W1 reviewer → implementer: QUESTION on #1 @ 7424be314ee7
+  [exit 0]
+$ handoff note --as implementer --to reviewer --re 4 --body ../body2.md
+posted #6 note W1 implementer → reviewer: other (re #4)
+  [exit 0]
+  states: #1=answered 
+$ handoff reply 2 --as reviewer-2 --verdict CHANGES --commit 7424be314ee7b1381f8839cbcb21389aba2b3cb5 --body ../body.md
+posted #7 reply W1 reviewer-2 → implementer: CHANGES on #2 @ 7424be314ee7
+  [exit 0]
+$ handoff post --as implementer --item W1 --to reviewer-2 --title fix --body ../body.md --commit 82440df72c4a15b69b6e43c5c7fe49540beb3c16 --supersedes 2
+posted #8 request W1 implementer → reviewer-2: fix @ 82440df72c4a (supersedes #2)
+  [exit 0]
+  states: #1=answered #2=superseded by #8 #3=open #8=open 
+$ handoff post --as implementer --item W1 --to reviewer,reviewer-2,reviewer-3 --title W1 --body ../body.md --commit 82440df72c4a15b69b6e43c5c7fe49540beb3c16 --supersedes 1,8,3
+posted #9 round W1 implementer → reviewer: W1 @ 82440df72c4a (supersedes #1)
+posted #10 round W1 implementer → reviewer-2: W1 @ 82440df72c4a (supersedes #8)
+posted #11 round W1 implementer → reviewer-3: W1 @ 82440df72c4a (supersedes #3)
+  [exit 0]
+  states: #1=superseded by #9 #2=superseded by #8 #3=superseded by #11 #8=superseded by #10 #9=open #10=open #11=open 
+$ handoff
+Nothing needs your decision.
+  [exit 0]
+
+## R5. The implementer's old-reader.sh run again by me (old = the installed build, handoff v0.0.0-20261116001742-09ece7deb45f)
+$ new away (at a terminal)
+away (#1): your go-ahead stands until you run handoff back
+# A round cut after its first request, by the new build:
+$ old show 2
+#2 round W1
+from: implementer → reviewer
+ts: 2026-11-22T11:24:27Z
+title: W1
+commit: f6f94d05b5b987d0bc015edcd63a59e9437becb5
+base: 2e3f680bbb45b93c79d89147b25e3ca405475709
+prev: 854d330220ea4d8f249b27e00f165230cc8d685a28520681e4b3826d3b4a71ba
+---
+body
+# The old build's reviewer tries to approve it:
+$ old reply 2 --as reviewer --verdict APPROVE --commit w1 --body ../body.md
+handoff reply: #2 is not a request
+# The new build's reviewer approves it; the old build's view of it:
+$ new reply 2 --as reviewer --verdict APPROVE --commit w1 --body ../body.md
+posted #3 reply W1 reviewer → implementer: APPROVE on #2 @ f6f94d05b5b9
+handoff: told the operator: W1: reviewer approved #2, but the round #2 to reviewer, reviewer-2 and reviewer-3 has no request to reviewer-2 or reviewer-3, so your go-ahead doesn't cover it. Your decision.
+$ old inbox --for operator
+inbox for operator
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+$ old inbox --for implementer
+inbox for implementer
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+# The old build's listener for the implementer delivers the approval as a plain line, with no go-ahead line:
+$ old wait --for implementer --timeout 2s
+#3 reply W1 reviewer → implementer: APPROVE on #2 @ f6f94d05b5b9
+
+## R6. The implementer's race.sh run again by me, this commit's build, one post to three
+$ handoff away (at a terminal)
+away (#1): your go-ahead stands until you run handoff back
+$ handoff post --as implementer --item W1 --to reviewer,reviewer-2,reviewer-3 --commit w1 --title W1 --body ../body.md
+posted #2 round W1 implementer → reviewer: W1 @ a793bbace362
+posted #3 round W1 implementer → reviewer-2: W1 @ a793bbace362
+posted #4 round W1 implementer → reviewer-3: W1 @ a793bbace362
+$ handoff reply 2 --as reviewer --verdict APPROVE --commit w1 --body ../body.md
+posted #5 reply W1 reviewer → implementer: APPROVE on #2 @ a793bbace362
+$ handoff show 2 | grep -E '^state|approved under'
+state: awaiting operator
+
+## R7. Source: where an entry's kind is printed as it is stored
+$ grep -n "e.Kind" cmd/handoff/cmds.go internal/status/status.go | grep Sprintf
+internal/status/status.go:736:	return fmt.Sprintf("#%d %s %s %s → %s: %s", e.ID, e.Kind, orDash(e.Item), e.From, to, what)
+cmd/handoff/cmds.go:1594:	head := fmt.Sprintf("#%d %s", e.ID, e.Kind)
+$ grep -n "A request to you" cmd/handoff/brief.go | cut -c1-120
+131:		fmt.Fprintf(w, "- A request to you: `%s claim --as %s <id>`, review exactly the commit it names in a temporary wor
+
+## The suite at the commit
+$ go build ./... && go vet ./...   # 11:22:02Z
+ok
+$ go list -deps ./... | grep -x net
+exit 1 (1 = no net)
+$ gofmt -l cmd internal
+(end)
+$ go test ./... -count=1 -race -timeout 30m
+exit 0   # 11:30:27Z
+ok  	github.com/dre4success/handoff/cmd/handoff	502.752s
+ok  	github.com/dre4success/handoff/internal/awake	1.291s
+ok  	github.com/dre4success/handoff/internal/gitx	1.209s
+ok  	github.com/dre4success/handoff/internal/notify	1.358s
+ok  	github.com/dre4success/handoff/internal/record	3.573s
+ok  	github.com/dre4success/handoff/internal/status	1.215s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	1.779s

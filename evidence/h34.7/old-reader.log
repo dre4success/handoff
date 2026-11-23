@@ -1,0 +1,76 @@
+# H34.7: an older handoff reading a round, run by the implementer (Claude Code, Opus 5.5), 2026-11-22T12:06:56Z
+# new: this branch's tree, committed next; old: installed handoff handoff v0.0.0-20261116001742-09ece7deb45f (main 772c04d)
+$ new away (at a terminal)
+away (#1): your go-ahead stands until you run handoff back
+# A round cut after its first request, by the new build:
+$ old show 2
+handoff: advisory: head.json is behind the record: it counts 1 lines, the record has 2 that chain on from them (a writer stopped between the record and head.json); `handoff repair` acknowledges it
+#2 round W1
+from: implementer → reviewer
+ts: 2026-11-22T12:06:58Z
+title: W1
+commit: 8df402172ccbe65355d6d010e161af8cf0d6e647
+base: 1adc8114d941481ea6021f1010da8643c48a1458
+prev: b20499e60752ea68cbc643340b5f69d6a227a66f5f6147406c58e2976c2b79a0
+---
+body
+# The old build's reviewer tries to approve it:
+$ old reply 2 --as reviewer --verdict APPROVE --commit w1 --body ../body.md
+handoff reply: #2 is not a request
+# The new build's reviewer approves it; the old build's view of it:
+$ new reply 2 --as reviewer --verdict APPROVE --commit w1 --body ../body.md
+posted #3 reply W1 reviewer → implementer: APPROVE on #2 @ 8df402172ccb
+handoff: told the operator: W1: reviewer approved #2, but the round #2 to reviewer, reviewer-2 and reviewer-3 has no request to reviewer-2 or reviewer-3, so your go-ahead doesn't cover it. Your decision.
+handoff: advisory: head.json is behind the record: it counts 1 lines, the record has 2 that chain on from them (a writer stopped between the record and head.json); `handoff repair` acknowledges it
+$ old inbox --for operator
+handoff: advisory: 2026-11-22T12:06:58Z: head.json is behind the record: it counts 1 lines, the record has 2 that chain on from them (a writer stopped between the record and head.json); `handoff repair` acknowledges it
+inbox for operator
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+$ old inbox --for implementer
+handoff: advisory: 2026-11-22T12:06:58Z: head.json is behind the record: it counts 1 lines, the record has 2 that chain on from them (a writer stopped between the record and head.json); `handoff repair` acknowledges it
+inbox for implementer
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+# The old build's listener for the implementer delivers the approval as a plain line, with no go-ahead line:
+$ old wait --for implementer --timeout 2s
+handoff: advisory: 2026-11-22T12:06:58Z: head.json is behind the record: it counts 1 lines, the record has 2 that chain on from them (a writer stopped between the record and head.json); `handoff repair` acknowledges it
+#3 reply W1 reviewer → implementer: APPROVE on #2 @ 8df402172ccb
+# The legacy case (reviewer-2, #331): a request from the old build, then a round replacing it, while an old listener runs.
+$ old post --as implementer --item W2 --to reviewer --commit w1~1 --title W2 --body ../body.md
+posted #4 request W2 implementer → reviewer: W2 @ 8df402172ccb
+handoff: advisory: 2026-11-22T12:06:58Z: head.json is behind the record: it counts 1 lines, the record has 2 that chain on from them (a writer stopped between the record and head.json); `handoff repair` acknowledges it
+$ new post --as implementer --item W2 --to reviewer,reviewer-2,reviewer-3 --commit w1 --title W2 --body ../body.md --supersedes 4
+handoff post: an older handoff listens for reviewer-3 (pid 60624), which can't see a round; nothing written. An idle listener ends once something is delivered to its role, and the next one is this handoff's: send that role a note, then post again
+# Once the old listener has ended, the same post goes through:
+$ new post --as implementer --item W2 --to reviewer,reviewer-2,reviewer-3 --commit w1 --title W2 --body ../body.md --supersedes 4
+posted #5 request W2 implementer → reviewer: W2 @ 87425e415e6b (supersedes #4)
+posted #6 request W2 implementer → reviewer-2: W2 @ 87425e415e6b
+posted #7 request W2 implementer → reviewer-3: W2 @ 87425e415e6b
+handoff: advisory: 2026-11-22T12:06:58Z: head.json is behind the record: it counts 1 lines, the record has 2 that chain on from them (a writer stopped between the record and head.json); `handoff repair` acknowledges it

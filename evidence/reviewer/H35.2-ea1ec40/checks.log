@@ -1,0 +1,206 @@
+H35.2 round 2, request #856, commit ea1ec4098a7333ab79584003d0b567e327ce268b (base 741cc66, in main)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session).
+The commit was built in a temporary worktree (git worktree add --detach), removed after.
+Every probe ran in a new scratch git project with HANDOFF_TEST_NOTIFY set and the session
+variables unset. Sessions are simulated as in round 1 (../H35.2-ad2285d/checks.log).
+quiet_after is 4 s in the scratch configs.
+
+Verdict: CHANGES.
+
+== 1. Build, vet, format, dependencies (Run) ==
+$ go build -o handoff ./cmd/handoff && go vet ./... && gofmt -l cmd internal
+(no output)
+$ go list -deps ./... | grep -c '^net$'
+0
+$ git diff --check 741cc66 ea1ec40
+(no output)
+
+== 2. The full suite: three runs (Run) ==
+The machine was heavily loaded by other work while I reviewed (load averages up to 147;
+none of it mine when I looked: ps showed another project's sessions and the terminal).
+Runs 1 and 2 are my usual command, with Go's default limit of 10 minutes. Both hit it.
+Run 3 has -timeout 30m and passes. The tests that failed in runs 1 and 2 are timing tests
+from earlier rows, a different one each time, and both pass in run 3.
+
+-- run 1: /usr/bin/time -p go test ./... -count=1 -race   (my probes ran beside it)
+10:10  up 23 days, 14:07, 12 users, load averages: 31.77 16.42 9.98
+--- FAIL: TestCheck8WaitWakesWithinTwoSeconds (7.43s)
+    main_test.go:565: wait woke 3.022963334s after the post, want under 2s
+panic: test timed out after 10m0s
+FAIL	github.com/dre4success/handoff/cmd/handoff	609.312s
+ok  	github.com/dre4success/handoff/internal/awake	1.897s
+ok  	github.com/dre4success/handoff/internal/gitx	1.527s
+ok  	github.com/dre4success/handoff/internal/notify	1.771s
+ok  	github.com/dre4success/handoff/internal/record	9.847s
+ok  	github.com/dre4success/handoff/internal/status	1.557s
+ok  	github.com/dre4success/handoff/internal/wait	4.966s
+real 671.16
+exit 1
+
+-- run 2: the same command, with nothing of mine beside it
+10:21  up 23 days, 14:19, 12 users, load averages: 18.31 23.46 19.93
+--- FAIL: TestH31NoWarningWhenTheFolderIsntKnown (26.49s)
+panic: test timed out after 10m0s
+FAIL	github.com/dre4success/handoff/cmd/handoff	603.962s
+ok  	github.com/dre4success/handoff/internal/awake	1.707s
+ok  	github.com/dre4success/handoff/internal/gitx	1.356s
+ok  	github.com/dre4success/handoff/internal/notify	1.582s
+ok  	github.com/dre4success/handoff/internal/record	8.757s
+ok  	github.com/dre4success/handoff/internal/status	1.321s
+ok  	github.com/dre4success/handoff/internal/wait	4.512s
+real 608.70
+exit 1
+10:32  up 23 days, 14:29, 12 users, load averages: 147.49 109.22 64.95
+    outside_test.go:287: Codex 019a-far: exit 0 after 11.250826625s
+
+-- run 3: /usr/bin/time -p go test ./... -count=1 -race -timeout 30m   (the worktree was at ea1ec40 and clean when it ended)
+10:32  up 23 days, 14:29, 12 users, load averages: 135.05 108.93 65.88
+ok  	github.com/dre4success/handoff/cmd/handoff	535.391s
+ok  	github.com/dre4success/handoff/internal/awake	1.499s
+ok  	github.com/dre4success/handoff/internal/gitx	1.346s
+ok  	github.com/dre4success/handoff/internal/notify	1.590s
+ok  	github.com/dre4success/handoff/internal/record	8.101s
+ok  	github.com/dre4success/handoff/internal/status	1.363s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	3.762s
+real 538.51
+exit 0
+10:41  up 23 days, 14:38, 12 users, load averages: 18.11 42.11 50.56
+
+== 3. Round 2's fixes: probe-e.sh (Run) ==
+L3 proves nothing: with stdout closed by the shell (>&-) the process's first open file
+takes its place, so the print "succeeds" somewhere else. probe-f.sh is the true test of a
+print that fails. L5's "setup step failed" line is my helper misreading inbox --quiet's
+exit code; the step ran. L7's "command not found: cover" is my script (a helper left out).
+
+## L1. The old spare's wait is held at its delivery while the spare goes on by /clear (reviewer-2's #853 point 1)
+posted #3 request W1 implementer → reviewer: W1 @ ce2e79f09a5d
+  (the old id's wait is held, about to give the wake)
+  wake keys marked sent: 0
+handoff brief: you are the spare in l1. implementer, reviewer and reviewer-2 hand work to each other through handoff, and the operator decides. You hold no work, and nothing is sent to you.
+  the old id's wait, after: handoff wait: you no longer hold spare: this conversation went on in session sp1 at TIME, by /clear. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>|exit 2|
+  wake keys marked sent: 0
+$ (sp1, the spare) handoff wait --timeout 2s
+reviewer's seat is stuck: its session's process has ended. #3 waits for it. Take it with `handoff take reviewer`.
+  [exit 0]
+  wake keys marked sent: 1
+
+## L2. The same, but the operator gives the spare to another session meanwhile
+posted #3 request W1 implementer → reviewer: W1 @ f216bb1e88db
+  (the old spare's wait is held, about to give the wake)
+You are now the spare in l2. Another session was the spare; it has no role now.
+  the old spare's wait, after: handoff wait: you no longer hold spare: the operator gave it to session other at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>|exit 2|
+  wake keys marked sent: 0
+$ (other, the spare) handoff wait --timeout 2s
+handoff: told the operator: W1: reviewer hasn't picked up #3 (6 s), and no session has the role
+  [exit 3]
+
+## L3. The wake can't be printed (stdout closed): not counted as given
+posted #3 request W1 implementer → reviewer: W1 @ f97b2b46719d
+$ (sp, the spare) handoff wait --timeout 2s >&-
+  [exit 0] 
+  wake keys marked sent: 1
+$ (sp, the spare) handoff wait --timeout 2s
+handoff: told the operator: W1: reviewer hasn't picked up #3 (5 s), and no session has the role
+  [exit 3]
+  wake keys marked sent: 1
+
+## L4. Notes: one answered by a reviewer that never listened, and one not answered
+posted #4 note P1 reviewer → implementer: body (re #3)
+  reviewer's cursor: none
+-- the reviewer answered the note with note --re, never listened, and its process has ended:
+$ (sp, the spare) handoff wait --timeout 2s
+reviewer's seat is stuck: its session's process has ended. #3 waits for it. Take it with `handoff take reviewer`.
+  [exit 0]
+
+## L5. A fresh permission prompt on old work is no sign
+posted #3 request W1 implementer → reviewer: W1 @ 4626dfbe4a5d
+  !! my probe's setup step failed: S rv 46842 handoff inbox --quiet
+-- the request is 8 s old (twice quiet_after); the prompt is new:
+$ (sp, the spare) handoff wait --timeout 2s
+handoff: told the operator: W1: reviewer hasn't picked up #3 (9 s), and its session is at a permission prompt: Claude needs your permission to use Bash, since HH:MM
+  [exit 3]
+-- the prompt has stood 8 s:
+$ (sp, the spare) handoff wait --timeout 2s
+reviewer's seat is stuck: its session is at a permission prompt: Claude needs your permission to use Bash, since HH:MM. #3 waits for it. Take it with `handoff take reviewer`.
+  [exit 0]
+
+## L6. A Claude Code seat marked gone by a sweep (its process ended, then another role was given)
+posted #3 request W1 implementer → reviewer: W1 @ b8b7cb3c961a
+  binding rv: role reviewer | gone True | pid no | cli claude
+$ (sp, the spare) handoff wait --timeout 2s
+reviewer's seat is stuck: its session's process has ended. #3 waits for it. Take it with `handoff take reviewer`.
+  [exit 0]
+
+## L7. What away says of the spare
+-- an Antigravity spare, listening as it should:
+$ (the operator, at a terminal, answering y) handoff away one
+    Cover: the spare can take any seat that gets stuck while you're away. Turn cover on? [y/N] y
+    Cover: on. The spare can take a seat that gets stuck while you're away; you'll be told if it does.
+    the spare isn't told: it holds no work
+    The spare is an Antigravity session: it listens with a wait it runs in the background. If it stops running one, handoff can wake it only 10 times before you type in it.
+-- the same spare at its cap:
+$ (the operator, at a terminal, answering y) handoff away two
+    Note: the spare can't be woken until you type in its session (Antigravity's 10 wakes used, since HH:MM), so it can't cover a stuck seat.
+    Cover: the spare can take any seat that gets stuck while you're away. Turn cover on? [y/N] y
+    Cover: on. The spare can take a seat that gets stuck while you're away; you'll be told if it does.
+    the spare isn't told: it holds no work
+    The spare is an Antigravity session: it listens with a wait it runs in the background. If it stops running one, handoff can wake it only 10 times before you type in it.
+probe-e.sh:84: command not found: cover
+-- a Claude Code spare at a permission prompt:
+$ (the operator, at a terminal, answering n) handoff away three
+    Note: the spare's session is at a permission prompt: Claude needs your permission to use Bash, since HH:MM, so it can't cover a stuck seat until you answer it.
+    Cover: the spare can take any seat that gets stuck while you're away. Turn cover on? [y/N] n
+    Away without cover: if a seat gets stuck, you'll be told, as now.
+    the spare isn't told: it holds no work
+probe-e.sh:87: command not found: cover
+-- a project with a role already named spare:
+$ (the operator, at a terminal, answering nothing) handoff away four
+    away (#1): your go-ahead stands until you run handoff back
+
+## L8. The wake by the hooks, as the spare reads it
+posted #3 request W1 implementer → reviewer: W1 @ b91d3382ae5d
+$ (sp, Stop hook) handoff hook listen --timeout 2s
+handoff: reviewer's seat is stuck: its session's process has ended. #3 waits for it. Take it with `handoff take reviewer`.
+Listening starts again when your turn ends.
+  [exit 2]
+posted #3 request W1 implementer → reviewer: W1 @ 07b4e4c70841
+$ (G, Stop hook, stdin only, executionNum 2) handoff hook listen --timeout 2s
+    continue | handoff: reviewer's seat is stuck: its session's process has ended. #3 waits for it. Take it with `handoff take reviewer`. / Listening starts again when your turn ends. / 
+$ handoff   (the "sessions" part, the spare's process... still there)
+
+== 4. A print that fails, a closed pipe: probe-f.sh (Run) ==
+
+## M1. The spare's wait writes its wake to a pipe nobody reads any more
+posted #3 request W1 implementer → reviewer: W1 @ bdf8b935c034
+$ (sp, the spare) handoff wait --timeout 5s | (a reader that has gone)
+  [the wait's exit: 141]  stderr: 
+  wake keys marked sent: 0
+$ (sp, the spare) handoff wait --timeout 2s
+reviewer's seat is stuck: its session's process has ended. #3 waits for it. Take it with `handoff take reviewer`.
+  [exit 0]
+  wake keys marked sent: 1
+
+== 5. reviewer-2's #862 point 1, run again: probe-g.sh (Run) ==
+
+## N1. The spare's wait is held at its delivery, about to give the wake; the operator runs back; the wait is released
+posted #3 request W1 implementer → reviewer: W1 @ a4a0495dab72
+  (the wait is held, about to give the wake)
+  wake keys marked sent: 0
+$ (the operator, at a terminal) handoff back
+    back (#4): the go-ahead of #1 has ended
+  the spare's wait, after: reviewer's seat is stuck: its session's process has ended. #3 waits for it. Take it with `handoff take reviewer`.|exit 0|
+  wake keys marked sent: 1
+
+== 6. Round 1's probes, run again (Run) ==
+Compared with round 1's output, alerts to the operator left out (their seconds vary):
+probe.sh: differs only in G2 (the Note before the question, and the Antigravity line) and
+in G9 and G10 (the hook gives the wake with no "Read each with handoff show" line).
+probe-b.sh: differs only in H5 (no "No spare" line in a project with a role named spare).
+probe-c.sh: no line differs.
+probe-d.sh: K1 is fixed: no wake for a reviewer that answered and was approved.
+
+== 7. Not checked ==
+reviewer-2's #862 point 2 (a broken round still owed by its reviewers). Not run, not read.
+A Codex binding with only a host process (#853 point 3): I could not simulate one; the
+implementer's TestH35p2OnlyTheSessionsOwnProcessEnds covers it, and I read ended().

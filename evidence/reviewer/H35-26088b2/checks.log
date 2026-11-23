@@ -1,0 +1,17 @@
+H35 design round 7, request #747, commit 26088b242d8b (base 8ea438b)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session).
+A design, read with: git diff 638eda0 26088b2 -- docs/proposals/H35_DESIGN.md. No code.
+
+Verdict: APPROVE, as a draft for the operator. My note in #744 is not in this round.
+
+== 1. The commit changes only the design (Run) ==
+$ git diff --stat 638eda0 26088b2 | tail -1
+ 1 file changed, 11 insertions(+), 8 deletions(-)
+$ git diff --check 638eda0 26088b2
+(no output)
+
+== 2. My note from #744 (Run) ==
+$ git show 26088b2:docs/proposals/H35_DESIGN.md | grep -c 'the spare already\|already the spare\|already is the spare'
+0
+So role spare run again in the spare's own session still gives it a new generation, and
+ends its cover without a word.

@@ -57,7 +57,7 @@ func (a *app) writeBrief(w io.Writer, role string, how listening) error {
 	if err != nil {
 		return err
 	}
-	st := status.Compute(snap.Entries)
+	st := a.status(snap)
 	h := shellQuote(selfCommand())
 	project := filepath.Base(filepath.Dir(a.dir))
 	var others, reviewers, implementers []string
@@ -78,10 +78,25 @@ func (a *app) writeBrief(w io.Writer, role string, how listening) error {
 	// with roles named after the agents (row 72), each may do either.
 	asks := len(reviewers) > 0 && (!rc.Reviews || allReview)
 
-	fmt.Fprintf(w, "handoff brief: you are %s in %s. You and %s hand work to each other through handoff. The operator decides.\n",
-		role, project, strings.Join(others, ", "))
-	if allReview {
+	spare := a.isSpare(role)
+	switch {
+	case spare:
+		// The spare holds no work and is sent none (H35).
+		fmt.Fprintf(w, "handoff brief: you are the spare in %s. %s hand work to each other through handoff, and the operator decides. You hold no work, and nothing is sent to you.\n",
+			project, listOf(others, "and"))
+	default:
+		fmt.Fprintf(w, "handoff brief: you are %s in %s. You and %s hand work to each other through handoff. The operator decides.\n",
+			role, project, strings.Join(others, ", "))
+	}
+	if allReview && !spare {
 		fmt.Fprintf(w, "%s of you can implement or review; the operator says who does which, per task.\n", map[bool]string{true: "Either", false: "Each"}[len(others) == 1])
+	}
+	if d, ok := a.deliveryTo(role); ok {
+		if line := blockedLine(role, d); line != "" {
+			// What handoff last knew kept this role's session from its work
+			// (row 110). It clears once the session listens again.
+			fmt.Fprintf(w, "Blocked: %s It clears once this session listens again.\n", line)
+		}
 	}
 	if g := st.Away; g != nil {
 		// A session started while the operator is away learns of the
@@ -97,13 +112,21 @@ func (a *app) writeBrief(w io.Writer, role string, how listening) error {
 	// hands a running command back to the model about once a minute, each
 	// time a whole model call, so a wait there used up the operator's plan in
 	// an hour; it ends its turn instead (row 87).
-	cli := sessionCLI()
-	wait := fmt.Sprintf("run `%s wait --for %s --timeout 25m` in the background. Exit 3: run it again. Exit 4: another session already listens for %s. After you handle what it delivers, wait again.", h, role, role)
+	cli := a.cli()
+	waitFor := func(timeout string) string {
+		return fmt.Sprintf("run `%s wait --for %s --timeout %s` in the background. Exit 3: run it again. Exit 4: something else already listens for %s, perhaps your own earlier wait. After you handle what it delivers, wait again.", h, role, timeout, role)
+	}
+	wait := waitFor("25m")
 	idle := "end your turn. If work waits for you, the operator hears of it and tells you."
 	self := map[string]string{
-		"claude":      wait,
-		"codex":       fmt.Sprintf("don't run `%s wait`: Codex checks on a running command about once a minute, each time with a whole model call, which uses up the operator's plan. Instead, %s", h, idle),
-		"antigravity": fmt.Sprintf("don't run `%s wait`. Instead, %s", h, idle),
+		"claude": wait,
+		"codex":  fmt.Sprintf("don't run `%s wait`: Codex checks on a running command about once a minute, each time with a whole model call, which uses up the operator's plan. Instead, %s", h, idle),
+		// An Antigravity agent's background command wakes it when it exits,
+		// past the 10 its Stop hook has, at no model call while it runs
+		// (evidence/h34/agy-probe/findings.md, row 114).
+		// 60 minutes, measured: such a wait runs to its end and wakes the
+		// agent, at 2 or 3 model calls a wake (evidence/h34.8/long-wait.md).
+		"antigravity": waitFor("60m") + " In Antigravity, that is `run_command` with a short `WaitMsBeforeAsync`, so the command goes to the background and its exit wakes you with what it printed.",
 		"":            fmt.Sprintf("in Claude Code, %s In Codex, don't run wait, since each minute of it costs a whole model call: %s", wait, idle),
 	}[cli]
 	// A session with no hooks can't give itself any: they work only from
@@ -118,25 +141,49 @@ func (a *app) writeBrief(w io.Writer, role string, how listening) error {
 	if len(unset) > 0 {
 		offer = fmt.Sprintf(" If your session has no handoff hooks, offer to set them up for every project: %s prints them and where they go. With the operator's OK, add them. They work once the operator starts this session again.", strings.Join(unset, " or "))
 	}
-	switch how {
-	case listenHook:
+	switch {
+	case how == listenHook && cli == "antigravity":
+		// The hook is the safety net: it stands aside while the wait runs,
+		// and Antigravity lets it wake the session only 10 times in a row.
+		fmt.Fprintf(w, "Listening: %s If none runs when your turn ends, a hook listens for %s, but it can wake you only %d times before the operator types in this session.\n", strings.ToUpper(self[:1])+self[1:], role, agyContinuations)
+	case how == listenMaybe && cli == "antigravity":
+		fmt.Fprintf(w, "Listening: %s If none runs when your turn ends and your session has handoff's hooks, a hook listens for %s, but it can wake you only %d times before the operator types in this session.%s\n", strings.ToUpper(self[:1])+self[1:], role, agyContinuations, offer)
+	case how == listenHook:
 		fmt.Fprintf(w, "Listening: you don't run `%s wait`. When your turn ends, a hook listens for %s and brings you what arrives.\n", h, role)
-	case listenMaybe:
+	case how == listenMaybe:
 		fmt.Fprintf(w, "Listening: if your session has handoff's hooks, a hook listens for %s when your turn ends, and you don't run wait. If not, %s%s\n", role, self, offer)
 	default:
 		fmt.Fprintf(w, "Listening: %s%s\n", strings.ToUpper(self[:1])+self[1:], offer)
 	}
+	if spare {
+		fmt.Fprintf(w, "\nWhile the operator is away with cover, if a seat gets stuck with work waiting for it, you'll be woken and told which. Then take it, as the wake says, with `%s role <seat>`: the operator's cover is their word for it, and only then. Until then there is nothing for you to do. Don't review or build anything, and write nothing to the record: post, reply, note and claim refuse the spare.\n", h)
+		fmt.Fprintf(w, "Rules: never edit .handoff/ by hand. Never merge, push or deploy without the operator's decision.\n")
+		return nil
+	}
 	fmt.Fprintf(w, "\nWhen something arrives, read it with `%s show <id>`, then:\n", h)
 	if rc.Reviews {
 		fmt.Fprintf(w, "- A request to you: `%s claim --as %s <id>`, review exactly the commit it names in a temporary worktree, then `%s reply --as %s <id> --verdict APPROVE|CHANGES|QUESTION --commit <that sha> --body <file>`.\n", h, role, h, role)
+		// Row 118.
+		fmt.Fprintf(w, "- A withdraw of a request to you: its requester no longer wants it answered. Stop reviewing it; nothing is owed on it.\n")
 	}
-	fmt.Fprintf(w, "- A reply to your request: on CHANGES or QUESTION, fix or answer, then post again (`%s post --as %s ... --supersedes <id>`). On APPROVE, the operator decides; wait for the decision.\n", h, role)
+	fmt.Fprintf(w, "- A reply to your request: on CHANGES or QUESTION, fix or answer, then post again (`%s post --as %s ... --supersedes <id>`, or to several reviewers `--supersedes <id>,<id>`, one for each). On APPROVE, the operator decides; wait for the decision. An APPROVE while another reviewer of the same commit is still at it reaches you with the next thing you must act on, or after 30 minutes.\n", h, role)
+	if asks && len(reviewers) > 1 {
+		// A round posted on one reviewer's CHANGES while the others still
+		// review the commit crosses their verdicts, which then land on a
+		// round already replaced: a round lost each time (the operator,
+		// 2026-11-23; H37).
+		fmt.Fprintf(w, "- With two or more reviewers on one commit, wait for every verdict on it before you post the next round, even after a CHANGES: start the fix if you like, but post once all of them have answered, with every finding in that one round. A round posted while the others still review crosses their verdicts and costs a round. If one stays quiet, the operator is told; ask the operator before you go on without it.\n")
+	}
 	if asks {
 		// The go-ahead is the operator's decision, given in advance; the
 		// approval is still the reviewers' (row 96).
 		fmt.Fprintf(w, "- While the operator is away with a go-ahead, the APPROVE that completes an item arrives saying it \"is approved under the operator's go-ahead\". That is the operator's approve: act on it as on a decision to approve. It needs every live request on the item approved at one commit, so after a fix for one reviewer, ask each reviewer again.\n")
 	}
 	fmt.Fprintf(w, "- A decision from the operator: act on it. Merge only on approve, or on an approval under the operator's go-ahead.\n")
+	if asks {
+		// Row 108.
+		fmt.Fprintf(w, "- Approved work stays in your inbox under \"approved, to merge\" until its commit is in %s. Before you merge, check that `%s inbox` still lists it there: the operator may have held it. If you merge by squash or rebase, so the approved commit never reaches %s, record it after with %s merged <item> <the commit in %s>.\n", a.cfg.Main, h, a.cfg.Main, h, a.cfg.Main)
+	}
 	// An fyi is what the operator would otherwise type into each session, so
 	// it is taken as that, no more and no less. It asks for no answer through
 	// handoff, which would only reach the operator as an alert; the operator
@@ -176,7 +223,9 @@ func (a *app) writeBrief(w io.Writer, role string, how listening) error {
 			to, where = "<reviewer>", ", where <reviewer> is "+listOf(reviewers, "or")+", whichever the operator gives a session; none has one yet"
 		default:
 			if to = held[0]; len(held) > 1 {
-				to, where = "<reviewer>", ", where <reviewer> is "+listOf(held, "or")
+				// One post to several reviewers is one round: a go-ahead
+				// approves it only once all of them approve (row 106).
+				to, where = "<reviewers>", ", where <reviewers> is "+strings.Join(held, ",")+", or the ones you ask. One post to several reviewers is one round; asked in separate posts under the operator's go-ahead, the first approval can approve the item alone"
 			}
 			if len(idle) == 1 {
 				where += ". " + idle[0] + " has no session now: send to it only once the operator gives it one"
@@ -187,6 +236,11 @@ func (a *app) writeBrief(w io.Writer, role string, how listening) error {
 		// Agents commit only when asked. The operator asked, by giving this
 		// role, so the brief says so (row 85).
 		fmt.Fprintf(w, "To ask for a review, commit your work on a branch of its own, not on %s; you don't need to ask the operator first. Then `%s post --as %s --item <item> --to %s --commit <sha> --title \"<title>\" --body <file>`%s.\n", a.cfg.Main, h, role, to, where)
+	}
+	if asks {
+		// Nothing else ends a request no one need answer, so it would stay
+		// in inboxes and alert the operator as quiet (row 118).
+		fmt.Fprintf(w, "To withdraw a request of yours that no longer needs an answer, such as one still open once its item is merged, or on work the operator dropped: `%s withdraw --as %s <request>`. A request withdrawn keeps the go-ahead off its item until that reviewer is asked again: the operator decides it.\n", h, role)
 	}
 	fmt.Fprintf(w, "To ask the operator about an item: `%s note --as %s --to operator --item <item> --title \"<question>\" --body <file>`.\n", h, role)
 	fmt.Fprintf(w, "Rules: never edit .handoff/ by hand. Never merge, push or deploy without the operator's decision. A claim is not an approval.\n")

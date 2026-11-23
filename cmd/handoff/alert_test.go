@@ -71,6 +71,7 @@ func TestH8InitSetsQuietAfter(t *testing.T) {
 // A record made before H8 has no quiet_after; it means 30 minutes. A value
 // that is not a duration is refused, loudly, by every command.
 func TestH8QuietAfterSetting(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	r.setQuiet(t, "")
 	r.ok(t, "", "inbox", "--for", "operator")
@@ -85,6 +86,7 @@ func TestH8QuietAfterSetting(t *testing.T) {
 // cut only after the claim: with it set before, a request or claim slower
 // than the limit, as under load, told the operator itself (row 90).
 func TestH8QuietClaimTellsTheOperatorOnce(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	path, sinkEnv := sink(t)
 	req := r.request(t, "W1", r.commitA)

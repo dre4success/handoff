@@ -1,0 +1,388 @@
+H35.2, request #847, commit ad2285da068d27dc668f79241540704e407a120c (base 741cc66, H35.1 round 3, in main)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session).
+The commit was built in a temporary worktree (git worktree add --detach), removed after.
+Every probe ran in a new scratch git project with HANDOFF_TEST_NOTIFY set and the session
+variables unset. Sessions are simulated: CLAUDE_CODE_SESSION_ID with CLAUDE_PID (the pid of
+a sleep, killed to end "the process") for Claude Code; ANTIGRAVITY_CONVERSATION_ID or the
+hook's stdin for Antigravity. quiet_after is 4 s in the scratch configs, so twice it is 8 s.
+The operator's commands run at a pty (atterm.py), which answers each [y/N] in turn.
+
+Verdict: CHANGES.
+
+== 1. Build, vet, format, dependencies (Run) ==
+$ go build -o handoff ./cmd/handoff && go vet ./... && gofmt -l cmd internal
+(no output)
+$ go list -deps ./... | grep -c '^net$'
+0
+$ git diff --check 741cc66 ad2285d
+(no output)
+
+== 2. The full suite (Run) ==
+$ uptime; /usr/bin/time -p go test ./... -count=1 -race      (no -timeout; the worktree was at ad2285d and clean when it ended)
+ 9:17  up 23 days, 13:14, 12 users, load averages: 7.85 13.53 12.01
+ok  	github.com/dre4success/handoff/cmd/handoff	345.677s
+ok  	github.com/dre4success/handoff/internal/awake	1.292s
+ok  	github.com/dre4success/handoff/internal/gitx	1.212s
+ok  	github.com/dre4success/handoff/internal/notify	1.597s
+ok  	github.com/dre4success/handoff/internal/record	4.094s
+ok  	github.com/dre4success/handoff/internal/status	1.224s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	2.653s
+real 348.17
+user 153.12
+sys 133.79
+exit 0
+
+== 3. probe.sh (Run) ==
+Three parts of this run are void, because my probe replied to a wrong entry id and hid the
+refusal. Each is done again in probe-b.sh:
+  - G1, "approved work waits for a decision": no APPROVE was posted, so away asked only
+    about cover. See H2.
+  - G6, the two implementer cases: no CHANGES was posted, so nothing waited for the
+    implementer. See H1.
+  - G8, "while a wait for implementer runs": the same. The second G8 case stands (a note).
+Also G4's second label is loose: about 4 s had passed by then, so the quiet alert fired.
+
+## G1. away and the cover question
+-- no spare:
+$ (the operator, at a terminal, answering nothing) handoff away one
+    away (#1): your go-ahead stands until you run handoff back
+    No spare: if a seat gets stuck, you'll be told, as now. To have one, start a session and give it the role spare.
+    no agent has a session now; each session's brief shows your go-ahead when it starts
+    handoff: told the operator: Your go-ahead is recorded (#1): one Until you run handoff back, items are approved without asking you.
+  away entry #1: cover none
+  binding sp: role spare | generation …311000
+-- a spare, and yes:
+$ (the operator, at a terminal, answering y) handoff away two
+    Cover: the spare can take any seat that gets stuck while you're away. Turn cover on? [y/N] y
+    away (#3): your go-ahead stands until you run handoff back
+    Cover: on. The spare can take a seat that gets stuck while you're away; you'll be told if it does.
+    the spare isn't told: it holds no work
+    no agent has a session now; each session's brief shows your go-ahead when it starts
+    handoff: told the operator: Your go-ahead is recorded (#3): two Until you run handoff back, items are approved without asking you.
+  away entry #1: cover none
+  away entry #3: cover session sp, generation …311000
+-- a spare, and no:
+$ (the operator, at a terminal, answering n) handoff away three
+    Cover: the spare can take any seat that gets stuck while you're away. Turn cover on? [y/N] n
+    away (#5): your go-ahead stands until you run handoff back
+    Away without cover: if a seat gets stuck, you'll be told, as now.
+    the spare isn't told: it holds no work
+    no agent has a session now; each session's brief shows your go-ahead when it starts
+    handoff: told the operator: Your go-ahead is recorded (#5): three Until you run handoff back, items are approved without asking you.
+  away entry #1: cover none
+  away entry #3: cover session sp, generation …311000
+  away entry #5: cover none
+-- away again while away, with yes:
+$ (the operator, at a terminal, answering y) handoff away four
+    Cover: the spare can take any seat that gets stuck while you're away. Turn cover on? [y/N] y
+    away (#6): your go-ahead stands until you run handoff back
+    Cover: on. The spare can take a seat that gets stuck while you're away; you'll be told if it does.
+    the spare isn't told: it holds no work
+    no agent has a session now; each session's brief shows your go-ahead when it starts
+    handoff: told the operator: Your go-ahead is recorded (#6): four Until you run handoff back, items are approved without asking you.
+  away entry #1: cover none
+  away entry #3: cover session sp, generation …311000
+  away entry #5: cover none
+  away entry #6: cover session sp, generation …311000
+-- approved work waits for a decision, so away asks of that first: yes, then yes
+  lines naming W1 in handoff: 0
+$ (the operator, at a terminal, answering yy) handoff away five
+    Cover: the spare can take any seat that gets stuck while you're away. Turn cover on? [y/N] y
+    away (#9): your go-ahead stands until you run handoff back
+    Cover: on. The spare can take a seat that gets stuck while you're away; you'll be told if it does.
+    the spare isn't told: it holds no work
+    no agent has a session now; each session's brief shows your go-ahead when it starts
+    handoff: told the operator: Your go-ahead is recorded (#9): five Until you run handoff back, items are approved without asking you.
+  away entry #1: cover none
+  away entry #3: cover session sp, generation …311000
+  away entry #5: cover none
+  away entry #6: cover session sp, generation …311000
+  away entry #9: cover session sp, generation …311000
+-- the spare's process has ended:
+$ (the operator, at a terminal, answering nothing) handoff away six
+    away (#11): your go-ahead stands until you run handoff back
+    No spare: if a seat gets stuck, you'll be told, as now. To have one, start a session and give it the role spare.
+    no agent has a session now; each session's brief shows your go-ahead when it starts
+    handoff: told the operator: Your go-ahead is recorded (#11): six Until you run handoff back, items are approved without asking you.
+  away entry #1: cover none
+  away entry #3: cover session sp, generation …311000
+  away entry #5: cover none
+  away entry #6: cover session sp, generation …311000
+  away entry #9: cover session sp, generation …311000
+  away entry #11: cover none
+
+## G2. A spare that can't be woken, at away
+$ handoff   (the "sessions" part)
+sessions:
+  blocked: the spare can't be woken until you type in its session (Antigravity's 10 wakes used, since HH:MM), so it can't cover a stuck seat
+$ (the operator, at a terminal, answering y) handoff away one
+    Cover: the spare can take any seat that gets stuck while you're away. Turn cover on? [y/N] y
+    away (#1): your go-ahead stands until you run handoff back
+    Cover: on. The spare can take a seat that gets stuck while you're away; you'll be told if it does.
+    the spare isn't told: it holds no work
+    no agent has a session now; each session's brief shows your go-ahead when it starts
+    handoff: told the operator: Your go-ahead is recorded (#1): one Until you run handoff back, items are approved without asking you.
+  away entry #1: cover session G, generation …919000
+
+## G3. An older build reads a record with cover in it
+  away entry #1: cover session sp, generation …467000
+$ (older build) handoff inbox --for implementer --quiet
+  [exit 0]
+$ (older build) handoff show 1
+#1 away
+from: operator → -
+ts: TIME
+$ (older build) handoff note …, then this build reads it
+posted #2 note P1 reviewer → implementer: t
+  [this build, inbox --quiet: exit 0]
+
+## G4. The exact signs: a reviewer whose process ended, with a request waiting
+posted #3 request W1 implementer → reviewer: W1 @ 06e5e3ba34e8
+-- at once (work has waited under quiet_after), the reviewer alive:
+$ (sp, the spare) handoff wait --timeout 2s
+  (nothing)
+  [exit 3]
+-- its process ended, still under quiet_after:
+$ (sp, the spare) handoff wait --timeout 2s
+handoff: told the operator: W1: reviewer hasn't picked up #3 (4 s), and no session has the role
+  [exit 3]
+-- after quiet_after:
+$ (sp, the spare) handoff wait --timeout 2s
+reviewer's seat is stuck: its session's process has ended. #3 waits for it. Take it with `handoff take reviewer`.
+  [exit 0]
+-- again: woken once only
+$ (sp, the spare) handoff wait --timeout 2s
+  (nothing)
+  [exit 3]
+  alerts to the operator that name a stuck seat or the spare: 0
+
+## G5. What doesn't make a seat stuck
+-- the reviewer's process ended, and only the operator's fyi (the away entry) waits for it:
+$ (sp, the spare) handoff wait --timeout 2s
+handoff: told the operator: implementer hasn't been given your fyi #2 (5 s), and nothing is listening for it (never listened)
+  [exit 3]
+posted #4 request W1 implementer → reviewer: W1 @ 4de98b7dd741
+-- a request waits... but something listens for reviewer (it takes it):
+$ (sp, the spare) handoff wait --timeout 2s
+  (nothing)
+  [exit 3]
+posted #7 request W2 implementer → reviewer: W2 @ 4de98b7dd741
+-- the operator is back; a request has waited past quiet_after for the dead reviewer:
+$ (sp, the spare) handoff wait --timeout 2s
+handoff: told the operator: W1: reviewer hasn't picked up #4 (7 s), and no session has the role
+handoff: told the operator: W2: reviewer hasn't picked up #7 (5 s), and no session has the role
+  [exit 3]
+-- away again, cover refused:
+$ (sp, the spare) handoff wait --timeout 2s
+  (nothing)
+  [exit 3]
+
+## G6. Silence: a reviewer seat at twice quiet_after, the implementer seat never
+posted #4 request W1 implementer → reviewer: W1 @ 398b46217672
+  (#5 waits for reviewer; the CHANGES #6 waits for implementer; both sessions alive, neither listening)
+-- after quiet_after:
+$ (sp, the spare) handoff wait --timeout 2s
+handoff: told the operator: W1: reviewer hasn't picked up #4 (4 s), and nothing is listening for it (never listened)
+handoff: told the operator: implementer hasn't been given your fyi #2 (4 s), and nothing is listening for it (never listened)
+handoff: told the operator: reviewer hasn't been given your fyi #3 (4 s), and nothing is listening for it (never listened)
+  [exit 3]
+-- after twice quiet_after, but the reviewer's session ran a command 4 s ago:
+$ (sp, the spare) handoff wait --timeout 2s
+  (nothing)
+  [exit 3]
+-- 8 s after that command:
+$ (sp, the spare) handoff wait --timeout 2s
+reviewer's seat is stuck: nothing has been heard from it for N seconds. #4 waits for it. Take it with `handoff take reviewer`.
+  [exit 0]
+-- the implementer, as silent for as long:
+$ (sp, the spare) handoff wait --timeout 2s
+  (nothing)
+  [exit 3]
+-- the implementer's process ends (an exact sign):
+$ (sp, the spare) handoff wait --timeout 2s
+  (nothing)
+  [exit 3]
+
+## G7. A permission prompt: a reviewer seat at twice quiet_after
+posted #3 request W1 implementer → reviewer: W1 @ 54ce4d35e619
+-- after quiet_after:
+$ (sp, the spare) handoff wait --timeout 2s
+handoff: told the operator: W1: reviewer hasn't picked up #3 (4 s), and its session is at a permission prompt: Claude needs your permission to use Bash, since HH:MM
+  [exit 3]
+-- after twice quiet_after:
+$ (sp, the spare) handoff wait --timeout 2s
+reviewer's seat is stuck: its session is at a permission prompt: Claude needs your permission to use Bash, since HH:MM. #3 waits for it. Take it with `handoff take reviewer`.
+  [exit 0]
+
+## G8. Antigravity's cap: any seat at quiet_after; not while its own background wait runs
+-- at the cap, past quiet_after, while a wait for implementer runs (it takes the CHANGES):
+$ (sp, the spare) handoff wait --timeout 2s
+  (nothing)
+  [exit 3]
+-- a note has waited past quiet_after, nothing listens, the cap's block stands:
+$ (sp, the spare) handoff wait --timeout 2s
+implementer's seat is stuck: its session can't be woken (Antigravity's 10 wakes used, since HH:MM). #4 waits for it. Take it with `handoff take implementer`.
+  [exit 0]
+
+## G9. Which spare is woken: by the generation the away entry names
+  away entry #1: cover session sp, generation …228000
+posted #3 request W1 implementer → reviewer: W1 @ 938a70550d0c
+  binding sp1: role spare | generation …228000
+-- the spare after /clear, by its Stop hook:
+$ (sp1, Stop hook) handoff hook listen --timeout 2s
+handoff: new for spare:
+reviewer's seat is stuck: its session's process has ended. #3 waits for it. Take it with `handoff take reviewer`.
+Read each with `handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends.
+  [exit 2]
+-- a second stuck seat: reviewer-2's process ends with a request waiting
+posted #4 request W2 implementer → reviewer-2: W2 @ 938a70550d0c
+$ (sp1, the spare) handoff wait --timeout 2s
+reviewer-2's seat is stuck: its session's process has ended. #4 waits for it. Take it with `handoff take reviewer-2`.
+  [exit 0]
+-- the spare is given to another session after away:
+  binding other: role spare | generation …936000
+  (my probe removed the wake's once-only keys here, so only the generation can stop the wake)
+$ (other, the spare) handoff wait --timeout 2s
+handoff: told the operator: W2: reviewer-2 hasn't picked up #4 (5 s), and no session has the role
+  [exit 3]
+$ handoff   (the "sessions" part)
+sessions:
+  cover: the spare your go-ahead #1 names is no longer the spare, so no seat is covered. To cover with the spare there is now, run handoff away again
+
+## G10. An Antigravity spare, its hook with the id on stdin only
+posted #3 request W1 implementer → reviewer: W1 @ 0b5dca038d6f
+$ (G, Stop hook, stdin only, executionNum 2) handoff hook listen --timeout 2s
+    continue | handoff: new for spare: / reviewer's seat is stuck: its session's process has ended. #3 waits for it. Take it with `handoff take reviewer`. / Read each with `/private/tmp/claude-501/-Users-dre4succes
+
+== 4. probe-b.sh (Run) ==
+H1's third label is wrong: my probe's wait for implementer took the CHANGES and exited, so
+nothing was listening when the spare checked. The CHANGES is still owed and the process has
+ended, so the wake is right. probe-c.sh is the true test of "something listens".
+
+## H1. The implementer seat (G6 again, with the CHANGES really posted)
+posted #4 request W1 implementer → reviewer: W1 @ 66a66d54c4f9
+posted #5 reply W1 reviewer → implementer: CHANGES on #4 @ 66a66d54c4f9
+-- the CHANGES has waited past twice quiet_after; the implementer's session is alive, silent, not listening:
+$ (sp, the spare) handoff wait --timeout 2s
+handoff: told the operator: W1: implementer hasn't answered the CHANGES on #4 (9 s), and nothing is listening for it (never listened)
+handoff: told the operator: implementer hasn't been given your fyi #2 (9 s), and nothing is listening for it (never listened)
+  [exit 3]
+-- and now at a permission prompt:
+$ (sp, the spare) handoff wait --timeout 2s
+  (nothing)
+  [exit 3]
+-- its process ends, but something listens for implementer (my probe's own wait, which took the CHANGES):
+$ (sp, the spare) handoff wait --timeout 2s
+implementer's seat is stuck: its session's process has ended. #5 waits for it. Take it with `handoff take implementer`.
+  [exit 0]
+-- a note has waited past quiet_after for the implementer, whose process has ended:
+$ (sp, the spare) handoff wait --timeout 2s
+handoff: told the operator: W1: implementer hasn't been given the note #6 from reviewer (5 s), and no session has the role
+  [exit 3]
+
+## H2. away's two questions, in order (G1 again, with the APPROVE really posted)
+posted #1 request W1 implementer → reviewer: W1 @ 5b4c5d7ac683
+posted #2 reply W1 reviewer → implementer: APPROVE on #1 @ 5b4c5d7ac683
+-- no to the first:
+$ (the operator, at a terminal, answering n) handoff away one
+    Your go-ahead approves now: W1 (#1). Go ahead? [y/N] n
+    handoff away: not confirmed; nothing written
+-- yes, then no:
+$ (the operator, at a terminal, answering yn) handoff away two
+    Your go-ahead approves now: W1 (#1). Go ahead? [y/N] y
+    Cover: the spare can take any seat that gets stuck while you're away. Turn cover on? [y/N] n
+    away (#3): your go-ahead stands until you run handoff back
+    approved under it now: W1 (#1)
+    Away without cover: if a seat gets stuck, you'll be told, as now.
+    the spare isn't told: it holds no work
+    no agent has a session now; each session's brief shows your go-ahead when it starts
+    handoff: told the operator: Your go-ahead is recorded (#3): two Until you run handoff back, items are approved without asking you.
+    handoff: told the operator: W1: approved under your go-ahead #3, by reviewer (#1).
+  away entry #3: cover none
+posted #5 request W2 implementer → reviewer: W2 @ 5b4c5d7ac683
+-- yes, then yes:
+$ (the operator, at a terminal, answering yy) handoff away three
+    Your go-ahead approves now: W2 (#5). Go ahead? [y/N] y
+    Cover: the spare can take any seat that gets stuck while you're away. Turn cover on? [y/N] y
+    away (#7): your go-ahead stands until you run handoff back
+    approved under it now: W2 (#5)
+    Cover: on. The spare can take a seat that gets stuck while you're away; you'll be told if it does.
+    the spare isn't told: it holds no work
+    no agent has a session now; each session's brief shows your go-ahead when it starts
+    handoff: told the operator: Your go-ahead is recorded (#7): three Until you run handoff back, items are approved without asking you.
+    handoff: told the operator: W2: approved under your go-ahead #7, by reviewer (#5).
+  away entry #3: cover none
+  away entry #7: cover session sp
+
+## H3. Where every role reviews: silence takes no seat, an exact sign does
+posted #3 request W1 a → b: W1 @ 42be980177b0
+-- b alive and silent past twice quiet_after:
+$ (sp, the spare) handoff wait --timeout 2s
+handoff: told the operator: W1: b hasn't picked up #3 (9 s), and nothing is listening for it (never listened)
+handoff: told the operator: b hasn't been given your fyi #2 (9 s), and nothing is listening for it (never listened)
+  [exit 3]
+-- b's process ends:
+$ (sp, the spare) handoff wait --timeout 2s
+b's seat is stuck: its session's process has ended. #3 waits for it. Take it with `handoff take b`.
+  [exit 0]
+
+## H4. The timer alone: the spare's wait is already running when a seat becomes stuck, and nothing is written meanwhile
+posted #3 request W1 implementer → reviewer: W1 @ 7be68e9ead7d
+$ (sp, the spare) handoff wait --timeout 100s   (started at once; the request has waited 0 s)
+reviewer's seat is stuck: its session's process has ended. #3 waits for it. Take it with `handoff take reviewer`.
+  [exit 0, 60 s after the request; quiet_after is 4 s and the check runs once a minute]
+
+## H5. A project with a role already named spare (older build's init), at away
+You are now spare in h5.
+$ (the operator, at a terminal, answering nothing) handoff away one
+    away (#1): your go-ahead stands until you run handoff back
+    No spare: if a seat gets stuck, you'll be told, as now. To have one, start a session and give it the role spare.
+    handoff: told the operator: Your go-ahead is recorded (#1): one Until you run handoff back, items are approved without asking you.
+  away entry #1: cover none
+
+== 5. probe-c.sh: a seat something listens for is not stuck (Run) ==
+
+## J1. The reviewer's process has ended and a request is owed, past quiet_after: stuck only when nothing listens for reviewer
+posted #3 request W1 implementer → reviewer: W1 @ 1432e7b871e3
+  listening for reviewer now: yes
+-- while a wait for reviewer runs (it has nothing new to take, so it stays):
+$ (sp, the spare) handoff wait --timeout 2s
+  (nothing)
+  [exit 3]
+  listening for reviewer now: no
+-- that wait gone:
+$ (sp, the spare) handoff wait --timeout 2s
+reviewer's seat is stuck: its session's process has ended. #3 waits for it. Take it with `handoff take reviewer`.
+  [exit 0]
+
+== 6. probe-d.sh: reviewer-2's #853 point 2, run again (Run) ==
+
+## K1. A reviewer that answered without ever listening (show and reply only), then its process ends
+posted #3 request W1 implementer → reviewer: W1 @ 5338cc856844
+posted #4 claim W1 reviewer → -: claimed #3
+posted #5 reply W1 reviewer → implementer: APPROVE on #3 @ 5338cc856844
+handoff: told the operator: W1: approved under your go-ahead #1, by reviewer (#3).
+  reviewer's cursor: none
+$ handoff inbox --for reviewer   (what it still owes)
+needs my review:
+  (none)
+being reviewed by me:
+  (none)
+-- its process has ended; the request it answered is approved under the go-ahead:
+$ (sp, the spare) handoff wait --timeout 2s
+reviewer's seat is stuck: its session's process has ended. #3 waits for it. Take it with `handoff take reviewer`.
+  [exit 0]
+
+== 7. Source ==
+internal/wait/wait.go, woke: the wake's text is printed by Run itself, not through o.Fence,
+and the result of the print is not checked. cmd/handoff/stuck.go, spareWake: MarkSent runs
+before the text is returned. So reviewer-2's #853 point 1 follows from the code; I did not
+run its paused case.
+cmd/handoff/session.go, running(): a binding with no pid and a host is "not running" when
+the host process has ended. stuckSeats takes !b.running() as the exact sign, so a host-only
+binding (Codex) is covered by it (#853 point 3). Read, not run.
+internal/status/status.go, Waiting: the same terms as the old WaitsFor, appended and sorted
+where it took the maximum; WaitsFor is now the maximum of Waiting. No change in its result.
+cmd/handoff/cmds.go, cmdAway: the cover question is asked whenever spareBinding() finds a
+running spare; nothing reads that binding's block before asking (G2).

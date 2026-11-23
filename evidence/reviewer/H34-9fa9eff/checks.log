@@ -1,0 +1,81 @@
+# H34 design review, round 2, request #257, commit 9fa9eff5265956718e7ea48390d8f14c567543fb (base 370f688)
+# Run by: the reviewer (Claude Code, Fable 5.2), 2026-11-22T07:08:39Z, in a temporary worktree of the exact commit
+# The replays of both records (parts 1, 3 and 5) are in ../H34-2819550/checks.log, sections 7 to 9; they don't depend on the round.
+
+## 1. What the commit changes
+$ git diff --stat 370f688..9fa9eff
+ docs/proposals/H34_DESIGN.md | 199 +++++++++++++++++++++++++++++++++++++++++++
+ evidence/h34/facts.log       | 105 +++++++++++++++++++++++
+ evidence/h34/shutout.log     |  16 ++++
+ evidence/h34/shutout.sh      |  16 ++++
+ 4 files changed, 336 insertions(+)
+$ git diff --check 370f688..9fa9eff; echo exit $?
+exit 0
+
+## 2. Part 6: the shut-out gap, the implementer's script run again by me (Run; scratch project, HANDOFF_TEST_NOTIFY set by the script)
+$ zsh evidence/h34/shutout.sh <scratch>   # handoff handoff v0.0.0-20261116001742-09ece7deb45f
+$ handoff init
+ok
+$ (session old, pid 73761) handoff role implementer
+You are now implementer in proj.
+$ (session new, pid 73762) handoff role implementer
+You are now implementer in proj. Another session had implementer; it has no role now.
+$ ls .handoff/sessions
+new.json
+$ (session old) handoff post --as implementer --item P1 --to reviewer --commit work ...
+posted #1 request P1 implementer → reviewer: from the old session @ 08f001cbecd6
+handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+exit 0
+$ (session old) handoff role
+handoff role: no role: when the operator gives this session one, run `handoff role <role>`
+exit 2
+
+## 3. Point 2: a decided request can never be decided again, so an approval that will not be merged has no way out (Source)
+$ sed -n 287,298p internal/status/status.go
+func (s *Status) Decidable(id int64) (*Target, error) {
+	r, ok := s.requests[id]
+	if !ok {
+		r, ok = s.replies[id]
+		if ok && (r.Verdict == nil || r.Verdict.ID != id) {
+			return nil, fmt.Errorf("#%d is not the reply that stands on request #%d", id, r.Entry.ID)
+		}
+	}
+	if ok && r.State == AwaitingOperator {
+		return &Target{Entry: r.Entry, Request: r}, nil
+	}
+	for _, o := range s.operator {
+$ sed -n 43p internal/status/status.go
+func (r *Request) live() bool { return r.State != Superseded && r.State != Decided }
+
+## 4. Point 1: what the quiet alert already covers, and its one threshold (Source)
+$ sed -n 419,435p internal/status/status.go
+		}
+		if !r.live() {
+			continue
+		}
+		since, err := time.Parse(time.RFC3339, r.Last.TS)
+		gone := now.Sub(since)
+		if err != nil || gone < quiet {
+			continue
+		}
+		var text string
+		switch r.State {
+		case Open:
+			text = fmt.Sprintf("%s: %s hasn't picked up #%d (%s)", item, r.Entry.To, id, age(gone))
+		case Claimed:
+			text = fmt.Sprintf("%s: %s claimed #%d and has been quiet for %s", item, r.Entry.To, id, age(gone))
+		case Answered:
+			text = fmt.Sprintf("%s: %s hasn't answered the %s on #%d (%s)", item, r.Entry.From, r.Verdict.Verdict, id, age(gone))
+$ grep -n "defaultQuiet = " cmd/handoff/main.go
+164:const defaultQuiet = 30 * time.Minute
+
+## 5. Point 3: handoff role is run by the session on the operator's word, for every session, marked or not (Source)
+$ sed -n 521,524p cmd/handoff/session.go
+	s := callerSession()
+	if s.ID == "" {
+		return 0, errors.New("handoff role is for a Claude Code, Codex or Antigravity session: the operator tells a session its role, and the session runs it")
+	}
+
+## 6. A new entry kind is accepted by the record as it is (Source)
+$ sed -n 167p internal/record/record.go
+	if e.Kind == "" || e.ID <= 0 || e.Prev == "" {

@@ -1,0 +1,67 @@
+H34.8 round 3, request #788, commit 00868d5a16900589d3b24a24934ab8aa5ad589eb (base df9885f, H34.5 round 4)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session).
+The commit was built in a temporary worktree (git worktree add --detach), removed after.
+Every probe ran in a new scratch git project with HANDOFF_TEST_NOTIFY set and the session
+variables unset. I ran no Antigravity session.
+
+== 1. Build, vet, format, dependencies (Run) ==
+$ go build -o handoff ./cmd/handoff && go vet ./... && gofmt -l cmd internal
+(no output)
+$ go list -deps ./... | grep -c '^net$'
+0
+$ git diff --check df9885f 00868d5
+(no output)
+
+== 2. The rebase (Run) ==
+Part 8 up to round 2, on its old base and rebased, as sorted changed lines:
+$ diff <(git diff 9ae2e65 8f48fa6 -- cmd internal | grep '^[+-]' | grep -v '^+++\|^---' | sort) \
+       <(git diff df9885f 0b573b1 -- cmd internal | grep '^[+-]' | grep -v '^+++\|^---' | sort)
+(no output)
+
+== 3. Hooks with the session named on stdin only: probe-stdin.sh (Run) ==
+Each hook runs under env -u ANTIGRAVITY_CONVERSATION_ID, with conversationId in its JSON.
+In rounds 1 and 2 my simulated hooks always had the variable set as well, which is how I
+missed what reviewer-3 found in #710.
+
+## Y1. An Antigravity session's hooks, with its id on stdin only (env has no ANTIGRAVITY_CONVERSATION_ID)
+-- the agent's own command has the variable, as Antigravity gives it to commands:
+You are now reviewer in s.
+  binding A: cli antigravity
+$ (SessionStart hook, stdin only) handoff hook brief
+Listening: Run `handoff wait --for reviewer --timeout 60m` in the background. Exit 3: run it again. Exit 4: something else already listens for reviewer, perhaps your own earlier wait. After you handle what it delivers, wait again. In Antigravity, that is `run_command` with a short `WaitMsBeforeAsync`, so the command goes to the background and its exit wakes you with what it printed. If none runs when your turn ends, a hook listens for reviewer, but it can wake you only 10 times before the operator types in this ses
+$ (Stop hook, stdin only, executionNum 3) handoff hook listen --timeout 1s
+    continue | handoff: nothing new for reviewer in 1s. Just end your turn; listening starts again when it ends. Before your turn ends, run `handoff wait --for reviewer --timeout 60m` in the background, as your brief says, so this hook needn't wake you. / 
+$ (Stop hook, stdin only, executionNum 10) handoff hook listen
+{}
+  binding A: block cap | cli antigravity
+
+## Y2. A session that takes its role with its id on stdin only can't: role is a command, and needs the variable
+$ handoff role reviewer   (no session variable at all)
+handoff role: handoff role is for a Claude Code, Codex or Antigravity session: the operator tells a session its role, and the session runs it
+
+## Y3. away's line for an Antigravity session
+$ (the operator, at a terminal) handoff away "carry on"
+    reviewer is an Antigravity session: it listens with a wait it runs in the background. If it stops running one, handoff can wake it only 10 times before you type in it.
+    handoff: told the operator: reviewer can't be woken until you type in its session (Antigravity's 10 wakes used, since 08:28), and work waits for it (#2).
+
+The same SessionStart hook on round 2's commit, 8f48fa6 (built in a temporary worktree):
+Listening: you don't run `handoff wait`. When your turn ends, a hook listens for reviewer and brings you what arrives.
+
+== 4. Rounds 1 and 2's probe, run again: probe.sh (X1 to X3) (Run) ==
+No line differs from round 2 (../H34.8-8f48fa6/checks.log), pids and times apart.
+
+== 5. The full suite (Run) ==
+$ uptime; /usr/bin/time -p go test ./... -count=1 -race      (no -timeout; the worktree was at 00868d5 and clean when it ended)
+ 8:27  up 23 days, 12:25, 15 users, load averages: 5.11 4.97 5.55
+ok  	github.com/dre4success/handoff/cmd/handoff	310.474s
+ok  	github.com/dre4success/handoff/internal/awake	1.488s
+ok  	github.com/dre4success/handoff/internal/gitx	1.413s
+ok  	github.com/dre4success/handoff/internal/notify	1.244s
+ok  	github.com/dre4success/handoff/internal/record	7.042s
+ok  	github.com/dre4success/handoff/internal/status	1.212s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	2.969s
+real 314.73
+user 99.55
+sys 84.72
+exit 0

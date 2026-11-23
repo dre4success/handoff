@@ -1,0 +1,53 @@
+# H34.3 round 7 tests, run by the implementer (Claude Code, Opus 5.5), 2026-11-23T05:31:03Z, on branch h34.3-hold (the tree committed next). Each command is followed only by what it printed.
+$ gofmt -l cmd internal; echo "exit $?"
+exit 0
+$ go vet ./...; echo "exit $?"
+exit 0
+$ go list -deps ./... | grep -cx net
+0
+$ go test -race -count=1 -timeout 30m ./...
+ok  	github.com/dre4success/handoff/cmd/handoff	278.667s
+ok  	github.com/dre4success/handoff/internal/awake	1.287s
+ok  	github.com/dre4success/handoff/internal/gitx	1.205s
+ok  	github.com/dre4success/handoff/internal/notify	1.350s
+ok  	github.com/dre4success/handoff/internal/record	3.979s
+ok  	github.com/dre4success/handoff/internal/status	1.216s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	2.532s
+$ go test -count=1 -run TestH34p3 -v ./internal/wait ./internal/status ./cmd/handoff | grep -E "^(--- |ok|FAIL)"
+--- PASS: TestH34p3OneWakeForThreeReviewers (0.06s)
+--- PASS: TestH34p3AHeldApproveIsCarriedByAChanges (0.04s)
+--- PASS: TestH34p3TheHoldEndsAtThirtyMinutesAndARestartKeepsIt (0.03s)
+--- PASS: TestH34p3AnFyiBehindAHeldOneThenADecision (0.04s)
+--- PASS: TestH34p3ASupersessionReleasesIt (0.03s)
+--- PASS: TestH34p3MixedCommitsAndASupersededRequestHoldNothing (0.06s)
+--- PASS: TestH34p3ReleasedByAnEntryToAnotherRole (0.04s)
+--- PASS: TestH34p3TwoHeldGoInOneWake (0.04s)
+--- PASS: TestH34p3EmitHoldsNothing (0.03s)
+--- PASS: TestH34p3MixedCommitsWithAPairHoldNothing (0.03s)
+--- PASS: TestH34p3ABreakEndsTheHold (0.03s)
+ok  	github.com/dre4success/handoff/internal/wait	0.668s
+--- PASS: TestH34p3AHeldApproveIsNoWorkWaiting (0.00s)
+--- PASS: TestH34p3HeldApprovesWaitAsTheListenerGivesThem (0.00s)
+ok  	github.com/dre4success/handoff/internal/status	0.232s
+--- PASS: TestH34p3NoBlockAlertForAHeldApprove (0.58s)
+--- PASS: TestH34p3AHookWhoseWaitFailsWakesNoOne (0.59s)
+--- PASS: TestH34p3AHookAtABreakGivesWhatWasHeld (1.62s)
+--- PASS: TestH34p3TheHookWakesOnceForARound (2.68s)
+ok  	github.com/dre4success/handoff/cmd/handoff	3.063s
+$ (a worktree of 6f2f908, with these hold_test.go) go test -count=1 -run TestH34p3 ./internal/wait ./cmd/handoff | grep -E "^(--- |ok|FAIL)"
+--- FAIL: TestH34p3OneWakeForThreeReviewers (0.04s)
+--- FAIL: TestH34p3AHeldApproveIsCarriedByAChanges (0.03s)
+--- FAIL: TestH34p3TheHoldEndsAtThirtyMinutesAndARestartKeepsIt (0.02s)
+--- FAIL: TestH34p3AnFyiBehindAHeldOneThenADecision (0.04s)
+--- FAIL: TestH34p3ASupersessionReleasesIt (0.02s)
+--- FAIL: TestH34p3ReleasedByAnEntryToAnotherRole (0.03s)
+--- FAIL: TestH34p3TwoHeldGoInOneWake (0.05s)
+FAIL
+FAIL	github.com/dre4success/handoff/internal/wait	0.552s
+--- FAIL: TestH34p3NoBlockAlertForAHeldApprove (0.55s)
+--- FAIL: TestH34p3AHookAtABreakGivesWhatWasHeld (0.59s)
+--- FAIL: TestH34p3TheHookWakesOnceForARound (0.61s)
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	1.161s
+FAIL

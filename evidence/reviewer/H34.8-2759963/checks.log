@@ -1,0 +1,95 @@
+H34.8, request #646, commit 2759963a182aa5c53a97535aae7a300e64302407 (base b9dbd6b, H34.5)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session).
+The commit was built in a temporary worktree (git worktree add --detach), removed after.
+Every probe ran in a new scratch git project with HANDOFF_TEST_NOTIFY set and the session
+variables unset. An Antigravity session is simulated with ANTIGRAVITY_CONVERSATION_ID and
+its hooks' JSON on stdin. No Antigravity session was run: what Antigravity itself does with
+a background command is from the implementer's probe (evidence/h34/agy-probe/findings.md).
+
+Verdict: CHANGES, for one missing measurement: how long Antigravity lets a background
+command run. handoff's own side, below, is right.
+
+== 1. Build, vet, format, dependencies (Run) ==
+$ go build -o handoff ./cmd/handoff && go vet ./... && gofmt -l cmd internal
+(no output)
+$ go list -deps ./... | grep -c '^net$'
+0
+$ git diff --check b9dbd6b 2759963
+(no output)
+
+== 2. probe.sh <dir> <binary> (Run) ==
+The background wait in X2 runs 30 s. In my first run it ran 7 s, and the Stop hook, which
+tries for the role's lock for about 6 s, took the lock as that wait ended; that run is not
+kept.
+
+## X1. What an Antigravity session is told about listening
+$ (A) handoff role reviewer   (the Listening line)
+Listening: Run `handoff wait --for reviewer --timeout 25m` in the background. Exit 3: run it again. Exit 4: another session already listens for reviewer. After you handle what it delivers, wait again. In Antigravity, that is `run_command` with a short `WaitMsBeforeAsync`, so the command goes to the background and its exit wakes you with what it printed. If none runs when your turn ends and your session has handoff's hooks, a hook listens for reviewer, but it can wake you only 10 times before the operator types in this session.
+$ (A, SessionStart hook) handoff hook brief   (the Listening line)
+Listening: Run `handoff wait --for reviewer --timeout 25m` in the background. Exit 3: run it again. Exit 4: another session already listens for reviewer. After you handle what it delivers, wait again. In Antigravity, that is `run_command` with a short `WaitMsBeforeAsync`, so the command goes to the background and its exit wakes you with what it printed. If none runs when your turn ends, a hook listens for reviewer, but it can wake you only 10 times before the operator types in this session.
+$ handoff brief --for reviewer   (by hand, no session: the Listening line)
+Listening: In Claude Code, run `handoff wait --for reviewer --timeout 25m` in the background. Exit 3: run it again. Exit 4: another session already listens for reviewer. After you handle what it delivers, wait again. In Codex, don't run wait, since each minute of it costs a whole model call: end your turn. If work waits for you, the operator hears of it and tells you.
+-- a Claude Code session with hooks, for comparison:
+Listening: you don't run `handoff wait`. When your turn ends, a hook listens for implementer and brings you what arrives.
+
+## X2. The background wait: its exits, and the Stop hook beside it
+$ (A) handoff wait --for reviewer --timeout 2s   (nothing new)
+  [exit 3]
+  binding A: block: none | listened: yes
+posted #1 note P1 implementer → reviewer: one
+$ (A) handoff wait --for reviewer --timeout 5s   (a note waits)
+#1 note P1 implementer → reviewer: one
+  [exit 0]
+-- a wait runs in the background; the turn ends, and the Stop hook runs with fullyIdle false, then (were it true) beside the wait's lock:
+$ (Antigravity A, Stop hook, executionNum 0, fullyIdle false) handoff hook listen --timeout 2s
+    (no wake) | 
+$ (Antigravity A, Stop hook, executionNum 0, fullyIdle true) handoff hook listen --timeout 2s
+    (no wake) | 
+$ (Antigravity A, Stop hook, executionNum 10, fullyIdle true) handoff hook listen --timeout 2s
+    (no wake) | 
+  binding A: block: none | listened: yes
+$ (A) a second wait while the first runs
+handoff wait: already listening: wait for reviewer, pid 63879, since 2026-11-23T05:31:23Z; this one exits
+  [exit 4]
+posted #2 note P1 implementer → reviewer: two
+-- what the background wait printed:
+    #2 note P1 implementer → reviewer: two
+    [exit 0]
+
+## X3. The agent forgot to wait: the hook's wake, and its cap, as before
+$ (Antigravity A, Stop hook, executionNum 3, fullyIdle true) handoff hook listen --timeout 1s
+    continue | handoff: nothing new for reviewer in 1s. Just end your turn; listening starts again when it ends. Before your turn ends, run `handoff wait --for reviewer --timeout 25m` in the background, as your brief says, so this hook needn't wake you. / 
+$ (Antigravity A, Stop hook, executionNum 10, fullyIdle true) handoff hook listen --timeout 1s
+    (no wake) | 
+  binding A: block: cap | listened: yes
+  alerts to the operator: 1
+    x1: handoff can't wake reviewer's Antigravity session for new work until you type in it: Antigravity lets hooks continue a turn 10 times in a row.
+-- the agent runs the wait again: the block is over
+  binding A: block: none | listened: yes
+
+== 3. Source: how long the Stop hook tries for the lock ==
+a.listen (cmd/handoff/session.go:471) tries wait.Listen 13 times, 250 ms apart, and each
+wait.Listen tries 6 times, 50 ms apart (internal/wait/presence.go:61): about 6 s in all,
+where the comment above a.listen says three. This is from before H34.
+
+== 4. The implementer's probe, on the one question it left open (Source) ==
+evidence/h34/agy-probe/findings.md, finding 4: "How long one background command may run
+wasn't measured. The longest seen was about 4 minutes, and the binary shows no limit."
+The probe ran from 07:07 to 07:24 UTC, 17 minutes, so session A's 25-minute wait did not
+run to its end.
+
+== 5. The full suite (Run) ==
+$ uptime; /usr/bin/time -p go test ./... -count=1 -race      (no -timeout; the worktree was at 2759963 and clean when it ended)
+ 5:29  up 23 days,  9:26, 15 users, load averages: 4.62 4.70 5.01
+ok  	github.com/dre4success/handoff/cmd/handoff	293.420s
+ok  	github.com/dre4success/handoff/internal/awake	1.298s
+ok  	github.com/dre4success/handoff/internal/gitx	1.223s
+ok  	github.com/dre4success/handoff/internal/notify	1.368s
+ok  	github.com/dre4success/handoff/internal/record	3.926s
+ok  	github.com/dre4success/handoff/internal/status	1.226s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	2.542s
+real 295.20
+user 79.02
+sys 61.47
+exit 0

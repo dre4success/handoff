@@ -1,0 +1,476 @@
+H34.1, request #461, commit 6a918e82b8da0bc1052b6ea30655d9456bb451b4 (base a78c804)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session).
+The commit was built in a temporary worktree (git worktree add --detach), removed after.
+Every probe ran in a new scratch git project with HANDOFF_TEST_NOTIFY set and the session
+variables unset. The operator's commands ran with a pseudo-terminal (atterm_y.py). The
+"older build" is the binary I built at a78c804, which has no row 108.
+
+Verdict: CHANGES, for M10 (show), M6 (the can't-tell line) and M12 (a cut round).
+
+== 1. Build, vet, format, dependencies (Run) ==
+$ go build -o handoff ./cmd/handoff && go vet ./... && gofmt -l cmd internal
+(no output)
+$ go list -deps ./... | grep -c '^net$'
+0
+$ git diff --check a78c804 6a918e8
+(no output)
+
+== 2. probe.sh <dir> <binary> atterm_y.py <older binary> (Run) ==
+M1, M2, M4 to M8 are as they print here. M3 in this run is void after "-- the fix": my
+post tried to supersede a decided request and was refused; probe-m3.sh, §3, does it right.
+
+## M1. One reviewer, the operator approves: listed until the commit is in main
+posted #1 request W1 implementer → reviewer: W1 @ b7840ed64170
+handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+posted #2 reply W1 reviewer → implementer: APPROVE on #1 @ b7840ed64170
+handoff: told the operator: W1: reviewer approved #1. Your decision.
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+  (no such section)
+  [inbox --quiet: exit 0]
+$ (the operator, at a terminal) handoff decide W1 --approve
+#1 request W1 implementer → reviewer: W1 @ b7840ed64170
+  #2 reply W1 reviewer → implementer: APPROVE on #1 @ b7840ed64170
+Approve W1 (#1)? [y/N] y
+posted #3 decision W1 operator → implementer: approve #1
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+approved, to merge:
+  W1 @ b7840ed64170, approved by the operator (#3) on the APPROVE of reviewer (#1): not in main yet; not yet delivered
+  [inbox --quiet: exit 1]
+$ handoff wait --for implementer --timeout 2s
+#2 reply W1 reviewer → implementer: APPROVE on #1 @ b7840ed64170
+#3 decision W1 operator → implementer: approve #1
+  [exit 0]
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+approved, to merge:
+  W1 @ b7840ed64170, approved by the operator (#3) on the APPROVE of reviewer (#1): not in main yet
+  [inbox --quiet: exit 1]
+$ handoff   (the operator's view, the part)
+approved, to merge:
+  W1 @ b7840ed64170, approved by the operator (#3) on the APPROVE of reviewer (#1) for implementer: not in main yet
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+  (no such section)
+  [inbox --quiet: exit 0]
+
+## M2. A round to two reviewers under a go-ahead: one line, one alert; then gone quiet
+posted #2 request W2 implementer → reviewer: W2 @ 3770d45dde65
+posted #3 request W2 implementer → reviewer-2: W2 @ 3770d45dde65
+handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+handoff: no session has reviewer-2 now, so this waits until the operator gives one that role; tell the operator.
+posted #4 reply W2 reviewer → implementer: APPROVE on #2 @ 3770d45dde65
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+  (no such section)
+  [inbox --quiet: exit 0]
+posted #5 reply W2 reviewer-2 → implementer: APPROVE on #3 @ 3770d45dde65
+handoff: told the operator: W2: approved under your go-ahead #1, by reviewer and reviewer-2 (#2, #3).
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+approved, to merge:
+  W2 @ 3770d45dde65, approved under the operator's go-ahead #1 on the APPROVE of reviewer and reviewer-2 (#2, #3): not in main yet; not yet delivered
+  [inbox --quiet: exit 1]
+$ handoff wait --for implementer --timeout 2s
+#4 reply W2 reviewer → implementer: APPROVE on #2 @ 3770d45dde65
+  W2 is approved under the operator's go-ahead #1: that is the operator's approve
+#5 reply W2 reviewer-2 → implementer: APPROVE on #3 @ 3770d45dde65
+  W2 is approved under the operator's go-ahead #1: that is the operator's approve
+handoff: told the operator: W2: implementer hasn't merged 3770d45dde65, approved under the operator's go-ahead #1 on the APPROVE of reviewer and reviewer-2 (#2, #3) (4 s)
+  [exit 0]
+  alerts to the operator: 3
+    m2: Your go-ahead is recorded (#1): carry on Until you run handoff back, items are approved without asking you.
+    m2: W2: approved under your go-ahead #1, by reviewer and reviewer-2 (#2, #3).
+    m2: W2: implementer hasn't merged 3770d45dde65, approved under the operator's go-ahead #1 on the APPROVE of reviewer and reviewer-2 (#2, #3) (4 s)
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+  (no such section)
+  [inbox --quiet: exit 0]
+
+## M3. Three reviewers, no go-ahead: the operator approves one while another's CHANGES stands; then a new round
+posted #1 request W3 implementer → reviewer: W3 @ d8892bec4631
+posted #2 request W3 implementer → reviewer-2: W3 @ d8892bec4631
+posted #3 request W3 implementer → reviewer-3: W3 @ d8892bec4631
+handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+handoff: no session has reviewer-2 now, so this waits until the operator gives one that role; tell the operator.
+handoff: no session has reviewer-3 now, so this waits until the operator gives one that role; tell the operator.
+posted #4 reply W3 reviewer → implementer: APPROVE on #1 @ d8892bec4631
+handoff: told the operator: W3: reviewer approved #1. Your decision.
+posted #5 reply W3 reviewer-3 → implementer: APPROVE on #3 @ d8892bec4631
+handoff: told the operator: W3: reviewer-3 approved #3. Your decision.
+posted #6 reply W3 reviewer-2 → implementer: CHANGES on #2 @ d8892bec4631
+$ (the operator, at a terminal) handoff decide 1 --approve
+#1 request W3 implementer → reviewer: W3 @ d8892bec4631
+  #4 reply W3 reviewer → implementer: APPROVE on #1 @ d8892bec4631
+Approve W3 (#1)? [y/N] y
+posted #7 decision W3 operator → implementer: approve #1
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+  (no such section)
+  [inbox --quiet: exit 1]
+-- the fix, as a new round, approved by all three under a go-ahead:
+handoff post: #1 is not the open request on W3 from implementer to reviewer
+handoff reply: #6 is not a request
+handoff reply: #7 is not a request
+handoff reply: #8 is not a request
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+  (no such section)
+  [inbox --quiet: exit 1]
+
+## M4. A squash merge, and handoff merged
+posted #1 request W4 implementer → reviewer: W4 @ cef5fc16e03d
+handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+posted #2 reply W4 reviewer → implementer: APPROVE on #1 @ cef5fc16e03d
+handoff: told the operator: W4: reviewer approved #1. Your decision.
+Squash commit -- not updating HEAD
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+approved, to merge:
+  W4 @ cef5fc16e03d, approved by the operator (#3) on the APPROVE of reviewer (#1): not in main yet; not yet delivered
+  [inbox --quiet: exit 1]
+$ handoff note --as implementer --to operator --item W4 --title merged it --body f
+posted #4 note W4 implementer → operator: merged it
+handoff: told the operator: W4: implementer asks you: merged it
+  [exit 0]
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+approved, to merge:
+  W4 @ cef5fc16e03d, approved by the operator (#3) on the APPROVE of reviewer (#1): not in main yet; not yet delivered
+$ handoff merged --as reviewer W4 4bb6cdfc66a046336bf54a966cc63c4a6bc443d4
+handoff merged: W4 @ cef5fc16e03d was asked for by implementer; only it records the merge
+  [exit 2]
+$ handoff merged --as implementer W4 cef5fc16e03dd5bb3d65b22743e79467ac95a4ed
+handoff merged: cef5fc16e03d is not in main; merge it first, then record it
+  [exit 2]
+$ handoff merged --as implementer W9 4bb6cdfc66a046336bf54a966cc63c4a6bc443d4
+handoff merged: nothing on W9 is approved and not merged
+  [exit 2]
+$ handoff merged --as implementer W4 4bb6cdfc66a046336bf54a966cc63c4a6bc443d4
+posted #5 merged W4 implementer → -: Merged as 4bb6cdfc66a0; approved at cef5fc16e03d. (re #1)
+  [exit 0]
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+  (no such section)
+  [inbox --quiet: exit 0]
+$ handoff merged --as implementer W4 4bb6cdfc66a046336bf54a966cc63c4a6bc443d4
+handoff merged: nothing on W4 is approved and not merged
+  [exit 2]
+$ handoff   (the operator's view, after)
+recorded as merged by their requester (not checked against the approved commit):
+  W4 @ cef5fc16e03d: merged as 4bb6cdfc66a0, recorded by implementer (#5)
+
+## M5. The operator holds approved work
+posted #1 request W5 implementer → reviewer: W5 @ 62b9bfed9be2
+posted #2 request W5 implementer → reviewer-2: W5 @ 62b9bfed9be2
+handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+handoff: no session has reviewer-2 now, so this waits until the operator gives one that role; tell the operator.
+posted #4 reply W5 reviewer → implementer: APPROVE on #1 @ 62b9bfed9be2
+posted #5 reply W5 reviewer-2 → implementer: APPROVE on #2 @ 62b9bfed9be2
+handoff: told the operator: W5: approved under your go-ahead #3, by reviewer and reviewer-2 (#1, #2).
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+approved, to merge:
+  W5 @ 62b9bfed9be2, approved under the operator's go-ahead #3 on the APPROVE of reviewer and reviewer-2 (#1, #2): not in main yet
+  [inbox --quiet: exit 1]
+$ (the operator, at a terminal) handoff decide W5 --approve
+handoff decide: W5 @ 62b9bfed9be2 is approved already, and not merged; --deny holds it
+$ (the operator, at a terminal) handoff decide W5 --deny
+approved, to merge: W5 @ 62b9bfed9be2, approved under the operator's go-ahead #3 on the APPROVE of reviewer and reviewer-2 (#1, #2) for implementer: not in main yet
+Hold W5 @ 62b9bfed9be2? implementer is told not to merge it. [y/N] y
+posted #7 decision W5 operator → implementer: deny #1
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+  (no such section)
+  [inbox --quiet: exit 0]
+$ handoff wait --for implementer --timeout 2s
+#7 decision W5 operator → implementer: deny #1
+  [exit 0]
+$ (the operator, at a terminal) handoff decide W5 --deny
+handoff decide: nothing on W5 awaits the operator
+$ handoff merged --as implementer W5 main
+handoff merged: nothing on W5 is approved and not merged
+  [exit 2]
+
+## M6. git can't tell
+posted #1 request W6 implementer → reviewer: W6 @ 035b4c4eaf7a
+handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+posted #2 reply W6 reviewer → implementer: APPROVE on #1 @ 035b4c4eaf7a
+handoff: told the operator: W6: reviewer approved #1. Your decision.
+-- the config now names a main branch that isn't there:
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+approved, to merge:
+  W6 @ 035b4c4eaf7a, approved by the operator (#3) on the APPROVE of reviewer (#1): can't tell: git merge-base --is-ancestor 035b4c4eaf7a refs/heads/t: exit status 128; not yet delivered
+  [inbox --quiet: exit 1]
+$ handoff wait --for implementer --timeout 2s
+#2 reply W6 reviewer → implementer: APPROVE on #1 @ 035b4c4eaf7a
+#3 decision W6 operator → implementer: approve #1
+  [exit 0]
+  alerts to the operator: 1
+    m6: W6: reviewer approved #1. Your decision.
+-- the branch is back in the config; the approved commit's branch is deleted and pruned after a squash:
+Squash commit -- not updating HEAD
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+approved, to merge:
+  W6 @ 035b4c4eaf7a, approved by the operator (#3) on the APPROVE of reviewer (#1): can't tell: git merge-base --is-ancestor 035b4c4eaf7a refs/heads/m: exit status 128
+  [inbox --quiet: exit 1]
+$ handoff merged --as implementer W6 main
+posted #4 merged W6 implementer → -: Merged as 1ea9e23ad5ff; approved at 035b4c4eaf7a. (re #1)
+  [exit 0]
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+  (no such section)
+  [inbox --quiet: exit 0]
+
+## M7. The upgrade: approvals before tracking began are history; a request posted before and approved after is tracked
+-- with the older build: W7 approved and not merged, W8 posted and approved by its reviewer, not yet decided
+handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+posted #1 request W7 implementer → reviewer: W7 @ 1ba4a2f659f5
+handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+posted #4 request W8 implementer → reviewer: W8 @ 16fdaee3346d
+  ls: .handoff/tracking.json: No such file or directory
+-- the new build opens the project:
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+  (no such section)
+  [inbox --quiet: exit 0]
+  tracking.json: {"v":1,"since":5}
+$ (the operator, at a terminal) handoff decide W8 --approve
+#4 request W8 implementer → reviewer: W8 @ 16fdaee3346d
+  #5 reply W8 reviewer → implementer: APPROVE on #4 @ 16fdaee3346d
+Approve W8 (#4)? [y/N] y
+posted #6 decision W8 operator → implementer: approve #4
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+approved, to merge:
+  W8 @ 16fdaee3346d, approved by the operator (#6) on the APPROVE of reviewer (#4): not in main yet; not yet delivered
+  [inbox --quiet: exit 1]
+-- the older build still reads the record, with a hold and a merged entry in it:
+$ …/handoff inbox --for implementer --quiet
+  [exit 0]
+#7 decision W8
+from: operator → implementer
+ts: 2026-11-23T01:09:21Z
+
+## M8. Approved and not merged, then the requester posts again on the item
+posted #1 request W9 implementer → reviewer: W9 @ d793dbbc0349
+handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+posted #2 reply W9 reviewer → implementer: APPROVE on #1 @ d793dbbc0349
+handoff: told the operator: W9: reviewer approved #1. Your decision.
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+approved, to merge:
+  W9 @ d793dbbc0349, approved by the operator (#3) on the APPROVE of reviewer (#1): not in main yet; not yet delivered
+posted #4 request W9 implementer → reviewer: W9 @ 0c1673cd4489
+handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+  (no such section)
+  [inbox --quiet: exit 0]
+posted #5 reply W9 reviewer → implementer: CHANGES on #4 @ 0c1673cd4489
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+  (no such section)
+  [inbox --quiet: exit 1]
+
+== 3. probe-m3.sh, probe-m10.sh, probe-m12.sh (Run) ==
+(In M10 the W2 part is void: I gave the wrong ids. M4 covers merged.)
+
+## M3. Three reviewers, no go-ahead: the operator approves one while another's CHANGES stands; then a new round
+posted #1 request W3 implementer → reviewer: W3 @ ffe69ecd8aaf
+posted #2 request W3 implementer → reviewer-2: W3 @ ffe69ecd8aaf
+posted #3 request W3 implementer → reviewer-3: W3 @ ffe69ecd8aaf
+posted #4 reply W3 reviewer → implementer: APPROVE on #1 @ ffe69ecd8aaf
+handoff: told the operator: W3: reviewer approved #1. Your decision.
+posted #5 reply W3 reviewer-3 → implementer: APPROVE on #3 @ ffe69ecd8aaf
+handoff: told the operator: W3: reviewer-3 approved #3. Your decision.
+posted #6 reply W3 reviewer-2 → implementer: CHANGES on #2 @ ffe69ecd8aaf
+$ (the operator, at a terminal) handoff decide 1 --approve
+#1 request W3 implementer → reviewer: W3 @ ffe69ecd8aaf
+  #4 reply W3 reviewer → implementer: APPROVE on #1 @ ffe69ecd8aaf
+Approve W3 (#1)? [y/N] y
+posted #7 decision W3 operator → implementer: approve #1
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+  (no such section)
+  [inbox --quiet: exit 1]
+-- the fix, as a new round, approved by all three under a go-ahead:
+posted #8 request W3 implementer → reviewer: W3 @ 2f67f7ba7ae5
+posted #9 request W3 implementer → reviewer-2: W3 @ 2f67f7ba7ae5 (supersedes #2)
+posted #10 request W3 implementer → reviewer-3: W3 @ 2f67f7ba7ae5 (supersedes #3)
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+  (no such section)
+  [inbox --quiet: exit 0]
+posted #12 reply W3 reviewer → implementer: APPROVE on #8 @ 2f67f7ba7ae5
+posted #13 reply W3 reviewer-2 → implementer: APPROVE on #9 @ 2f67f7ba7ae5
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+  (no such section)
+  [inbox --quiet: exit 0]
+posted #14 reply W3 reviewer-3 → implementer: APPROVE on #10 @ 2f67f7ba7ae5
+handoff: told the operator: W3: approved under your go-ahead #11, by reviewer, reviewer-2 and reviewer-3 (#8, #9, #10).
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+approved, to merge:
+  W3 @ 2f67f7ba7ae5, approved under the operator's go-ahead #11 on the APPROVE of reviewer, reviewer-2 and reviewer-3 (#8, #9, #10): not in main yet; not yet delivered
+  [inbox --quiet: exit 1]
+$ handoff   (the operator's view)
+You're away (#11, since TIME), with this go-ahead: carry on
+Run handoff back to end it.
+
+Nothing needs your decision.
+
+approved, to merge:
+  W3 @ 2f67f7ba7ae5, approved under the operator's go-ahead #11 on the APPROVE of reviewer, reviewer-2 and reviewer-3 (#8, #9, #10) for implementer: not in main yet; not yet delivered
+-- the old commit is merged by mistake, not the new one:
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+approved, to merge:
+  W3 @ 2f67f7ba7ae5, approved under the operator's go-ahead #11 on the APPROVE of reviewer, reviewer-2 and reviewer-3 (#8, #9, #10): not in main yet; not yet delivered
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+  (no such section)
+  [inbox --quiet: exit 0]
+
+## M10. What show says of held and of recorded work; hold by request id; the hold's note
+posted #1 request W1 implementer → reviewer: W1 @ cb818a3b856c
+posted #2 request W1 implementer → reviewer-2: W1 @ cb818a3b856c
+posted #4 reply W1 reviewer → implementer: APPROVE on #1 @ cb818a3b856c
+posted #5 reply W1 reviewer-2 → implementer: APPROVE on #2 @ cb818a3b856c
+handoff: told the operator: W1: approved under your go-ahead #3, by reviewer and reviewer-2 (#1, #2).
+posted #6 request W2 implementer → reviewer: W2 @ dcbf653d242f
+handoff reply: #7 is not a request
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+approved, to merge:
+  W1 @ cb818a3b856c, approved under the operator's go-ahead #3 on the APPROVE of reviewer and reviewer-2 (#1, #2): not in main yet; not yet delivered
+  [inbox --quiet: exit 1]
+$ (the operator, at a terminal) handoff decide 2 --deny --note wait for the release
+approved, to merge: W1 @ cb818a3b856c, approved under the operator's go-ahead #3 on the APPROVE of reviewer and reviewer-2 (#1, #2) for implementer: not in main yet; not yet delivered
+Hold W1 @ cb818a3b856c? implementer is told not to merge it. [y/N] y
+posted #8 decision W1 operator → implementer: deny #1
+$ handoff show 1 (head)
+#1 request W1
+from: implementer → reviewer
+ts: 2026-11-23T01:11:14Z
+title: W1
+commit: cb818a3b856ce3cce61c31f2d306b419d5961875
+base: 5466391ead016fac46473606f929df2ddd4eaabe
+round: #1, to reviewer and reviewer-2
+state: decided
+standing verdict: APPROVE in #4
+prev: genesis
+---
+body
+$ handoff show 2 (head)
+#2 request W1
+from: implementer → reviewer-2
+ts: 2026-11-23T01:11:14Z
+title: W1
+commit: cb818a3b856ce3cce61c31f2d306b419d5961875
+base: 5466391ead016fac46473606f929df2ddd4eaabe
+round: #1, to reviewer and reviewer-2
+state: decided
+standing verdict: APPROVE in #5
+prev: a411d9a679a7b81d2a81c5fd2776e2f5fa3fd105499acaaa76a7309b7a1b2c38
+---
+body
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+  (no such section)
+  [inbox --quiet: exit 0]
+Squash commit -- not updating HEAD
+$ handoff merged --as implementer 7 HEAD
+handoff merged: #7 is not in anything approved and not merged
+  [exit 2]
+$ handoff show 7 (head)
+#7 back
+from: operator → -
+ts: 2026-11-23T01:11:14Z
+re: #3
+prev: 8edccffaee832ca4ace54f5454de09ab96ed91bb3c670ac50285798781b1475e
+---
+Back.
+-- held work is merged anyway (the hold is a word, not a lock):
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+  (no such section)
+$ handoff (the operator's view)
+Nothing needs your decision.
+
+## M11. The same commit asked again after a hold
+posted #1 request W1 implementer → reviewer: W1 @ c5bc20992816
+posted #2 reply W1 reviewer → implementer: APPROVE on #1 @ c5bc20992816
+handoff: told the operator: W1: reviewer approved #1. Your decision.
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+  (no such section)
+posted #5 request W1 implementer → reviewer: W1 @ c5bc20992816
+posted #6 reply W1 reviewer → implementer: APPROVE on #5 @ c5bc20992816
+handoff: told the operator: W1: reviewer approved #5. Your decision.
+$ (the operator, at a terminal) handoff decide W1 --approve
+#5 request W1 implementer → reviewer: W1 @ c5bc20992816
+  #6 reply W1 reviewer → implementer: APPROVE on #5 @ c5bc20992816
+Approve W1 (#5)? [y/N] y
+posted #7 decision W1 operator → implementer: approve #5
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+approved, to merge:
+  W1 @ c5bc20992816, approved by the operator (#7) on the APPROVE of reviewer (#5): not in main yet; not yet delivered
+  [inbox --quiet: exit 1]
+
+## M12. A round cut after its first request; that request is approved by its reviewer and by the operator
+  [exit 137]
+posted #2 reply W1 reviewer → implementer: APPROVE on #1 @ 50ec117b9882
+handoff: told the operator: W1: reviewer approved #1, but the round #1 to reviewer and reviewer-2 has no request to reviewer-2. Your decision.
+handoff: advisory: head.json is behind the record: it counts 0 lines, the record has 1 that chain on from them (a writer stopped between the record and head.json); `handoff repair` acknowledges it
+$ (the operator, at a terminal) handoff decide 1 --approve
+handoff: advisory: 2026-11-23T01:11:55Z: head.json is behind the record: it counts 0 lines, the record has 1 that chain on from them (a writer stopped between the record and head.json); `handoff repair` acknowledges it
+#1 request W1 implementer → reviewer: W1 @ 50ec117b9882
+  #2 reply W1 reviewer → implementer: APPROVE on #1 @ 50ec117b9882
+  but the round #1 to reviewer and reviewer-2 has no request to reviewer-2
+Approve W1 (#1)? [y/N] y
+posted #3 decision W1 operator → implementer: approve #1
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+approved, to merge:
+  W1 @ 50ec117b9882, approved by the operator (#3) on the APPROVE of reviewer (#1): not in main yet; not yet delivered
+handoff: advisory: 2026-11-23T01:11:55Z: head.json is behind the record: it counts 0 lines, the record has 1 that chain on from them (a writer stopped between the record and head.json); `handoff repair` acknowledges it
+  [inbox --quiet: exit 1]
+$ handoff inbox --for implementer   (all of it)
+handoff: advisory: 2026-11-23T01:11:55Z: head.json is behind the record: it counts 0 lines, the record has 1 that chain on from them (a writer stopped between the record and head.json); `handoff repair` acknowledges it
+inbox for implementer
+
+needs my review:
+  (none)
+
+being reviewed by me:
+  (none)
+
+needs my response:
+  (none)
+
+incomplete, to post again as it was:
+  round #1 on W1, to reviewer and reviewer-2 @ 50ec117b9882: no request to reviewer-2
+
+approved, to merge:
+  W1 @ 50ec117b9882, approved by the operator (#3) on the APPROVE of reviewer (#1): not in main yet; not yet delivered
+
+awaiting the operator:
+  (none)
+
+gone quiet:
+  (none)
+
+== 4. This project's own record (Run) ==
+A scratch clone of this repository (git clone --no-hardlinks, main checked out), with a
+copy of .handoff/channel.jsonl, config.json and head.json, and tracking.json written as
+{"v":1,"since":0}, so that every approval since the start is tracked.
+$ handoff inbox --for implementer      (0.28 s; the record has 467 entries)
+no "approved, to merge" section
+$ handoff
+no "approved, to merge" section, and no "recorded as merged" section
+
+== 5. The once-a-minute check in a listener: probe-m9.sh (Run) ==
+## M9. A listener, with nothing new in the record: merged at 10 s, quiet_after 65 s
+posted #1 request W1 implementer → reviewer: W1 @ 61f9c24c75ca
+posted #2 reply W1 reviewer → implementer: APPROVE on #1 @ 61f9c24c75ca
+handoff: told the operator: W1: reviewer approved #1. Your decision.
+-- merged at 10 s
+what the listener printed:
+  [exit 3]
+  alerts to the operator: 1
+    m9a: W1: reviewer approved #1. Your decision.
+
+## M9b. The same, not merged: the alert comes at 65 s
+posted #1 request W1 implementer → reviewer: W1 @ c581c4a78a6d
+posted #2 reply W1 reviewer → implementer: APPROVE on #1 @ c581c4a78a6d
+handoff: told the operator: W1: reviewer approved #1. Your decision.
+what the listener printed:
+  handoff: told the operator: W1: implementer hasn't merged c581c4a78a6d, approved by the operator (#3) on the APPROVE of reviewer (#1) (1 min)
+  [exit 3]
+  alerts to the operator: 2
+    m9b: W1: reviewer approved #1. Your decision.
+    m9b: W1: implementer hasn't merged c581c4a78a6d, approved by the operator (#3) on the APPROVE of reviewer (#1) (1 min)
+
+== 6. The full suite (Run) ==
+$ go test ./... -count=1 -race -timeout 40m      (the worktree was at 6a918e8 and clean when it ended; my probes ran beside it)
+ok  	github.com/dre4success/handoff/cmd/handoff	974.929s
+ok  	github.com/dre4success/handoff/internal/awake	2.016s
+ok  	github.com/dre4success/handoff/internal/gitx	1.514s
+ok  	github.com/dre4success/handoff/internal/notify	2.011s
+ok  	github.com/dre4success/handoff/internal/record	9.888s
+ok  	github.com/dre4success/handoff/internal/status	1.697s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	2.841s
+exit 0

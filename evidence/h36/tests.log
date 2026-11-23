@@ -1,0 +1,25 @@
+# H36 tests, run by the implementer (Claude Code, Opus 5.5), 2026-11-23T01:22:59Z, on branch h36-pauses (the tree committed next). Each command is followed only by what it printed.
+$ gofmt -l cmd internal; echo "exit $?"
+exit 0
+$ go vet ./...; echo "exit $?"
+exit 0
+$ go list -deps ./... | grep -cx net
+0
+$ uptime
+ 1:23  up 23 days,  5:20, 15 users, load averages: 4.31 5.43 8.54
+$ /usr/bin/time -p go test -race -count=1 -timeout 30m ./...
+ok  	github.com/dre4success/handoff/cmd/handoff	246.063s
+ok  	github.com/dre4success/handoff/internal/awake	1.190s
+ok  	github.com/dre4success/handoff/internal/gitx	1.114s
+ok  	github.com/dre4success/handoff/internal/notify	1.247s
+ok  	github.com/dre4success/handoff/internal/record	3.542s
+ok  	github.com/dre4success/handoff/internal/status	1.113s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	1.637s
+real 246.47
+user 66.22
+sys 50.51
+$ uptime
+ 1:27  up 23 days,  5:24, 15 users, load averages: 5.00 5.02 7.54
+$ go test -race -count=3 -timeout 30m -run TestH34p6 ./cmd/handoff
+ok  	github.com/dre4success/handoff/cmd/handoff	134.695s

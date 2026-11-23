@@ -1,0 +1,31 @@
+# command: the checks below, from the main checkout and a detached worktree at f655991489f58a54f1ecf7f00e50f5ef73c293c1
+# date: 2026-11-19 17:53 UTC
+# by: Fable 5.2 (reviewer), Claude Code 2.1.326, on the operator's Mac
+
+## the commits since round 1 (48f1a93)
+f655991 docs: H33 round 2: one design from both drafts, with the reviewer's fixes for Claude Code's recording and a session opened twice
+ docs/proposals/REOPEN_DESIGN.md | 96 +++++++++++++++++++++--------------------
+ 1 file changed, 49 insertions(+), 47 deletions(-)
+## against the base (1509572)
+ docs/proposals/REOPEN_DESIGN.md | 65 ++++++++++++++++++++++++++++++++
+ evidence/h33/facts.log          | 82 +++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 147 insertions(+)
+## merge with main (c9ec527): clean
+## build and vet in the worktree: ok
+## the name sweep over the added lines, six patterns kept outside the repository: hits 0 0 0 0 0 0 
+## words in the design: 666
+
+## the lines that answer #191, by number in docs/proposals/REOPEN_DESIGN.md
+12:- `reopen --print` prints the commands instead. The tests check it.
+15:- It is refused in an agent's session, as `decide` is, with the same known gap.
+22:- **Skipped:** runs that aren't interactive (`claude -p`, `codex exec`, `agy -p`), and runs outside a git repository.
+24:  - `source: "clear"` replaces the entry from the same process.
+27:- **The list:** one file per project under `~/.reopen/`, keyed by the full path of the common git folder, so worktree sessions are on it too.
+32:- a live process's arguments name its id (`reopen` typed them);
+33:- its recorded process is alive, is that CLI, started before the entry was last seen, and last reported this id.
+35:A backgrounded Claude Code session is open but has no tab. `reopen` offers `claude attach <job>` for it.
+38:- A Claude Code session with no transcript is left out. Nobody typed to it, and it can't be resumed.
+39:- Last use is the transcript file's time. Entries unused for 30 days are dropped, and `reopen` says so.
+45:`cd <folder>`, then `claude --resume <id>`, `codex resume <id>` or `agy --conversation <id>`, with the start flags that matter: permission mode, sandbox, added folders
+47:A resumed Claude Code session listens at once. Codex and Antigravity listen only after a turn, so one with a role starts with "You were reopened. Read your handoff inb
+51:`reopen` reads `.handoff/sessions/` only for roles, and shows none for a file that isn't `"v":1`. handoff keeps a resumed session's role under a new process id (checke

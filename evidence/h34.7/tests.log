@@ -1,0 +1,34 @@
+# H34.7 round 4 tests, run by the implementer (Claude Code, Opus 5.5), 2026-11-22T12:07:27Z, on branch h34.7-rounds (the tree committed next)
+$ gofmt -l cmd internal
+(nothing listed: clean)
+$ go vet ./...
+ok
+$ go list -deps ./... | grep -x net
+(none)
+$ go test -race -count=1 -timeout 30m ./...
+ok  	github.com/dre4success/handoff/cmd/handoff	624.431s
+ok  	github.com/dre4success/handoff/internal/awake	1.292s
+ok  	github.com/dre4success/handoff/internal/gitx	1.207s
+ok  	github.com/dre4success/handoff/internal/notify	1.361s
+ok  	github.com/dre4success/handoff/internal/record	3.593s
+ok  	github.com/dre4success/handoff/internal/status	1.212s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	1.768s
+$ go test -count=1 -run TestH34p7 -v ./cmd/handoff ./internal/status | grep -E "^(--- |ok|FAIL)"
+--- PASS: TestH34p7OnePostIsOneRoundInOneWrite (1.10s)
+--- PASS: TestH34p7GoAheadNeedsTheWholeRound (0.37s)
+--- PASS: TestH34p7ACutRoundApprovesNothingAndTheSamePostCompletesIt (0.65s)
+--- PASS: TestH34p7ANewRoundSupersedesTheOldOneWhole (0.55s)
+--- PASS: TestH34p7ADecisionOnACutRoundKeepsItsBarrier (0.50s)
+--- PASS: TestH34p7ADenialShrinksNoPanel (0.62s)
+--- PASS: TestH34p7TheSamePostAfterApprovalWritesNothing (0.95s)
+--- PASS: TestH34p7CompletingARoundTakesItsOwnTemplate (0.46s)
+--- PASS: TestH34p7AKeyGuardsARoundAsItDoesARequest (0.55s)
+--- PASS: TestH34p7ACutRoundIsOwedAndSaysSo (3.34s)
+--- PASS: TestH34p7NoRoundWhileAnOlderListenerRuns (0.34s)
+--- PASS: TestH34p7ARoundKeepsItsMappingAcrossADecision (0.45s)
+--- PASS: TestH34p7ARoundsKeyCoversEveryPanel (0.34s)
+--- PASS: TestH34p7TheOperatorsWaitAndKeysThatShareAPrefix (0.49s)
+ok  	github.com/dre4success/handoff/cmd/handoff	11.177s
+--- PASS: TestH34p7ABrokenRoundBlocksAndSaysSo (0.00s)
+ok  	github.com/dre4success/handoff/internal/status	0.186s

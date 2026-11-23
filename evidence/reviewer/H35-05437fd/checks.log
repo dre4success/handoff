@@ -1,0 +1,33 @@
+H35 design draft, request #651, commit 05437fdb32ef8094ed255c8a827f6b9a1046c264 (base 8ea438b)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session).
+A design, read with: git show 05437fd:docs/proposals/H35_DESIGN.md (94 lines). No code.
+
+Verdict: CHANGES.
+
+== 1. The commit changes only the design (Run) ==
+$ git show 05437fd --stat | tail -2
+ docs/proposals/H35_DESIGN.md | 94 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 94 insertions(+)
+
+== 2. How long each role went between its own entries tonight (Run) ==
+From .handoff/channel.jsonl, entries from 2026-11-22T11:50Z on, by `from`; the gaps between
+one entry of a role and its next, in minutes. (The 388 to 484 minute gaps are the pause for
+the usage limit, 13:46 to 20:54.)
+$ python3 (inline; it reads the record and prints the three longest gaps a role)
+implementer: 428 min (#382 13:46 to #401 20:54), 69 min (#436 22:01 to #443 23:10), 65 min (#454 23:58 to #461 01:03)
+reviewer:    388 min (#386 13:57 to #396 20:26), 50 min (#460 00:13 to #464 01:04), 38 min (#442 22:32 to #446 23:11)
+reviewer-2:  484 min (#364 12:19 to #387 20:23), 67 min (#440 22:03 to #447 23:11), 63 min (#458 00:00 to #465 01:04)
+reviewer-3:  425 min (#385 13:48 to #406 20:54), 64 min (#441 22:07 to #448 23:11), 58 min (#459 00:05 to #466 01:04)
+reviewer-3's last entry: 02:19.
+The implementer's 69 minutes were its work on H34.6 round 7, with two CHANGES (#441, #442)
+waiting for it throughout; handoff told the operator "implementer hasn't answered the
+CHANGES on #443 (30 min)" in that stretch. Its 65 minutes were its work on H34.1.
+What the record can't show: whether its session ran a handoff read (inbox, show) in between.
+
+== 3. Source facts cited ==
+- H34 design, part 2 (docs/proposals/H34_DESIGN.md:87): a permission prompt is "honest but
+  not exact, so H35 must not take it alone as cause for a takeover."
+- One listener a role: wait.Listen takes <role>'s one lock (internal/wait/presence.go:50),
+  and a second listener is refused (exit 4; ../H34.8-2759963/checks.log, X2).
+- `handoff role <role>` takes a role from its holder today, for any session that runs it:
+  roles are declared, not authenticated (spec §9; row 107 (e)).

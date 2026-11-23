@@ -1,0 +1,248 @@
+H35.2 round 4, request #890, commit 9764e262b6e8ab4ab34a9cd960932035566977f7 (base 741cc66, in main)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session 79360cea, a fork of the session
+that reviewed rounds 1 and 2; I did not review round 3, which this round replaces).
+The commit was built in a temporary worktree (git worktree add --detach), removed after.
+Every probe ran in a new scratch git project with HANDOFF_TEST_NOTIFY set and the session
+variables unset. Sessions are simulated: CLAUDE_CODE_SESSION_ID with CLAUDE_PID (the pid of
+a sleep, killed to end "the process"). quiet_after is 4 s in the scratch configs.
+
+Verdict: APPROVE. The bar, as the request gives the operator's rule: block only on a finding
+that can lose work, or leave two sessions acting as one seat.
+
+== 1. Build, vet, format, dependencies (Run) ==
+$ go build -o handoff ./cmd/handoff && go vet ./... && gofmt -l cmd internal
+(no output)
+$ go list -deps ./... | grep -c '^net$'
+0
+$ git diff --check 741cc66 9764e26
+(no output)
+
+== 2. The full suite (Run) ==
+$ uptime; /usr/bin/time -p go test ./... -count=1 -race      (no -timeout; the worktree was at 9764e26 and clean when it ended)
+12:07  up 23 days, 16:04, 7 users, load averages: 2.10 2.81 3.28
+ok  	github.com/dre4success/handoff/cmd/handoff	329.636s
+ok  	github.com/dre4success/handoff/internal/awake	1.378s
+ok  	github.com/dre4success/handoff/internal/gitx	1.302s
+ok  	github.com/dre4success/handoff/internal/notify	1.458s
+ok  	github.com/dre4success/handoff/internal/record	3.958s
+ok  	github.com/dre4success/handoff/internal/status	1.309s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	2.642s
+real 331.76
+user 86.72
+sys 72.91
+exit 0
+
+== 3. The spare takes a seat with handoff role: probe-h.sh (Run) ==
+
+## P1. A silent reviewer, alive: the spare is woken and takes the seat
+posted #3 request W1 implementer → reviewer: W1 @ edd3ee2ce39a
+$ (sp, the spare) handoff wait --timeout 2s
+reviewer's seat is stuck: nothing has been heard from it for N seconds. #3 waits for it. Take it with `handoff role reviewer`: the operator's cover is their word for it.
+  [exit 0]
+  (the old reviewer's session comes to life: its own wait starts, and takes what waited)
+  the old reviewer's wait: #2 fyi - operator → reviewer: carry on (re #1) | exit 0
+$ (sp, the spare) handoff role reviewer
+You are now reviewer in p1. Another session had reviewer; it has no role now.
+  the old reviewer's second wait, running when the seat moved: handoff wait: you no longer hold reviewer: the operator gave it to session sp at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>|exit 2|
+  session rv : role - | lost reviewer to sp
+  session sp : role reviewer 
+  alerts to the operator that name the spare: 1
+    p1: Under your go-ahead #1, the spare took reviewer, which was stuck. Its old session can't act as reviewer now. No spare is left.
+$ (rv, the old session) handoff claim 3
+handoff claim: you no longer hold reviewer: the operator gave it to session sp at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>
+$ (rv, the old session) handoff reply 3 --verdict APPROVE
+handoff reply: you no longer hold reviewer: the operator gave it to session sp at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>
+$ (sp, now reviewer) handoff inbox   (needs my review)
+  #3 request W1 implementer → reviewer: W1 @ edd3ee2ce39a
+$ (sp, now reviewer) handoff claim 3; handoff reply 3 --verdict APPROVE
+posted #4 claim W1 reviewer → -: claimed #3
+posted #5 reply W1 reviewer → implementer: APPROVE on #3 @ edd3ee2ce39a
+handoff: told the operator: W1: approved under your go-ahead #1, by reviewer (#3).
+$ handoff   (the "sessions" part)
+sessions:
+  cover: the spare your go-ahead #1 names is no longer the spare, so no seat is covered. To cover with the spare there is now, run handoff away again
+
+## P2. The old reviewer's reply is held after its role was resolved; the spare takes the seat; the reply is released
+posted #3 request W1 implementer → reviewer: W1 @ babfb66529cc
+  (the old reviewer's reply is held, its role already resolved)
+$ (sp, the spare) handoff role reviewer
+You are now reviewer in p2. Another session had reviewer; it has no role now.
+  the old reviewer's reply, after: handoff reply: you no longer hold reviewer: the operator gave it to session sp at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>|exit 2|
+  verdicts in the record on #3: 0
+
+## P3. The implementer's process has ended with a CHANGES owed: the spare takes the implementer seat
+posted #3 request W1 implementer → reviewer: W1 @ babfb66529cc
+$ (sp, the spare) handoff wait --timeout 2s
+implementer's seat is stuck: its session's process has ended. #4 waits for it. Take it with `handoff role implementer`: the operator's cover is their word for it.
+  [exit 0]
+$ (sp, the spare) handoff role implementer
+You are now implementer in p3.
+  alerts to the operator that name the spare: 1
+    p3: Under your go-ahead #1, the spare took implementer, which was stuck. Its old session can't act as implementer now. No spare is left.
+$ (sp, now implementer) handoff inbox   (needs my response)
+  #3 request W1 implementer → reviewer: W1 @ babfb66529cc
+-- the old implementer's session is resumed in a new process:
+$ (im) handoff inbox
+handoff inbox: you no longer hold implementer: the operator gave it to session sp at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>; or give --for <role>
+$ (im) handoff post … --supersedes 3
+handoff post: you no longer hold implementer: the operator gave it to session sp at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>
+
+## P4. handoff role <seat> by the spare when nothing is stuck, and when the operator isn't away
+-- the operator is here:
+$ (sp, the spare) handoff role reviewer-2
+You are now reviewer-2 in p4.
+  alerts to the operator that name the spare: 0
+-- away with cover, no seat stuck:
+$ (sp2, the spare) handoff role reviewer
+You are now reviewer in p4. Another session had reviewer; it has no role now.
+  alerts to the operator that name the spare: 1
+    p4: Under your go-ahead #1, the spare took reviewer, which was stuck. Its old session can't act as reviewer now. No spare is left.
+  session rv : role - | lost reviewer to sp2
+  session sp : role reviewer-2 
+  session sp2 : role reviewer 
+
+== 4. My earlier probes, run again on this commit (Run) ==
+probe-b.sh, probe-c.sh, probe-d.sh, probe-e.sh, probe-g.sh, as in ../H35.2-ea1ec40/. Their
+outcomes (alerts to the operator, posts and away's own lines left out):
+
+--- probe-b.sh
+## H1. The implementer seat (G6 again, with the CHANGES really posted)
+-- the CHANGES has waited past twice quiet_after; the implementer's session is alive, silent, not listening:
+$ (sp, the spare) handoff wait --timeout 2s
+  [exit 3]
+-- and now at a permission prompt:
+$ (sp, the spare) handoff wait --timeout 2s
+  (nothing)
+  [exit 3]
+-- its process ends, but something listens for implementer (my probe's own wait, which took the CHANGES):
+$ (sp, the spare) handoff wait --timeout 2s
+implementer's seat is stuck: its session's process has ended. #5 waits for it. Take it with `handoff role implementer`: the operator's cover is their word for it.
+  [exit 0]
+-- a note has waited past quiet_after for the implementer, whose process has ended:
+$ (sp, the spare) handoff wait --timeout 2s
+  [exit 3]
+## H2. away's two questions, in order (G1 again, with the APPROVE really posted)
+-- no to the first:
+$ (the operator, at a terminal, answering n) handoff away one
+-- yes, then no:
+$ (the operator, at a terminal, answering yn) handoff away two
+-- yes, then yes:
+$ (the operator, at a terminal, answering yy) handoff away three
+## H3. Where every role reviews: silence takes no seat, an exact sign does
+-- b alive and silent past twice quiet_after:
+$ (sp, the spare) handoff wait --timeout 2s
+  [exit 3]
+-- b's process ends:
+$ (sp, the spare) handoff wait --timeout 2s
+b's seat is stuck: its session's process has ended. #3 waits for it. Take it with `handoff role b`: the operator's cover is their word for it.
+  [exit 0]
+## H4. The timer alone: the spare's wait is already running when a seat becomes stuck, and nothing is written meanwhile
+$ (sp, the spare) handoff wait --timeout 100s   (started at once; the request has waited 0 s)
+reviewer's seat is stuck: its session's process has ended. #3 waits for it. Take it with `handoff role reviewer`: the operator's cover is their word for it.
+  [exit 0, 60 s after the request; quiet_after is 4 s and the check runs once a minute]
+## H5. A project with a role already named spare (older build's init), at away
+You are now spare in h5.
+$ (the operator, at a terminal, answering nothing) handoff away one
+--- probe-c.sh
+## J1. The reviewer's process has ended and a request is owed, past quiet_after: stuck only when nothing listens for reviewer
+  listening for reviewer now: yes
+-- while a wait for reviewer runs (it has nothing new to take, so it stays):
+$ (sp, the spare) handoff wait --timeout 2s
+  (nothing)
+  [exit 3]
+  listening for reviewer now: no
+-- that wait gone:
+$ (sp, the spare) handoff wait --timeout 2s
+reviewer's seat is stuck: its session's process has ended. #3 waits for it. Take it with `handoff role reviewer`: the operator's cover is their word for it.
+  [exit 0]
+--- probe-d.sh
+## K1. A reviewer that answered without ever listening (show and reply only), then its process ends
+  reviewer's cursor: none
+$ handoff inbox --for reviewer   (what it still owes)
+needs my review:
+  (none)
+being reviewed by me:
+  (none)
+-- its process has ended; the request it answered is approved under the go-ahead:
+$ (sp, the spare) handoff wait --timeout 2s
+  (nothing)
+  [exit 3]
+--- probe-e.sh
+## L1. The old spare's wait is held at its delivery while the spare goes on by /clear (reviewer-2's #853 point 1)
+  (the old id's wait is held, about to give the wake)
+  wake keys marked sent: 0
+handoff brief: you are the spare in l1. implementer, reviewer and reviewer-2 hand work to each other through handoff, and the operator decides. You hold no work, and nothing is sent to you.
+  the old id's wait, after: handoff wait: you no longer hold spare: this conversation went on in session sp1 at TIME, by /clear. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>|exit 2|
+  wake keys marked sent: 0
+$ (sp1, the spare) handoff wait --timeout 2s
+reviewer's seat is stuck: its session's process has ended. #3 waits for it. Take it with `handoff role reviewer`: the operator's cover is their word for it.
+  [exit 0]
+  wake keys marked sent: 1
+## L2. The same, but the operator gives the spare to another session meanwhile
+  (the old spare's wait is held, about to give the wake)
+You are now the spare in l2. Another session was the spare; it has no role now.
+  the old spare's wait, after: handoff wait: you no longer hold spare: the operator gave it to session other at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>|exit 2|
+  wake keys marked sent: 0
+$ (other, the spare) handoff wait --timeout 2s
+  [exit 3]
+## L3. The wake can't be printed (stdout closed): not counted as given
+$ (sp, the spare) handoff wait --timeout 2s >&-
+  [exit 0] 
+  wake keys marked sent: 1
+$ (sp, the spare) handoff wait --timeout 2s
+  [exit 3]
+  wake keys marked sent: 1
+## L4. Notes: one answered by a reviewer that never listened, and one not answered
+  reviewer's cursor: none
+-- the reviewer answered the note with note --re, never listened, and its process has ended:
+$ (sp, the spare) handoff wait --timeout 2s
+  [exit 3]
+## L5. A fresh permission prompt on old work is no sign
+  !! my probe's setup step failed: S rv 3140 handoff inbox --quiet
+-- the request is 8 s old (twice quiet_after); the prompt is new:
+$ (sp, the spare) handoff wait --timeout 2s
+  [exit 3]
+-- the prompt has stood 8 s:
+$ (sp, the spare) handoff wait --timeout 2s
+reviewer's seat is stuck: its session is at a permission prompt: Claude needs your permission to use Bash, since HH:MM. #3 waits for it. Take it with `handoff role reviewer`: the operator's cover is their word for it.
+  [exit 0]
+## L6. A Claude Code seat marked gone by a sweep (its process ended, then another role was given)
+$ (sp, the spare) handoff wait --timeout 2s
+reviewer's seat is stuck: its session's process has ended. #3 waits for it. Take it with `handoff role reviewer`: the operator's cover is their word for it.
+  [exit 0]
+## L7. What away says of the spare
+-- an Antigravity spare, listening as it should:
+$ (the operator, at a terminal, answering y) handoff away one
+-- the same spare at its cap:
+$ (the operator, at a terminal, answering y) handoff away two
+probe-e.sh:84: command not found: cover
+-- a Claude Code spare at a permission prompt:
+$ (the operator, at a terminal, answering n) handoff away three
+probe-e.sh:87: command not found: cover
+-- a project with a role already named spare:
+$ (the operator, at a terminal, answering nothing) handoff away four
+## L8. The wake by the hooks, as the spare reads it
+$ (sp, Stop hook) handoff hook listen --timeout 2s
+handoff: reviewer's seat is stuck: its session's process has ended. #3 waits for it. Take it with `handoff role reviewer`: the operator's cover is their word for it.
+Listening starts again when your turn ends.
+  [exit 2]
+$ (G, Stop hook, stdin only, executionNum 2) handoff hook listen --timeout 2s
+$ handoff   (the "sessions" part, the spare's process... still there)
+--- probe-g.sh
+## N1. The spare's wait is held at its delivery, about to give the wake; the operator runs back; the wait is released
+  (the wait is held, about to give the wake)
+  wake keys marked sent: 0
+$ (the operator, at a terminal) handoff back
+  the spare's wait, after: exit 3|
+  wake keys marked sent: 0
+
+Read against round 2: L4 is fixed (no wake for a note the reviewer answered), N1 is fixed
+(the wake is dropped once the operator is back, and no marker is left), and the wake now
+ends "Take it with `handoff role <seat>`". Nothing else differs.
+As before: L3 proves nothing (stdout closed by the shell), L5's "setup step failed" is my
+helper misreading an exit code, and L7's "command not found: cover" is my script.
+
+== 5. Not run this round ==
+probe.sh (G1 to G10) and probe-f.sh: the first needs the older build, which I no longer
+have. The suite's own TestH35p2 tests cover those cases.

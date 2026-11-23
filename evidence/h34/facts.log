@@ -1,0 +1,148 @@
+# H34 design: facts checked in the code at main 370f688
+# Run by: the implementer (Claude Code, Opus 5.5), 2026-11-22T06:59:38Z
+
+$ grep -n 'agyContinuations\|tellOperator(fmt' cmd/handoff/hook.go
+127:	if in.Continuations >= agyContinuations {
+131:		a.tellOperator(fmt.Sprintf("handoff can't wake %s's Antigravity session for new work until you type in it: Antigravity lets hooks continue a turn %d times in a row.", role, agyContinuations))
+215:	a.tellOperator(fmt.Sprintf("%s is waiting for your permission: %s", role, firstLine(in.Message)))
+242:// agyContinuations is how many times in a row Antigravity lets Stop hooks
+245:const agyContinuations = 10
+
+$ grep -n 'func (a \*app) holder\|func (a \*app) hasSession\|b.running()' cmd/handoff/session.go
+173:func (a *app) hasSession(role string) bool {
+183:func (a *app) holder(role string) (session string, ok bool) {
+186:		if b.Role == role && b.running() {
+283:			took = took || b.running()
+284:		case !b.running():
+390:	if b.running() {
+
+$ grep -n 'func (a \*app) noSession\|no session has %s now' cmd/handoff/cmds.go
+341:func (a *app) noSession(role string) {
+343:		fmt.Fprintf(a.stderr, "handoff: no session has %s now, so this waits until the operator gives one that role; tell the operator.\n", role)
+
+$ grep -n 'func (s \*Status) Inbox\|r.State == AwaitingOperator\|Decided' internal/status/status.go
+25:	Decided          State = "decided"
+43:func (r *Request) live() bool { return r.State != Superseded && r.State != Decided }
+136:				t.Request.State, t.Request.Decision = Decided, &entries[i]
+163:		r.State, r.GoAhead, r.CoveredAt = Decided, s.Away, at
+184:		if r.State == AwaitingOperator && !seen[r.Entry.Item] {
+295:	if ok && r.State == AwaitingOperator {
+319:func (s *Status) Inbox(role string) Inbox {
+330:		if r.State == AwaitingOperator {
+405:		if r.State == AwaitingOperator {
+
+$ grep -n 'pass := func\|o.Notify(st.Alerts\|cur = e.ID\|e.Kind == "fyi" && e.Session' internal/wait/wait.go
+123:	pass := func(now time.Time) {
+125:			o.Notify(st.Alerts(now, o.Quiet))
+181:				if e.Kind == "fyi" && e.Session != "" && e.Session != o.Session && !slices.Contains(o.Was, e.Session) {
+182:					cur = e.ID
+200:				cur = e.ID
+
+$ grep -n 'unknown role %q' cmd/handoff/session.go
+540:		return 0, fmt.Errorf("unknown role %q; the roles are %s", name, a.roleNames())
+
+$ grep -n '"antigravity": ' cmd/handoff/brief.go
+106:		"antigravity": fmt.Sprintf("don't run `%s wait`. Instead, %s", h, idle),
+
+$ grep -n 'func (a \*app) cmdRoles' cmd/handoff/cmds.go
+176:func (a *app) cmdRoles(args []string) (int, error) {
+
+$ sed -n 100,110p cmd/handoff/session.go
+type binding struct {
+	V       int    `json:"v"`
+	Role    string `json:"role"`
+	Session string `json:"session"`
+	PID     int    `json:"pid,omitempty"`
+	Host    int    `json:"host,omitempty"`
+	Since   string `json:"since"`
+	// Was is the sessions this one went on from, by /background (row 100).
+	Was []string `json:"was,omitempty"`
+}
+
+
+$ handoff show 196 | head -5
+#196 fyi
+from: operator → implementer
+ts: 2026-11-22T06:46:36Z
+session: 809982d8-8c59-4b6c-ae6c-57a658872bd2
+prev: f8bf9265fe5b88862870309dbe19dc11ec5d07f1767e07d401fbe0774ede3e58
+
+# Added for round 2, 2026-11-22T07:04:30Z, the implementer
+
+$ grep -n 'a.noSession(' cmd/handoff/cmds.go
+335:	a.noSession(got.To)
+664:	a.noSession(got.To)
+
+$ grep -n 'func (a \*app) cmdReply\|func (a \*app) cmdPost\|func (a \*app) cmdNote' cmd/handoff/cmds.go
+235:func (a *app) cmdPost(args []string) (int, error) {
+508:func (a *app) cmdReply(args []string) (int, error) {
+587:func (a *app) cmdNote(args []string) (int, error) {
+
+$ grep -n 'func (s \*Status) Owed\|r.State != Open && r.State != Claimed' internal/status/status.go
+354:func (s *Status) Owed(now time.Time, within time.Duration) bool {
+356:		if r.State != Open && r.State != Claimed && r.State != Answered {
+
+$ grep -n 'func (s \*Status) cover\|live := s.liveOn(item)' internal/status/status.go
+152:func (s *Status) cover(item string, at int64) {
+153:	live := s.liveOn(item)
+
+$ sed -n 236,240p cmd/handoff/cmds.go
+	fs := flag.NewFlagSet("post", flag.ContinueOnError)
+	item := fs.String("item", "", "")
+	to := fs.String("to", "", "")
+	ref := fs.String("commit", "", "")
+	title := fs.String("title", "", "")
+
+$ sed -n 48p cmd/handoff/main.go
+  settings claude|codex [--global | --as <role>]   settings that keep a CLI's sessions
+
+$ grep -n 'func (a \*app) roleOf\|given != "" && as != ""' cmd/handoff/main.go
+225:func (a *app) roleOf(as string) (string, bool, error) {
+235:	case given != "" && as != "" && given != as:
+
+$ grep -n 'func (a \*app) bind(\|case b.Role == role:' cmd/handoff/session.go
+265:func (a *app) bind(s session, role string) (took bool, err error) {
+281:		case b.Role == role:
+
+# Added for rounds 3 and 4, 2026-11-22T07:14:07Z, the implementer
+
+$ sed -n 150,155p internal/record/store.go
+
+// AppendAll adds several entries under one exclusive lock, in one write and
+// one sync, so no other entry lands between them, and no reader, who reads
+// under the lock, sees some without the rest. A write cut short by a crash
+// keeps the whole lines before the cut. A cut inside a line leaves a torn
+// tail, as Append's does, and posting stops until repair, which keeps it; a
+
+$ sed -n 68,76p internal/status/status.go
+		e := entries[i]
+		switch e.Kind {
+		case "request":
+			r := &Request{Entry: e, State: Open, Last: e}
+			if old, ok := s.requests[e.Supersedes]; ok && old.live() {
+				old.State, old.SupersededBy = Superseded, e.ID
+			}
+			s.Requests = append(s.Requests, r)
+			s.requests[e.ID] = r
+
+$ sed -n 81,86p internal/status/status.go
+				r.State, r.Last = Claimed, e
+			}
+		case "reply":
+			r, ok := s.requests[e.Re]
+			if !ok || e.From != r.Entry.To || !r.live() {
+				continue // recorded, changes nothing
+
+$ sed -n 33,35p cmd/handoff/settings.go
+	if pos[0] == "antigravity" {
+		// Antigravity gives a hook no way to set what its agent's commands see,
+		// so no role is fixed for its sessions (row 102).
+
+$ grep -n 'func (a \*app) target\|func (a \*app) cmdHome' cmd/handoff/cmds.go
+1092:func (a *app) cmdHome() (int, error) {
+
+$ grep -n 'Roles are declared, not authenticated' docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md
+159:- `decide` requires a terminal. Roles are declared, not authenticated; the record names the caller, and a mismatch between `HANDOFF_ROLE` and `--as` is refused.
+
+$ grep -n 'func (a \*app) lockSessions' cmd/handoff/*.go
+cmd/handoff/session.go:239:func (a *app) lockSessions() (unlock func(), err error) {

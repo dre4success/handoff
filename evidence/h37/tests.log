@@ -1,0 +1,25 @@
+# H37 tests, run by the implementer (Claude Code, Opus 5.5), 2026-11-23T08:55:54Z, on branch h37-all-verdicts at 54f89ca. Each command is followed only by what it printed.
+$ gofmt -l cmd internal; echo "exit $?"
+exit 0
+$ go vet ./...; echo "exit $?"
+exit 0
+$ go list -deps ./... | grep -cx net
+0
+$ go test -race -count=1 -timeout 30m ./...
+ok  	github.com/dre4success/handoff/cmd/handoff	317.567s
+ok  	github.com/dre4success/handoff/internal/awake	1.335s
+ok  	github.com/dre4success/handoff/internal/gitx	1.226s
+ok  	github.com/dre4success/handoff/internal/notify	1.355s
+ok  	github.com/dre4success/handoff/internal/record	5.100s
+ok  	github.com/dre4success/handoff/internal/status	1.245s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	2.972s
+$ go test -count=1 -run TestH37 -v ./cmd/handoff | grep -E "^(--- |    --- |ok|FAIL|    [a-z_]*_test.go:[0-9]*:)"
+--- PASS: TestH37TheBriefSaysToWaitForEveryVerdict (0.51s)
+ok  	github.com/dre4success/handoff/cmd/handoff	0.877s
+$ (a worktree of 22848ec, main, the base, with this verdicts_test.go) go test -count=1 -run TestH37 -v ./cmd/handoff | grep -E "^(--- |    --- |ok|FAIL|    [a-z_]*_test.go:[0-9]*:)"
+    verdicts_test.go:16: the implementer's brief, with two reviewers:
+--- FAIL: TestH37TheBriefSaysToWaitForEveryVerdict (0.38s)
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	0.916s
+FAIL

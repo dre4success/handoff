@@ -28,6 +28,7 @@ func (r *repo) approve(t *testing.T, notify []string, reviewer, req, commit stri
 }
 
 func TestH28AwayApprovesOnceEveryReviewerApproves(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	sent, notify := sink(t)
 	r.as(t, claude("s-impl", cli(t)), "role", "implementer")
@@ -77,7 +78,7 @@ func TestH28AwayApprovesOnceEveryReviewerApproves(t *testing.T) {
 	if home := r.ok(t, ""); !strings.HasPrefix(home, "You're away (#1, since ") || !strings.Contains(home, "), with this go-ahead: Merge when the reviewers approve.\nRun handoff back to end it.\n\nNothing needs your decision.\n") {
 		t.Fatalf("handoff:\n%s", home)
 	}
-	if out, err := r.atTerminal(t, "", nil, "decide", "W1", "--approve"); err == nil || !strings.Contains(out, "nothing on W1 awaits the operator") {
+	if out, err := r.atTerminal(t, "", nil, "decide", "W1", "--approve"); err == nil || !strings.Contains(out, "is approved already, and not merged; --deny holds it") {
 		t.Fatalf("decide W1: %v\n%s", err, out)
 	}
 	b := r.ok(t, "implementer", "brief")
@@ -98,6 +99,7 @@ func TestH28AwayApprovesOnceEveryReviewerApproves(t *testing.T) {
 // approvals at two commits. The go-ahead doesn't cover them, and the
 // operator is told why.
 func TestH28AwayNeedsOneCommit(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	sent, notify := sink(t)
 	// With no session, the go-ahead is still recorded; a session's brief
@@ -125,6 +127,7 @@ func TestH28AwayNeedsOneCommit(t *testing.T) {
 // What is approved already, the go-ahead approves at once; the operator
 // confirms that first, and a no writes nothing.
 func TestH28AwayConfirmsWhatItApprovesNow(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	sent, notify := sink(t)
 	r.as(t, claude("s-impl", cli(t)), "role", "implementer")
@@ -153,7 +156,7 @@ func TestH28AwayConfirmsWhatItApprovesNow(t *testing.T) {
 	if res.code != 2 || !strings.Contains(res.err, "\n  W1 approved under the operator's go-ahead #") || !strings.Contains(res.err, " as it was given: that is the operator's approve\n") {
 		t.Fatalf("the implementer's listener: exit %d\n%s", res.code, res.err)
 	}
-	if out, err := r.atTerminal(t, "", nil, "decide", "W1", "--approve"); err == nil || !strings.Contains(out, "nothing on W1 awaits the operator") {
+	if out, err := r.atTerminal(t, "", nil, "decide", "W1", "--approve"); err == nil || !strings.Contains(out, "is approved already, and not merged; --deny holds it") {
 		t.Fatalf("decide W1: %v\n%s", err, out)
 	}
 }
@@ -161,6 +164,7 @@ func TestH28AwayConfirmsWhatItApprovesNow(t *testing.T) {
 // Back ends the go-ahead and says what it approved. Later, an approval
 // waits for the operator as before.
 func TestH28BackEndsTheGoAhead(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	sent, notify := sink(t)
 	r.as(t, claude("s-impl", cli(t)), "role", "implementer")
@@ -231,6 +235,7 @@ func TestH28AwayAndBackAreTheOperatorsAlone(t *testing.T) {
 // approval, even under "Merge when both reviewers approve." (the
 // reviewer's K1 on H28). away says so as it is given.
 func TestH28OneApprovalIsEnoughForAnItemSentToOne(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	sent, notify := sink(t)
 	r.as(t, claude("s-impl", cli(t)), "role", "implementer")

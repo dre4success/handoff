@@ -1,0 +1,60 @@
+H34.4 round 3, request #632, commit 88d30d087f58270649a4fe0999dac692ef858c04 (base f1d48f6, H34.3 round 6)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session).
+The commit was built in a temporary worktree (git worktree add --detach), removed after.
+Every probe ran in a new scratch git project with HANDOFF_TEST_NOTIFY set and the session
+variables unset.
+
+== 1. Build, vet, format, dependencies (Run) ==
+$ go build -o handoff ./cmd/handoff && go vet ./... && gofmt -l cmd internal
+(no output)
+$ go list -deps ./... | grep -c '^net$'
+0
+$ git diff --check f1d48f6 88d30d0
+(no output)
+
+== 2. Round 2's probes, run again: probe.sh (E1 to E4), probe-e5.sh (E5) (Run) ==
+No line differs from round 2 (../H34.4-c2146c7/checks.log), commit ids, paths and times
+apart. E5's output on this commit:
+
+## E5. fyi and away say when a session that can't take it now gets it
+You are now implementer in e5.
+You are now reviewer in e5.
+You are now reviewer-2 in e5.
+You are now reviewer-3 in e5.
+-- implementer: Antigravity, at its cap. reviewer: never listened. reviewer-2: listening. reviewer-3: at a permission prompt.
+$ (the operator, at a terminal) handoff fyi "hold all merges"
+    told implementer, reviewer, reviewer-2 and reviewer-3 (#1, #2, #3, #4)
+    implementer's session can't be woken; it gets this when you type in it. To reach the role now, give it to another session and send again.
+    reviewer's session isn't listening now; it gets this the next time it listens.
+    reviewer-3's session is at a permission prompt; it gets this once you answer it.
+    handoff: told the operator: implementer can't be woken until you type in its session (Antigravity's 10 wakes used, since 05:06), and work waits for it (#1).
+    handoff: told the operator: reviewer-3 is at a permission prompt: allow Bash, since 05:06, and work waits for it (#4).
+$ (the operator, at a terminal) handoff away "carry on"
+    away (#5): your go-ahead stands until you run handoff back
+    told implementer, reviewer, reviewer-2 and reviewer-3 (#6, #7, #8, #9)
+    implementer's session can't be woken; it gets this when you type in it. To reach the role now, give it to another session and send again.
+    reviewer's session isn't listening now; it gets this the next time it listens.
+    reviewer-3's session is at a permission prompt; it gets this once you answer it.
+    implementer is an Antigravity session: handoff can wake it 10 times before you type in it.
+
+## E4. Usage
+  settings claude|codex|antigravity [--global | --as <role>]   settings that keep a CLI's sessions
+          on duty: --global for every project, else this one; without --as,
+          each session takes the role the operator gives it (Antigravity
+          takes no --as)
+
+== 3. The full suite (Run) ==
+$ uptime; /usr/bin/time -p go test ./... -count=1 -race      (no -timeout; the worktree was at 88d30d0 and clean when it ended)
+ 5:06  up 23 days,  9:03, 15 users, load averages: 4.91 5.37 5.50
+ok  	github.com/dre4success/handoff/cmd/handoff	283.379s
+ok  	github.com/dre4success/handoff/internal/awake	1.282s
+ok  	github.com/dre4success/handoff/internal/gitx	1.211s
+ok  	github.com/dre4success/handoff/internal/notify	1.360s
+ok  	github.com/dre4success/handoff/internal/record	4.105s
+ok  	github.com/dre4success/handoff/internal/status	1.215s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	2.634s
+real 285.35
+user 76.77
+sys 62.30
+exit 0

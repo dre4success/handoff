@@ -1,0 +1,118 @@
+H34.6 round 8, request #452, commit a78c8048d61e3b7779dc0cfda5393fa428dbfc98 (base 2cbcce7)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session).
+The commit was built in a temporary worktree (git worktree add --detach), removed after.
+Every probe ran in a new scratch project with HANDOFF_TEST_NOTIFY set and the session
+variables unset. A session is simulated with CLAUDE_CODE_SESSION_ID and CLAUDE_PID (the
+pid of a sleep); a hook with its JSON on stdin and the same two variables; the operator
+with a pseudo-terminal (atterm_y.py).
+
+== 1. Build, vet, format, dependencies (Run) ==
+$ go build -o handoff ./cmd/handoff && go vet ./... && gofmt -l cmd internal
+(no output)
+$ go list -deps ./... | grep -c '^net$'
+0
+$ git diff --check 4cf3aed a78c804
+(no output)
+$ grep -rn "os.Remove" cmd/handoff/*.go | grep -v _test      (Source: no binding is deleted)
+(no output)
+
+== 2. Source: the locks the new readings take ==
+- holds (session.go:360), on a "lost" reading, takes the sessions' lock (settledMark). It is
+  called from wait.Run's Alive, at the top of each tick (internal/wait/wait.go:159), outside
+  the record's lock. The listener holds its role's presence lock then: presence, then
+  sessions, the same order as everywhere.
+- fyi, away and back read who has each role inside AppendAll, under the record's lock.
+  That reading is the session files and wait.Listening, which tries the presence lock with
+  LOCK_NB (internal/wait/presence.go:96), so it never waits there.
+- tryMoveContinued answers "ambiguous" only at session.go:705, under lockRoles.
+
+== 3. The operator's fyi, away and back: probe-r8.sh (Run) ==
+## F1. fyi, away and back while two sessions listen
+$ (the operator, at a terminal) handoff fyi hello, both
+told implementer and reviewer (#1, #2)
+not told, no session: reviewer-3
+  [took 0.1 s]
+-- what the reviewer's hook said:
+handoff: new for reviewer:
+#2 fyi - operator → reviewer: hello, both
+[exit 2]
+$ (the operator, at a terminal) handoff away going out
+away (#3): your go-ahead stands until you run handoff back
+Under it, an item is approved once every reviewer it was sent to approves the same commit; one approval is enough for an item sent to one reviewer. handoff doesn't read your words: to tell the agents 
+told implementer and reviewer (#4, #5)
+not told, no session: reviewer-3
+handoff: told the operator: Your go-ahead is recorded (#3): going out Until you run handoff back, items are approved without asking you.
+  [took 0.4 s]
+$ (the operator, at a terminal) handoff back
+back (#6): the go-ahead of #3 has ended
+nothing was approved under it
+told implementer and reviewer (#7, #8)
+not told, no session: reviewer-3
+  [took 0.3 s]
+-- what the reviewer's hook said:
+handoff: new for reviewer:
+#5 fyi - operator → reviewer: going out (re #3)
+#8 fyi - operator → reviewer: The operator is back: the go-ahead of #3 has ended. On an APPROVE, wait for the… (re #3)
+[exit 2]
+  #1 fyi to implementer, session I
+  #2 fyi to reviewer, session R
+  #3 away to -, session -
+  #4 fyi to implementer, session I
+  #5 fyi to reviewer, session R
+  #6 back to -, session -
+  #7 fyi to implementer, session I
+  #8 fyi to reviewer, session R
+
+## F2. An fyi sent while a /clear's move is paused between its two writes
+$ (/clear: a new conversation Y; its SessionStart hook pauses 3 s between the move's writes)
+$ (the operator, at a terminal) handoff fyi during the move
+told reviewer (#1)
+not told, no session: implementer, reviewer-3
+  [took 2.0 s]
+handoff brief: you are reviewer in f2. You and implementer, reviewer-3 hand work
+  #1 fyi to reviewer, session Y
+
+## F3. With no session at all, fyi writes nothing
+$ (the operator, at a terminal) handoff fyi anyone?
+handoff fyi: no agent has a session now, so no one was told; nothing written
+  [took 0.1 s]
+  entries in the record: 0
+
+== 4. Every probe of rounds 1 to 7, run again (Run) ==
+probe-388.sh, probe-388m.sh, probe-r4.sh, probe-r4s.sh, probe-r5.sh, probe-r5y.sh, probe-r6.sh:
+no line differs from round 7, times and paths apart (diff of each output: 0 lines).
+../H34.6-458a36b/probe.sh (A to F) and ../H34.6-cd71bcf/probe-hi.sh (H, I): no line of the
+condensed output differs from round 6.
+
+== 5. The start hooks at once, with the suite running beside them (Run) ==
+On round 7, 4cf3aed, probe-r7bg.sh gave 4 of 60 (../H34.6-4cf3aed/checks.log, 3b).
+$ zsh probe-r7bg.sh <dir> <binary> 120
+## R3. /background from a session that holds reviewer: the three hooks at once, 120 times, each from the last
+  120 moves: 0 where a hook did not have the role
+  bindings with a role now: 1; marked cut: 0
+$ zsh probe-r7race.sh <dir> <binary> 60
+## R1. /clear in a process that holds reviewer: brief, listen and brief at once, 60 times
+  60 /clears: 0 where a hook did not have the role
+  bindings with a role now: 1; marked cut: 0
+
+## R2. /clear in a process whose session is marked (lost reviewer to Z): the same three hooks at once, 60 times
+  60 /clears: 0 where the new id was not told it lost the role, or could act
+  bindings with reviewer now: 1 (Z's)
+
+## R3. /background from a session that holds reviewer: the three hooks at once, 60 times, each from the last
+  60 moves: 0 where a hook did not have the role
+  bindings with a role now: 1; marked cut: 0
+$ zsh probe-r6race.sh <dir> <binary> 100
+100 /clears, two SessionStart hooks at once each: 0 where a hook did not get the role
+
+== 6. The full suite (Run) ==
+$ go test ./... -count=1 -race -timeout 40m      (the worktree was at a78c804 and clean when it ended; my probes ran beside it)
+ok  	github.com/dre4success/handoff/cmd/handoff	861.368s
+ok  	github.com/dre4success/handoff/internal/awake	1.347s
+ok  	github.com/dre4success/handoff/internal/gitx	1.253s
+ok  	github.com/dre4success/handoff/internal/notify	1.433s
+ok  	github.com/dre4success/handoff/internal/record	5.626s
+ok  	github.com/dre4success/handoff/internal/status	1.269s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	2.371s
+exit 0

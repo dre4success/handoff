@@ -1,0 +1,94 @@
+# H34.2 round 7 tests, run by the implementer (Claude Code, Opus 5.5), 2026-11-23T04:52:46Z, on branch h34.2-block (the tree committed next). Each command is followed only by what it printed.
+$ gofmt -l cmd internal; echo "exit $?"
+exit 0
+$ go vet ./...; echo "exit $?"
+exit 0
+$ go list -deps ./... | grep -cx net
+0
+$ go test -race -count=1 -timeout 30m ./...
+ok  	github.com/dre4success/handoff/cmd/handoff	273.443s
+ok  	github.com/dre4success/handoff/internal/awake	1.288s
+ok  	github.com/dre4success/handoff/internal/gitx	1.208s
+ok  	github.com/dre4success/handoff/internal/notify	1.370s
+ok  	github.com/dre4success/handoff/internal/record	3.770s
+ok  	github.com/dre4success/handoff/internal/status	1.208s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	1.775s
+$ go test -count=1 -run TestH34p2 -v ./cmd/handoff ./internal/status | grep -E "^(--- |    --- |ok|FAIL)"
+--- PASS: TestH34p2ACommandFencesAReportItNeverSaw (0.63s)
+--- PASS: TestH34p2AnOlderPromptCantReplaceANewer (0.63s)
+--- PASS: TestH34p2ACommandClearsOnlyThePromptItSaw (0.63s)
+--- PASS: TestH34p2APromptsNoticeNamesTheWorkItMarks (0.64s)
+--- PASS: TestH34p2APromptMarksOnlyItsOwnAlert (0.75s)
+--- PASS: TestH34p2ACapBlocksTheSessionUntilItListensAgain (0.76s)
+--- PASS: TestH34p2APermissionPromptClearsOnACommand (0.78s)
+--- PASS: TestH34p2AClearedPromptStillFencesOlderHooks (0.38s)
+--- PASS: TestH34p2APromptsAlertIsSentOnce (0.42s)
+--- PASS: TestH34p2AnyCommandFromTheSessionClearsItsPrompt (0.41s)
+--- PASS: TestH34p2APromptsNoticeMarksOnlyItsOwnBlock (0.45s)
+--- PASS: TestH34p2ABlockIsTheBindingsAndNeverMakesOne (0.34s)
+--- PASS: TestH34p2AnAgentsOwnTaskKeepsTheHookAside (1.54s)
+--- PASS: TestH34p2WhatWaitsForABlockedRole (0.81s)
+    --- PASS: TestH34p2WhatWaitsForABlockedRole/a_note_alone (0.36s)
+    --- PASS: TestH34p2WhatWaitsForABlockedRole/a_note_delivered_before_the_block (0.24s)
+    --- PASS: TestH34p2WhatWaitsForABlockedRole/a_cut_round (0.21s)
+--- PASS: TestH34p2AStaleHookCantBlock (1.67s)
+    --- PASS: TestH34p2AStaleHookCantBlock/the_role_taken_again (0.24s)
+    --- PASS: TestH34p2AStaleHookCantBlock/listened_since (1.23s)
+    --- PASS: TestH34p2AStaleHookCantBlock/a_listener_holds_the_lock (0.20s)
+--- PASS: TestH34p2LastListenedShowsTheTime (3.41s)
+ok  	github.com/dre4success/handoff/cmd/handoff	4.636s
+--- PASS: TestH34p2AnFyiForTheSessionWentOnFromWaits (0.00s)
+ok  	github.com/dre4success/handoff/internal/status	0.283s
+$ (a worktree of 1079641, with this block_test.go) go test -count=1 -run TestH34p2 -v ./cmd/handoff | grep -E "^(--- |    --- |ok|FAIL)"
+--- FAIL: TestH34p2ACapBlocksTheSessionUntilItListensAgain (0.57s)
+--- FAIL: TestH34p2ACommandClearsOnlyThePromptItSaw (0.62s)
+--- FAIL: TestH34p2AnyCommandFromTheSessionClearsItsPrompt (0.63s)
+--- FAIL: TestH34p2ACommandFencesAReportItNeverSaw (0.64s)
+--- PASS: TestH34p2AClearedPromptStillFencesOlderHooks (0.65s)
+--- FAIL: TestH34p2ABlockIsTheBindingsAndNeverMakesOne (0.25s)
+--- FAIL: TestH34p2AnOlderPromptCantReplaceANewer (0.29s)
+--- FAIL: TestH34p2APromptMarksOnlyItsOwnAlert (0.37s)
+--- FAIL: TestH34p2APermissionPromptClearsOnACommand (0.29s)
+--- FAIL: TestH34p2WhatWaitsForABlockedRole (0.76s)
+    --- FAIL: TestH34p2WhatWaitsForABlockedRole/a_note_alone (0.24s)
+    --- FAIL: TestH34p2WhatWaitsForABlockedRole/a_note_delivered_before_the_block (0.28s)
+    --- FAIL: TestH34p2WhatWaitsForABlockedRole/a_cut_round (0.24s)
+--- FAIL: TestH34p2AStaleHookCantBlock (1.65s)
+    --- FAIL: TestH34p2AStaleHookCantBlock/the_role_taken_again (0.22s)
+    --- FAIL: TestH34p2AStaleHookCantBlock/listened_since (1.21s)
+    --- FAIL: TestH34p2AStaleHookCantBlock/a_listener_holds_the_lock (0.21s)
+--- FAIL: TestH34p2LastListenedShowsTheTime (3.31s)
+--- FAIL: TestH34p2AnAgentsOwnTaskKeepsTheHookAside (20.60s)
+--- FAIL: TestH34p2APromptsNoticeNamesTheWorkItMarks (30.59s)
+--- FAIL: TestH34p2APromptsAlertIsSentOnce (30.60s)
+--- FAIL: TestH34p2APromptsNoticeMarksOnlyItsOwnBlock (30.26s)
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	31.581s
+FAIL
+$ (a worktree of a1f5644, round 6, with this block_test.go) go test -count=1 -run TestH34p2 -v ./cmd/handoff | grep -E "^(--- |    --- |ok|FAIL)"
+--- PASS: TestH34p2AnyCommandFromTheSessionClearsItsPrompt (0.66s)
+--- FAIL: TestH34p2ACommandFencesAReportItNeverSaw (0.66s)
+--- PASS: TestH34p2ACommandClearsOnlyThePromptItSaw (0.66s)
+--- PASS: TestH34p2APromptsNoticeNamesTheWorkItMarks (0.69s)
+--- PASS: TestH34p2APromptMarksOnlyItsOwnAlert (0.80s)
+--- PASS: TestH34p2ACapBlocksTheSessionUntilItListensAgain (0.81s)
+--- PASS: TestH34p2AnOlderPromptCantReplaceANewer (0.37s)
+--- FAIL: TestH34p2APromptsAlertIsSentOnce (0.35s)
+--- PASS: TestH34p2APromptsNoticeMarksOnlyItsOwnBlock (0.43s)
+--- PASS: TestH34p2AClearedPromptStillFencesOlderHooks (0.37s)
+--- PASS: TestH34p2ABlockIsTheBindingsAndNeverMakesOne (0.38s)
+--- PASS: TestH34p2WhatWaitsForABlockedRole (1.32s)
+    --- PASS: TestH34p2WhatWaitsForABlockedRole/a_note_alone (0.65s)
+    --- PASS: TestH34p2WhatWaitsForABlockedRole/a_note_delivered_before_the_block (0.39s)
+    --- PASS: TestH34p2WhatWaitsForABlockedRole/a_cut_round (0.28s)
+--- PASS: TestH34p2APermissionPromptClearsOnACommand (0.42s)
+--- PASS: TestH34p2AnAgentsOwnTaskKeepsTheHookAside (1.60s)
+--- PASS: TestH34p2AStaleHookCantBlock (1.69s)
+    --- PASS: TestH34p2AStaleHookCantBlock/the_role_taken_again (0.26s)
+    --- PASS: TestH34p2AStaleHookCantBlock/listened_since (1.24s)
+    --- PASS: TestH34p2AStaleHookCantBlock/a_listener_holds_the_lock (0.19s)
+--- PASS: TestH34p2LastListenedShowsTheTime (3.42s)
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	4.618s
+FAIL

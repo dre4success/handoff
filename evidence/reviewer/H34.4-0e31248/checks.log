@@ -1,0 +1,39 @@
+H34.4 round 4, request #664, commit 0e31248afe133f461eb7a0e84ccbd7b07dc45393 (base c32c9a5, H34.3 round 7)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session).
+The commit was built in a temporary worktree (git worktree add --detach), removed after.
+Every probe ran in a new scratch git project with HANDOFF_TEST_NOTIFY set and the session
+variables unset.
+
+== 1. Build, vet, format, dependencies (Run) ==
+$ go build -o handoff ./cmd/handoff && go vet ./... && gofmt -l cmd internal
+(no output)
+$ go list -deps ./... | grep -c '^net$'
+0
+$ git diff --check c32c9a5 0e31248
+(no output)
+
+== 2. The rebase (Run) ==
+Part 4's code, on round 3's base and on this one, as sorted changed lines:
+$ diff <(git diff f1d48f6 88d30d0 -- cmd internal | grep '^[+-]' | grep -v '^+++\|^---' | sort) \
+       <(git diff c32c9a5 0e31248 -- cmd internal | grep '^[+-]' | grep -v '^+++\|^---' | sort)
+(no output)
+
+== 3. Probes, run again (Run) ==
+probe.sh (E1 to E4) and probe-e5.sh (E5): no line differs from round 3
+(../H34.4-88d30d0/checks.log), commit ids, paths and times apart.
+
+== 4. The full suite (Run) ==
+$ uptime; /usr/bin/time -p go test ./... -count=1 -race      (no -timeout; the worktree was at 0e31248 and clean when it ended; two other suites ran beside it)
+ 5:53  up 23 days,  9:51, 15 users, load averages: 4.09 4.26 4.42
+ok  	github.com/dre4success/handoff/cmd/handoff	284.948s
+ok  	github.com/dre4success/handoff/internal/awake	1.535s
+ok  	github.com/dre4success/handoff/internal/gitx	1.458s
+ok  	github.com/dre4success/handoff/internal/notify	1.620s
+ok  	github.com/dre4success/handoff/internal/record	4.134s
+ok  	github.com/dre4success/handoff/internal/status	1.234s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	2.498s
+real 286.62
+user 80.78
+sys 67.26
+exit 0

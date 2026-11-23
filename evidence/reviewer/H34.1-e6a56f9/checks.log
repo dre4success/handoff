@@ -1,0 +1,217 @@
+H34.1 round 4, request #523, commit e6a56f9ac6741d31f7d9ac3e8e2ce5d2e7a1a421 (base 694df99)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session).
+The commit was built in a temporary worktree (git worktree add --detach), removed after.
+Every probe ran in a new scratch git project with HANDOFF_TEST_NOTIFY set and the session
+variables unset. The operator's commands ran with a pseudo-terminal (atterm_y.py).
+
+Verdict: CHANGES, for U1 and U2 in section 2 (reviewer-2's #528; both reproduce).
+
+== 1. Build, vet, format, dependencies (Run) ==
+$ go build -o handoff ./cmd/handoff && go vet ./... && gofmt -l cmd internal
+(no output)
+$ go list -deps ./... | grep -c '^net$'
+0
+$ git diff --check 694df99 e6a56f9
+(no output)
+
+== 2. Reviewer-2's #528: probe-u.sh (Run) ==
+("told the operator" lines are left out of this output.)
+
+## U1. A round of two; the operator denies the first; a third reviewer is asked alone at the same commit while the second is open; the second and third are approved
+posted #1 request W1 implementer → reviewer: W1 @ 3ba71be42324
+posted #2 request W1 implementer → reviewer-2: W1 @ 3ba71be42324
+posted #3 reply W1 reviewer → implementer: APPROVE on #1 @ 3ba71be42324
+posted #5 request W1 implementer → reviewer-3: W1 @ 3ba71be42324
+posted #6 reply W1 reviewer-2 → implementer: APPROVE on #2 @ 3ba71be42324
+posted #7 reply W1 reviewer-3 → implementer: APPROVE on #5 @ 3ba71be42324
+posted #8 decision W1 operator → implementer: approve #2
+posted #9 decision W1 operator → implementer: approve #5
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+approved, to merge:
+  W1 @ 3ba71be42324, approved by the operator (#8, #9) on the APPROVE of reviewer-2 and reviewer-3 (#2, #5): not in main yet; not yet delivered
+  [inbox --quiet: exit 1]
+
+## U1b. The same without the third reviewer: the round alone, first denied, second approved
+posted #1 request W1 implementer → reviewer: W1 @ 36393fc2a0b5
+posted #2 request W1 implementer → reviewer-2: W1 @ 36393fc2a0b5
+posted #3 reply W1 reviewer → implementer: APPROVE on #1 @ 36393fc2a0b5
+posted #5 reply W1 reviewer-2 → implementer: APPROVE on #2 @ 36393fc2a0b5
+posted #6 decision W1 operator → implementer: approve #2
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+  (no such section)
+  [inbox --quiet: exit 0]
+
+## U2. Held, then asked again as a round of two, one approved and one denied; the held commit reaches main
+posted #1 request W1 implementer → reviewer: W1 @ 36393fc2a0b5
+posted #2 reply W1 reviewer → implementer: APPROVE on #1 @ 36393fc2a0b5
+posted #5 request W1 implementer → reviewer: W1 again @ 36393fc2a0b5
+posted #6 request W1 implementer → reviewer-2: W1 again @ 36393fc2a0b5
+posted #7 reply W1 reviewer → implementer: APPROVE on #5 @ 36393fc2a0b5
+posted #8 reply W1 reviewer-2 → implementer: APPROVE on #6 @ 36393fc2a0b5
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+  (no such section)
+  [inbox --quiet: exit 0]
+  alerts after the merge: 0
+$ handoff (the operator's view)
+Nothing needs your decision.
+
+== 3. Round 3's S1 to S3, run again: probe-s.sh (Run) ==
+S1 and S2 are no longer listed; S1b and S3 as before.
+
+## S1. Two reviewers asked in separate posts at one commit; one asks for changes, the operator approves the other; the fix goes on at another commit
+posted #1 request W1 implementer → reviewer-2: W1 @ 27087a2cb468
+posted #2 request W1 implementer → reviewer: W1 @ 27087a2cb468
+posted #3 reply W1 reviewer-2 → implementer: CHANGES on #1 @ 27087a2cb468
+posted #4 reply W1 reviewer → implementer: APPROVE on #2 @ 27087a2cb468
+handoff: told the operator: W1: reviewer approved #2. Your decision.
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+  (no such section)
+  [inbox --quiet: exit 1]
+-- the fix, to the reviewer who asked for it, at another commit:
+posted #6 request W1 implementer → reviewer-2: W1 @ 7d4ab20644fd (supersedes #1)
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+  (no such section)
+  [inbox --quiet: exit 0]
+  alerts to the operator: 2
+    s1: W1: reviewer approved #2. Your decision.
+
+## S1b. The same, the two posts in the other order
+posted #1 request W1 implementer → reviewer: W1 @ 31f8e1439163
+posted #2 request W1 implementer → reviewer-2: W1 @ 31f8e1439163
+posted #3 reply W1 reviewer-2 → implementer: CHANGES on #2 @ 31f8e1439163
+posted #4 reply W1 reviewer → implementer: APPROVE on #1 @ 31f8e1439163
+handoff: told the operator: W1: reviewer approved #1. Your decision.
+posted #6 request W1 implementer → reviewer-2: W1 @ 6f5873c31fcd (supersedes #2)
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+  (no such section)
+  [inbox --quiet: exit 0]
+
+## S2. Two reviewers asked in separate posts, both approve; the operator approves one, then denies the other
+posted #1 request W1 implementer → reviewer-2: W1 @ 31f8e1439163
+posted #2 request W1 implementer → reviewer: W1 @ 31f8e1439163
+posted #3 reply W1 reviewer-2 → implementer: APPROVE on #1 @ 31f8e1439163
+handoff: told the operator: W1: reviewer-2 approved #1. Your decision.
+posted #4 reply W1 reviewer → implementer: APPROVE on #2 @ 31f8e1439163
+handoff: told the operator: W1: reviewer approved #2. Your decision.
+posted #6 decision W1 operator → implementer: deny #1
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+  (no such section)
+  [inbox --quiet: exit 0]
+
+## S3. The same two posts as one round, for comparison
+posted #1 request W1 implementer → reviewer-2: W1 @ d509e77d0b44
+posted #2 request W1 implementer → reviewer: W1 @ d509e77d0b44
+posted #3 reply W1 reviewer-2 → implementer: APPROVE on #1 @ d509e77d0b44
+handoff: told the operator: W1: reviewer-2 approved #1. Your decision.
+posted #4 reply W1 reviewer → implementer: APPROVE on #2 @ d509e77d0b44
+handoff: told the operator: W1: reviewer approved #2. Your decision.
+posted #6 decision W1 operator → implementer: deny #1
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+  (no such section)
+  [inbox --quiet: exit 0]
+
+== 4. New for round 4: probe-t.sh (Run) ==
+
+## T1. Separate posts, each approved by the operator: one line, both reviewers
+posted #1 request W1 implementer → reviewer-2: W1 @ 6c8ea874c241
+posted #2 request W1 implementer → reviewer: W1 @ 6c8ea874c241
+posted #3 reply W1 reviewer-2 → implementer: APPROVE on #1 @ 6c8ea874c241
+handoff: told the operator: W1: reviewer-2 approved #1. Your decision.
+posted #4 reply W1 reviewer → implementer: APPROVE on #2 @ 6c8ea874c241
+handoff: told the operator: W1: reviewer approved #2. Your decision.
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+  (no such section)
+  [inbox --quiet: exit 0]
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+approved, to merge:
+  W1 @ 6c8ea874c241, approved by the operator (#6, #5) on the APPROVE of reviewer-2 and reviewer (#1, #2): not in main yet; not yet delivered
+  [inbox --quiet: exit 1]
+
+## T2. Separate posts approved together under a go-ahead: one line, both reviewers, one alert
+posted #1 request W1 implementer → reviewer-2: W1 @ b9900bdd8a64
+posted #2 request W1 implementer → reviewer: W1 @ b9900bdd8a64
+posted #4 reply W1 reviewer-2 → implementer: APPROVE on #1 @ b9900bdd8a64
+posted #5 reply W1 reviewer → implementer: APPROVE on #2 @ b9900bdd8a64
+handoff: told the operator: W1: approved under your go-ahead #3, by reviewer-2 and reviewer (#1, #2).
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+approved, to merge:
+  W1 @ b9900bdd8a64, approved under the operator's go-ahead #3 on the APPROVE of reviewer-2 and reviewer (#1, #2): not in main yet; not yet delivered
+  [inbox --quiet: exit 1]
+  alerts to the operator: 3
+    t2: Your go-ahead is recorded (#3): carry on Until you run handoff back, items are approved without asking you.
+    t2: W1: approved under your go-ahead #3, by reviewer-2 and reviewer (#1, #2).
+    t2: W1: implementer hasn't merged b9900bdd8a64, approved under the operator's go-ahead #3 on the APPROVE of reviewer-2 and reviewer (#1, #2) (3 s)
+
+## T3. A second reviewer asked after the first request was approved, at the same commit
+posted #1 request W1 implementer → reviewer: W1 @ 98f1e9b26bb3
+posted #2 reply W1 reviewer → implementer: APPROVE on #1 @ 98f1e9b26bb3
+handoff: told the operator: W1: reviewer approved #1. Your decision.
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+approved, to merge:
+  W1 @ 98f1e9b26bb3, approved by the operator (#3) on the APPROVE of reviewer (#1): not in main yet; not yet delivered
+posted #4 request W1 implementer → reviewer-2: W1 @ 98f1e9b26bb3
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+  (no such section)
+  [inbox --quiet: exit 0]
+posted #5 reply W1 reviewer-2 → implementer: CHANGES on #4 @ 98f1e9b26bb3
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+  (no such section)
+  [inbox --quiet: exit 1]
+-- reviewer-2's request is withdrawn by a fix at another commit:
+posted #6 request W1 implementer → reviewer-2: W1 @ 13deb54f0ff6 (supersedes #4)
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+  (no such section)
+  [inbox --quiet: exit 0]
+
+## T4. Denied, then asked again at the same commit and approved
+posted #1 request W1 implementer → reviewer: W1 @ 8fba4076a6d3
+posted #2 reply W1 reviewer → implementer: APPROVE on #1 @ 8fba4076a6d3
+handoff: told the operator: W1: reviewer approved #1. Your decision.
+posted #4 request W1 implementer → reviewer: W1 again @ 8fba4076a6d3
+posted #5 reply W1 reviewer → implementer: APPROVE on #4 @ 8fba4076a6d3
+handoff: told the operator: W1: reviewer approved #4. Your decision.
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+approved, to merge:
+  W1 @ 8fba4076a6d3, approved by the operator (#6) on the APPROVE of reviewer (#4): not in main yet; not yet delivered
+  [inbox --quiet: exit 1]
+
+## T5. Hold one of two approvals on separate items; merged on the other
+posted #1 request W1 implementer → reviewer: W1 @ 8fba4076a6d3
+posted #2 request W2 implementer → reviewer: W2 @ 2dcb3903aafa
+posted #4 reply W1 reviewer → implementer: APPROVE on #1 @ 8fba4076a6d3
+handoff: told the operator: W1: approved under your go-ahead #3, by reviewer (#1).
+posted #5 reply W2 reviewer → implementer: APPROVE on #2 @ 2dcb3903aafa
+handoff: told the operator: W2: approved under your go-ahead #3, by reviewer (#2).
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+approved, to merge:
+  W1 @ 8fba4076a6d3, approved under the operator's go-ahead #3 on the APPROVE of reviewer (#1): not in main yet; not yet delivered
+  W2 @ 2dcb3903aafa, approved under the operator's go-ahead #3 on the APPROVE of reviewer (#2): not in main yet; not yet delivered
+  [inbox --quiet: exit 1]
+$ handoff inbox --for implementer   (the "approved, to merge" part)
+  (no such section)
+  [inbox --quiet: exit 0]
+
+== 5. Every earlier probe, run again (Run) ==
+probe.sh (M1 to M8), probe-m3.sh, probe-m10.sh, probe-m12.sh, probe-n.sh (N1 to N4),
+probe-p.sh (P1, P3): no line differs from round 3, commit ids, hashes and times apart.
+
+== 6. This project's own record (Run) ==
+A scratch clone of this repository, with a copy of the record (528 entries) and
+tracking.json written as {"v":1,"since":0}: handoff inbox --for implementer and handoff
+list nothing approved to merge, recorded as merged, or held; no alert raised.
+
+== 7. The full suite (Run) ==
+$ uptime; /usr/bin/time -p go test ./... -count=1 -race      (no -timeout; the worktree was at e6a56f9 and clean when it ended)
+ 2:43  up 23 days,  6:41, 15 users, load averages: 8.78 9.46 7.15
+ok  	github.com/dre4success/handoff/cmd/handoff	258.984s
+ok  	github.com/dre4success/handoff/internal/awake	1.287s
+ok  	github.com/dre4success/handoff/internal/gitx	1.216s
+ok  	github.com/dre4success/handoff/internal/notify	1.287s
+ok  	github.com/dre4success/handoff/internal/record	3.816s
+ok  	github.com/dre4success/handoff/internal/status	1.221s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	1.617s
+real 260.56
+user 71.76
+sys 55.93
+exit 0

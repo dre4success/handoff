@@ -1,0 +1,134 @@
+# H35.2 round 4 tests, run by the implementer (Claude Code, Opus 5.5), 2026-11-23T11:54:03Z, on branch h35.2-stuck at c3c9c0a. Each command is followed only by what it printed.
+$ gofmt -l cmd internal; echo "exit $?"
+exit 0
+$ go vet ./...; echo "exit $?"
+exit 0
+$ go list -deps ./... | grep -cx net
+0
+$ go test -race -count=1 -timeout 30m ./...
+ok  	github.com/dre4success/handoff/cmd/handoff	327.178s
+ok  	github.com/dre4success/handoff/internal/awake	1.309s
+ok  	github.com/dre4success/handoff/internal/gitx	1.225s
+ok  	github.com/dre4success/handoff/internal/notify	1.389s
+ok  	github.com/dre4success/handoff/internal/record	3.845s
+ok  	github.com/dre4success/handoff/internal/status	1.234s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	2.560s
+$ go test -count=1 -run TestH35p2 -v ./cmd/handoff ./internal/wait ./internal/status | grep -E "^(--- |    --- |ok|FAIL|    [a-z_]*_test.go:[0-9]*:|[a-z/_]*_test.go:[0-9]*:[0-9]*:)"
+--- PASS: TestH35p2OnlyTheSessionsOwnProcessEnds (0.00s)
+--- PASS: TestH35p2HandoffSaysWhenCoverEnds (0.98s)
+--- PASS: TestH35p2CoverDeclinedNeedsNoSameSpare (0.57s)
+--- PASS: TestH35p2HandoffSaysWhenTheSpareIsntRunning (0.28s)
+--- PASS: TestH35p2TheHookGivesTheWakeAsItIs (3.16s)
+--- PASS: TestH35p2TheWakeSaysWhatWaitsNow (3.21s)
+--- PASS: TestH35p2TheSpareTakesTheSeatWithRole (3.28s)
+--- PASS: TestH35p2TheWakeIsTheCurrentSparesOnly (3.28s)
+--- PASS: TestH35p2TheSpareAfterClearIsStillWoken (2.52s)
+--- PASS: TestH35p2AwayAsksAboutCover (0.00s)
+    --- PASS: TestH35p2AwayAsksAboutCover/no_spare (0.61s)
+    --- PASS: TestH35p2AwayAsksAboutCover/no (0.36s)
+    --- PASS: TestH35p2AwayAsksAboutCover/after_the_go-ahead's_question (0.44s)
+    --- PASS: TestH35p2AwayAsksAboutCover/yes (0.32s)
+    --- PASS: TestH35p2AwayAsksAboutCover/the_spare_changed_while_asked (0.37s)
+--- PASS: TestH35p2ABrokenRecordKeepsTheWake (4.17s)
+--- PASS: TestH35p2AFreshPromptIsNoSign (5.72s)
+--- PASS: TestH35p2AwaySaysWhatTheSpareCanDo (0.00s)
+    --- PASS: TestH35p2AwaySaysWhatTheSpareCanDo/an_Antigravity_spare_at_its_cap (0.23s)
+    --- PASS: TestH35p2AwaySaysWhatTheSpareCanDo/a_project_with_a_role_named_spare (0.18s)
+--- PASS: TestH35p2BackDropsAWakeUnderWay (7.22s)
+--- PASS: TestH35p2AReviewDoneWithIsntWork (4.65s)
+--- PASS: TestH35p2SilenceTakesOnlyAReviewerSeat (0.00s)
+    --- PASS: TestH35p2SilenceTakesOnlyAReviewerSeat/before_twice_quiet_after (2.46s)
+    --- PASS: TestH35p2SilenceTakesOnlyAReviewerSeat/a_reviewer,_silent (3.55s)
+    --- PASS: TestH35p2SilenceTakesOnlyAReviewerSeat/a_spare_given_after_away (4.62s)
+    --- PASS: TestH35p2SilenceTakesOnlyAReviewerSeat/the_implementer,_silent (5.53s)
+--- PASS: TestH35p2TheSpareIsWokenOnceForAStuckSeat (6.71s)
+ok  	github.com/dre4success/handoff/cmd/handoff	10.378s
+--- PASS: TestH35p2WakeEndsTheWaitWithItsText (0.01s)
+--- PASS: TestH35p2AWakeIsFencedAndSentOnlyOncePrinted (0.01s)
+--- PASS: TestH35p2AStaleWakeIsDropped (0.01s)
+ok  	github.com/dre4success/handoff/internal/wait	0.206s
+--- PASS: TestH35p2WaitingIsWhatWaitsForCounts (0.00s)
+--- PASS: TestH35p2OwedByIsWhatTheSeatOwesNow (0.00s)
+--- PASS: TestH35p2ABrokenRoundIsOwedByNoOne (0.00s)
+--- PASS: TestH35p2ANoteAnsweredIsntOwed (0.00s)
+--- PASS: TestH35p2ANoteAnsweringAVerdictIsItsRequests (0.00s)
+ok  	github.com/dre4success/handoff/internal/status	0.178s
+$ (a worktree of 741cc66, H35.1 round 3, the base, with this stuck_test.go, wake_test.go and status_test.go) go test -count=1 -run TestH35p2 -v ./cmd/handoff ./internal/wait ./internal/status | grep -E "^(--- |    --- |ok|FAIL|    [a-z_]*_test.go:[0-9]*:|[a-z/_]*_test.go:[0-9]*:[0-9]*:)"
+internal/wait/wake_test.go:29:152: unknown field Wake in struct literal of type Options
+internal/wait/wake_test.go:34:162: unknown field Wake in struct literal of type Options
+internal/wait/wake_test.go:55:147: unknown field Wake in struct literal of type Options
+internal/wait/wake_test.go:60:138: unknown field Wake in struct literal of type Options
+internal/wait/wake_test.go:72:78: undefined: ErrStale
+internal/wait/wake_test.go:74:151: unknown field Wake in struct literal of type Options
+internal/status/status_test.go:833:9: s.Waiting undefined (type *Status has no field or method Waiting)
+internal/status/status_test.go:844:12: s.Waiting undefined (type *Status has no field or method Waiting)
+internal/status/status_test.go:857:29: Compute(b.entries).OwedBy undefined (type *Status has no field or method OwedBy)
+internal/status/status_test.go:862:12: s.OwedBy undefined (type *Status has no field or method OwedBy)
+internal/status/status_test.go:865:12: s.OwedBy undefined (type *Status has no field or method OwedBy)
+internal/status/status_test.go:882:13: s.OwedBy undefined (type *Status has no field or method OwedBy)
+internal/status/status_test.go:893:29: Compute(b.entries).OwedBy undefined (type *Status has no field or method OwedBy)
+internal/status/status_test.go:897:29: Compute(b.entries).OwedBy undefined (type *Status has no field or method OwedBy)
+internal/status/status_test.go:909:29: Compute(b.entries).OwedBy undefined (type *Status has no field or method OwedBy)
+internal/status/status_test.go:913:29: Compute(b.entries).OwedBy undefined (type *Status has no field or method OwedBy)
+internal/status/status_test.go:913:29: too many errors
+cmd/handoff/stuck_test.go:40:219: r.lastAway(t).Cover undefined (type record.Entry has no field or method Cover)
+cmd/handoff/stuck_test.go:49:22: r.lastAway(t).Cover undefined (type record.Entry has no field or method Cover)
+cmd/handoff/stuck_test.go:59:129: r.lastAway(t).Cover undefined (type record.Entry has no field or method Cover)
+cmd/handoff/stuck_test.go:71:129: r.lastAway(t).Cover undefined (type record.Entry has no field or method Cover)
+cmd/handoff/stuck_test.go:318:17: c.b.ended undefined (type binding has no field or method ended)
+cmd/handoff/stuck_test.go:436:82: r.lastAway(t).Cover undefined (type record.Entry has no field or method Cover)
+FAIL	github.com/dre4success/handoff/cmd/handoff [build failed]
+FAIL	github.com/dre4success/handoff/internal/wait [build failed]
+FAIL	github.com/dre4success/handoff/internal/status [build failed]
+FAIL
+$ (a worktree of c8c7994, round 3, with this stuck_test.go, wake_test.go and status_test.go) go test -count=1 -run TestH35p2 -v ./cmd/handoff ./internal/wait ./internal/status | grep -E "^(--- |    --- |ok|FAIL|    [a-z_]*_test.go:[0-9]*:|[a-z/_]*_test.go:[0-9]*:[0-9]*:)"
+internal/wait/wake_test.go:29:158: cannot use wake (variable of type func(*status.Status) (string, func(func(string) error) error)) as func(*status.Status) (text string, deliver func(print func() error) error) value in struct literal
+internal/wait/wake_test.go:34:168: cannot use wake (variable of type func(*status.Status) (string, func(func(string) error) error)) as func(*status.Status) (text string, deliver func(print func() error) error) value in struct literal
+internal/wait/wake_test.go:55:153: cannot use wake (variable of type func(*status.Status) (string, func(func(string) error) error)) as func(*status.Status) (text string, deliver func(print func() error) error) value in struct literal
+internal/wait/wake_test.go:60:144: cannot use wake (variable of type func(*status.Status) (string, func(func(string) error) error)) as func(*status.Status) (text string, deliver func(print func() error) error) value in struct literal
+internal/wait/wake_test.go:74:157: cannot use stale (variable of type func(*status.Status) (string, func(func(string) error) error)) as func(*status.Status) (text string, deliver func(print func() error) error) value in struct literal
+--- PASS: TestH35p2OnlyTheSessionsOwnProcessEnds (0.00s)
+--- PASS: TestH35p2HandoffSaysWhenCoverEnds (0.81s)
+    stuck_test.go:136: the spare's wait: exit 0 "reviewer's seat is stuck: its session's process has ended. #1 waits for it. Take it with `/private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-bin-1644039533/handoff take reviewer`.\n" ""
+    stuck_test.go:568: the wake: exit 0 "reviewer's seat is stuck: its session's process has ended. #1 waits for it. Take it with `/private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-bin-1644039533/handoff take reviewer`.\n"
+    stuck_test.go:545: the wake: exit 0 "reviewer's seat is stuck: its session's process has ended. #1 and #2 wait for it. Take it with `/private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-bin-1644039533/handoff take reviewer`.\n"
+--- PASS: TestH35p2TheHookGivesTheWakeAsItIs (3.00s)
+--- FAIL: TestH35p2TheSpareIsWokenOnceForAStuckSeat (3.01s)
+--- FAIL: TestH35p2TheSpareTakesTheSeatWithRole (3.01s)
+--- FAIL: TestH35p2TheWakeSaysWhatWaitsNow (3.01s)
+--- PASS: TestH35p2TheSpareAfterClearIsStillWoken (3.02s)
+--- PASS: TestH35p2TheWakeIsTheCurrentSparesOnly (3.09s)
+    stuck_test.go:529: the wake was given on a broken record: exit 0 "reviewer's seat is stuck: its session's process has ended. #1 waits for it. Take it with `/private/var/folders/c3/j_s5gt_d1gx6w3lrjyr5j_rr0000gn/T/handoff-bin-1644039533/handoff take reviewer`.\n"
+--- FAIL: TestH35p2ABrokenRecordKeepsTheWake (2.49s)
+--- PASS: TestH35p2HandoffSaysWhenTheSpareIsntRunning (0.39s)
+--- PASS: TestH35p2CoverDeclinedNeedsNoSameSpare (0.44s)
+--- PASS: TestH35p2AwaySaysWhatTheSpareCanDo (0.00s)
+    --- PASS: TestH35p2AwaySaysWhatTheSpareCanDo/an_Antigravity_spare_at_its_cap (0.37s)
+    --- PASS: TestH35p2AwaySaysWhatTheSpareCanDo/a_project_with_a_role_named_spare (0.28s)
+--- PASS: TestH35p2AwayAsksAboutCover (0.00s)
+    --- PASS: TestH35p2AwayAsksAboutCover/no_spare (0.28s)
+    --- PASS: TestH35p2AwayAsksAboutCover/the_spare_changed_while_asked (0.41s)
+    --- PASS: TestH35p2AwayAsksAboutCover/after_the_go-ahead's_question (0.43s)
+    --- PASS: TestH35p2AwayAsksAboutCover/no (0.33s)
+    --- PASS: TestH35p2AwayAsksAboutCover/yes (0.34s)
+--- PASS: TestH35p2BackDropsAWakeUnderWay (7.02s)
+--- PASS: TestH35p2AReviewDoneWithIsntWork (4.70s)
+--- PASS: TestH35p2AFreshPromptIsNoSign (5.83s)
+--- PASS: TestH35p2SilenceTakesOnlyAReviewerSeat (0.00s)
+    --- PASS: TestH35p2SilenceTakesOnlyAReviewerSeat/before_twice_quiet_after (2.43s)
+    --- PASS: TestH35p2SilenceTakesOnlyAReviewerSeat/a_reviewer,_silent (3.52s)
+    --- PASS: TestH35p2SilenceTakesOnlyAReviewerSeat/a_spare_given_after_away (4.62s)
+    --- PASS: TestH35p2SilenceTakesOnlyAReviewerSeat/the_implementer,_silent (5.48s)
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	9.775s
+FAIL	github.com/dre4success/handoff/internal/wait [build failed]
+--- PASS: TestH35p2WaitingIsWhatWaitsForCounts (0.00s)
+--- PASS: TestH35p2OwedByIsWhatTheSeatOwesNow (0.00s)
+--- PASS: TestH35p2ABrokenRoundIsOwedByNoOne (0.00s)
+--- PASS: TestH35p2ANoteAnsweredIsntOwed (0.00s)
+    status_test.go:914: the reviewer owes [{0 3  note W1 implementer reviewer    [] 2 0     0 [] map[] <nil> n <nil> }] once it approved
+--- FAIL: TestH35p2ANoteAnsweringAVerdictIsItsRequests (0.00s)
+FAIL
+FAIL	github.com/dre4success/handoff/internal/status	0.199s
+FAIL

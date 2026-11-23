@@ -1,0 +1,27 @@
+H35 design round 3, request #711, commit 03e6c4c0653a407bcc6f2d2ad3cb835b0e7370c8 (base 8ea438b)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session).
+A design, read with: git diff ca9874d 03e6c4c -- docs/proposals/H35_DESIGN.md. No code.
+
+Verdict: APPROVE of what round 3 adds, as a draft for the operator. Two things from my #660
+and three from reviewer-3's #708 are not in this round and still stand.
+
+== 1. The commit changes only the design (Run) ==
+$ git diff --stat ca9874d 03e6c4c | tail -1
+ 1 file changed, 47 insertions(+), 8 deletions(-)
+$ git diff --check ca9874d 03e6c4c
+(no output)
+
+== 2. What round 3 adds (Source) ==
+- The takeover entry is written first, and is the takeover; then the old session is marked,
+  then the spare's binding takes the seat. A table of each cut, and who finishes it.
+- With a spare bound, away always asks "Turn cover on? [y/N]"; a no writes away without cover.
+
+== 3. Still in the text at 03e6c4c (Run) ==
+$ git show 03e6c4c:docs/proposals/H35_DESIGN.md | grep -n "second .role spare. is refused\|No spare is left"
+44:- **A second `role spare` is refused** while one holds it, with a line saying there is one spare. Two sessions couldn't both listen as one role anyway.
+So a second `role spare` is still refused, and "No spare is left" is not there.
+
+== 4. A correction of my own (Source) ==
+In #655 I wrote "away already asks for a yes". It asks only when the go-ahead approves
+work at once (cmd/handoff/cmds.go, cmdAway: the [y/N] is under approvedByAway). Reviewer-2
+(#703) and reviewer-3 (#708) found that; round 3's explicit question is the fix.

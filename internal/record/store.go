@@ -1,6 +1,7 @@
 package record
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -40,6 +41,13 @@ func Create(dir string) error {
 	return New(dir).writeHead(Head{V: Version, Last: Genesis})
 }
 
+// LockWrite takes the record's write lock, as an append does, so that what the
+// caller changes meanwhile falls wholly before or wholly after any entry:
+// moving a role does, so no write by the session that loses it lands after
+// the move (row 107). LockRead takes it shared, as a reader does.
+func (s *Store) LockWrite() (unlock func(), err error) { return s.lock(syscall.LOCK_EX) }
+func (s *Store) LockRead() (unlock func(), err error)  { return s.lock(syscall.LOCK_SH) }
+
 func (s *Store) lock(how int) (unlock func(), err error) {
 	f, err := os.OpenFile(s.path(LockName), os.O_RDWR|os.O_CREATE, 0o644)
 	if err != nil {
@@ -70,6 +78,11 @@ func (s *Store) Load() (*Snapshot, error) {
 	defer unlock()
 	return s.read()
 }
+
+// Current reads and verifies the record with no lock of its own, for a
+// caller that holds one already, as a delivery's fence does (H35: the
+// spare's wake is checked again there).
+func (s *Store) Current() (*Snapshot, error) { return s.read() }
 
 func (s *Store) read() (*Snapshot, error) {
 	data, err := os.ReadFile(s.path(FileName))
@@ -193,6 +206,12 @@ func (s *Store) AppendAll(build func(*Snapshot) ([]*Entry, error)) ([]Entry, err
 		s.writeRecord(b[:len(b)/2])
 		killSelf()
 	}
+	if fault("first-line") && len(es) > 1 {
+		// A write cut just after the first line's newline: whole lines, no
+		// torn tail, and head.json not updated (row 93 (b), row 106).
+		s.writeRecord(b[:bytes.IndexByte(b, '\n')+1])
+		killSelf()
+	}
 	if err := s.writeRecord(b); err != nil {
 		return nil, err
 	}
@@ -226,12 +245,19 @@ func writable(snap *Snapshot) error {
 // disagrees with a record whose chain verifies. Either way it appends a repair
 // entry saying what it found. It refuses a chain broken in the middle: that is
 // not something a tool should mend.
-func (s *Store) Repair(from string) (Entry, error) {
+func (s *Store) Repair(from string, check func() error) (Entry, error) {
 	unlock, err := s.lock(syscall.LOCK_EX)
 	if err != nil {
 		return Entry{}, err
 	}
 	defer unlock()
+	// The caller's role is rechecked under the lock, as for any write
+	// (row 107).
+	if check != nil {
+		if err := check(); err != nil {
+			return Entry{}, err
+		}
+	}
 	snap, err := s.read()
 	if err != nil {
 		return Entry{}, err

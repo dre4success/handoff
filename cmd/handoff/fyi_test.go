@@ -18,6 +18,7 @@ import (
 // without one. Each listener brings it as it brings a note, and it asks
 // nothing of anyone: no inbox, no alert.
 func TestH26FyiReachesEverySessionAtOnce(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	sent, notify := sink(t)
 	impl := claude("s-impl", cli(t))
@@ -109,6 +110,7 @@ func TestH26FyiIsTheOperatorsAlone(t *testing.T) {
 // With no agent's session, an fyi reaches no one, so it writes nothing and
 // says so.
 func TestH26FyiWithNoSessionWritesNothing(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	out, err := r.atTerminal(t, "", nil, "fyi", "Carry on.")
 	if err == nil || !strings.Contains(out, "no agent has a session now, so no one was told; nothing written") {
@@ -122,6 +124,7 @@ func TestH26FyiWithNoSessionWritesNothing(t *testing.T) {
 // An fyi cut short by a kill leaves a torn tail, as a post does: posting
 // stops until repair, and repair keeps every byte.
 func TestH26TornFyiStopsPostingUntilRepair(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	r.as(t, claude("s-impl", cli(t)), "role", "implementer")
 	r.as(t, claude("s-rev", cli(t)), "role", "reviewer")
@@ -149,6 +152,7 @@ func TestH26TornFyiStopsPostingUntilRepair(t *testing.T) {
 // to another (P1b); nor does a wait outside any session. The session told
 // gets it.
 func TestH26AnFyiIsForTheSessionTold(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	fyi := func(t *testing.T, msg string) {
 		t.Helper()

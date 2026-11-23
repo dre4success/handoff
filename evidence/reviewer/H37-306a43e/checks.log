@@ -1,0 +1,82 @@
+H37, request #823, commit 306a43e1f106024bb16d256955ee47ce1f8b9200 (base 22848ec, main)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session).
+The commit was built in a temporary worktree (git worktree add --detach), removed after.
+The probe ran in new scratch git projects with HANDOFF_TEST_NOTIFY set and the session
+variables unset.
+
+Verdict: APPROVE.
+
+== 1. Build, vet, format, dependencies (Run) ==
+$ go build -o handoff ./cmd/handoff && go vet ./... && gofmt -l cmd internal
+(no output)
+$ go list -deps ./... | grep -c '^net$'
+0
+$ git diff --check 22848ec 306a43e
+(no output)
+$ git diff --stat 22848ec 306a43e | tail -1
+ 4 files changed, 61 insertions(+)
+
+== 2. Who gets the line, by each way a brief is given: probe.sh (Run) ==
+
+## B1. handoff brief --for <role>, by project
+-- roles: implementer,reviewer
+  implementer: no
+  reviewer: no
+-- roles: implementer,reviewer,reviewer-2
+  implementer: yes
+  reviewer: no
+  reviewer-2: no
+-- roles: implementer,reviewer,reviewer-2,reviewer-3
+  implementer: yes
+  reviewer: no
+  reviewer-2: no
+  reviewer-3: no
+-- a second reviewer added later (roles add reviewer-2), in the one-reviewer project:
+  implementer: yes
+
+## B2. Where the line sits (the three-reviewer project, the implementer's brief)
+6:- A reply to your request: on CHANGES or QUESTION, fix or answer, then post again (`/private/tmp/claude-501/
+7:- With two or more reviewers on one commit, wait for every verdict on it before you post the next round, eve
+8:- While the operator is away with a go-ahead, the APPROVE that completes an item arrives saying it "is appro
+9:- A decision from the operator: act on it. Merge only on approve, or on an approval under the operator's go-
+10:- Approved work stays in your inbox under "approved, to merge" until its commit is in main. Before you merg
+11:- An fyi from the operator, to every agent with a session: take it as the operator's word, as if said in th
+12:- A note to you: answer with `/private/tmp/claude-501/-Users-me-handoff/ed41c71
+
+## B3. The other ways a brief is given, to the implementer of the three-reviewer project
+  handoff role implementer: yes
+  its SessionStart hook (Claude Code): yes
+  its SessionStart hook after a compaction: yes
+  handoff brief, in its session: yes
+  an Antigravity reviewer-3's start hook: no
+
+## B4. A project where every role reviews (made by editing the scratch config)
+-- roles: a,b, all reviewing
+  a: no
+  b: no
+-- roles: a,b,c, all reviewing
+  a: yes
+  b: yes
+  c: yes
+
+== 3. Source ==
+cmd/handoff/brief.go, writeBrief: the line is printed when `asks && len(reviewers) > 1`.
+`reviewers` is the project's other roles that review, and `asks` is true for a role that
+doesn't review, or for any role when every role reviews. Nothing else changed: no command,
+no entry, no delivery. The listener still delivers a CHANGES at once.
+
+== 4. The full suite (Run) ==
+$ uptime; /usr/bin/time -p go test ./... -count=1 -race      (no -timeout; the worktree was at 306a43e and clean when it ended)
+ 9:02  up 23 days, 12:59, 12 users, load averages: 5.62 8.39 7.99
+ok  	github.com/dre4success/handoff/cmd/handoff	340.578s
+ok  	github.com/dre4success/handoff/internal/awake	1.292s
+ok  	github.com/dre4success/handoff/internal/gitx	1.206s
+ok  	github.com/dre4success/handoff/internal/notify	1.399s
+ok  	github.com/dre4success/handoff/internal/record	5.413s
+ok  	github.com/dre4success/handoff/internal/status	1.213s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	2.644s
+real 343.06
+user 145.93
+sys 123.20
+exit 0

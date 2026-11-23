@@ -1,0 +1,68 @@
+H34.5 round 4, request #777, commit df9885fdbf880e5ee1a215c12411d43ec41c49f1 (base 0e31248, H34.4 round 4, now in main)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session).
+The commit was built in a temporary worktree (git worktree add --detach), removed after.
+Every probe ran in a new scratch git project with HANDOFF_TEST_NOTIFY set and the session
+variables unset.
+
+== 1. Build, vet, format, dependencies (Run) ==
+$ go build -o handoff ./cmd/handoff && go vet ./... && gofmt -l cmd internal
+(no output)
+$ go list -deps ./... | grep -c '^net$'
+0
+$ git diff --check 0e31248 df9885f
+(no output)
+
+== 2. The pop-up's own path: probe-popup.sh (Run) ==
+With HANDOFF_TEST_POPUP naming a file, as well as HANDOFF_TEST_NOTIFY, handoff starts its
+real pop-up process (_popup), and that process writes what it would hand the dialog to the
+file, as "title | text | buttons", and is never clicked. So this is the text the operator
+would see, not the alert's text in the notify log, which is what I read in round 3.
+atterm_n.py answers decide's [y/N] with n.
+(My first run of this probe also ran handoff on its own at a pty, which waits for input I
+hadn't scripted; I stopped it and took that step out. No pop-up process was left running.)
+
+## PP1. Three reviewers: one asks for changes, one approves, one hasn't picked up. The pop-up for the APPROVE
+posted #1 request W1 implementer → reviewer: the title of W1 @ 7e0082ce2f34
+posted #4 reply W1 reviewer-2 → implementer: CHANGES on #2 @ 7e0082ce2f34
+posted #5 reply W1 reviewer → implementer: APPROVE on #1 @ 7e0082ce2f34
+  what the pop-up's dialog was given (title | text | buttons):
+    handoff: pp1 | W1: reviewer approved #1; reviewer-2 asked for changes on #2, reviewer-3 hasn't picked up #3. /  / the title of W1 /  / Later keeps it waiting: run handoff in the project to decide there. | Later,Deny,Approve
+$ (the operator, at a terminal) handoff decide 1 --approve   (answered n)
+    #1 request W1 implementer → reviewer: the title of W1 @ 7e0082ce2f34
+      #5 reply W1 reviewer → implementer: APPROVE on #1 @ 7e0082ce2f34
+      on W1: reviewer-2 asked for changes on #2, reviewer-3 hasn't picked up #3
+    Approve W1 (#1)? [y/N] n
+    handoff decide: not confirmed; nothing written
+
+## PP2. One reviewer only: the pop-up as before
+posted #1 request W2 implementer → reviewer: the title of W2 @ cd3e646b56c2
+posted #2 reply W2 reviewer → implementer: APPROVE on #1 @ cd3e646b56c2
+  what the pop-up's dialog was given (title | text | buttons):
+    handoff: pp2 | W2: reviewer approved #1. /  / the title of W2 /  / Later keeps it waiting: run handoff in the project to decide there. | Later,Deny,Approve
+
+== 3. Source: the two reads in the alert pass ==
+cmd/handoff/why.go, deliveries(): deliveryTo(role) is read first, then wait.ReadCursor,
+with a test's pause point between them. A listener that takes the lock, delivers and lets
+go between the two has written its cursor before it let go, so the second read is past
+what it delivered. I read this and did not run the paused case; the implementer's
+TestH34p5ANoteDeliveredBetweenTheReadsGetsNoAlert does.
+
+== 4. Rounds 1 to 3's probes, run again (Run) ==
+probe.sh (W1 to W3), probe-b.sh (W1b, W3b), p2-probe-g.sh (the other project's replay): no line
+differs from round 3 (../H34.5-9ae2e65/checks.log), commit ids, paths and times apart.
+
+== 5. The full suite (Run) ==
+$ uptime; /usr/bin/time -p go test ./... -count=1 -race      (no -timeout; the worktree was at df9885f and clean when it ended)
+ 8:21  up 23 days, 12:18, 15 users, load averages: 4.51 4.78 5.89
+ok  	github.com/dre4success/handoff/cmd/handoff	309.763s
+ok  	github.com/dre4success/handoff/internal/awake	1.592s
+ok  	github.com/dre4success/handoff/internal/gitx	1.236s
+ok  	github.com/dre4success/handoff/internal/notify	1.696s
+ok  	github.com/dre4success/handoff/internal/record	5.652s
+ok  	github.com/dre4success/handoff/internal/status	1.454s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	3.417s
+real 313.10
+user 95.85
+sys 82.55
+exit 0

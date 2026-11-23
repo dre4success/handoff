@@ -1,0 +1,131 @@
+# H34.6 review, round 2, request #373, commit cd71bcf3e86b402aebf7fd1edf59a0cd07107da5 (base 2cbcce7)
+# Run by: the reviewer (Claude Code, Fable 5.2), 2026-11-22T13:33:36Z
+# The commit was checked out in a temporary worktree and built there. Every probe ran in a scratch project with HANDOFF_TEST_NOTIFY
+# set. A session is stood in for by CLAUDE_CODE_SESSION_ID and CLAUDE_PID, the pid of a sleep. probe.sh is in ../H34.6-458a36b/;
+# probe-hi.sh is beside this file.
+
+## 1. probe.sh (A to F) run again on this commit: what differs from round 1's results (../H34.6-458a36b/checks.log)
+$ diff <(round 1's output) <(this commit's)
+49c49
+<   .handoff/sessions: B[role implementer] 
+---
+>   .handoff/sessions: A[role reviewer-3] B[role implementer] 
+53c53
+<   .handoff/sessions: B[role implementer] C[role reviewer-3] 
+---
+>   .handoff/sessions: A[lost reviewer-3] B[role implementer] C[role reviewer-3] 
+56,57c56,57
+< posted #1 note P1 reviewer-3 → implementer: body
+<   [exit 0]
+---
+> handoff note: you no longer hold reviewer-3: the operator gave it to session C at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>
+>   [exit 2]
+59c59
+< handoff role: no role: when the operator gives this session one, run `handoff role <role>`
+---
+> handoff role: you no longer hold reviewer-3: the operator gave it to session C at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>
+83c83
+<     handoff wait: this session no longer holds implementer: the operator gave it another role, or gave implementer to another session
+---
+>     handoff wait: you no longer hold implementer: the operator gave it to session new at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>
+104,105c104
+<     handoff wait: this session no longer holds implementer: the operator gave it another role, or gave implementer to another session
+<       [exit 2]
+---
+>       [exit 0]
+
+## 2. probe-hi.sh on this commit
+
+## H. A session that lost its role runs wait, with and without --for
+$ (old) handoff role reviewer
+You are now reviewer in h.
+  [exit 0]
+$ (new) handoff role reviewer
+You are now reviewer in h. Another session had reviewer; it has no role now.
+  [exit 0]
+posted #1 note P1 implementer → reviewer: for the reviewer
+$ (old) handoff wait --timeout 2s
+handoff wait: you no longer hold reviewer: the operator gave it to session new at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>
+  [exit 2]
+$ (old) handoff wait --for reviewer --timeout 2s
+handoff wait: you no longer hold reviewer: the operator gave it to session new at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>
+  [exit 2]
+$ (old) handoff wait --for implementer --timeout 2s
+handoff wait: you no longer hold reviewer: the operator gave it to session new at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>
+  [exit 2]
+$ (new) handoff wait --timeout 2s
+#1 note P1 implementer → reviewer: for the reviewer
+  [exit 0]
+$ (old) handoff inbox --for reviewer --quiet
+  [exit 0]
+
+## I. A session whose process ended, kept and not given on: it is resumed under its id and still has its role
+$ (A) handoff role reviewer-3
+You are now reviewer-3 in i.
+  [exit 0]
+$ (B) handoff role implementer
+You are now implementer in i.
+  [exit 0]
+  .handoff/sessions: A[role reviewer-3, gone, no pid] B[role implementer, pid] 
+-- while A is gone, a sender is told so:
+$ (B) handoff note --to reviewer-3 --item P1 --title one --body ../body.md
+posted #1 note P1 implementer → reviewer-3: one
+handoff: no session has reviewer-3 now, so this waits until the operator gives one that role; tell the operator.
+  [exit 0]
+-- A is resumed, with a new process:
+$ (A) handoff role
+You are reviewer-3 in i.
+  [exit 0]
+$ (A) handoff note --to implementer --item P1 --title from A, resumed --body ../body.md
+posted #2 note P1 reviewer-3 → implementer: from A, resumed
+  [exit 0]
+  .handoff/sessions: A[role reviewer-3, gone, no pid] B[role implementer, pid] 
+-- its first hook notes the new process:
+$ (A, Stop hook) handoff hook listen --timeout 2s
+handoff: new for reviewer-3:
+#1 note P1 implementer → reviewer-3: one
+Read each with `handoff-new show <id>` and act on it as your brief says. List
+  [exit 2]
+  .handoff/sessions: A[role reviewer-3, no pid] B[role implementer, pid] 
+$ (B) handoff note --to reviewer-3 --item P1 --title two --body ../body.md
+handoff note: identical to #1; nothing written (to retry a post safely, give it a --key)
+  [exit 2]
+
+## 3. The mark probe C leaves on this commit (A's binding was gone, then its role was given on), and what running() makes of it
+$ cat c/.handoff/sessions/A.json   (times and generation folded)
+{"v":1,"role":"","session":"A","since":"T","lost":{"role":"reviewer-3","to":"C","at":"T","gen":G}}
+$ sed -n "/^func (b binding) running/,/^}/p" cmd/handoff/session.go
+func (b binding) running() bool {
+	switch {
+	case b.Gone:
+		return false
+	case b.PID > 0:
+		return alive(b.PID)
+	case b.Host > 0:
+		return alive(b.Host)
+	}
+	return true
+}
+$ sed -n 463,464p cmd/handoff/session.go
+		m := binding{V: 1, Session: b.Session, PID: b.PID, Host: b.Host, Since: b.Since,
+			Lost: &lostMark{Role: role, To: s.ID, At: now.Format(time.RFC3339Nano), Gen: b.Gen}}
+$ grep -n "b.PID != s.PID || b.Host != s.Host" cmd/handoff/session.go
+488:		if (b.PID != s.PID || b.Host != s.Host) && !a.update(s, b.Role) {
+
+## The suite at the commit
+$ go build ./... && go vet ./...   # 13:22:40Z
+ok
+$ go list -deps ./... | grep -x net
+exit 1 (1 = no net)
+$ gofmt -l cmd internal
+(end)
+$ go test ./... -count=1 -race -timeout 30m
+exit 0   # 13:32:45Z
+ok  	github.com/dre4success/handoff/cmd/handoff	602.246s
+ok  	github.com/dre4success/handoff/internal/awake	1.320s
+ok  	github.com/dre4success/handoff/internal/gitx	1.227s
+ok  	github.com/dre4success/handoff/internal/notify	1.319s
+ok  	github.com/dre4success/handoff/internal/record	3.711s
+ok  	github.com/dre4success/handoff/internal/status	1.245s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	1.797s

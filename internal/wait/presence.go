@@ -28,6 +28,13 @@ type Presence struct {
 	PID   int       `json:"pid"`
 	Since time.Time `json:"since"`
 	How   string    `json:"how"` // "wait", or "hook" for a CLI's hook
+	// Rounds says the listener reads a round's requests (row 106). One
+	// without it is a handoff from before them, which can't see a round
+	// replace anything, so post refuses a round while it listens.
+	Rounds bool `json:"rounds,omitempty"`
+	// Ended is when the listener let the lock go, if it did so itself: a
+	// listener killed never writes it (row 110).
+	Ended time.Time `json:"ended,omitempty"`
 }
 
 // PresencePath is where the role's presence is kept, inside the record
@@ -72,12 +79,24 @@ func Listen(dir, role, how string) (*os.File, error) {
 		f.Close()
 		return nil, fmt.Errorf("lock %s: %w", path+".lock", err)
 	}
-	b, _ := json.Marshal(Presence{V: record.Version, PID: os.Getpid(), Since: time.Now().UTC().Round(time.Second), How: how})
+	b, _ := json.Marshal(Presence{V: record.Version, PID: os.Getpid(), Since: time.Now().UTC().Round(time.Second), How: how, Rounds: true})
 	if err := record.WriteFileAtomic(path, append(b, '\n')); err != nil {
 		f.Close()
 		return nil, err
 	}
 	return f, nil
+}
+
+// Release notes when the listener ends, then lets the role's lock go: so
+// "last listened" can say when, not only when it began (row 110).
+func Release(f *os.File, dir, role string) {
+	if p, err := ReadPresence(dir, role); err == nil && p.PID == os.Getpid() {
+		p.Ended = time.Now().UTC().Round(time.Second)
+		if b, err := json.Marshal(p); err == nil {
+			record.WriteFileAtomic(PresencePath(dir, role), append(b, '\n'))
+		}
+	}
+	f.Close()
 }
 
 // Listening says whether a process holds role's lock now: a wait, or a CLI's
@@ -98,6 +117,24 @@ func Listening(dir, role string) bool {
 		syscall.Flock(int(f.Fd()), syscall.LOCK_UN)
 	}
 	return errors.Is(err, syscall.EWOULDBLOCK)
+}
+
+// Older lists the roles, of those given, that a listener from a handoff
+// older than row 106 holds now, with its pid: one whose presence doesn't say
+// it reads rounds (row 106).
+func Older(dir string, roles []string) []string {
+	var out []string
+	for _, role := range roles {
+		if !Listening(dir, role) {
+			continue
+		}
+		if p, err := ReadPresence(dir, role); err != nil {
+			out = append(out, role)
+		} else if !p.Rounds {
+			out = append(out, fmt.Sprintf("%s (pid %d)", role, p.PID))
+		}
+	}
+	return out
 }
 
 // ReadPresence returns what presence/<role>.json last recorded. It says who

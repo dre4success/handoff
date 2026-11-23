@@ -1,0 +1,432 @@
+H34.6 round 4, request #401, commit 6f1b8536802efd6aa24f4bf60ed94625d3d00b49 (base 2cbcce7)
+Date: 2026-11-22. Run by: the reviewer (Claude Code session).
+The commit was built in a temporary worktree (git worktree add --detach), removed after.
+Every probe ran in a new scratch project with HANDOFF_TEST_NOTIFY set and the session
+variables unset. A session is simulated with CLAUDE_CODE_SESSION_ID and CLAUDE_PID (the
+pid of a sleep); a hook with its JSON on stdin and the same two variables.
+
+Verdict: CHANGES. Q1 and Q2 below are a regression from round 3; N is new in round 4.
+
+== 1. Build, vet, format, dependencies (Run) ==
+$ go build -o handoff ./cmd/handoff && go vet ./... && gofmt -l cmd internal
+(no output)
+$ go list -deps ./... | grep -c '^net$'
+0
+$ git diff --check 05a184f 6f1b853
+(no output)
+
+== 2. My probes for #388, run again: zsh probe-388.sh <dir> <binary>; zsh probe-388m.sh <dir> <binary> (Run) ==
+J, K, L and M are fixed. probe-388.sh's K now sleeps 1.2 s before it writes the
+transcript line: the line is stamped to the second, and must not be older than the role.
+Without it K fails by my probe's timing, on any build.
+
+## J. A marked session does /clear, and is later resumed under its old id (#388 point 1)
+$ (X) handoff role reviewer
+You are now reviewer in j.
+  [exit 0]
+$ (Z) handoff role reviewer
+You are now reviewer in j. Another session had reviewer; it has no role now.
+  [exit 0]
+  .handoff/sessions: X[lost reviewer, pid] Z[role reviewer, pid] 
+-- X is refused, as it should be:
+$ (X) handoff note --as reviewer --to implementer --item P1 --title from X, marked --body ../body.md
+handoff note: you no longer hold reviewer: the operator gave it to session Z at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>
+  [exit 2]
+-- /clear in X's process: a SessionStart with source clear and a new id, Y
+$ (Y, hook, {"session_id":"Y","hook_event_name":"SessionStart","source":"clear"}) handoff hook brief
+handoff: you no longer hold reviewer: the operator gave it to session Z at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>.
+  [exit 0]
+  .handoff/sessions: X[lost reviewer, gone, no pid] Y[lost reviewer, pid] Z[role reviewer, pid] 
+$ (Y) handoff note --as reviewer --to implementer --item P1 --title from Y --body ../body.md
+handoff note: you no longer hold reviewer: the operator gave it to session Z at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>
+  [exit 2]
+-- the operator resumes X by its id, in a new process:
+$ (X) handoff role
+handoff role: you no longer hold reviewer: the operator gave it to session Z at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>
+  [exit 2]
+$ (X) handoff note --as reviewer --to implementer --item P1 --title from X, resumed after its /clear --body ../body.md
+handoff note: you no longer hold reviewer: the operator gave it to session Z at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>
+  [exit 2]
+
+## K. A marked session goes on by /background, and is later resumed under its old id (#388 point 1)
+$ (X) handoff role reviewer
+You are now reviewer in k.
+  [exit 0]
+$ (Z) handoff role reviewer
+You are now reviewer in k. Another session had reviewer; it has no role now.
+  [exit 0]
+-- X goes on as Y: X's transcript ends with a continued-in line, and X's process ends
+$ (Y, hook, {"session_id":"Y","hook_event_name":"SessionStart","source":"fork","transcript_path":"D/k-transcripts/Y.jsonl"}) handoff hook brief
+handoff: you no longer hold reviewer: the operator gave it to session Z at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>.
+  [exit 0]
+  .handoff/sessions: X[lost reviewer, gone, no pid] Y[lost reviewer, pid] Z[role reviewer, pid] 
+$ (Y) handoff note --as reviewer --to implementer --item P1 --title from Y --body ../body.md
+handoff note: you no longer hold reviewer: the operator gave it to session Z at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>
+  [exit 2]
+-- the operator resumes X by its id, in a new process:
+$ (X) handoff role
+handoff role: you no longer hold reviewer: the operator gave it to session Z at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>
+  [exit 2]
+$ (X) handoff note --as reviewer --to implementer --item P1 --title from X, resumed after /background --body ../body.md
+handoff note: you no longer hold reviewer: the operator gave it to session Z at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>
+  [exit 2]
+
+## L. A hook with a fixed role (--as), started before its session had a binding (#388 point 3)
+$ (S, Stop hook, in the background) handoff hook listen --as reviewer --timeout 25s
+$ (S) handoff role reviewer
+You are now reviewer in l.
+  [exit 0]
+$ (Z) handoff role reviewer
+You are now reviewer in l. Another session had reviewer; it has no role now.
+  [exit 0]
+  .handoff/sessions: S[lost reviewer, pid] Z[role reviewer, pid] 
+-- S's commands are refused:
+$ (S) handoff inbox --quiet
+handoff inbox: you no longer hold reviewer: the operator gave it to session Z at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>; or give --for <role>
+  [exit 2]
+-- a note for the reviewer, which is Z now:
+posted #1 note P1 implementer → reviewer: for the reviewer
+-- what S's old hook said:
+    [exit 0]
+-- what Z, the reviewer, gets:
+$ (Z) handoff wait --timeout 3s
+#1 note P1 implementer → reviewer: for the reviewer
+  [exit 0]
+
+## L2. The same, with the hook started after the binding (the fenced path, for comparison)
+$ (S) handoff role reviewer
+You are now reviewer in l2.
+  [exit 0]
+$ (S, Stop hook, in the background) handoff hook listen --timeout 25s
+$ (Z) handoff role reviewer
+You are now reviewer in l2. Another session had reviewer; it has no role now.
+  [exit 0]
+posted #1 note P1 implementer → reviewer: for the reviewer
+-- what S's old hook said:
+    [exit 0]
+-- what Z, the reviewer, gets:
+$ (Z) handoff wait --timeout 3s
+#1 note P1 implementer → reviewer: for the reviewer
+  [exit 0]
+
+## M. A session with a role, not marked, goes on by /background; its old id is resumed
+$ (X) handoff role reviewer
+You are now reviewer in m.
+  [exit 0]
+  .handoff/sessions: X[lost reviewer, gone] Y[role reviewer] 
+$ (Y) handoff role
+You are reviewer in m.
+  [exit 0]
+-- the operator resumes X by its id:
+$ (X) handoff role
+handoff role: you no longer hold reviewer: this conversation went on in session Y at 2026-11-22T20:56:04Z, by /background, and the role went with it. Stop work on it, and don't merge. Take a role agai
+  [exit 2]
+$ (X) handoff note --as reviewer --to implementer --item P1 --title from X, resumed; Y has its role --body ../body.md
+handoff note: you no longer hold reviewer: this conversation went on in session Y at 2026-11-22T20:56:04Z, by /background, and the role went with it. Stop work on it, and don't merge. Take a role agai
+  [exit 2]
+
+== 3. New probes: zsh probe-r4.sh <dir> <binary> (Run) ==
+O, P, Q0: as they should be. Q1, Q2: the role is dropped at the second /background.
+N: a resumed session is given a role by its Stop hook. R: unchanged from round 3.
+
+## O. A role goes on by /background twice; the old ids are resumed; the operator gives the role on, then back to the first id
+$ (X) handoff role reviewer
+You are now reviewer in o.
+  [exit 0]
+$ (/background: X goes on as Y; Y's SessionStart hook)
+handoff brief: you are reviewer in o. You and implementer, reviewer-3 hand work to each other through handoff.
+$ (/background: Y goes on as C; C's SessionStart hook)
+handoff brief: you are reviewer in o. You and implementer, reviewer-3 hand work to each other through handoff.
+  .handoff/sessions: C[role reviewer, was X+Y] X[lost reviewer went /background to Y, gone] Y[lost reviewer went /background to C, gone, was X] 
+$ (C) handoff note --as reviewer --to reviewer-3 --item P1 --title from C as reviewer --body ../body.md
+posted #1 note P1 reviewer → reviewer-3: from C as reviewer
+handoff: no session has reviewer-3 now, so this waits until the operator gives one that role; tell the operator.
+  [exit 0]
+$ (X) handoff note --as reviewer --to reviewer-3 --item P1 --title from X as reviewer --body ../body.md
+handoff note: you no longer hold reviewer: this conversation went on in session Y at TIME, by /background, and the role went with it. Stop work on it, and don't merge. Take a 
+  [exit 2]
+$ (Y) handoff note --as reviewer --to reviewer-3 --item P1 --title from Y as reviewer --body ../body.md
+handoff note: you no longer hold reviewer: this conversation went on in session C at TIME, by /background, and the role went with it. Stop work on it, and don't merge. Take a 
+  [exit 2]
+$ (Z) handoff role reviewer
+You are now reviewer in o. Another session had reviewer; it has no role now.
+  [exit 0]
+  .handoff/sessions: C[lost reviewer to Z] X[lost reviewer went /background to Y, gone] Y[lost reviewer went /background to C, gone, was X] Z[role reviewer] 
+$ (C) handoff note --as reviewer --to reviewer-3 --item P1 --title from C as reviewer --body ../body.md
+handoff note: you no longer hold reviewer: the operator gave it to session Z at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in
+  [exit 2]
+$ (X) handoff note --as reviewer --to reviewer-3 --item P1 --title from X as reviewer --body ../body.md
+handoff note: you no longer hold reviewer: this conversation went on in session Y at TIME, by /background, and the role went with it. Stop work on it, and don't merge. Take a 
+  [exit 2]
+-- the operator gives X the role again, in X:
+$ (X) handoff role reviewer
+You are now reviewer in o. Another session had reviewer; it has no role now.
+  [exit 0]
+  .handoff/sessions: C[lost reviewer to Z] X[role reviewer] Y[lost reviewer went /background to C, gone, was X] Z[lost reviewer to X] 
+$ (X) handoff note --as reviewer --to reviewer-3 --item P1 --title from X as reviewer --body ../body.md
+handoff note: identical to #1; nothing written (to retry a post safely, give it a --key)
+  [exit 2]
+$ (Z) handoff note --as reviewer --to reviewer-3 --item P1 --title from Z as reviewer --body ../body.md
+handoff note: you no longer hold reviewer: the operator gave it to session X at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in
+  [exit 2]
+$ (Y) handoff note --as reviewer --to reviewer-3 --item P1 --title from Y as reviewer --body ../body.md
+handoff note: you no longer hold reviewer: this conversation went on in session C at TIME, by /background, and the role went with it. Stop work on it, and don't merge. Take a 
+  [exit 2]
+
+## P. A role goes on by /clear twice in one process; the old ids are resumed elsewhere
+$ (X) handoff role reviewer
+You are now reviewer in p.
+  [exit 0]
+$ (/clear: a new conversation Y in the same process; its SessionStart hook)
+handoff brief: you are reviewer in p. You and implementer, reviewer-3 hand work to each other through handoff.
+$ (/clear: a new conversation Y2 in the same process; its SessionStart hook)
+handoff brief: you are reviewer in p. You and implementer, reviewer-3 hand work to each other through handoff.
+  .handoff/sessions: X[lost reviewer went /clear to Y, gone] Y[lost reviewer went /clear to Y2, gone] Y2[role reviewer] 
+$ (Y2) handoff note --as reviewer --to reviewer-3 --item P1 --title from Y2 as reviewer --body ../body.md
+posted #1 note P1 reviewer → reviewer-3: from Y2 as reviewer
+handoff: no session has reviewer-3 now, so this waits until the operator gives one that role; tell the operator.
+  [exit 0]
+$ (X) handoff note --as reviewer --to reviewer-3 --item P1 --title from X as reviewer --body ../body.md
+handoff note: you no longer hold reviewer: this conversation went on in session Y at TIME, by /clear, and the role went with it. Stop work on it, and don't merge. Take a role 
+  [exit 2]
+$ (Y) handoff note --as reviewer --to reviewer-3 --item P1 --title from Y as reviewer --body ../body.md
+handoff note: you no longer hold reviewer: this conversation went on in session Y2 at TIME, by /clear, and the role went with it. Stop work on it, and don't merge. Take a role
+  [exit 2]
+
+## Q1. /background, then the operator gives the new id its role again (or another), then /background again
+$ (X) handoff role reviewer
+You are now reviewer in q1.
+  [exit 0]
+$ (/background: X goes on as Y; Y's SessionStart hook)
+handoff brief: you are reviewer in q1. You and implementer, reviewer-3 hand work to each other through handoff
+-- the operator says "you're reviewer" in Y again, and Y runs it:
+$ (Y) handoff role reviewer
+You are now reviewer in q1.
+  [exit 0]
+  .handoff/sessions: X[lost reviewer went /background to Y, gone] Y[role reviewer] 
+$ (/background: Y goes on as Y2; Y2's SessionStart hook)
+handoff: q1 hands work between agents through handoff, and this session has no role in it. When the operator g
+  .handoff/sessions: X[lost reviewer went /background to Y, gone] Y[role reviewer] 
+$ (Y2) handoff role
+handoff role: no role: when the operator gives this session one, run `handoff role <role>`
+  [exit 2]
+$ (Y2, Stop hook) handoff hook listen --timeout 1s
+  [exit 0]
+
+## Q2. A marked session goes on by /background, the operator gives the new id a role, then /background again
+$ (X) handoff role reviewer
+You are now reviewer in q2.
+  [exit 0]
+$ (Z) handoff role reviewer
+You are now reviewer in q2. Another session had reviewer; it has no role now.
+  [exit 0]
+$ (/background: X goes on as Y; Y's SessionStart hook)
+handoff: you no longer hold reviewer: the operator gave it to session Z at TIME. Stop work on it, and don't me
+$ (Y) handoff role implementer
+You are now implementer in q2.
+  [exit 0]
+  .handoff/sessions: X[lost reviewer to Z, gone] Y[role implementer] Z[role reviewer] 
+$ (/background: Y goes on as Y2; Y2's SessionStart hook)
+handoff: q2 hands work between agents through handoff, and this session has no role in it. When the operator g
+  .handoff/sessions: X[lost reviewer to Z, gone] Y[role implementer] Z[role reviewer] 
+$ (Y2) handoff role
+handoff role: no role: when the operator gives this session one, run `handoff role <role>`
+  [exit 2]
+
+## Q0. For comparison: /background twice with no handoff role between
+$ (X) handoff role reviewer
+You are now reviewer in q0.
+  [exit 0]
+$ (/background: X goes on as Y; Y's SessionStart hook)
+handoff brief: you are reviewer in q0. You and implementer, reviewer-3 hand work to each other through handoff
+$ (/background: Y goes on as Y2; Y2's SessionStart hook)
+handoff brief: you are reviewer in q0. You and implementer, reviewer-3 hand work to each other through handoff
+  .handoff/sessions: X[lost reviewer went /background to Y, gone] Y[lost reviewer went /background to Y2, gone, was X] Y2[role reviewer, was X+Y] 
+$ (Y2) handoff role
+You are reviewer in q0.
+  [exit 0]
+
+## N. A finished move, then the new id's binding is dropped (another conversation in its process is given a role); the new id is resumed
+$ (X) handoff role reviewer
+You are now reviewer in n.
+  [exit 0]
+$ (/background: X goes on as Y; Y's SessionStart hook)
+handoff brief: you are reviewer in n. You and implementer, reviewer-3 hand work to each other through handoff.
+-- a new conversation W in Y's process (as after a /clear whose hook didn't run) is given implementer:
+$ (W) handoff role implementer
+You are now implementer in n.
+  [exit 0]
+  .handoff/sessions: W[role implementer] X[lost reviewer went /background to Y, gone] 
+-- Y is resumed by its id, in a new process; its Stop hook runs:
+$ (Y) handoff role
+handoff role: no role: when the operator gives this session one, run `handoff role <role>`
+  [exit 2]
+$ (Y, Stop hook) handoff hook listen --timeout 1s
+handoff: nothing new for reviewer in 1s. Just end your turn; listening starts again when it ends.
+  [exit 2]
+  .handoff/sessions: W[role implementer] X[lost reviewer went /background to Y, gone] Y[role reviewer, was X] 
+$ (Y) handoff role
+You are reviewer in n.
+  [exit 0]
+
+## R. A resumed marked session does /clear in its new process
+$ (X) handoff role reviewer
+You are now reviewer in rr.
+  [exit 0]
+$ (Z) handoff role reviewer
+You are now reviewer in rr. Another session had reviewer; it has no role now.
+  [exit 0]
+-- X resumed in a new process, refused; then /clear there:
+$ (X) handoff note --as reviewer --to reviewer-3 --item P1 --title from X as reviewer --body ../body.md
+handoff note: you no longer hold reviewer: the operator gave it to session Z at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in
+  [exit 2]
+$ (/clear: a new conversation X9 in the same process; its SessionStart hook)
+handoff: rr hands work between agents through handoff, and this session has no role in it. When the operator g
+  .handoff/sessions: X[lost reviewer to Z] Z[role reviewer] 
+$ (X9) handoff note --as reviewer --to reviewer-3 --item P1 --title from X9 as reviewer --body ../body.md
+posted #1 note P1 reviewer → reviewer-3: from X9 as reviewer
+handoff: no session has reviewer-3 now, so this waits until the operator gives one that role; tell the operator.
+  [exit 0]
+
+== 4. The same probe-r4.sh on round 3's build, 05a184f, for comparison (Run) ==
+Q1 and Q2: the role follows to Y2. N: Y has no role, before and after its hook.
+
+## Q1. /background, then the operator gives the new id its role again (or another), then /background again
+$ (X) handoff role reviewer
+You are now reviewer in q1.
+  [exit 0]
+$ (/background: X goes on as Y; Y's SessionStart hook)
+handoff brief: you are reviewer in q1. You and implementer, reviewer-3 hand work to each other through handoff
+-- the operator says "you're reviewer" in Y again, and Y runs it:
+$ (Y) handoff role reviewer
+You are now reviewer in q1.
+  [exit 0]
+  .handoff/sessions: Y[role reviewer] 
+$ (/background: Y goes on as Y2; Y2's SessionStart hook)
+handoff brief: you are reviewer in q1. You and implementer, reviewer-3 hand work to each other through handoff
+  .handoff/sessions: Y2[role reviewer, was Y] 
+$ (Y2) handoff role
+You are reviewer in q1.
+  [exit 0]
+$ (Y2, Stop hook) handoff hook listen --timeout 1s
+handoff: nothing new for reviewer in 1s. Just end your turn; listening starts again when it ends.
+  [exit 2]
+
+## Q2. A marked session goes on by /background, the operator gives the new id a role, then /background again
+$ (X) handoff role reviewer
+You are now reviewer in q2.
+  [exit 0]
+$ (Z) handoff role reviewer
+You are now reviewer in q2. Another session had reviewer; it has no role now.
+  [exit 0]
+$ (/background: X goes on as Y; Y's SessionStart hook)
+handoff: you no longer hold reviewer: the operator gave it to session Z at TIME. Stop work on it, and don't me
+$ (Y) handoff role implementer
+You are now implementer in q2.
+  [exit 0]
+  .handoff/sessions: Y[role implementer] Z[role reviewer] 
+$ (/background: Y goes on as Y2; Y2's SessionStart hook)
+handoff brief: you are implementer in q2. You and reviewer, reviewer-3 hand work to each other through handoff
+  .handoff/sessions: Y2[role implementer, was Y] Z[role reviewer] 
+$ (Y2) handoff role
+You are implementer in q2.
+  [exit 0]
+
+## Q0. For comparison: /background twice with no handoff role between
+$ (X) handoff role reviewer
+You are now reviewer in q0.
+  [exit 0]
+$ (/background: X goes on as Y; Y's SessionStart hook)
+handoff brief: you are reviewer in q0. You and implementer, reviewer-3 hand work to each other through handoff
+$ (/background: Y goes on as Y2; Y2's SessionStart hook)
+handoff brief: you are reviewer in q0. You and implementer, reviewer-3 hand work to each other through handoff
+  .handoff/sessions: Y2[role reviewer, was X+Y] 
+$ (Y2) handoff role
+You are reviewer in q0.
+  [exit 0]
+
+## N. A finished move, then the new id's binding is dropped (another conversation in its process is given a role); the new id is resumed
+$ (X) handoff role reviewer
+You are now reviewer in n.
+  [exit 0]
+$ (/background: X goes on as Y; Y's SessionStart hook)
+handoff brief: you are reviewer in n. You and implementer, reviewer-3 hand work to each other through handoff.
+-- a new conversation W in Y's process (as after a /clear whose hook didn't run) is given implementer:
+$ (W) handoff role implementer
+You are now implementer in n.
+  [exit 0]
+  .handoff/sessions: W[role implementer] 
+-- Y is resumed by its id, in a new process; its Stop hook runs:
+$ (Y) handoff role
+handoff role: no role: when the operator gives this session one, run `handoff role <role>`
+  [exit 2]
+$ (Y, Stop hook) handoff hook listen --timeout 1s
+  [exit 0]
+  .handoff/sessions: W[role implementer] 
+$ (Y) handoff role
+handoff role: no role: when the operator gives this session one, run `handoff role <role>`
+  [exit 2]
+
+## R. A resumed marked session does /clear in its new process
+$ (X) handoff role reviewer
+You are now reviewer in rr.
+  [exit 0]
+$ (Z) handoff role reviewer
+You are now reviewer in rr. Another session had reviewer; it has no role now.
+  [exit 0]
+-- X resumed in a new process, refused; then /clear there:
+$ (X) handoff note --as reviewer --to reviewer-3 --item P1 --title from X as reviewer --body ../body.md
+handoff note: you no longer hold reviewer: the operator gave it to session Z at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in
+  [exit 2]
+$ (/clear: a new conversation X9 in the same process; its SessionStart hook)
+handoff: rr hands work between agents through handoff, and this session has no role in it. When the operator g
+  .handoff/sessions: X[lost reviewer to Z] Z[role reviewer] 
+$ (X9) handoff note --as reviewer --to reviewer-3 --item P1 --title from X9 as reviewer --body ../body.md
+posted #1 note P1 reviewer → reviewer-3: from X9 as reviewer
+handoff: no session has reviewer-3 now, so this waits until the operator gives one that role; tell the operator.
+  [exit 0]
+
+== 5. Reviewer-2's #408 point 2: zsh probe-r4s.sh <dir> <binary> (Run) ==
+It reproduces: with a hook that fixes a role, a marked session's /clear leaves the new id
+unmarked, briefed as reviewer, and its note is posted.
+
+## S. A marked session does /clear, where the project's hooks fix a role (--as reviewer)
+$ (X) handoff role reviewer
+You are now reviewer in s.
+  [exit 0]
+$ (Z) handoff role reviewer
+You are now reviewer in s. Another session had reviewer; it has no role now.
+  [exit 0]
+$ (/clear: a new conversation Y in the same process; its SessionStart hook is: handoff hook brief --as reviewer)
+handoff brief: you are reviewer in s. You and implementer, reviewer-3 hand work to each other through handoff.
+  .handoff/sessions: X[lost reviewer to Z] Z[role reviewer] 
+$ (Y) handoff note --as reviewer --to reviewer-3 --item P1 --title from Y, after /clear of a marked session --body ../body.md
+posted #1 note P1 reviewer → reviewer-3: from Y, after /clear of a marked session
+handoff: no session has reviewer-3 now, so this waits until the operator gives one that role; tell the operator.
+  [exit 0]
+-- the same with the usual hook, no --as, in another process:
+$ (A) handoff role implementer
+You are now implementer in s.
+  [exit 0]
+$ (B) handoff role implementer
+You are now implementer in s. Another session had implementer; it has no role now.
+  [exit 0]
+$ (/clear: a new conversation A2 in the same process; its SessionStart hook is: handoff hook brief  )
+handoff: you no longer hold implementer: the operator gave it to session B at TIME. Stop work on it, and don't
+  .handoff/sessions: A[lost implementer to B, gone] A2[lost implementer to B] B[role implementer] X[lost reviewer to Z] Z[role reviewer] 
+$ (A2) handoff note --as implementer --to reviewer-3 --item P1 --title from A2 --body ../body.md
+handoff note: you no longer hold implementer: the operator gave it to session B at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one
+  [exit 2]
+
+== 6. The full suite (Run) ==
+A first run, started 20:54Z, is void: the implementer removed this worktree by mistake at about 21:01Z and restored it (#412). This is the run started after, on the restored worktree, checked to be at 6f1b853 and clean.
+$ go test ./... -count=1 -race -timeout 30m
+ok  	github.com/dre4success/handoff/cmd/handoff	718.643s
+ok  	github.com/dre4success/handoff/internal/awake	1.365s
+ok  	github.com/dre4success/handoff/internal/gitx	1.295s
+ok  	github.com/dre4success/handoff/internal/notify	1.327s
+ok  	github.com/dre4success/handoff/internal/record	3.822s
+ok  	github.com/dre4success/handoff/internal/status	1.296s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	2.018s
+exit 0

@@ -11,7 +11,8 @@ import (
 // rather than bytes a test wrote by hand. Values: "torn" (half a line written,
 // or half of AppendAll's lines, then killed) and "after-sync" (a post's or a
 // repair's line, or AppendAll's lines, written and synced, then killed before
-// head.json).
+// head.json). cmd/handoff reads "move-between" too: a role's move by /clear
+// or /background killed between its two writes (row 107).
 const FaultEnv = "HANDOFF_TEST_FAULT"
 
 func fault(point string) bool { return os.Getenv(FaultEnv) == point }

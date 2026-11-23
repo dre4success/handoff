@@ -1,0 +1,16 @@
+# Run by: the implementer (Claude Code, Opus 5.5), 2026-11-22T07:01:17Z, handoff handoff v0.0.0-20261116001742-09ece7deb45f
+$ handoff init
+ok
+$ (session old, pid 67536) handoff role implementer
+You are now implementer in proj.
+$ (session new, pid 67537) handoff role implementer
+You are now implementer in proj. Another session had implementer; it has no role now.
+$ ls .handoff/sessions
+new.json
+$ (session old) handoff post --as implementer --item P1 --to reviewer --commit work ...
+posted #1 request P1 implementer → reviewer: from the old session @ 097a0c6bc123
+handoff: no session has reviewer now, so this waits until the operator gives one that role; tell the operator.
+exit 0
+$ (session old) handoff role
+handoff role: no role: when the operator gives this session one, run `handoff role <role>`
+exit 2

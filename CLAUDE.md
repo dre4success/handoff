@@ -8,7 +8,7 @@
 
 ## Boundaries that never move
 
-- The tool never calls a model, never starts, stops or messages an agent, and never drives the work loop.
+- The tool never calls a model, never starts or stops an agent, and never drives the work loop. It delivers and wakes; it never decides, assigns or approves (spec §17 row 105).
 - No network. Git is read-only. Writes go only under `.handoff/` of the target project.
 - A verdict is accepted only from a reviewer, for the exact commit the request named. A claim is never an approval. Nothing the tool does can manufacture an approval.
 - Every commit in an entry is resolved and checked before it is written.

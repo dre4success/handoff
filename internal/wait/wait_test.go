@@ -512,3 +512,22 @@ func TestWaitThatDeliversAtOncePassesAlertsOn(t *testing.T) {
 		t.Fatalf("alerts %v; want the hour-old request passed on", got)
 	}
 }
+
+// Row 108: a listener tells its status from git when the record changes,
+// and once a minute when it doesn't, since a merge changes nothing in the
+// record (reviewer-2, #467: by the fake clock, with no minute's sleep).
+func TestH34p1CheckRunsWhenTheRecordChangesAndEachMinute(t *testing.T) {
+	s := newStore(t)
+	clock := newClock()
+	var at []int
+	clock.hook = func(c *fakeClock) {
+		if c.ticks == 90 {
+			post(t, s, "implementer", "for another role")
+		}
+	}
+	code, _, _ := run(t, s, Options{Role: "reviewer", Timeout: 3 * time.Minute, Clock: clock,
+		Check: func(*status.Status) { at = append(at, clock.ticks) }})
+	if want := []int{0, 60, 90, 150}; code != ExitTimeout || !slices.Equal(at, want) {
+		t.Fatalf("exit %d; Check ran at ticks %v, want %v", code, at, want)
+	}
+}

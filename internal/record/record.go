@@ -49,9 +49,27 @@ type Entry struct {
 	Decision   string   `json:"decision,omitempty"`
 	Key        string   `json:"key,omitempty"`
 	Session    string   `json:"session,omitempty"` // an fyi's: the session given its role when written, the only one it is delivered to (row 93)
-	Body       string   `json:"body"`
-	Damage     *Damage  `json:"damage,omitempty"`
-	Prev       string   `json:"prev"`
+	// Round, Panel and Replaces tie the requests of one post to several
+	// reviewers together: Round is the id of the round's first request,
+	// Panel the roles it asked, in order, and Replaces, by role, the request
+	// each replaces, the same on every request of the round (row 106).
+	Round    int64            `json:"round,omitempty"`
+	Panel    []string         `json:"panel,omitempty"`
+	Replaces map[string]int64 `json:"replaces,omitempty"`
+	// Cover, on an away entry, is the spare the operator said yes to: it
+	// may take a seat that gets stuck while the operator is away (H35).
+	Cover  *Cover  `json:"cover,omitempty"`
+	Body   string  `json:"body"`
+	Damage *Damage `json:"damage,omitempty"`
+	Prev   string  `json:"prev"`
+}
+
+// Cover names the spare by its session when the operator said yes, and by
+// its binding's generation, which a move by /clear or /background keeps,
+// so the spare is still the one named after such a move (H35).
+type Cover struct {
+	Session string `json:"session"`
+	Gen     int64  `json:"gen"`
 }
 
 // Damage describes bytes that a repair entry closed and kept. The repair

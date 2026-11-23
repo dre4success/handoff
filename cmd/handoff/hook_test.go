@@ -156,6 +156,7 @@ func TestH10HookListenStopsWithItsSession(t *testing.T) {
 // A hook acts only for a session on duty here. With no role, outside a
 // project, or as the operator, every hook exits 0 and prints nothing.
 func TestH10HooksOffDuty(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	outside := &repo{dir: t.TempDir()}
 	for _, c := range []struct {
@@ -272,6 +273,7 @@ func TestH10HookNotify(t *testing.T) {
 // in another Stop and would loop. It tells the operator, once, however many turns
 // meet the same trouble.
 func TestH10ListenTroubleIsToldOnce(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	path, envs := sink(t)
 	// A cursor nobody can read stands in for a record gone wrong.
@@ -297,6 +299,7 @@ func TestH10ListenTroubleIsToldOnce(t *testing.T) {
 // the three hooks, and rules that allow handoff but not decide, and keep
 // hands off .handoff/. They name handoff as the brief does.
 func TestH10SettingsClaude(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	res := r.run(t, "", "", nil, "settings", "claude", "--as", "reviewer")
 	at := strings.Index(res.out, "\n{")

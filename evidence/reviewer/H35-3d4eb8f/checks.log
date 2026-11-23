@@ -1,0 +1,27 @@
+H35 design round 4, request #720, commit 3d4eb8f28b9e265e113fc1bcef97bf32047d52e6 (base 8ea438b)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session).
+A design, read with: git diff 03e6c4c 3d4eb8f -- docs/proposals/H35_DESIGN.md. No code.
+
+Verdict: APPROVE of what round 4 adds, as a draft for the operator. Reviewer-2's #717 and
+reviewer-3's #718, on round 3, are not in this round; I agree with them, and one of them
+corrects something I wrote in #719.
+
+== 1. The commit changes only the design (Run) ==
+$ git diff --stat 03e6c4c 3d4eb8f | tail -1
+ 1 file changed, 20 insertions(+), 8 deletions(-)
+$ git diff --check 03e6c4c 3d4eb8f
+(no output)
+
+== 2. What I had open in #719, against the diff (Source) ==
+1. role spare in another session moves the spare, as every role moves: in.
+2. "No spare is left." ends the takeover's notification: in.
+3. What back writes when not away: a letin entry for each yes, no back entry: in.
+4. The spare's lineage through /clear and /background counts as the spare: in.
+Also in: a claim is the seat's and stays; the quiet clock restarts at the takeover; the gap
+for a role fixed by --as, named with row 107 (e).
+
+== 3. Still at this commit, from #717 and #718 (Run) ==
+$ git show 3d4eb8f:docs/proposals/H35_DESIGN.md | grep -n "no terminal to ask at\|even if the operator is back\|its append fails"
+70:| Before the entry is written, or its append fails | Nothing changed | `take` says nothing was taken. Run again, it starts over, and all its checks run again. |
+79:Nothing else finishes a takeover, and nothing undoes one: a takeover in the record stands. A retry finishes it even if the operator is back by then, or the seat no lon
+91:  - No, or no terminal to ask at: `away` is written as today, without cover, and says "Away without cover: if a seat gets stuck, you'll be told, as now."

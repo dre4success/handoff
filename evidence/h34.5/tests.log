@@ -1,0 +1,94 @@
+# H34.5 round 4 tests, run by the implementer (Claude Code, Opus 5.5), 2026-11-23T08:14:40Z, on branch h34.5-why at b5425bc. Each command is followed only by what it printed.
+$ gofmt -l cmd internal; echo "exit $?"
+exit 0
+$ go vet ./...; echo "exit $?"
+exit 0
+$ go list -deps ./... | grep -cx net
+0
+$ go test -race -count=1 -timeout 30m ./...
+ok  	github.com/dre4success/handoff/cmd/handoff	301.411s
+ok  	github.com/dre4success/handoff/internal/awake	1.338s
+ok  	github.com/dre4success/handoff/internal/gitx	1.221s
+ok  	github.com/dre4success/handoff/internal/notify	1.410s
+ok  	github.com/dre4success/handoff/internal/record	3.836s
+ok  	github.com/dre4success/handoff/internal/status	1.226s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	2.453s
+$ go test -count=1 -run TestH34p5 -v ./cmd/handoff ./internal/status | grep -E "^(--- |    --- |ok|FAIL|    [a-z_]*_test.go:[0-9]*:)"
+--- PASS: TestH34p5ANoteDeliveredBetweenTheReadsGetsNoAlert (0.49s)
+--- PASS: TestH34p5TheDecideAlertNamesTheOthers (0.61s)
+--- PASS: TestH34p5ThePopupAndTheTerminalNameTheOthers (0.70s)
+--- PASS: TestH34p5TheQuietAlertSaysWhy (0.00s)
+    --- PASS: TestH34p5TheQuietAlertSaysWhy/listening (2.81s)
+    --- PASS: TestH34p5TheQuietAlertSaysWhy/blocked,_deaf_and_no_session (3.05s)
+--- PASS: TestH34p5NoUndeliveredAlertForAHeldApproveAForeignFyiOrAnOldNote (0.00s)
+    --- PASS: TestH34p5NoUndeliveredAlertForAHeldApproveAForeignFyiOrAnOldNote/a_note_to_a_blocked_role (2.67s)
+    --- PASS: TestH34p5NoUndeliveredAlertForAHeldApproveAForeignFyiOrAnOldNote/a_note_its_role's_own_listener_is_delivering (2.74s)
+    --- PASS: TestH34p5NoUndeliveredAlertForAHeldApproveAForeignFyiOrAnOldNote/a_held_APPROVE (2.79s)
+    --- PASS: TestH34p5NoUndeliveredAlertForAHeldApproveAForeignFyiOrAnOldNote/a_note_from_before_tracking (2.41s)
+    --- PASS: TestH34p5NoUndeliveredAlertForAHeldApproveAForeignFyiOrAnOldNote/an_fyi_for_a_session_gone (2.52s)
+--- PASS: TestH34p5AnUndeliveredNoteAlerts (3.87s)
+ok  	github.com/dre4success/handoff/cmd/handoff	4.795s
+--- PASS: TestH34p5ABrokenRoundsAlertGivesNoRequesterWhy (0.00s)
+ok  	github.com/dre4success/handoff/internal/status	0.225s
+$ (a worktree of 0e31248, the base, with this why_test.go) go test -count=1 -run TestH34p5 -v ./cmd/handoff | grep -E "^(--- |    --- |ok|FAIL|    [a-z_]*_test.go:[0-9]*:)"
+    why_test.go:236: the decide alert: ["001: W1: reviewer approved #1. Your decision."], want "W1: reviewer approved #1; reviewer-2 asked for changes on #2. Your decision."
+--- FAIL: TestH34p5TheDecideAlertNamesTheOthers (0.82s)
+    why_test.go:260: the dialog:
+--- FAIL: TestH34p5ThePopupAndTheTerminalNameTheOthers (0.87s)
+    why_test.go:113: no alert for the note: []
+--- FAIL: TestH34p5AnUndeliveredNoteAlerts (2.93s)
+    why_test.go:57: no alert with ["W1: reviewer hasn't picked up #1" ", and its session can't be woken (Antigravity's 10 wakes used, since "]: ["001: W1: reviewer hasn't picked up #1 (2 s)" "001: W2: reviewer-2 hasn't picked up #2 (2 s)" "001: W3: implementer hasn't answered the CHANGES on #3 (2 s)"]
+--- FAIL: TestH34p5TheQuietAlertSaysWhy (0.00s)
+    --- PASS: TestH34p5TheQuietAlertSaysWhy/listening (2.96s)
+    --- FAIL: TestH34p5TheQuietAlertSaysWhy/blocked,_deaf_and_no_session (3.14s)
+--- PASS: TestH34p5NoUndeliveredAlertForAHeldApproveAForeignFyiOrAnOldNote (0.00s)
+    --- PASS: TestH34p5NoUndeliveredAlertForAHeldApproveAForeignFyiOrAnOldNote/a_note_to_a_blocked_role (2.84s)
+    --- PASS: TestH34p5NoUndeliveredAlertForAHeldApproveAForeignFyiOrAnOldNote/a_note_its_role's_own_listener_is_delivering (2.90s)
+    --- PASS: TestH34p5NoUndeliveredAlertForAHeldApproveAForeignFyiOrAnOldNote/a_held_APPROVE (2.98s)
+    --- PASS: TestH34p5NoUndeliveredAlertForAHeldApproveAForeignFyiOrAnOldNote/a_note_from_before_tracking (2.45s)
+    --- PASS: TestH34p5NoUndeliveredAlertForAHeldApproveAForeignFyiOrAnOldNote/an_fyi_for_a_session_gone (2.53s)
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	3.734s
+FAIL
+$ (a worktree of 9ae2e65, round 3, with this why_test.go, why_order_test.go and internal/status/status_test.go) go test -count=1 -run TestH34p5 -v ./cmd/handoff ./internal/status | grep -E "^(--- |    --- |ok|FAIL|    [a-z_]*_test.go:[0-9]*:)"
+    why_order_test.go:28: no process reached the pause point delivery-reviewer in 30 s
+--- FAIL: TestH34p5ANoteDeliveredBetweenTheReadsGetsNoAlert (30.47s)
+--- PASS: TestH34p5TheDecideAlertNamesTheOthers (0.60s)
+    why_test.go:260: the dialog:
+--- FAIL: TestH34p5ThePopupAndTheTerminalNameTheOthers (0.68s)
+--- PASS: TestH34p5NoUndeliveredAlertForAHeldApproveAForeignFyiOrAnOldNote (0.00s)
+    --- PASS: TestH34p5NoUndeliveredAlertForAHeldApproveAForeignFyiOrAnOldNote/a_note_to_a_blocked_role (2.65s)
+    --- PASS: TestH34p5NoUndeliveredAlertForAHeldApproveAForeignFyiOrAnOldNote/a_note_from_before_tracking (2.73s)
+    --- PASS: TestH34p5NoUndeliveredAlertForAHeldApproveAForeignFyiOrAnOldNote/a_note_its_role's_own_listener_is_delivering (2.74s)
+    --- PASS: TestH34p5NoUndeliveredAlertForAHeldApproveAForeignFyiOrAnOldNote/a_held_APPROVE (2.82s)
+    --- PASS: TestH34p5NoUndeliveredAlertForAHeldApproveAForeignFyiOrAnOldNote/an_fyi_for_a_session_gone (2.55s)
+--- PASS: TestH34p5TheQuietAlertSaysWhy (0.00s)
+    --- PASS: TestH34p5TheQuietAlertSaysWhy/blocked,_deaf_and_no_session (3.08s)
+    --- PASS: TestH34p5TheQuietAlertSaysWhy/listening (2.50s)
+--- PASS: TestH34p5AnUndeliveredNoteAlerts (3.93s)
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	34.806s
+    status_test.go:820: the broken round's alert: ["W1: the round #2's requests don't match each other, which posting again can't repair; only you can sort it out (60 min), and nothing is listening for it (never listened)"]
+--- FAIL: TestH34p5ABrokenRoundsAlertGivesNoRequesterWhy (0.00s)
+FAIL
+FAIL	github.com/dre4success/handoff/internal/status	0.181s
+FAIL
+$ (a copy of this tree with deliveries' two reads swapped back, the cursor first, as in round 3) git diff --no-index | expand; go test -count=1 -run TestH34p5ANoteDeliveredBetweenTheReadsGetsNoAlert -v ./cmd/handoff | grep -E "^(--- |    --- |ok|FAIL|    [a-z_]*_test.go:[0-9]*:)"
+@@ -16,9 +16,9 @@ import (
+ func (a *app) deliveries() map[string]status.Delivery {
+        out := map[string]status.Delivery{}
+        for _, r := range a.cfg.Roles {
+-               d, ok := a.deliveryTo(r.Name)
+-               testPause("delivery-" + r.Name) // between the two reads, for a test
+                cur, _ := wait.ReadCursor(a.dir, r.Name)
++               testPause("delivery-" + r.Name) // between the two reads, for a test
++               d, ok := a.deliveryTo(r.Name)
+                out[r.Name] = status.Delivery{Cursor: cur, Session: d.session, Was: d.was, Why: whyClause(d, ok), Blocked: ok && d.block != nil, Listening: ok && d.listening}
+        }
+        return out
+    why_order_test.go:37: an alert for the note the listener delivered: "W1: reviewer hasn't been given the note #1 from implementer (60 min), and nothing is listening for it (last listened just now)"
+--- FAIL: TestH34p5ANoteDeliveredBetweenTheReadsGetsNoAlert (0.38s)
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	0.651s
+FAIL

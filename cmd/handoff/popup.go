@@ -154,13 +154,14 @@ func (a *app) popup(key string, id int64, show dialog) error {
 	if err != nil {
 		return err
 	}
-	t, err := status.Compute(snap.Entries).Decidable(id)
+	st := status.Compute(snap.Entries)
+	t, err := st.Decidable(id)
 	if err != nil {
 		return notify.MarkSent(a.dir, key) // decided at a terminal meanwhile
 	}
 	project := filepath.Base(filepath.Dir(a.dir))
 	title := "handoff: " + project
-	button, _, gaveUp, err := show(title, popupText(t), []string{"Later", "Deny", "Approve"}, false)
+	button, _, gaveUp, err := show(title, popupText(t, st.OthersOn(t.Request)), []string{"Later", "Deny", "Approve"}, false)
 	if err != nil {
 		return err
 	}
@@ -192,8 +193,9 @@ func (a *app) popup(key string, id int64, show dialog) error {
 }
 
 // popupText says what the operator is deciding, as the terminal does: the request
-// and who approved it, or the note and what it asks.
-func popupText(t *status.Target) string {
+// and who approved it, with where the item's other requests stand (others,
+// from OthersOn; reviewer-2, #693), or the note and what it asks.
+func popupText(t *status.Target, others string) string {
 	item := t.Entry.Item
 	if item == "" {
 		item = "-"
@@ -203,8 +205,11 @@ func popupText(t *status.Target) string {
 		if t.Request.Verdict != nil {
 			who = t.Request.Verdict.From
 		}
-		return fmt.Sprintf("%s: %s approved #%d.\n\n%s\n\nLater keeps it waiting: run handoff in the project to decide there.",
-			item, who, t.Entry.ID, firstLine(t.Entry.Title))
+		if others != "" {
+			others = "; " + others
+		}
+		return fmt.Sprintf("%s: %s approved #%d%s.\n\n%s\n\nLater keeps it waiting: run handoff in the project to decide there.",
+			item, who, t.Entry.ID, others, firstLine(t.Entry.Title))
 	}
 	body := strings.Split(strings.TrimRight(t.Entry.Body, "\n"), "\n")
 	if len(body) > 10 {

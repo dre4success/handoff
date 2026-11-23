@@ -71,7 +71,41 @@ type Options struct {
 	// from idle sleep: yes while an agent owes a move made less than
 	// AwakeWithin ago. It is told no when the wait ends (row 76).
 	Awake func(on bool)
+
+	// Fence, when set, runs each delivery, the line printed and the cursor
+	// moved: it does so only while the listener still holds its role, under
+	// the record's lock, which a role's move takes too. It returns ErrFenced
+	// when the role has moved, and the wait ends as a timeout, so an old
+	// listener never takes an entry meant for its successor (row 107).
+	Fence func(deliver func() error) error
+
+	// Check, when set, is given the status each time the record changes, and
+	// once a minute, to tell it from git which approvals aren't in main yet:
+	// status never runs git, and a merge changes nothing in the record
+	// (row 108).
+	Check func(*status.Status)
+
+	// Wake, when set, is asked with the status each time Check runs. What
+	// it answers, when not "", is delivered as an entry is: under Fence,
+	// deliver is given the print, so it can check again under the lock that
+	// the wake still holds, print what it says now, then record it given.
+	// It returns ErrStale, printing nothing, when the wake no longer holds,
+	// and the wait goes on (reviewer-2, #853, #862, #871). A listener whose role moved
+	// delivers nothing; once a wake is printed the wait ends as delivered.
+	// The spare's listener wakes the spare this way for a stuck seat, which
+	// is no entry in the record (H35). It isn't asked in Emit mode.
+	Wake func(*status.Status) (text string, deliver func(print func(text string) error) error)
 }
+
+// checkEvery is how often Check runs when the record hasn't changed.
+const checkEvery = time.Minute
+
+// ErrFenced is what a Fence returns when the listener's role has moved.
+var ErrFenced = errors.New("the role moved")
+
+// ErrStale is what a Wake's deliver returns when, under the lock, the wake
+// no longer holds: it is dropped, and the wait goes on.
+var ErrStale = errors.New("the wake no longer holds")
 
 // AwakeWithin bounds how long a wait keeps the machine awake for one move:
 // a move owed longer than that has stalled, and the operator has been told.
@@ -111,11 +145,16 @@ func Run(store *record.Store, o Options) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+	fence := o.Fence
+	if fence == nil {
+		fence = func(deliver func() error) error { return deliver() }
+	}
 	start := o.Clock.Now().Round(0)
 	deadline := start.Add(o.Timeout)
 	lastTick := start
 	var seen [2]fileSig
 	var st *status.Status
+	var checked time.Time
 	printed := map[string]bool{}
 	delivered := false
 	// pass is checked on every tick, not only when the record changes: a
@@ -130,6 +169,123 @@ func Run(store *record.Store, o Options) (int, error) {
 	}
 	if o.Awake != nil {
 		defer o.Awake(false)
+	}
+	// walk delivers what waits past the cursor, in id order. An APPROVE
+	// held back (row 111), and an fyi for another session behind one, are
+	// passed over without moving the cursor; the next entry the role does
+	// get carries every one of them before it, in order, and a held one
+	// whose time is up goes too. heldUntil is when the first still held is
+	// due. done says the wait ends, with code; a code below 0 is an error,
+	// in walkErr.
+	var entries []record.Entry
+	var heldUntil time.Time
+	var walkErr error
+	walk := func(now time.Time, final bool) (done bool, code int) {
+		var pending []record.Entry
+		give := func(e record.Entry) (bool, int) {
+			skip := e.Kind == "fyi" && e.Session != "" && e.Session != o.Session && !slices.Contains(o.Was, e.Session)
+			err := fence(func() error {
+				if !skip {
+					line := status.Summary(e)
+					// An APPROVE that completes an item while the operator is
+					// away says so: that is the operator's approve (row 96).
+					if note := st.GoAheadNote(e); note != "" {
+						line += "\n  " + note
+					}
+					if _, err := fmt.Fprintln(o.Out, line); err != nil {
+						return fmt.Errorf("printing #%d: %w", e.ID, err)
+					}
+					if f, ok := o.Out.(interface{ Sync() error }); ok {
+						f.Sync()
+					}
+				}
+				return writeCursor(store.Dir(), o.Role, e.ID)
+			})
+			if errors.Is(err, ErrFenced) {
+				// The role moved: what was delivered stands, and the rest
+				// is the successor's (reviewer-3, #371).
+				if delivered {
+					return true, ExitDelivered
+				}
+				return true, ExitTimeout
+			}
+			if err != nil {
+				walkErr = err
+				return false, -1
+			}
+			cur = e.ID
+			delivered = delivered || !skip
+			return false, 0
+		}
+		heldUntil = time.Time{}
+		// A hold's time is up, or the wait ends on this snapshot, as at a
+		// break in the chain: every held one goes now (row 111; reviewer-2,
+		// #535).
+		release := final
+		for _, e := range entries {
+			if e.To != o.Role || e.ID <= cur {
+				continue
+			}
+			skip := e.Kind == "fyi" && e.Session != "" && e.Session != o.Session && !slices.Contains(o.Was, e.Session)
+			if skip && len(pending) > 0 && !release {
+				pending = append(pending, e) // behind a held one: the cursor stays
+				continue
+			}
+			if !skip && !o.Emit && !release {
+				if until, partial := st.PartialApprove(e); partial {
+					if now.Before(until) {
+						pending = append(pending, e)
+						if heldUntil.IsZero() || until.Before(heldUntil) {
+							heldUntil = until
+						}
+						continue
+					}
+					release = true
+				}
+			}
+			for _, p := range append(pending, e) {
+				if done, code := give(p); done || code < 0 {
+					return done, code
+				}
+			}
+			pending, heldUntil = nil, time.Time{}
+		}
+		return false, 0
+	}
+	// woke asks Wake, and delivers what it answers as give delivers an
+	// entry: done says the wait ends, with code or err.
+	woke := func(st *status.Status) (done bool, code int, err error) {
+		if o.Wake == nil || o.Emit || st == nil {
+			return false, 0, nil
+		}
+		msg, deliver := o.Wake(st)
+		if msg == "" {
+			return false, 0, nil
+		}
+		print := func(msg string) error {
+			if _, err := fmt.Fprintln(o.Out, msg); err != nil {
+				return fmt.Errorf("printing the wake: %w", err)
+			}
+			if f, ok := o.Out.(interface{ Sync() error }); ok {
+				f.Sync()
+			}
+			return nil
+		}
+		err = fence(func() error {
+			if deliver == nil {
+				return print(msg)
+			}
+			return deliver(print)
+		})
+		switch {
+		case errors.Is(err, ErrStale):
+			return false, 0, nil
+		case errors.Is(err, ErrFenced):
+			return true, ExitTimeout, nil // the role moved: the wake is its successor's
+		case err != nil:
+			return true, 0, err
+		}
+		return true, ExitDelivered, nil
 	}
 	var slept *sleep
 	report := func() {
@@ -168,43 +324,46 @@ func Run(store *record.Store, o Options) (int, error) {
 				return 0, err
 			}
 			st = status.Compute(snap.Entries)
+			if o.Check != nil {
+				o.Check(st)
+				checked = now
+			}
 			for _, m := range snap.Warnings() {
 				if !printed[m] {
 					fmt.Fprintln(o.Err, "handoff: "+m)
 					printed[m] = true
 				}
 			}
-			for _, e := range snap.Entries {
-				if e.To != o.Role || e.ID <= cur {
-					continue
-				}
-				if e.Kind == "fyi" && e.Session != "" && e.Session != o.Session && !slices.Contains(o.Was, e.Session) {
-					cur = e.ID
-					if err := writeCursor(store.Dir(), o.Role, cur); err != nil {
-						return 0, err
-					}
-					continue
-				}
-				line := status.Summary(e)
-				// An APPROVE that completes an item while the operator is away
-				// says so: that is the operator's approve (row 96).
-				if note := st.GoAheadNote(e); note != "" {
-					line += "\n  " + note
-				}
-				if _, err := fmt.Fprintln(o.Out, line); err != nil {
-					return 0, fmt.Errorf("printing #%d: %w", e.ID, err)
-				}
-				if f, ok := o.Out.(interface{ Sync() error }); ok {
-					f.Sync()
-				}
-				cur = e.ID
-				if err := writeCursor(store.Dir(), o.Role, cur); err != nil {
-					return 0, err
-				}
-				delivered = true
+			entries = snap.Entries
+			if done, code := walk(now, snap.Broken != nil); done {
+				return code, nil
+			} else if code < 0 {
+				return 0, walkErr
 			}
 			if b := snap.Broken; b != nil {
 				return 0, fmt.Errorf("%w at line %d; wait stops without delivering anything from line %d on; the operator decides", record.ErrBroken, b.Line, b.Withheld)
+			}
+			if delivered && !o.Emit {
+				pass(now)
+				return ExitDelivered, nil
+			}
+			if done, code, err := woke(st); done {
+				return code, err
+			}
+		}
+		if o.Check != nil && st != nil && now.Sub(checked) >= checkEvery {
+			o.Check(st)
+			checked = now
+			if done, code, err := woke(st); done {
+				return code, err
+			}
+		}
+		// A held APPROVE whose time is up goes with no new write (row 111).
+		if !heldUntil.IsZero() && !now.Before(heldUntil) {
+			if done, code := walk(now, false); done {
+				return code, nil
+			} else if code < 0 {
+				return 0, walkErr
 			}
 			if delivered && !o.Emit {
 				pass(now)

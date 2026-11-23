@@ -1,0 +1,37 @@
+07:11:44 step 1: listener held pid 72603, model calls so far 3
+posted #1 note P1 reviewer → implementer: probe note 1 at 07:11:44.319847000
+07:11:47 step 1: handled after 3 s; wakes.log: 07:11:47 #1 note P1 reviewer → implementer: probe note 1 at 07:11:44.319847000; model calls 4
+07:11:47 step 2: listener held pid 76654, model calls so far 4
+posted #2 note P1 reviewer → implementer: probe note 2 at 07:11:47.599709000
+07:11:54 step 2: handled after 7 s; wakes.log: 07:11:52 #2 note P1 reviewer → implementer: probe note 2 at 07:11:47.599709000; model calls 6
+07:11:54 step 3: listener held pid 76891, model calls so far 6
+posted #3 note P1 reviewer → implementer: probe note 3 at 07:11:54.657548000
+07:12:00 step 3: handled after 6 s; wakes.log: 07:11:59 #3 note P1 reviewer → implementer: probe note 3 at 07:11:54.657548000; model calls 8
+07:12:00 step 4: listener held pid 77016, model calls so far 8
+posted #4 note P1 reviewer → implementer: probe note 4 at 07:12:00.701347000
+07:12:16 step 4: handled after 17 s; wakes.log: 07:12:16 #4 note P1 reviewer → implementer: probe note 4 at 07:12:00.701347000; model calls 10
+07:12:17 step 5: listener held pid 77281, model calls so far 10
+posted #5 note P1 reviewer → implementer: probe note 5 at 07:12:18.065837000
+07:12:22 step 5: handled after 4 s; wakes.log: 07:12:21 #5 note P1 reviewer → implementer: probe note 5 at 07:12:18.065837000; model calls 12
+07:12:22 step 6: listener held pid 77382, model calls so far 12
+posted #6 note P1 reviewer → implementer: probe note 6 at 07:12:23.184497000
+07:12:27 step 6: handled after 4 s; wakes.log: 07:12:27 #6 note P1 reviewer → implementer: probe note 6 at 07:12:23.184497000; model calls 14
+07:12:29 step 7: listener held pid 77486, model calls so far 14
+posted #7 note P1 reviewer → implementer: probe note 7 at 07:12:29.723285000
+07:12:34 step 7: handled after 5 s; wakes.log: 07:12:33 #7 note P1 reviewer → implementer: probe note 7 at 07:12:29.723285000; model calls 16
+07:12:34 step 8: listener held pid 77588, model calls so far 16
+posted #8 note P1 reviewer → implementer: probe note 8 at 07:12:34.604486000
+07:12:38 step 8: handled after 4 s; wakes.log: 07:12:38 #8 note P1 reviewer → implementer: probe note 8 at 07:12:34.604486000; model calls 18
+07:12:38 step 9: listener held pid 77720, model calls so far 18
+posted #9 note P1 reviewer → implementer: probe note 9 at 07:12:38.928438000
+07:12:47 step 9: handled after 9 s; wakes.log: 07:12:46 #9 note P1 reviewer → implementer: probe note 9 at 07:12:38.928438000; model calls 20
+07:12:47 step 10: listener held pid 77876, model calls so far 20
+posted #10 note P1 reviewer → implementer: probe note 10 at 07:12:47.215185000
+07:12:51 step 10: handled after 4 s; wakes.log: 07:12:51 #10 note P1 reviewer → implementer: probe note 10 at 07:12:47.215185000; model calls 22
+07:12:51 step 11: listener held pid 77985, model calls so far 22
+posted #11 note P1 reviewer → implementer: probe note 11 at 07:12:51.397418000
+07:12:57 step 11: handled after 6 s; wakes.log: 07:12:57 #11 note P1 reviewer → implementer: probe note 11 at 07:12:51.397418000; model calls 24
+07:12:57 step 12: listener held pid 78114, model calls so far 24
+posted #12 note P1 reviewer → implementer: probe note 12 at 07:12:57.597960000
+07:13:02 step 12: handled after 5 s; wakes.log: 07:13:02 #12 note P1 reviewer → implementer: probe note 12 at 07:12:57.597960000; model calls 26
+07:13:22 done; listener held; model calls 27

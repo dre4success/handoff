@@ -1,0 +1,184 @@
+# H34.7 review, round 4, request #357, commit 367163b26771e30548cc5c4760b8785daa028008 (base 2bee103)
+# Run by: the reviewer (Claude Code, Fable 5.2), 2026-11-22T12:20:00Z
+# The commit was checked out in a temporary worktree and built there. Every probe ran in a scratch project with HANDOFF_TEST_NOTIFY
+# set and no session variables. 'handoff' is this commit's build; 'old' is the installed build.
+# The scripts are the ones of the earlier rounds: probe2.sh, probe3.sh, atterm_y.py in ../H34.7-9baa65a/, probe4.sh in ../H34.7-28ca099/.
+
+## T1. Every probe of rounds 1 to 3 run again on this commit: what differs from round 3's results (../H34.7-28ca099/checks.log)
+$ diff <(round 3's probe2 output) <(this commit's), with hashes and times folded
+(no difference)
+$ diff <(round 3's probe3 output) <(this commit's), with hashes and times folded
+(no difference)
+$ diff <(round 3's probe4 output) <(this commit's), with hashes and times folded
+21c21
+< prev: SHA8e040291c4b0391ae2e309bc
+---
+> prev: SHAd6c86a591e0909b5e468f941
+31c31
+< handoff post: an older handoff listens for reviewer-3 (pid N), which can't see a round; nothing written. It ends when its session's turn does, and the next listens with this handoff: post again then
+---
+> handoff post: an older handoff listens for reviewer-3 (pid N), which can't see a round; nothing written. An idle listener ends once something is delivered to its role, and the next one is this handoff's: send that role a note, then post again
+59,60c59,60
+< handoff post: key "W1" was used by round #1; nothing written
+<   [exit 2]
+---
+> posted #3 request W2 implementer → reviewer-3: W2 @ SHA
+>   [exit 0]
+63c63
+< posted #3 request W3 implementer → reviewer-3: W3 @ SHA
+---
+> posted #4 request W3 implementer → reviewer-3: W3 @ SHA
+66,67c66,68
+< handoff post: key "W9/notes" was used by #3 with different content; nothing written
+<   [exit 2]
+---
+> posted #5 request W4 implementer → reviewer: W4 @ SHA
+> posted #6 request W4 implementer → reviewer-2: W4 @ SHA
+>   [exit 0]
+
+## T2. probe4.sh on this commit, in full (S1 shown as a request; S2 the older listener; S3 keys with a slash; S4 the recorded mapping)
+
+## S1. How a round's request is shown
+$ handoff post --as implementer --item W1 --to reviewer,reviewer-2,reviewer-3 --title W1 --body ../body.md --commit 1276f9f4620f8c440eda17e3a4c7c0f1072ced7b
+posted #1 request W1 implementer → reviewer: W1 @ 1276f9f4620f
+posted #2 request W1 implementer → reviewer-2: W1 @ 1276f9f4620f
+posted #3 request W1 implementer → reviewer-3: W1 @ 1276f9f4620f
+  [exit 0]
+$ handoff wait --for reviewer --timeout 1s
+#1 request W1 implementer → reviewer: W1 @ 1276f9f4620f
+  [exit 0]
+$ handoff inbox --for reviewer | grep '#'
+  #1 request W1 implementer → reviewer: W1 @ 1276f9f4620f
+$ handoff show 2 | head -9
+#2 request W1
+from: implementer → reviewer-2
+ts: 2026-11-22T12:18:58Z
+title: W1
+commit: 1276f9f4620f8c440eda17e3a4c7c0f1072ced7b
+base: e18840a2fca899184189c1a3823f171022773dea
+round: #1, to reviewer, reviewer-2 and reviewer-3
+state: open
+prev: 01b23dca7b66aa1d14919dde227ab51744838089d6c86a591e0909b5e468f941
+$ handoff   (the operator, not at a terminal)
+#1 request W1 implementer → reviewer: W1 @ 1276f9f4620f
+  #4 reply W1 reviewer → implementer: APPROVE on #1 @ 1276f9f4620f
+Run handoff in a terminal to decide.
+  kinds stored: round round round reply 
+
+## S2. An older listener, for a role the round doesn't even ask, and how it ends
+  presence of reviewer-3: {"v":1,"pid":N,"since":"T","how":"wait"}
+$ handoff post --as implementer --item W1 --to reviewer,reviewer-2 --title W1 --body ../body.md --commit 2bb65051b693a7c0815329a66c2c3e1052342145
+handoff post: an older handoff listens for reviewer-3 (pid N), which can't see a round; nothing written. An idle listener ends once something is delivered to its role, and the next one is this handoff's: send that role a note, then post again
+  [exit 2]
+-- one request still goes through, and a note to that role ends its listener:
+$ handoff post --as implementer --item W2 --to reviewer --title W2 --body ../body.md --commit 2bb65051b693a7c0815329a66c2c3e1052342145
+posted #1 request W2 implementer → reviewer: W2 @ 2bb65051b693
+  [exit 0]
+$ handoff note --as implementer --to reviewer-3 --item W1 --title handoff was upgraded --body ../body2.md
+posted #2 note W1 implementer → reviewer-3: handoff was upgraded
+  [exit 0]
+  the old listener printed: #2 note W1 implementer → reviewer-3: handoff was upgraded 
+$ handoff post --as implementer --item W1 --to reviewer,reviewer-2 --title W1 --body ../body.md --commit 2bb65051b693a7c0815329a66c2c3e1052342145
+posted #3 request W1 implementer → reviewer: W1 @ 2bb65051b693
+posted #4 request W1 implementer → reviewer-2: W1 @ 2bb65051b693
+  [exit 0]
+-- a listener of this build doesn't hold a round up:
+  presence of reviewer-3: {"v":1,"pid":N,"since":"T","how":"wait","rounds":true}
+$ handoff post --as implementer --item W3 --to reviewer,reviewer-2 --title W3 --body ../body.md --commit 2bb65051b693a7c0815329a66c2c3e1052342145
+posted #5 request W3 implementer → reviewer: W3 @ 2bb65051b693
+posted #6 request W3 implementer → reviewer-2: W3 @ 2bb65051b693
+  [exit 0]
+
+## S3. Keys with a slash in them
+$ handoff post --as implementer --item W1 --to reviewer,reviewer-2 --title W1 --body ../body.md --commit c96f7c72cf507d80bc043d1e35c4cac82b62bb88 --key W1/r1
+posted #1 request W1 implementer → reviewer: W1 @ c96f7c72cf50
+posted #2 request W1 implementer → reviewer-2: W1 @ c96f7c72cf50
+  [exit 0]
+-- a single request on another item, with a key that was never used:
+$ handoff post --as implementer --item W2 --to reviewer-3 --title W2 --body ../body.md --commit c96f7c72cf507d80bc043d1e35c4cac82b62bb88 --key W1
+posted #3 request W2 implementer → reviewer-3: W2 @ c96f7c72cf50
+  [exit 0]
+-- one request keyed W9/notes, then a round keyed W9, never used either:
+$ handoff post --as implementer --item W3 --to reviewer-3 --title W3 --body ../body.md --commit c96f7c72cf507d80bc043d1e35c4cac82b62bb88 --key W9/notes
+posted #4 request W3 implementer → reviewer-3: W3 @ c96f7c72cf50
+  [exit 0]
+$ handoff post --as implementer --item W4 --to reviewer,reviewer-2 --title W4 --body ../body.md --commit c96f7c72cf507d80bc043d1e35c4cac82b62bb88 --key W9
+posted #5 request W4 implementer → reviewer: W4 @ c96f7c72cf50
+posted #6 request W4 implementer → reviewer-2: W4 @ c96f7c72cf50
+  [exit 0]
+-- the cases the guard is for:
+$ handoff post --as implementer --item W1 --to reviewer-3,reviewer --title other --body ../body.md --commit 591e2b18e7adf832651bb85bdab8ed67f3a2b764 --key W1/r1
+handoff post: key "W1/r1/reviewer" was used by #1 with different content; nothing written
+  [exit 2]
+$ handoff post --as implementer --item W5 --to reviewer-3 --title W5 --body ../body.md --commit c96f7c72cf507d80bc043d1e35c4cac82b62bb88 --key W1/r1
+handoff post: key "W1/r1" was used by round #1; nothing written
+  [exit 2]
+
+## S4. (#331 point 2) A replacement cut after one request; the operator then denies an old request it was to replace; the same post again
+$ HANDOFF_TEST_FAULT=first-line handoff post ... --commit Y --supersedes 1,2,3
+  [exit 137]
+$ handoff decide 2 --deny --note no   (the operator)
+posted #6 decision W1 operator → implementer: deny #2
+  states: #1=open #2=decided #3=open #5=open 
+$ handoff post --as implementer --item W1 --to reviewer,reviewer-2,reviewer-3 --title W1 --body ../body.md --commit 0a0d69aa4eecdfa8f22a9d835730b15cc1d92c23 --supersedes 1,3
+handoff post: round #5 on W1, to reviewer, reviewer-2 and reviewer-3 at 0a0d69aa4eec, is incomplete: post it again as it was, with the same title, body and key, to complete it; nothing written
+  [exit 2]
+$ handoff post --as implementer --item W1 --to reviewer,reviewer-2,reviewer-3 --title W1 --body ../body.md --commit 0a0d69aa4eecdfa8f22a9d835730b15cc1d92c23 --supersedes 1,2,3
+exists #5 request W1 implementer → reviewer: W1 @ 0a0d69aa4eec (supersedes #1)
+posted #7 request W1 implementer → reviewer-2: W1 @ 0a0d69aa4eec (supersedes #2)
+posted #8 request W1 implementer → reviewer-3: W1 @ 0a0d69aa4eec (supersedes #3)
+  [exit 0]
+  states: #1=superseded by #5 #2=decided #3=superseded by #8 #5=open #7=open #8=open 
+$ handoff show 7 | grep -E '^(supersedes|round)'
+handoff: advisory: 2026-11-22T12:19:10Z: head.json is behind the record: it counts 4 lines, the record has 5 that chain on from them (a writer stopped between the record and head.json); `handoff repair` acknowledges it
+supersedes: #2
+round: #5, to reviewer, reviewer-2 and reviewer-3
+
+## S8. The installed, older build waiting as the operator; then a round from this commit's build
+$ old wait --for operator --timeout 10s &   (the installed build)
+$ handoff post --as implementer --item W1 --to reviewer,reviewer-2 --title W1 --body ../body8.md --commit w1
+handoff post: an older handoff listens for operator (pid N), which can't see a round; nothing written. An idle listener ends once something is delivered to its role, and the next one is this handoff's: send that role a note, then post again
+  [exit 2]
+-- once that wait has ended (its 10 s are up):
+posted #1 request W1 implementer → reviewer: W1 @ 5bf30ee15847
+posted #2 request W1 implementer → reviewer-2: W1 @ 5bf30ee15847
+  [exit 0]
+-- this build waiting as the operator holds nothing up:
+posted #3 request W2 implementer → reviewer: W2 @ 5bf30ee15847
+posted #4 request W2 implementer → reviewer-2: W2 @ 5bf30ee15847
+  [exit 0]
+
+## T3. Source: the README's upgrade steps, and the exact key test
+$ sed -n 15,21p README.md
+After an update, a listener from the old build keeps running until something is delivered to its role. So before agents ask several reviewers in one post, make sure nothing from the old build still listens:
+
+- send each role with a session a note, or let it finish a turn;
+- stop any `handoff wait` you started yourself;
+- remove any older `handoff` from your `PATH`.
+
+Until then, `post` refuses to ask several reviewers at once, names the old listener and says to send its role a note.
+$ sed -n "/^func roundKey/,/^}/p" cmd/handoff/cmds.go
+func roundKey(x *record.Entry) string {
+	if x.Kind != "round" || x.Key == "" || !strings.HasSuffix(x.Key, "/"+x.To) {
+		return ""
+	}
+	return strings.TrimSuffix(x.Key, "/"+x.To)
+}
+
+## The suite at the commit
+$ go build ./... && go vet ./...   # 12:18:35Z
+ok
+$ go list -deps ./... | grep -x net
+exit 1 (1 = no net)
+$ gofmt -l cmd internal
+(end)
+$ go test ./... -count=1 -race -timeout 30m
+exit 0   # 12:28:08Z
+ok  	github.com/dre4success/handoff/cmd/handoff	570.531s
+ok  	github.com/dre4success/handoff/internal/awake	1.516s
+ok  	github.com/dre4success/handoff/internal/gitx	1.214s
+ok  	github.com/dre4success/handoff/internal/notify	1.404s
+ok  	github.com/dre4success/handoff/internal/record	4.044s
+ok  	github.com/dre4success/handoff/internal/status	1.427s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	1.814s

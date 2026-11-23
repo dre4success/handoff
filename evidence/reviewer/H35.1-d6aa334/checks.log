@@ -1,0 +1,207 @@
+H35.1, request #797, commit d6aa3343a4494329493e2e0eecdacc990ae288e9 (base 00868d5, H34.8 round 3, in main)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session).
+The commit was built in a temporary worktree (git worktree add --detach), removed after.
+Every probe ran in a new scratch git project with HANDOFF_TEST_NOTIFY set and the session
+variables unset. Sessions are simulated: CLAUDE_CODE_SESSION_ID with CLAUDE_PID (the pid of
+a sleep) for Claude Code, ANTIGRAVITY_CONVERSATION_ID or the hook's stdin for Antigravity.
+I ran no real second session.
+
+Verdict: CHANGES.
+
+== 1. Build, vet, format, dependencies (Run) ==
+$ go build -o handoff ./cmd/handoff && go vet ./... && gofmt -l cmd internal
+(no output)
+$ go list -deps ./... | grep -c '^net$'
+0
+$ git diff --check 00868d5 d6aa334
+(no output)
+
+== 2. The full suite (Run) ==
+$ uptime; /usr/bin/time -p go test ./... -count=1 -race      (no -timeout; the worktree was at d6aa334 and clean when it ended)
+ 8:34  up 23 days, 12:31, 15 users, load averages: 5.52 6.27 6.16
+ok  	github.com/dre4success/handoff/cmd/handoff	312.507s
+ok  	github.com/dre4success/handoff/internal/awake	1.298s
+ok  	github.com/dre4success/handoff/internal/gitx	1.214s
+ok  	github.com/dre4success/handoff/internal/notify	1.387s
+ok  	github.com/dre4success/handoff/internal/record	4.009s
+ok  	github.com/dre4success/handoff/internal/status	1.214s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	2.560s
+real 317.90
+user 112.44
+sys 97.02
+exit 0
+
+== 3. My probes: probe.sh (Run) ==
+The older build in S6 is a78c804 (H34.6 round 8), which has no H35.
+
+## S1. The spare, through /clear and /background: does the role move, and does its generation stay?
+$ (sp0) handoff role spare
+You are now the spare in s1.
+handoff brief: you are the spare in s1. implementer, reviewer and reviewer-2 hand work to each other through handoff, and the operator decides. You hold no work, and nothing is sent to you.
+  [exit 0]
+  binding sp0: role spare | gen 992000 | gone False | pid yes | lost -  
+$ (sp1, SessionStart hook, source clear, same process) handoff hook brief
+handoff brief: you are the spare in s1. implementer, reviewer and reviewer-2 hand work to each other through handoff, and the operator decides. You hold no work, and nothing is sent to you.
+  binding sp0: role - | gen 992000 | gone True | pid no | lost spare to sp1 /clear
+  binding sp1: role spare | gen 992000 | gone False | pid yes | lost -  
+$ (sp1) handoff role spare
+You are the spare already in s1.
+handoff brief: you are the spare in s1. implementer, reviewer and reviewer-2 hand work to each other through handoff, and the operator decides. You hold no work, and nothing is sent to you.
+  [exit 0]
+  binding sp1: role spare | gen 992000 | gone False | pid yes | lost -  
+$ (sp2, SessionStart hook, source fork: /background from sp1) handoff hook brief
+handoff brief: you are the spare in s1. implementer, reviewer and reviewer-2 hand work to each other through handoff, and the operator decides. You hold no work, and nothing is sent to you.
+  binding sp1: role - | gen 992000 | gone True | pid no | lost spare to sp2 /background
+  binding sp2: role spare | gen 992000 | gone False | pid yes | lost -  
+
+## S2. History, in sequences: who may be the spare
+-- a: the spare is given a seat by the operator's word, loses it, and asks to be the spare again
+$ (a) handoff role spare
+You are now the spare in s2.
+handoff brief: you are the spare in s2. implementer, reviewer and reviewer-2 hand work to each other through handoff, and the operator decides. You hold no work, and nothing is sent to you.
+  [exit 0]
+$ (a) handoff role reviewer
+You are now reviewer in s2.
+handoff brief: you are reviewer in s2. You and implementer, reviewer-2 hand work to each other through handoff. The operator decides.
+  [exit 0]
+$ (z) handoff role reviewer
+You are now reviewer in s2. Another session had reviewer; it has no role now.
+handoff brief: you are reviewer in s2. You and implementer, reviewer-2 hand work to each other through handoff. The operator decides.
+  [exit 0]
+$ (a) handoff role spare
+handoff role: this session has been reviewer in s2, so it can't be the spare: the spare may take any seat, and must not review or build on what it has seen. The operator can start a new session for it
+  [exit 2]
+-- b: /clear in the process of a session that lost implementer, then role spare in the new id
+handoff: you no longer hold implementer: the operator gave it to session z2 at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>.
+$ (b1) handoff role spare
+handoff role: this session has been implementer in s2, so it can't be the spare: the spare may take any seat, and must not review or build on what it has seen. The operator can start a new session for it
+  [exit 2]
+-- c: the old id of a /background move (it held reviewer-2), resumed in a new process
+handoff brief: you are reviewer-2 in s2. You and implementer, reviewer hand work to each other through handoff. The operator decides.
+$ (c0) handoff role spare
+handoff role: this session has been reviewer-2 in s2, so it can't be the spare: the spare may take any seat, and must not review or build on what it has seen. The operator can start a new session for it
+  [exit 2]
+-- d: a session that only ever used --as (no binding): the gap row 115 names
+$ (d) handoff role spare
+You are now the spare in s2.
+handoff brief: you are the spare in s2. implementer, reviewer and reviewer-2 hand work to each other through handoff, and the operator decides. You hold no work, and nothing is sent to you.
+  [exit 0]
+
+## S3. What reaches the spare: an fyi, away and back
+$ (the operator, at a terminal) handoff fyi "word for all"
+    told implementer (#1)
+    implementer's session isn't listening now; it gets this the next time it listens.
+    not told, no session: reviewer, reviewer-2
+$ (sp) handoff wait --timeout 2s
+  [exit 3]
+$ (the operator, at a terminal) handoff away "carry on"
+    away (#2): your go-ahead stands until you run handoff back
+    Under it, an item is approved once every reviewer it was sent to approves the same commit; one approval is enough for an item sent to one reviewer. handoff doesn't read your words: to tell the agents something without approving anything, use handoff fyi.
+    told implementer (#3)
+    implementer's session isn't listening now; it gets this the next time it listens.
+    not told, no session: reviewer, reviewer-2
+    handoff: told the operator: Your go-ahead is recorded (#2): carry on Until you run handoff back, items are approved without asking you.
+$ (sp) handoff wait --timeout 2s
+  [exit 3]
+  entries addressed to the spare: 0
+
+## S4. Listening as the spare, and as another role from the spare's session (reviewer-2's #803)
+$ handoff wait --for spare --timeout 1s
+  [exit 3]
+$ (sp) handoff wait --for reviewer --timeout 1s
+#1 request W1 implementer → reviewer: W1 @ e24ec12ba5d9
+  [exit 0]
+  reviewer's cursor after: none
+$ (a session with no role, fixed by its hook) handoff hook listen --as spare --timeout 1s
+  [exit 0]
+
+## S5. Antigravity as the spare, its hooks with the id on stdin only
+You are now the spare in s5.
+$ (SessionStart hook, stdin only) handoff hook brief   (the Listening line)
+    handoff brief: you are the spare in s5. implementer, reviewer and reviewer-2 hand work to each other through handoff, and the operator decides. You hold no work, and nothing is sent to you.
+    Listening: Run `…/wt-h351.aZXu/han
+$ (Stop hook, stdin only, executionNum 10) handoff hook listen
+{}
+  binding G: role spare | block cap
+  alerts to the operator: 1
+    s5: handoff can't wake spare's Antigravity session for new work until you type in it: Antigravity lets hooks continue a turn 10 times in a row.
+$ handoff   (the "sessions" part)
+
+## S6. A project that already has a role named spare (made with the older build)
+$ handoff post --as implementer --item W1 --to spare --commit 9825641025f1abbace79e14e9ff3ea0fcc1fbc70 --title W1 --body f
+posted #1 request W1 implementer → spare: W1 @ 9825641025f1
+handoff: no session has spare now, so this waits until the operator gives one that role; tell the operator.
+  [exit 0]
+$ handoff claim --as spare 1
+posted #2 claim W1 spare → -: claimed #1
+  [exit 0]
+$ (old) handoff role implementer
+You are now implementer in s6.
+handoff brief: you are implementer in s6. You and reviewer, spare hand work to each other through handoff. The operator decides.
+  [exit 0]
+$ (old) handoff role spare
+You are now spare in s6.
+handoff brief: you are spare in s6. You and implementer, reviewer hand work to each other through handoff. The operator decides.
+  [exit 0]
+-- and the new build's init and roles add:
+$ handoff init --roles implementer,reviewer,spare --main main
+handoff init: spare is built in: it is the session that can take over a stuck seat while the operator is away; do not list it
+  [exit 2]
+$ handoff roles add spare
+handoff roles: spare is built in: it is the session that can take over a stuck seat while the operator is away; do not list it
+  [exit 2]
+
+S4, after: .handoff/cursors/reviewer.json is {"v":1,"id":1}. The spare's session moved the
+reviewer's cursor past #1 (my probe looked for a file named "reviewer", so it printed none).
+S5, the Listening line in full (my probe cut it short):
+Listening: Run `handoff wait --for spare --timeout 60m` in the background. Exit 3: run it again. Exit 4: something else already listens for spare, perhaps your own earlier wait. After you handle what it delivers, wait again. In Antigravity, that is `run_command` with a
+
+== 4. The other reviewers' findings, run again, and a blocked spare: probe-b.sh (Run) ==
+
+## T1. reviewer-3's #804, 1: a /clear move from implementer cut between its two writes, then role spare in the new id
+$ (s2, SessionStart hook, source clear, HANDOFF_TEST_FAULT=move-between) handoff hook brief
+  binding s1: role - | gone True | pid no | lost implementer to s2 /clear
+  binding s2: (no file)
+$ (s2) handoff role spare
+You are now the spare in t1.
+  [exit 0]
+  binding s2: role spare | gone False | pid yes | lost -  
+
+## T2. reviewer-3's #804, 2: the spare's process ended and was swept; resumed, it runs role spare
+  binding sp: role spare | gone True | pid no | lost -  
+$ (sp) handoff role spare
+You are the spare already in t2.
+  [exit 0]
+  binding sp: role spare | gone True | pid no | lost -  
+-- for contrast, any other command of it notes its new process:
+$ (sp) handoff inbox --quiet
+  [exit 0]
+  binding sp: role spare | gone False | pid yes | lost -  
+
+## T3. reviewer-3's #804, 3: HANDOFF_ROLE and --as with the spare
+$ (n) HANDOFF_ROLE=spare handoff role spare
+You are now the spare in t3.
+$ (n) HANDOFF_ROLE=implementer handoff role spare
+You are the spare already in t3.
+$ (n) handoff inbox --as spare
+inbox for spare
+  [exit 0]
+
+## T4. A blocked spare, and a blocked reviewer, in handoff on its own
+  binding G: role spare | block cap
+  binding R: role reviewer | block cap
+$ handoff   (the "sessions" part)
+sessions:
+  blocked: reviewer can't be woken until the operator types in its session (Antigravity's 10 wakes used, since 08:51). This waits.
+  alerts to the operator: 2
+    t4: handoff can't wake spare's Antigravity session for new work until you type in it: Antigravity lets hooks continue a turn 10 times in a row.
+    t4: handoff can't wake reviewer's Antigravity session for new work until you type in it: Antigravity lets hooks continue a turn 10 times in a row.
+
+== 5. Source ==
+cmd/handoff/session.go, cmdRole: for the spare, readBinding (the "already" answer) and
+heldAnother both run before bind, which is where lockRoles is taken. So the two checks and
+the write they allow are not one step (reviewer-2's #803, point 2). I read this and did not
+run the paused case.
+cmd/handoff/cmds.go, the "sessions" part of handoff on its own: it goes through the
+config's roles, and the spare is not among them, so a blocked spare is never listed (T4).

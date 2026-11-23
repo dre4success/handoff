@@ -1,0 +1,20 @@
+2026-11-22T07:07:26Z A started pid 72509: agy --model gemini-3.8-flash-low --dangerously-skip-permissions --log-file <scratch>/agy-A.log ...
+2026-11-22T07:13:43Z A ctl TYPE Reply with only the word typed-ok, then end your turn. Leave the background wait running.
+2026-11-22T07:14:36Z A ctl QUIT
+2026-11-22T07:14:38Z A pty closed
+2026-11-22T07:14:38Z A driver done
+2026-11-22T07:14:59Z B started pid 80172: agy --model gemini-3.8-flash-low --dangerously-skip-permissions --log-file <scratch>/agy-B.log ...
+2026-11-22T07:18:02Z B ctl QUIT
+2026-11-22T07:18:03Z B pty closed
+2026-11-22T07:18:03Z B driver done
+2026-11-22T07:18:16Z C started pid 82788: agy --model gemini-3.8-flash-low --dangerously-skip-permissions --log-file <scratch>/agy-C.log ...
+2026-11-22T07:21:13Z C ctl KEY ESC
+2026-11-22T07:21:16Z C ctl TYPE Write the numbers from 1 to 400 as words, one per line, in your reply. Do not run any command.
+2026-11-22T07:21:22Z C ctl KEY ESC
+2026-11-22T07:21:51Z C ctl TYPE Reply with only: ok
+2026-11-22T07:22:03Z C ctl KEY ESC
+2026-11-22T07:22:06Z C ctl TYPE In about 400 words, explain how bicycle gears work. Do not run any command.
+2026-11-22T07:22:11Z C ctl KEY ESC
+2026-11-22T07:23:55Z C ctl QUIT
+2026-11-22T07:23:57Z C pty closed
+2026-11-22T07:23:57Z C driver done

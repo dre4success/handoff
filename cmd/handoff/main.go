@@ -27,12 +27,16 @@ const usage = `usage: handoff [command] [flags]
   init    [--roles implementer,reviewer,reviewer-2] [--reviewers <roles>] [--main <branch>]
           (every role reviews but implementer; main, else master)
   roles   add <role>...         add roles to the record, such as a second reviewer
-  post    --item W31 --to reviewer --commit <ref> --title T --body file
-          [--base <ref>] [--on <branch>] [--parents a,b] [--supersedes <id>] [--key k]
+  post    --item W31 --to reviewer[,reviewer-2] --commit <ref> --title T --body file
+          [--base <ref>] [--on <branch>] [--parents a,b] [--supersedes <id>[,<id>]] [--key k]
   claim   <id>
   reply   <id> --verdict APPROVE|CHANGES|QUESTION --commit <sha> --body file [--key k]
   note    [--item W31] --to <role|operator> [--re <id>] [--title T] --body file [--key k]
-  decide  <item|id> --approve|--deny [--note text | --body file]   (the operator, at a terminal)
+  decide  <item|id> --approve|--deny [--note text | --body file]   (the operator, at a terminal);
+          --deny on work approved and not merged holds it
+  merged  <item|id> <sha>       after a squash or rebase merge: record approved work merged as <sha>
+  withdraw <id> [--note text]   withdraw a request of yours that no longer needs an answer, such
+          as one still open once its item is merged or dropped
   fyi     "<message>"           (the operator, at a terminal) tell every agent with a session
           at once, such as that you're away; they act on it and don't reply
   away    "<go-ahead>"          (the operator, at a terminal) go away, approving in advance
@@ -45,9 +49,10 @@ const usage = `usage: handoff [command] [flags]
   show    <id>
   brief   [--for role]          an agent's duty, its loop and what waits for it
   role    [<role>]              in an agent's session: take the role the operator gave it, or show it
-  settings claude|codex [--global | --as <role>]   settings that keep a CLI's sessions
+  settings claude|codex|antigravity [--global | --as <role>]   settings that keep a CLI's sessions
           on duty: --global for every project, else this one; without --as,
-          each session takes the role the operator gives it
+          each session takes the role the operator gives it (Antigravity
+          takes no --as)
   hook    listen|brief|notify   run by a CLI's hooks, as settings prints
   repair
   version                       the version of handoff installed
@@ -85,6 +90,30 @@ type app struct {
 	cfg    *config
 	store  *record.Store
 	quiet  time.Duration // config.json's quiet_after
+	// fence is the binding the caller's role was resolved from, if any: a
+	// write rechecks it under the record's lock, so it can't land after the
+	// role moved (row 107).
+	fence        *binding
+	fenceSession string // the session resolved, if any, so a write can see it marked meanwhile
+	// opened is when the command opened the record, from a session bound
+	// then (openedSession, at openedGen): a permission report from no later
+	// is answered once the command ends (row 110; reviewer-2, #610).
+	opened        time.Time
+	openedSession string
+	openedGen     int64
+	// hookCLI is the CLI a hook's input names when its environment may not:
+	// Antigravity names its session on stdin, and may leave
+	// ANTIGRAVITY_CONVERSATION_ID unset (reviewer-3, #710).
+	hookCLI string
+}
+
+// cli is the CLI of the session this command runs for: as its hook's input
+// names it, else as its environment does (sessionCLI).
+func (a *app) cli() string {
+	if a.hookCLI != "" {
+		return a.hookCLI
+	}
+	return sessionCLI()
 }
 
 func run(args []string, stdin *os.File, stdout, stderr io.Writer) int {
@@ -109,6 +138,7 @@ func run(args []string, stdin *os.File, stdout, stderr io.Writer) int {
 			return exitRefused
 		}
 		code, err := a.cmdHome()
+		a.answered()
 		if err != nil {
 			fmt.Fprintf(stderr, "handoff: %v\n", err)
 			return exitRefused
@@ -121,7 +151,7 @@ func run(args []string, stdin *os.File, stdout, stderr io.Writer) int {
 		"note": a.cmdNote, "decide": a.cmdDecide, "fyi": a.cmdFyi, "away": a.cmdAway, "back": a.cmdBack, "inbox": a.cmdInbox, "wait": a.cmdWait,
 		"show": a.cmdShow, "repair": a.cmdRepair, popupCmd: a.cmdPopup,
 		"brief": a.cmdBrief, "hook": a.cmdHook, "settings": a.cmdSettings, "role": a.cmdRole,
-		"roles": a.cmdRoles,
+		"roles": a.cmdRoles, "merged": a.cmdMerged, "withdraw": a.cmdWithdraw,
 	}
 	cmd, ok := cmds[args[0]]
 	if !ok {
@@ -129,6 +159,9 @@ func run(args []string, stdin *os.File, stdout, stderr io.Writer) int {
 		return exitRefused
 	}
 	code, err := cmd(args[1:])
+	if args[0] != "hook" && args[0] != popupCmd {
+		a.answered()
+	}
 	switch {
 	case errors.Is(err, flag.ErrHelp):
 		fmt.Fprint(stderr, usage)
@@ -210,6 +243,13 @@ func (a *app) open() error {
 		return err
 	}
 	a.dir, a.cfg, a.store, a.quiet = dir, &c, record.New(dir), quiet
+	if s := callerSession(); s.ID != "" && a.opened.IsZero() {
+		a.opened = time.Now() // before the binding is read
+		if b, ok := a.readBinding(s.ID); ok && b.Role != "" {
+			a.openedSession, a.openedGen = s.ID, b.Gen
+		}
+	}
+	a.track()
 	return nil
 }
 
@@ -223,10 +263,37 @@ func (a *app) role(as string) (string, error) {
 // roleOf is role, and says whether the role is the one the operator gave the caller's
 // session, from the same reading of its binding (row 75).
 func (a *app) roleOf(as string) (string, bool, error) {
+	return a.roleOfSession(callerSession(), as)
+}
+
+// roleOfSession is roleOf for session s: the caller's, or a hook's from its
+// stdin (reviewer-3, #371).
+func (a *app) roleOfSession(s session, as string) (string, bool, error) {
 	env := os.Getenv("HANDOFF_ROLE")
+	// One reading of s's binding: marked or bound, never a moment between
+	// (reviewer-3, #371). A session that lost its role may do nothing as any
+	// role, until the operator gives it one again (row 107).
 	var given string
-	if b, ok := a.bound(callerSession()); ok {
+	b, ok := a.readBinding(s.ID)
+	if m, lost := a.markOf(b, ok, s.ID); lost {
+		return "", false, lostErr(m)
+	}
+	if ok && b.Role != "" {
 		given = b.Role
+		if b.Gone {
+			// A session resumed by its id, before any hook of it ran: its
+			// first command notes its new process (the reviewer, #379). The
+			// generation stays, so the fence is unchanged.
+			a.update(s, b.Role)
+		}
+		a.fence = &b
+		testPause("write") // a write held after its role is resolved
+	}
+	a.fenceSession = s.ID
+	if a.isSpare(as) || a.isSpare(env) {
+		// Even in the spare's own session: it is named only by its binding
+		// (H35; reviewer-3, #804).
+		return "", false, fmt.Errorf("the spare is the session the operator names with `%s role spare` in it; --as spare and HANDOFF_ROLE=spare are refused", shellQuote(selfCommand()))
 	}
 	r := as
 	switch {
@@ -241,7 +308,7 @@ func (a *app) roleOf(as string) (string, bool, error) {
 	case r == "":
 		r = given
 	}
-	if r == "" && callerSession().ID != "" {
+	if r == "" && s.ID != "" {
 		return "", false, errors.New("no role: when the operator gives this session one, run `handoff role <role>`")
 	}
 	if r == "" {
@@ -250,10 +317,62 @@ func (a *app) roleOf(as string) (string, bool, error) {
 	if r == status.Operator {
 		return r, false, nil
 	}
+	if a.isSpare(r) {
+		// The operator names the spare in its session, so it comes only
+		// from that session's binding, never --as or HANDOFF_ROLE (H35).
+		if given != r {
+			return "", false, fmt.Errorf("the spare is the session the operator names with `%s role spare` in it; --as spare and HANDOFF_ROLE=spare are refused", shellQuote(selfCommand()))
+		}
+		return r, true, nil
+	}
 	if _, ok := a.cfg.role(r); !ok {
 		return "", false, fmt.Errorf("unknown role %q; the roles are %s", r, a.roleNames())
 	}
 	return r, given != "" && r == given, nil
+}
+
+// isSpare says whether name is the built-in spare (H35). A project whose
+// config already lists a role named spare keeps it as that role.
+func (a *app) isSpare(name string) bool {
+	if name != status.Spare {
+		return false
+	}
+	_, listed := a.cfg.role(name)
+	return !listed
+}
+
+// writer is role, for a command that writes as the role it resolves. The
+// spare holds no work, so it writes nothing as the spare (H35).
+func (a *app) writer(as string) (string, error) {
+	r, err := a.role(as)
+	if err == nil && a.isSpare(r) {
+		return "", errors.New("the spare holds no work, so it writes nothing to the record; it waits until a seat needs it")
+	}
+	return r, err
+}
+
+// fenced checks, inside a write's build, under the record's lock, that the
+// caller still holds the role it was resolved with: the same binding, at the
+// same generation. bind moves a role under that lock too, so a write that
+// began before a move and ends after it is refused (row 107).
+func (a *app) fenced() error {
+	if a.fence == nil {
+		// A role fixed by --as or HANDOFF_ROLE, with no binding: as before,
+		// unless the session was marked since (reviewer-3, #371).
+		b, ok := a.readBinding(a.fenceSession)
+		if m, lost := a.markOf(b, ok, a.fenceSession); lost {
+			return lostErr(m)
+		}
+		return nil
+	}
+	b, ok := a.readBinding(a.fence.Session)
+	switch {
+	case ok && b.Lost != nil && b.Role == "":
+		return lostErr(b.Lost)
+	case !ok || b.Role != a.fence.Role || b.Gen != a.fence.Gen:
+		return fmt.Errorf("this session's role %s moved while this command ran; nothing written", a.fence.Role)
+	}
+	return nil
 }
 
 func (a *app) roleNames() string {
@@ -275,6 +394,8 @@ func (a *app) addressee(to, from string, operatorOK bool) error {
 		return nil
 	case to == status.Operator:
 		return errors.New("a request cannot go to the operator; use `handoff note --to operator`")
+	case a.isSpare(to):
+		return errors.New("nothing is sent to the spare: it holds no work until it takes a seat (H35)")
 	}
 	if _, ok := a.cfg.role(to); !ok {
 		return fmt.Errorf("unknown role %q; the roles are %s", to, a.roleNames())

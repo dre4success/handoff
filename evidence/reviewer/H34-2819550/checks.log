@@ -1,0 +1,117 @@
+# H34 design review, request #242, commit 2819550b8036c895f366e5603d8e9f8a46e3fe61 (base 370f688)
+# Run by: the reviewer (Claude Code, Fable 5.2), 2026-11-22T07:05:39Z, in a temporary worktree of the exact commit
+
+## 1. What the commit changes
+$ git diff --stat 370f688..2819550
+ docs/proposals/H34_DESIGN.md | 118 +++++++++++++++++++++++++++++++++++++++++++
+ evidence/h34/facts.log       |  68 +++++++++++++++++++++++++
+ 2 files changed, 186 insertions(+)
+
+## 2. The facts log reproduces (its greps, run again at the commit)
+$ diff <(their greps and output, facts.log lines 4-48) <(the same greps run again)
+(no difference)
+
+## 3. Point 1: the Antigravity hook at a timeout, today (Source)
+$ sed -n 162,166p cmd/handoff/hook.go
+	case !alive():
+		return exitOK, nil
+	}
+	fmt.Fprintf(a.stderr, "%shandoff: nothing new for %s in %s. Just end your turn; listening starts again when it ends.\n", out.String(), role, *timeout)
+	return exitWake, nil
+$ sed -n 258,262p cmd/handoff/hook.go
+	if code != exitWake {
+		fmt.Fprintln(a.stdout, "{}")
+		return code, nil
+	}
+	return exitOK, json.NewEncoder(a.stdout).Encode(map[string]string{"decision": "continue", "reason": says.String()})
+$ grep -n "23\*time.Hour\|24 \* 60 \* 60" cmd/handoff/hook.go cmd/handoff/settings.go
+cmd/handoff/hook.go:103:	timeout := fs.Duration("timeout", 23*time.Hour, "")
+cmd/handoff/settings.go:136:	listen["timeout"] = 24 * 60 * 60
+cmd/handoff/settings.go:243:		"Stop": []any{map[string]any{"hooks": []any{map[string]any{"type": "command", "command": cmd("listen"), "timeout": 24 * 60 * 60}}}},
+cmd/handoff/settings.go:267:		"Stop": []any{map[string]any{"type": "command", "command": cmd("listen"), "timeout": 24 * 60 * 60}},
+
+## 4. Point 2: under the go-ahead a request is decided with no decision entry; a note needs --to; a note to the operator is a question (Source)
+$ sed -n 152,165p internal/status/status.go
+func (s *Status) cover(item string, at int64) {
+	live := s.liveOn(item)
+	if len(live) == 0 {
+		return
+	}
+	for _, r := range live {
+		if r.State != AwaitingOperator || r.Entry.Commit != live[0].Entry.Commit {
+			return
+		}
+	}
+	for _, r := range live {
+		r.State, r.GoAhead, r.CoveredAt = Decided, s.Away, at
+	}
+}
+$ sed -n 113,115p internal/status/status.go
+			// from anyone else is recorded and changes nothing.
+			if e.From != Operator {
+				continue
+$ grep -n "a.addressee(\*to, from, true)\|--item or --re is required" cmd/handoff/cmds.go
+610:	if err := a.addressee(*to, from, true); err != nil {
+627:		return 0, errors.New("--item or --re is required")
+
+## 5. Part 2: every writer of a binding takes the sessions lock (Source)
+$ grep -n "writeBinding(\|lockSessions()" cmd/handoff/*.go | grep -v _test
+cmd/handoff/cmds.go:190:	unlock, err := a.lockSessions()
+cmd/handoff/session.go:239:func (a *app) lockSessions() (unlock func(), err error) {
+cmd/handoff/session.go:266:	unlock, err := a.lockSessions()
+cmd/handoff/session.go:293:	return took, a.writeBinding(binding{V: 1, Role: role, Session: s.ID, PID: s.PID, Host: s.Host, Since: time.Now().UTC().Format(time.RFC3339Nano)})
+cmd/handoff/session.go:296:func (a *app) writeBinding(b binding) error {
+cmd/handoff/session.go:371:	unlock, err := a.lockSessions()
+cmd/handoff/session.go:396:	return b.Role, false, a.writeBinding(b) == nil
+cmd/handoff/session.go:470:	unlock, err := a.lockSessions()
+cmd/handoff/session.go:480:	a.writeBinding(b)
+cmd/handoff/session.go:487:	unlock, err := a.lockSessions()
+cmd/handoff/session.go:505:	return b.Role, a.writeBinding(b) == nil
+$ sed -n 33,38p cmd/handoff/settings.go
+	if pos[0] == "antigravity" {
+		// Antigravity gives a hook no way to set what its agent's commands see,
+		// so no role is fixed for its sessions (row 102).
+		if *as != "" {
+			return 0, errors.New("--as fixes a role for Claude Code or Codex; an Antigravity session takes the role you give it")
+		}
+
+## 6. The quiet alert and its default (Source)
+$ grep -n "defaultQuiet = " cmd/handoff/main.go
+164:const defaultQuiet = 30 * time.Minute
+$ sed -n 426,435p internal/status/status.go
+			continue
+		}
+		var text string
+		switch r.State {
+		case Open:
+			text = fmt.Sprintf("%s: %s hasn't picked up #%d (%s)", item, r.Entry.To, id, age(gone))
+		case Claimed:
+			text = fmt.Sprintf("%s: %s claimed #%d and has been quiet for %s", item, r.Entry.To, id, age(gone))
+		case Answered:
+			text = fmt.Sprintf("%s: %s hasn't answered the %s on #%d (%s)", item, r.Entry.From, r.Verdict.Verdict, id, age(gone))
+
+## 7. Part 1 on two real records (Run): approved requests whose commit is not in main
+$ (in handoff) for each request not superseded whose last reply is APPROVE: git merge-base --is-ancestor <commit> main
+approved, not superseded: 28; not in main: 0 
+main is at ae474d3 ; merge commits in main: 28
+$ (in the other project) for each request not superseded whose last reply is APPROVE: git merge-base --is-ancestor <commit> main
+approved, not superseded: 26; not in main: 0 
+main is at fa6f765 ; merge commits in main: 0
+
+## 8. Part 3 replayed on the other project, the night of 2026-11-21 (Run): replies to the implementer after the operator last typed (23:28:02Z)
+232 23:34:56 gym-fit-1 reviewer-2 APPROVE held
+233 23:35:23 gym-fit-1 reviewer APPROVE held
+234 23:36:03 gym-fit-1 reviewer-3 APPROVE WAKES, carrying [232, 233]
+241 23:50:53 look reviewer-3 CHANGES WAKES
+242 23:51:54 look reviewer APPROVE held
+243 23:52:01 look reviewer-2 CHANGES WAKES, carrying [242]
+250 23:58:53 look reviewer-3 APPROVE held
+251 23:59:19 look reviewer APPROVE held
+252 23:59:53 look reviewer-2 CHANGES WAKES, carrying [250, 251]
+259 00:02:24 look reviewer-3 APPROVE held
+260 00:03:15 look reviewer-2 APPROVE held
+261 00:04:16 look reviewer APPROVE WAKES, carrying [259, 260]
+wakes as it was: 12; with part 3: 5 (at most: a reply that lands while the implementer is still in its turn costs none)
+
+## 9. How long requests waited for a claim, on this record (Run): what a 15-minute alert adds to the 30-minute one
+requests 56, claimed 54; claimed later than 15m: 6, 30m: 5, 60m: 4

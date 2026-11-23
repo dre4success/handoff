@@ -1,0 +1,18 @@
+H35 design round 9, request #768, commit 5623e602a66b (base 8ea438b)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session).
+A design, read with: git diff d31e9fc 5623e60 -- docs/proposals/H35_DESIGN.md. No code.
+
+Verdict: APPROVE, as a draft ready for the operator.
+
+== 1. The commits change only the design (Run) ==
+$ git diff --stat d31e9fc 5623e60 | tail -1
+ 1 file changed, 13 insertions(+), 5 deletions(-)
+$ git diff --check d31e9fc 5623e60
+(no output)
+
+== 2. The fact the round rests on, in the code on main (Source) ==
+handoff role rewrites the calling session's own binding whole (bind, cmd/handoff/session.go:
+the final writeBinding has only the new role), so a session given reviewer-3 and then
+reviewer-2 keeps no trace of having held reviewer-3. Round 8's "any binding that ever held
+the seat at a later generation" could therefore miss it. Role moves are not entries in the
+record, so the seat's last generation needs somewhere of its own to be kept.

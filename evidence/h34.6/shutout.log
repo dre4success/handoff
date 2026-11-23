@@ -1,0 +1,16 @@
+# H34.6: the shut-out probe of row 107 (a), again with this branch's build (round 8); run by the implementer (Claude Code, Opus 5.5), 2026-11-22T23:58:15Z
+$ <scratch>/handoff init
+ok
+$ (session old, pid 18999) <scratch>/handoff role implementer
+You are now implementer in proj.
+$ (session new, pid 19000) <scratch>/handoff role implementer
+You are now implementer in proj. Another session had implementer; it has no role now.
+$ ls .handoff/sessions
+new.json
+old.json
+$ (session old) <scratch>/handoff post --as implementer --item P1 --to reviewer --commit work ...
+handoff post: you no longer hold implementer: the operator gave it to session new at 2026-11-22T23:58:16Z. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>
+exit 2
+$ (session old) <scratch>/handoff role
+handoff role: you no longer hold implementer: the operator gave it to session new at 2026-11-22T23:58:16Z. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>
+exit 2

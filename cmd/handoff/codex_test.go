@@ -162,6 +162,7 @@ func TestH10bShellQuote(t *testing.T) {
 // (GPT-6, H10b CHANGES #45; evidence/reviewer/H10b-418a0c4/bare.txt). Without
 // it, the same command asks.
 func TestH10bTheRoleKeepsBareHandoffFromTheOperatorsQuestion(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	r.approved(t, "W1")
 	_, _, config := codexSettings(t, r, "reviewer")

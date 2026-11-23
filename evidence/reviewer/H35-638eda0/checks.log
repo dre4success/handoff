@@ -1,0 +1,19 @@
+H35 design round 6, request #738, commit 638eda05475f (base 8ea438b)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session).
+A design, read with: git diff cff9f97 638eda0 -- docs/proposals/H35_DESIGN.md. No code.
+
+Verdict: APPROVE, as a draft for the operator, with one note.
+
+== 1. The commit changes only the design (Run) ==
+$ git diff --stat cff9f97 638eda0 | tail -1
+ 1 file changed, 10 insertions(+), 8 deletions(-)
+$ git diff --check cff9f97 638eda0
+(no output)
+
+== 2. The two facts the round rests on, in the code on main (Source) ==
+- A move by /clear or /background keeps the binding's generation: carry builds the new
+  binding as a copy of the old (cmd/handoff/session.go, "nu := b"), so Gen is unchanged.
+- handoff role gives a new generation each time it is run, in the same session too:
+  bind writes Gen: now.UnixNano() (cmd/handoff/session.go).
+The second is why I note that role spare, run again by the spare itself after away, would
+stop it being the spare the away entry names.

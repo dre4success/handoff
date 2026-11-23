@@ -1,0 +1,17 @@
+H34.2 round 2, request #500, commit 3e993625ef733b881ede5da59bc283fb5b88b291 (base 3388ed7, H34.1 round 3)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session).
+
+Verdict: CHANGES. Round 2 is round 1 rebased; part 2's own code is unchanged, so my
+findings on round 1 stand (../H34.2-4522906/checks.log, B6 and B2). No probe was run again.
+
+$ git diff --stat 4522906 3e99362 -- cmd/handoff/block.go cmd/handoff/hook.go cmd/handoff/cmds.go cmd/handoff/brief.go cmd/handoff/session.go cmd/handoff/main.go internal/wait/presence.go
+(no output)
+$ git diff --stat 4522906 3e99362 -- cmd internal
+ cmd/handoff/merge.go           |  6 ++++
+ internal/status/merge.go       | 69 ++++++++++++++++++++++++++++--------------
+ internal/status/status.go      | 39 ++++++++++++++++++------
+ internal/status/status_test.go | 58 +++++++++++++++++++++++++++++++++++
+ 4 files changed, 141 insertions(+), 31 deletions(-)
+(these are H34.1 round 3's changes, beneath part 2)
+$ git diff --check 3388ed7 3e99362
+(no output)

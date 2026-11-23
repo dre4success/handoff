@@ -1,0 +1,60 @@
+# H34 design review, round 3, request #267, commit 0605d69d445e3719cd737360aaff019019056d88 (base 370f688)
+# Run by: the reviewer (Claude Code, Fable 5.2), 2026-11-22T07:12:52Z, in a temporary worktree of the exact commit
+# Earlier runs this verdict still rests on: ../H34-2819550/checks.log sections 7 to 9 (the two records replayed), ../H34-9fa9eff/checks.log section 2 (the shut-out probe).
+
+## 1. What round 3 changes
+$ git log --oneline 9fa9eff..0605d69
+0605d69 docs: H34 design round 3: answers the CHANGES of reviewer-2 (#262), the reviewer (#263, #266) and reviewer-3 (#256, #265)
+4ec9df4 docs: the operator rewords the boundary: handoff delivers and wakes; it never decides, assigns or approves (row 105)
+$ git diff --stat 9fa9eff..0605d69
+ CLAUDE.md                                 |   2 +-
+ docs/proposals/H34_DESIGN.md              | 164 +++++++++++++++++++++++-------
+ docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md |   1 +
+ 3 files changed, 127 insertions(+), 40 deletions(-)
+$ git diff --check 370f688..0605d69; echo exit $?
+exit 0
+
+## 2. The spec: row 105 is appended, and no earlier text is edited
+$ git diff --numstat 9fa9eff..0605d69 -- docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md CLAUDE.md
+1	1	CLAUDE.md
+1	0	docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md
+$ git diff -U0 9fa9eff..0605d69 -- CLAUDE.md   # the changed lines
+-- The tool never calls a model, never starts, stops or messages an agent, and never drives the work loop.
++- The tool never calls a model, never starts or stops an agent, and never drives the work loop. It delivers and wakes; it never decides, assigns or approves (spec §17 row 105).
+
+## 3. The lines round 3 newly cites (Source; they are not in evidence/h34/facts.log)
+$ sed -n 150,153p internal/record/store.go
+
+// AppendAll adds several entries under one exclusive lock, in one write and
+// one sync, so no other entry lands between them, and no reader, who reads
+// under the lock, sees some without the rest. A write cut short by a crash
+$ sed -n 83,85p internal/status/status.go
+		case "reply":
+			r, ok := s.requests[e.Re]
+			if !ok || e.From != r.Entry.To || !r.live() {
+$ sed -n 33,35p cmd/handoff/settings.go
+	if pos[0] == "antigravity" {
+		// Antigravity gives a hook no way to set what its agent's commands see,
+		// so no role is fixed for its sessions (row 102).
+$ grep -n "func (a \*app) moveCleared\|func (a \*app) tryMoveContinued" cmd/handoff/session.go
+370:func (a *app) tryMoveContinued(s session, dir string) (role string, running, ok bool) {
+486:func (a *app) moveCleared(s session) (string, bool) {
+$ sed -n 159p docs/proposals/HANDOFF_PROPOSAL_CLAUDE.md | cut -c1-120
+- `decide` requires a terminal. Roles are declared, not authenticated; the record names the caller, and a mismatch betwe
+
+## 4. Part 4: the count (Source): the hook stands down when executionNum reaches 10, so 0 to 9 continue
+$ sed -n 127p cmd/handoff/hook.go; sed -n 245p cmd/handoff/hook.go
+	if in.Continuations >= agyContinuations {
+const agyContinuations = 10
+
+## 5. Note 1: line 110 against line 99 and rule 2
+$ sed -n 99p docs/proposals/H34_DESIGN.md; sed -n 108p docs/proposals/H34_DESIGN.md; sed -n 110p docs/proposals/H34_DESIGN.md
+  - Mixed commits, a decision, a supersession, a CHANGES or a QUESTION: all delivered at once.
+  2. Any entry the role does get carries every held entry before it, on any item, in id order. The cursor moves one entry at a time, as today. When a 30-minute hold ends, every held entry goes in that same wake.
+- Entries after a held one wait with it. An fyi for another session is passed over, but the cursor doesn't move past it while a held one sits before it.
+
+## 6. Note 3: decide takes an item or an id, and decides what awaits the operator today (Source)
+$ sed -n 295,297p internal/status/status.go
+	if ok && r.State == AwaitingOperator {
+		return &Target{Entry: r.Entry, Request: r}, nil
+	}

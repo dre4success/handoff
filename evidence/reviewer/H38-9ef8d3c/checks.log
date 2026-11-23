@@ -1,0 +1,63 @@
+H38 round 2, request #908, commit 9ef8d3c9c317757b641211199cc008f1b2dd6a43 (base 22791ca, main)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session).
+The commit was built in a temporary worktree (git worktree add --detach), removed after.
+"The old build" is main at 22791ca, built the same way in round 1. Every probe ran in a new
+scratch git project with HANDOFF_TEST_NOTIFY set and the session variables unset.
+
+Verdict: APPROVE.
+
+== 1. Build, vet, format, dependencies (Run) ==
+$ go build -o handoff ./cmd/handoff && go vet ./... && gofmt -l cmd internal
+(no output)
+$ go list -deps ./... | grep -c '^net$'
+0
+$ git diff --check 22791ca 9ef8d3c
+(no output)
+
+== 2. The full suite (Run) ==
+$ uptime; /usr/bin/time -p go test ./... -count=1 -race      (no -timeout; the worktree was at 9ef8d3c and clean when it ended)
+16:09  up 23 days, 20:06, 6 users, load averages: 3.10 4.43 8.85
+ok  	github.com/dre4success/handoff/cmd/handoff	337.025s
+ok  	github.com/dre4success/handoff/internal/awake	1.298s
+ok  	github.com/dre4success/handoff/internal/gitx	1.401s
+ok  	github.com/dre4success/handoff/internal/notify	1.588s
+ok  	github.com/dre4success/handoff/internal/record	4.282s
+ok  	github.com/dre4success/handoff/internal/status	1.429s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	2.765s
+real 338.73
+user 87.49
+sys 75.64
+exit 0
+
+== 3. The mixed-version case of #906, run again: probe-b.sh (Run) ==
+
+## The implementer's listener is the old build
+posted #1 request W1 implementer → reviewer: W1 @ 89c9009ff2f7
+away (#2): your go-ahead stands until you run handoff back
+posted #3 withdraw W1 implementer → reviewer: withdrew #1
+handoff reply: request #1 was withdrawn by implementer (#3), so nothing is owed on it; nothing written
+  what the listener gave the implementer:
+    exit 3
+  alerts to the operator: 
+
+## The implementer's listener is the new build
+posted #1 request W1 implementer → reviewer: W1 @ d5981323ed17
+away (#2): your go-ahead stands until you run handoff back
+posted #3 withdraw W1 implementer → reviewer: withdrew #1
+handoff reply: request #1 was withdrawn by implementer (#3), so nothing is owed on it; nothing written
+  what the listener gave the implementer:
+    exit 3
+  alerts to the operator: 
+
+== 4. A withdrawal and an APPROVE of the same request at once: probe-c.sh (Run) ==
+
+  40 runs: 0 with both written; 40 withdrawn (the reply refused); 0 approved (the withdrawal refused); 0 neither
+(The withdrawal won every time here, since my probe starts it first. What matters is that
+both were never written.)
+
+== 5. Round 1's probe, run again: probe.sh (Run) ==
+A to E: no line differs from round 1 (../H38-dc109a9/checks.log), commit ids apart.
+F differs as meant: the reply to the withdrawn request is refused (exit 2, nothing written),
+so later ids are one lower; and the old build, which doesn't know a withdrawal, still lists
+the withdrawn request under "needs my review".

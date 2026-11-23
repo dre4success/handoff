@@ -1,0 +1,203 @@
+# H34.6 review, request #366, commit 458a36b585cf04c33b938cc0ef42d96548ea1ced (base 2cbcce7)
+# Run by: the reviewer (Claude Code, Fable 5.2), 2026-11-22T13:06:30Z
+# The commit was checked out in a temporary worktree and built there. Every probe ran in a scratch project with HANDOFF_TEST_NOTIFY
+# set. A session is stood in for by CLAUDE_CODE_SESSION_ID and CLAUDE_PID, the pid of a sleep, as evidence/h34/shutout.sh does.
+# probe.sh is beside this file. The brief that 'handoff role <role>' prints is left out below.
+
+## A. The role moves from one running session to another
+$ (old) handoff role implementer
+You are now implementer in a.
+  [exit 0]
+$ (new) handoff role implementer
+You are now implementer in a. Another session had implementer; it has no role now.
+  [exit 0]
+  .handoff/sessions: new[role implementer] old[lost implementer] 
+$ (old) handoff post --as implementer --item P1 --to reviewer --commit w1 --title t --body ../body.md
+handoff post: you no longer hold implementer: the operator gave it to session new at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>
+  [exit 2]
+$ (old) handoff note --as reviewer-2 --to implementer --item P1 --body ../body.md
+handoff note: you no longer hold implementer: the operator gave it to session new at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>
+  [exit 2]
+$ (old) handoff role
+handoff role: you no longer hold implementer: the operator gave it to session new at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>
+  [exit 2]
+$ (old) handoff
+handoff: you no longer hold implementer: the operator gave it to session new at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>
+  [exit 2]
+$ (old) handoff inbox --for implementer --quiet
+  [exit 0]
+$ (old) handoff show / inbox --for stay open: inbox --for exit 0
+$ (old) handoff role reviewer-2
+You are now reviewer-2 in a.
+  [exit 0]
+  .handoff/sessions: new[role implementer] old[role reviewer-2] 
+$ (old) handoff note --to implementer --item P1 --body ../body.md
+posted #1 note P1 reviewer-2 → implementer: body
+  [exit 0]
+## B. The old session's process has ended when the role moves; it is resumed under the same id
+$ (A) handoff role reviewer-3
+You are now reviewer-3 in b.
+  [exit 0]
+$ (C) handoff role reviewer-3
+You are now reviewer-3 in b.
+  [exit 0]
+  .handoff/sessions: A[lost reviewer-3] C[role reviewer-3] 
+$ (A) handoff note --as reviewer-3 --to implementer --item P1 --body ../body.md
+handoff note: you no longer hold reviewer-3: the operator gave it to session C at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>
+  [exit 2]
+## C. As B, but another session takes another role in between
+$ (A) handoff role reviewer-3
+You are now reviewer-3 in c.
+  [exit 0]
+$ (B) handoff role implementer
+You are now implementer in c.
+  [exit 0]
+  .handoff/sessions: B[role implementer] 
+$ (C) handoff role reviewer-3
+You are now reviewer-3 in c.
+  [exit 0]
+  .handoff/sessions: B[role implementer] C[role reviewer-3] 
+-- A is resumed under the same id, with the context it had:
+$ (A) handoff note --as reviewer-3 --to implementer --item P1 --body ../body.md
+posted #1 note P1 reviewer-3 → implementer: body
+  [exit 0]
+$ (A) handoff role
+handoff role: no role: when the operator gives this session one, run `handoff role <role>`
+  [exit 2]
+## D. A write that began before the role moved
+$ (old) handoff role implementer
+You are now implementer in d.
+  [exit 0]
+$ (old) HANDOFF_TEST_WRITE_DELAY=3s handoff post ... &   then, one second later:
+$ (new) handoff role implementer
+You are now implementer in d. Another session had implementer; it has no role now.
+  [exit 0]
+  the old session's post said:
+    handoff post: you no longer hold implementer: the operator gave it to session new at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>
+      [exit 2]
+  entries in the record: 0
+## E. A delivery that began before the role moved
+$ (old) handoff role implementer
+You are now implementer in e.
+  [exit 0]
+$ (old) HANDOFF_TEST_DELIVER_DELAY=3s handoff wait --for implementer --timeout 20s &
+posted #1 note P1 reviewer → implementer: for the implementer
+$ (new) handoff role implementer
+You are now implementer in e. Another session had implementer; it has no role now.
+  [exit 0]
+  the old session's wait said:
+    handoff wait: this session no longer holds implementer: the operator gave it another role, or gave implementer to another session
+      [exit 2]
+$ (new) handoff wait --timeout 2s
+#1 note P1 reviewer → implementer: for the implementer
+  [exit 0]
+## F. The fence refuses at a skipped fyi, after a delivery in the same pass
+$ (Z) handoff role implementer
+You are now implementer in f.
+  [exit 0]
+posted #1 note P1 reviewer → implementer: first, not yet delivered
+$ handoff fyi "hello"   (the operator, at a terminal; it names Z, who holds implementer)
+told implementer (#2)
+$ (old) handoff role implementer
+You are now implementer in f. Another session had implementer; it has no role now.
+  [exit 0]
+$ (old) HANDOFF_TEST_DELIVER_DELAY=3s handoff wait --timeout 20s &   (#1 is delivered at about 3 s; the fyi for Z is reached then; the role moves at about 4.5 s)
+$ (new) handoff role implementer
+You are now implementer in f. Another session had implementer; it has no role now.
+  [exit 0]
+  the old session's wait said:
+    #1 note P1 reviewer → implementer: first, not yet delivered
+    handoff wait: this session no longer holds implementer: the operator gave it another role, or gave implementer to another session
+      [exit 2]
+  the role's cursor: implementer.json
+$ (new) handoff wait --timeout 2s
+  [exit 3]
+
+## G. The hooks of a session that lost its role (stdin as Claude Code gives it; the hook's parent is this shell)
+You are now implementer in g.
+You are now implementer in g. Another session had implementer; it has no role now.
+$ (old, Stop hook, time 1) handoff hook listen --timeout 2s
+handoff: you no longer hold implementer: the operator gave it to session new at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>.
+  [exit 2]
+$ (old, Stop hook, time 2) handoff hook listen --timeout 2s
+  [exit 0]
+$ (old, SessionStart hook) handoff hook brief
+handoff: you no longer hold implementer: the operator gave it to session new at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>.
+  [exit 0]
+$ (a session that never had a role, Stop hook) handoff hook listen --timeout 2s
+  [exit 0]
+
+## H. (#371 point 1) A session that lost its role runs wait with --for
+You are now reviewer in h.
+You are now reviewer in h. Another session had reviewer; it has no role now.
+posted #1 note P1 implementer → reviewer: for the reviewer
+$ (old) handoff wait --timeout 2s
+handoff wait: you no longer hold reviewer: the operator gave it to session new at TIME. Stop work on it, and don't merge. Take a role again only if the operator gives you one in this session: handoff role <role>; or give --for <role>
+  [exit 2]
+$ (old) handoff wait --for reviewer --timeout 2s
+#1 note P1 implementer → reviewer: for the reviewer
+  [exit 0]
+$ (new) handoff wait --timeout 2s
+  [exit 3]
+
+## I. Source: the sweep in bind that deletes a binding with no mark, and the two that make a mark
+$ sed -n 408,423p cmd/handoff/session.go
+	now := time.Now().UTC()
+	var drop, lose []binding
+	for _, b := range bs {
+		mine := b.Session == s.ID || (s.PID > 0 && b.PID == s.PID)
+		switch {
+		case mine:
+			drop = append(drop, b)
+		case b.Role == role:
+			// The session that had the role is marked, not forgotten,
+			// running or not: a session can be resumed under its id.
+			lose = append(lose, b)
+			took = took || b.running()
+		case !b.running():
+			drop = append(drop, b)
+		}
+	}
+
+## J. Source: lock order. Callers of the sessions lock, and of the record's lock outside the store
+$ grep -n "lockSessions()" cmd/handoff/*.go | grep -v _test
+cmd/handoff/cmds.go:191:	unlock, err := a.lockSessions()
+cmd/handoff/session.go:217:	unlock, err := a.lockSessions()
+cmd/handoff/session.go:362:func (a *app) lockSessions() (unlock func(), err error) {
+cmd/handoff/session.go:389:	unlock, err := a.lockSessions()
+cmd/handoff/session.go:514:	unlock, err := a.lockSessions()
+cmd/handoff/session.go:616:	unlock, err := a.lockSessions()
+cmd/handoff/session.go:633:	unlock, err := a.lockSessions()
+$ grep -n "LockWrite()\|LockRead()" cmd/handoff/*.go | grep -v _test
+cmd/handoff/session.go:322:		unlock, err := a.store.LockRead()
+cmd/handoff/session.go:398:		unlockRecord, err := a.store.LockWrite()
+
+## K. The format check, and the line in the implementer's evidence
+$ gofmt -l cmd internal
+internal/record/store.go
+$ gofmt -d internal/record/store.go | grep "^[-+]func"
+-func (s *Store) LockRead() (unlock func(), err error) { return s.lock(syscall.LOCK_SH) }
++func (s *Store) LockRead() (unlock func(), err error)  { return s.lock(syscall.LOCK_SH) }
+$ sed -n 2,4p evidence/h34.6/tests.log
+$ gofmt -l cmd internal
+internal/record/store.go
+(nothing listed: clean)
+
+## The suite at the commit
+$ go build ./... && go vet ./...   # 12:56:28Z
+ok
+$ go list -deps ./... | grep -x net
+exit 1 (1 = no net)
+$ gofmt -l cmd internal
+internal/record/store.go
+(end)
+$ go test ./... -count=1 -race -timeout 30m
+exit 0   # 13:05:56Z
+ok  	github.com/dre4success/handoff/cmd/handoff	565.553s
+ok  	github.com/dre4success/handoff/internal/awake	1.294s
+ok  	github.com/dre4success/handoff/internal/gitx	1.219s
+ok  	github.com/dre4success/handoff/internal/notify	1.496s
+ok  	github.com/dre4success/handoff/internal/record	4.276s
+ok  	github.com/dre4success/handoff/internal/status	1.213s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	2.142s

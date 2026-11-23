@@ -76,6 +76,7 @@ func (r *repo) refusedIn(t *testing.T, sess []string, want string, args ...strin
 // Two sessions of one CLI, on whatever models the operator started them with, take
 // the roles the operator gives them and work a round with no --as.
 func TestH12TwoClaudeSessionsTakeTheRolesTheOperatorGives(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	opus, fable := claude("s-opus", cli(t)), claude("s-fable", cli(t))
 	out := r.as(t, opus, "role", "implementer")
@@ -134,7 +135,8 @@ func TestH12ARoleMovesAndTheOldListenerStops(t *testing.T) {
 		listen.Process.Kill()
 		t.Fatal("the old listener still listens after its role moved")
 	}
-	r.refusedIn(t, a, "no role", "inbox")
+	// Since row 107 the old session is told what it lost, not just "no role".
+	r.refusedIn(t, a, "you no longer hold reviewer: the operator gave it to session s-c at ", "inbox")
 	heard := r.run(t, "", hookIn("s-c", "Stop"), c, "hook", "listen", "--timeout", "2s")
 	if heard.code != exitWake || !strings.Contains(heard.err, "nothing new for reviewer") {
 		t.Fatalf("the new holder's hook: exit %d\n%s", heard.code, heard.err)
@@ -145,6 +147,7 @@ func TestH12ARoleMovesAndTheOldListenerStops(t *testing.T) {
 // a SessionStart whose source is clear; a resumed one has its id in a new
 // process. It keeps its role through both (probe-ids/, clear-probe/).
 func TestH12ARoleOutlivesClearAndResume(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	pid := cli(t)
 	r.as(t, claude("s-1", pid), "role", "reviewer")
@@ -159,7 +162,9 @@ func TestH12ARoleOutlivesClearAndResume(t *testing.T) {
 	if out := r.as(t, cleared, "role"); !strings.Contains(out, "You are reviewer") {
 		t.Fatalf("role after /clear: %s", out)
 	}
-	r.refusedIn(t, claude("s-1", pid), "no role", "inbox")
+	// The cleared conversation can be resumed by its id: marked (reviewer-2,
+	// #388).
+	r.refusedIn(t, claude("s-1", pid), "you no longer hold reviewer: this conversation went on in session s-2 at ", "inbox")
 	resumed := claude("s-2", cli(t))
 	if out := r.run(t, "", hookIn("s-2", "SessionStart", "resume"), resumed, "hook", "brief").out; !strings.Contains(out, "you are reviewer") {
 		t.Fatalf("brief after resume:\n%s", out)
@@ -248,7 +253,8 @@ func TestH12AWaitStopsWhenItsRoleMoves(t *testing.T) {
 		old.Process.Kill()
 		t.Fatal("the old wait still waits after its role moved")
 	}
-	if code := old.ProcessState.ExitCode(); code != 2 || !strings.Contains(oldOut.String(), "no longer holds reviewer") {
+	// Since row 107 it says what the session lost, and to whom.
+	if code := old.ProcessState.ExitCode(); code != 2 || !strings.Contains(oldOut.String(), "you no longer hold reviewer: the operator gave it to session t-b at ") {
 		t.Fatalf("the old wait: exit %d\n%s", code, oldOut.String())
 	}
 	time.Sleep(time.Second) // the new wait has the lock by now
@@ -262,6 +268,7 @@ func TestH12AWaitStopsWhenItsRoleMoves(t *testing.T) {
 // is named after its CLI and settings made before row 80 still pass
 // --prefer. It is told how to get one, and has one once the operator gives it.
 func TestH16AStartTakesNoRole(t *testing.T) {
+	t.Parallel()
 	r := plainRepo(t, "main")
 	r.ok(t, "", "init", "--roles", "claude,codex")
 	first, second := claude("s-first", cli(t)), codex("t-second")
@@ -290,6 +297,7 @@ func TestH16AStartTakesNoRole(t *testing.T) {
 // An agent's session never gets the operator's question, with a role or without one,
 // and never decides, whatever role it claims.
 func TestH12AnAgentSessionNeverAnswersForTheOperator(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	req := r.approved(t, "W1")
 	out, err := r.atTerminalWith(t, codex("t-none"), nil)
@@ -316,10 +324,11 @@ func TestH12AnAgentSessionNeverAnswersForTheOperator(t *testing.T) {
 }
 
 func TestH12RoleRefusals(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	r.refused(t, "", "is for a Claude Code, Codex or Antigravity session", "role", "reviewer")
 	s := codex("t-x")
-	r.refusedIn(t, s, `unknown role "nobody"`, "role", "nobody")
+	r.refusedIn(t, s, "nobody isn't a role here", "role", "nobody") // and how to add it (row 112)
 	r.refusedIn(t, s, "operator is the person who decides", "role", "operator")
 	r.refusedIn(t, append(s, "HANDOFF_ROLE=implementer"), "fix its role to implementer", "role", "reviewer")
 	r.refusedIn(t, s, "no role: when the operator gives this session one, run `handoff role <role>`", "inbox")
@@ -374,6 +383,7 @@ func TestH12ARoleMovedWhileAListenerStartsStopsIt(t *testing.T) {
 // session. The implementer's brief names the reviewers with one, and post
 // and note say when the role they went to has none.
 func TestH23ReviewersWithASession(t *testing.T) {
+	t.Parallel()
 	r := newRepo(t)
 	asks := func(t *testing.T) string {
 		t.Helper()
@@ -394,7 +404,7 @@ func TestH23ReviewersWithASession(t *testing.T) {
 		t.Errorf("with reviewer alone: %s", l)
 	}
 	r.as(t, codex("t-rev-2"), "role", "reviewer-2")
-	if l := asks(t); !strings.HasSuffix(l, "`, where <reviewer> is reviewer or reviewer-2.") {
+	if l := asks(t); !strings.HasSuffix(l, " --to <reviewers> --commit <sha> --title \"<title>\" --body <file>`, where <reviewers> is reviewer,reviewer-2, or the ones you ask. One post to several reviewers is one round; asked in separate posts under the operator's go-ahead, the first approval can approve the item alone.") {
 		t.Errorf("with both: %s", l)
 	}
 
@@ -429,7 +439,7 @@ func TestH23ReviewersWithASession(t *testing.T) {
 	if sends(t, "reviewer", "note", "--item", "W2", "--to", "reviewer", "--body", r.body(t, "another note")) {
 		t.Error("told of no session for a role something listens for")
 	}
-	if l := asks(t); !strings.HasSuffix(l, "`, where <reviewer> is reviewer or reviewer-2.") {
+	if l := asks(t); !strings.HasSuffix(l, " --to <reviewers> --commit <sha> --title \"<title>\" --body <file>`, where <reviewers> is reviewer,reviewer-2, or the ones you ask. One post to several reviewers is one round; asked in separate posts under the operator's go-ahead, the first approval can approve the item alone.") {
 		t.Errorf("with reviewer listened for: %s", l)
 	}
 	lock.Close()

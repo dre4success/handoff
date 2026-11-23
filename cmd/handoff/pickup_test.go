@@ -153,10 +153,12 @@ func TestH11BriefCommandsRunForClaudeAndCodex(t *testing.T) {
 	r.commitA = commit(t, r.dir, "A")
 	r.commitB = commit(t, r.dir, "B")
 	req := idOf(t, r.ok(t, "codex", "post", "--item", "W1", "--to", "claude", "--commit", r.commitA, "--title", "W1 work", "--body", r.body(t, "please review W1")))
+	own := idOf(t, r.ok(t, "claude", "post", "--item", "W0", "--to", "codex", "--commit", r.commitA, "--title", "W0 work", "--body", r.body(t, "please review W0")))
 	fill := strings.NewReplacer("<id>", req, "<that sha>", r.commitA, "<sha>", r.commitB, "<file>", r.body(t, "a question"),
-		"<role>", "codex", "<item>", "W2", "<title>", "W2 work", "<question>", "A question", "APPROVE|CHANGES|QUESTION", "APPROVE")
+		"<role>", "codex", "<item>", "W2", "<title>", "W2 work", "<question>", "A question", "APPROVE|CHANGES|QUESTION", "APPROVE",
+		"<request>", own)
 	ran, last, brief := briefCommands(t, r, "claude", fill)
-	if got := strings.Join(ran, " "); got != "show claim reply note note post note" {
+	if got := strings.Join(ran, " "); got != "show claim reply inbox note note post withdraw note" {
 		t.Fatalf("ran %q from the brief:\n%s", got, brief)
 	}
 	if !strings.Contains(brief, "Either of you can implement or review; the operator says who does which, per task.") {
@@ -177,9 +179,9 @@ func TestH11BriefTellsTheImplementerHowToAsk(t *testing.T) {
 	r := newRepo(t)
 	req := r.request(t, "W1", r.commitA)
 	fill := strings.NewReplacer("<id>", req, "<sha>", r.commitB, "<file>", r.body(t, "a question"), "<role>", "reviewer",
-		"<reviewer>", "reviewer-2", "<item>", "W2", "<title>", "W2 work", "<question>", "A question")
+		"<reviewer>", "reviewer-2", "<item>", "W2", "<title>", "W2 work", "<question>", "A question", "<request>", req)
 	ran, _, brief := briefCommands(t, r, "implementer", fill)
-	if got := strings.Join(ran, " "); got != "show note post note" {
+	if got := strings.Join(ran, " "); got != "show inbox note post withdraw note" {
 		t.Fatalf("ran %q from the brief:\n%s", got, brief)
 	}
 	// No session has either reviewer (row 89).

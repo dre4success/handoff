@@ -1,0 +1,166 @@
+H34.3, request #530, commit 5bef5e5705db05e07ccb6329167089ae3eedd9e9 (base cfedab6)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session).
+The commit was built in a temporary worktree (git worktree add --detach), removed after.
+Every probe ran in a new scratch git project with HANDOFF_TEST_NOTIFY set and the session
+variables unset. For A6 and A7 I built the same tree in a scratch copy with one line
+changed, "const HoldFor = 6 * time.Second" (internal/status/status.go:780), so that the
+real binary's hold could be watched ending.
+
+Verdict: CHANGES, for A8 (row 111 says mixed commits go at once; with A, A and B the
+first APPROVE is held).
+
+== 1. Build, vet, format, dependencies (Run) ==
+$ go build -o handoff ./cmd/handoff && go vet ./... && gofmt -l cmd internal
+(no output)
+$ go list -deps ./... | grep -c '^net$'
+0
+$ git diff --check cfedab6 5bef5e5
+(no output)
+
+== 2. probe.sh <dir> <binary> atterm_y.py <the 6 s build> (Run) ==
+A4's second half in this run is void (I replied to the wrong request); probe-a4.sh has it.
+
+## A1. A round to three reviewers: one wake, with all three
+posted #1 request W1 implementer → reviewer: W1 @ 6620a0ce277b
+posted #2 request W1 implementer → reviewer-2: W1 @ 6620a0ce277b
+posted #3 request W1 implementer → reviewer-3: W1 @ 6620a0ce277b
+posted #4 reply W1 reviewer → implementer: APPROVE on #1 @ 6620a0ce277b
+$ handoff wait --for implementer --timeout 2s 
+    [exit 3]
+posted #5 reply W1 reviewer-2 → implementer: APPROVE on #2 @ 6620a0ce277b
+$ handoff wait --for implementer --timeout 2s 
+    [exit 3]
+  alerts to the operator so far: 2
+posted #6 reply W1 reviewer-3 → implementer: APPROVE on #3 @ 6620a0ce277b
+$ handoff wait --for implementer --timeout 2s 
+    #4 reply W1 reviewer → implementer: APPROVE on #1 @ 6620a0ce277b
+    #5 reply W1 reviewer-2 → implementer: APPROVE on #2 @ 6620a0ce277b
+    #6 reply W1 reviewer-3 → implementer: APPROVE on #3 @ 6620a0ce277b
+    [exit 0]
+
+## A2. A held APPROVE is carried by a CHANGES; a later APPROVE is held again
+posted #1 request W1 implementer → reviewer: W1 @ b19f07bd555a
+posted #2 request W1 implementer → reviewer-2: W1 @ b19f07bd555a
+posted #3 request W1 implementer → reviewer-3: W1 @ b19f07bd555a
+posted #4 reply W1 reviewer → implementer: APPROVE on #1 @ b19f07bd555a
+$ handoff wait --for implementer --timeout 2s 
+    [exit 3]
+posted #5 reply W1 reviewer-2 → implementer: CHANGES on #2 @ b19f07bd555a
+$ handoff wait --for implementer --timeout 2s 
+    #4 reply W1 reviewer → implementer: APPROVE on #1 @ b19f07bd555a
+    #5 reply W1 reviewer-2 → implementer: CHANGES on #2 @ b19f07bd555a
+    [exit 0]
+posted #6 reply W1 reviewer-3 → implementer: APPROVE on #3 @ b19f07bd555a
+$ handoff wait --for implementer --timeout 2s 
+    [exit 3]
+-- the fix is posted, replacing all three; the held APPROVE is on a replaced request now:
+posted #7 request W1 implementer → reviewer: W1 @ fdfe9ea9acea (supersedes #1)
+posted #8 request W1 implementer → reviewer-2: W1 @ fdfe9ea9acea (supersedes #2)
+posted #9 request W1 implementer → reviewer-3: W1 @ fdfe9ea9acea (supersedes #3)
+$ handoff wait --for implementer --timeout 2s 
+    #6 reply W1 reviewer-3 → implementer: APPROVE on #3 @ b19f07bd555a
+    [exit 0]
+
+## A3. --emit holds nothing; inbox shows the held APPROVE meanwhile
+posted #1 request W1 implementer → reviewer: W1 @ ba6304480335
+posted #2 request W1 implementer → reviewer-2: W1 @ ba6304480335
+posted #3 reply W1 reviewer → implementer: APPROVE on #1 @ ba6304480335
+$ handoff inbox --for implementer (awaiting the operator)
+awaiting the operator:
+  #1 request W1 implementer → reviewer: W1 @ ba6304480335
+    #3 reply W1 reviewer → implementer: APPROVE on #1 @ ba6304480335
+$ handoff wait --for implementer --timeout 2s --emit
+    #3 reply W1 reviewer → implementer: APPROVE on #1 @ ba6304480335
+    [exit 3]
+
+## A4. One reviewer only, and two reviewers at different commits: nothing is held
+posted #1 request W1 implementer → reviewer: W1 @ fad28fb5a001
+posted #2 reply W1 reviewer → implementer: APPROVE on #1 @ fad28fb5a001
+$ handoff wait --for implementer --timeout 2s 
+    #2 reply W1 reviewer → implementer: APPROVE on #1 @ fad28fb5a001
+    [exit 0]
+posted #3 request W2 implementer → reviewer: W2 @ fad28fb5a001
+posted #4 request W2 implementer → reviewer-2: W2 @ acd07789f8d6
+$ handoff wait --for implementer --timeout 2s 
+    [exit 3]
+
+## A5. The operator's fyi to the session carries a held APPROVE; an fyi for another session waits behind it
+posted #1 request W1 implementer → reviewer: W1 @ 64a36587f25e
+posted #2 request W1 implementer → reviewer-2: W1 @ 64a36587f25e
+posted #3 reply W1 reviewer → implementer: APPROVE on #1 @ 64a36587f25e
+$ (I) handoff wait --timeout 2s
+$ (I) handoff wait --timeout 2s   (after the operator's fyi)
+    #3 reply W1 reviewer → implementer: APPROVE on #1 @ 64a36587f25e
+    #4 fyi - operator → implementer: carry on
+
+## A6. The hold's end, with the build whose hold is 6 s: no new write, and a restart keeps it
+posted #1 request W1 implementer → reviewer: W1 @ d0efb5d528d3
+posted #2 request W1 implementer → reviewer-2: W1 @ d0efb5d528d3
+posted #3 reply W1 reviewer → implementer: APPROVE on #1 @ d0efb5d528d3
+$ handoff wait --for implementer --timeout 2s 
+    [exit 3]
+-- a second listener, started at once, for 8 s:
+$ handoff wait --for implementer --timeout 8s 
+    #3 reply W1 reviewer → implementer: APPROVE on #1 @ d0efb5d528d3
+    [exit 0]
+    [returned after 4 s]
+
+## A7. Two held APPROVEs go in one wake when the first's time is up (6 s build)
+posted #1 request W1 implementer → reviewer: W1 @ 8eb72190b757
+posted #2 request W1 implementer → reviewer-2: W1 @ 8eb72190b757
+posted #3 request W1 implementer → reviewer-3: W1 @ 8eb72190b757
+posted #4 reply W1 reviewer → implementer: APPROVE on #1 @ 8eb72190b757
+posted #5 reply W1 reviewer-2 → implementer: APPROVE on #2 @ 8eb72190b757
+$ handoff wait --for implementer --timeout 9s 
+    #4 reply W1 reviewer → implementer: APPROVE on #1 @ 8eb72190b757
+    #5 reply W1 reviewer-2 → implementer: APPROVE on #2 @ 8eb72190b757
+    [exit 0]
+    [returned after 3 s; the first APPROVE was 3 s old at the start]
+
+== 3. probe-a4.sh and probe-a8.sh (Run) ==
+
+## A4. Two reviewers asked at different commits: nothing is held. Then the same commit: held
+posted #1 request W2 implementer → reviewer: W2 @ 718457d7dd8f
+posted #2 request W2 implementer → reviewer-2: W2 @ f67c53cc3f6f
+posted #3 reply W2 reviewer → implementer: APPROVE on #1 @ 718457d7dd8f
+$ handoff wait --for implementer --timeout 2s 
+    #3 reply W2 reviewer → implementer: APPROVE on #1 @ 718457d7dd8f
+    [exit 0]
+-- for comparison, both at one commit, in separate posts:
+posted #4 request W3 implementer → reviewer: W3 @ 718457d7dd8f
+posted #5 request W3 implementer → reviewer-2: W3 @ 718457d7dd8f
+posted #6 reply W3 reviewer → implementer: APPROVE on #4 @ 718457d7dd8f
+$ handoff wait --for implementer --timeout 2s 
+    [exit 3]
+$ handoff brief --for implementer   (the line on APPROVE)
+An APPROVE while another reviewer of the same commit is still at it reaches you with the next thing you must act on, or after 30 minutes.
+
+## A8. Three reviewers on one item, at commits A, A and B; the first approves
+posted #1 request W1 implementer → reviewer: W1 @ 4c61bbd85f3b
+posted #2 request W1 implementer → reviewer-2: W1 @ 4c61bbd85f3b
+posted #3 request W1 implementer → reviewer-3: W1 @ ca6ef22d51e1
+posted #4 reply W1 reviewer → implementer: APPROVE on #1 @ 4c61bbd85f3b
+$ handoff wait --for implementer --timeout 2s 
+    [exit 3]
+-- under a go-ahead, can this item be approved as it stands? reviewer-2 approves too:
+posted #6 reply W1 reviewer-2 → implementer: APPROVE on #2 @ 4c61bbd85f3b
+$ handoff wait --for implementer --timeout 2s 
+    #4 reply W1 reviewer → implementer: APPROVE on #1 @ 4c61bbd85f3b
+    #6 reply W1 reviewer-2 → implementer: APPROVE on #2 @ 4c61bbd85f3b
+    [exit 0]
+
+== 4. The full suite (Run) ==
+$ uptime; /usr/bin/time -p go test ./... -count=1 -race      (no -timeout; the worktree was at 5bef5e5 and clean when it ended)
+ 2:56  up 23 days,  6:53, 15 users, load averages: 4.61 5.49 6.10
+ok  	github.com/dre4success/handoff/cmd/handoff	250.425s
+ok  	github.com/dre4success/handoff/internal/awake	1.286s
+ok  	github.com/dre4success/handoff/internal/gitx	1.201s
+ok  	github.com/dre4success/handoff/internal/notify	1.375s
+ok  	github.com/dre4success/handoff/internal/record	3.964s
+ok  	github.com/dre4success/handoff/internal/status	1.208s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	2.454s
+real 251.93
+user 68.23
+sys 53.34
+exit 0

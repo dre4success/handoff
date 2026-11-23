@@ -1,0 +1,65 @@
+# H34.1 round 6 tests, run by the implementer (Claude Code, Opus 5.5), 2026-11-23T03:14:26Z, on branch h34.1-to-merge (the tree committed next). Each command is followed only by what it printed.
+$ gofmt -l cmd internal; echo "exit $?"
+exit 0
+$ go vet ./...; echo "exit $?"
+exit 0
+$ go list -deps ./... | grep -cx net
+0
+$ go test -race -count=1 -timeout 30m ./...
+ok  	github.com/dre4success/handoff/cmd/handoff	269.535s
+ok  	github.com/dre4success/handoff/internal/awake	1.181s
+ok  	github.com/dre4success/handoff/internal/gitx	1.104s
+ok  	github.com/dre4success/handoff/internal/notify	1.228s
+ok  	github.com/dre4success/handoff/internal/record	3.550s
+ok  	github.com/dre4success/handoff/internal/status	1.102s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	1.635s
+$ go test -count=1 -run TestH34p1 -v ./cmd/handoff ./internal/status | grep -E "^(--- |ok|FAIL)"
+--- PASS: TestH34p1AMarkedSessionCantRecordAMerge (0.79s)
+--- PASS: TestH34p1ApprovalsBeforeTrackingAreHistory (0.80s)
+--- PASS: TestH34p1HoldingOneOfTwoApprovalsTakesTheId (0.82s)
+--- PASS: TestH34p1TheOperatorHoldsApprovedWork (0.91s)
+--- PASS: TestH34p1AnApprovalTheWorkWentOnFromIsNotListed (0.93s)
+--- PASS: TestH34p1DecideNamesApprovedWorkNotMerged (0.95s)
+--- PASS: TestH34p1MergedRecordsASquash (0.50s)
+--- PASS: TestH34p1ApprovedWorkIsListedUntilItsCommitIsInMain (2.07s)
+--- PASS: TestH34p1OneLinePerItemAndCommitUnderTheGoAhead (1.61s)
+--- PASS: TestH34p1WhenGitCantTell (3.85s)
+ok  	github.com/dre4success/handoff/cmd/handoff	4.233s
+--- PASS: TestH34p1AnApprovalNotInMainIsOwed (0.00s)
+--- PASS: TestH34p1AnIncompleteRoundIsNoApproval (0.00s)
+--- PASS: TestH34p1WhatToldTheRequester (0.00s)
+--- PASS: TestH34p1ClosingAnApprovalLeavesAnEarlierOne (0.00s)
+--- PASS: TestH34p1StaleOnlyWhenANewerReviewReplacedIt (0.00s)
+--- PASS: TestH34p1ARoundCompletedLateKeepsItsDenial (0.00s)
+--- PASS: TestH34p1WorkBackAtACommitIsAskedAnew (0.00s)
+--- PASS: TestH34p1TheGoAheadsFyiSaysWhatWasHeld (0.00s)
+--- PASS: TestH34p1WhichApprovalsCount (0.00s)
+--- PASS: TestH34p1TheFyiHoldsOneRequestersWork (0.00s)
+--- PASS: TestH34p1APartialReapprovalLeavesTheHold (0.00s)
+--- PASS: TestH34p1AHoldLiftedStaysLifted (0.00s)
+ok  	github.com/dre4success/handoff/internal/status	0.206s
+$ (a worktree of 694df99, with this merge_test.go) go test -count=1 -run TestH34p1 ./cmd/handoff | grep -E "^(--- |ok|FAIL)"
+--- FAIL: TestH34p1ApprovedWorkIsListedUntilItsCommitIsInMain (0.52s)
+--- FAIL: TestH34p1WhenGitCantTell (0.59s)
+--- FAIL: TestH34p1TheOperatorHoldsApprovedWork (0.60s)
+--- FAIL: TestH34p1ApprovalsBeforeTrackingAreHistory (0.68s)
+--- FAIL: TestH34p1HoldingOneOfTwoApprovalsTakesTheId (0.69s)
+--- FAIL: TestH34p1AMarkedSessionCantRecordAMerge (0.69s)
+--- FAIL: TestH34p1DecideNamesApprovedWorkNotMerged (0.75s)
+--- FAIL: TestH34p1AnApprovalTheWorkWentOnFromIsNotListed (0.82s)
+--- FAIL: TestH34p1MergedRecordsASquash (0.39s)
+--- FAIL: TestH34p1OneLinePerItemAndCommitUnderTheGoAhead (0.42s)
+FAIL
+FAIL	github.com/dre4success/handoff/cmd/handoff	1.264s
+FAIL
+$ (a worktree of 08681ba, the round before, with this status_test.go) go test -count=1 -run 'TestH34p1WhichApprovalsCount|TestH34p1AHoldLiftedStaysLifted' -v ./internal/status | grep -E "^(--- |    --- |ok|FAIL|    status_test)"
+--- PASS: TestH34p1WhichApprovalsCount (0.00s)
+    status_test.go:727: the lifted hold came back: &{V:0 ID:4 TS: Kind:decision Item:W1 From:operator To:implementer Title: Commit: Base: Parents:[] Re:1 Supersedes:0 Verdict: Decision:deny Key: Session: Round:0 Panel:[] Replaces:map[] Body: Damage:<nil> Prev:}
+    status_test.go:743: holds standing: 2, want only #8
+--- FAIL: TestH34p1AHoldLiftedStaysLifted (0.00s)
+    --- FAIL: TestH34p1AHoldLiftedStaysLifted/a_follow-up_opened_after_the_re-approval (0.00s)
+    --- FAIL: TestH34p1AHoldLiftedStaysLifted/the_re-approval_held_in_its_turn (0.00s)
+FAIL
+FAIL	github.com/dre4success/handoff/internal/status	0.086s
+FAIL

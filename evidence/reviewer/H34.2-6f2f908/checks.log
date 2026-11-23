@@ -1,0 +1,55 @@
+H34.2 round 7, request #625, commit 6f2f9084d5ec39141fdecaf72bf05b70d9e4522a (base 1079641, H34.1 round 6)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session).
+The commit was built in a temporary worktree (git worktree add --detach), removed after.
+Every probe ran in a new scratch git project with HANDOFF_TEST_NOTIFY set and the session
+variables unset.
+
+== 1. Build, vet, format, dependencies (Run) ==
+$ go build -o handoff ./cmd/handoff && go vet ./... && gofmt -l cmd internal
+(no output)
+$ go list -deps ./... | grep -c '^net$'
+0
+$ git diff --check 1079641 6f2f908
+(no output)
+
+== 2. My probes of rounds 1 to 6, run again (Run) ==
+probe.sh (B1, B2, B4, B5), probe-b.sh (B6, B3), probe-b7.sh (B7), probe-g.sh (G): no line
+differs from round 6 (../H34.2-a1f5644/checks.log), commit ids, paths and times apart.
+probe-b8.sh (B8): one line more, the hook's own "told the operator" on its stderr, now that
+its alert goes through the common sender; the alerts sent are the same, one for each note.
+B8's output on this commit:
+
+## B8. A permission prompt while work already waits: one notice, naming the work; then new work
+You are now implementer in b8.
+posted #1 note P1 reviewer → implementer: one
+handoff: told the operator: implementer is at a permission prompt: allow A, since HH:MM, and work waits for it (#1).
+  binding I: role implementer | block: permission allow A | listened: no
+  alerts to the operator (1):
+    b8: implementer is at a permission prompt: allow A, since HH:MM, and work waits for it (#1).
+-- a listener's alert pass, with nothing new:
+  alerts to the operator (0):
+-- a second note arrives:
+posted #2 note P1 reviewer → implementer: two
+handoff: told the operator: implementer is at a permission prompt: allow A, since HH:MM, and work waits for it (#2).
+handoff: implementer's session is at a permission prompt: allow A, since HH:MM. This waits until the operator answers it.
+  alerts to the operator (1):
+    b8: implementer is at a permission prompt: allow A, since HH:MM, and work waits for it (#2).
+-- the session answers and runs a command; an older prompt's hook can't block it again (the fence, by answered):
+  binding I: role implementer | block: none  | listened: no
+  answered recorded: True
+
+== 3. The full suite (Run) ==
+$ uptime; /usr/bin/time -p go test ./... -count=1 -race      (no -timeout; the worktree was at 6f2f908 and clean when it ended)
+ 4:58  up 23 days,  8:55, 15 users, load averages: 4.73 5.80 5.60
+ok  	github.com/dre4success/handoff/cmd/handoff	295.209s
+ok  	github.com/dre4success/handoff/internal/awake	1.296s
+ok  	github.com/dre4success/handoff/internal/gitx	1.211s
+ok  	github.com/dre4success/handoff/internal/notify	1.410s
+ok  	github.com/dre4success/handoff/internal/record	4.536s
+ok  	github.com/dre4success/handoff/internal/status	1.222s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	2.004s
+real 298.31
+user 76.71
+sys 58.04
+exit 0

@@ -1,0 +1,95 @@
+H34.4, request #570, commit c1c8db57891a598b40acb25509d67ebd7193fca3 (base 76c7e0b)
+Date: 2026-11-23. Run by: the reviewer (Claude Code session).
+
+Request #565 named aa2ca906063ad7b8bc8db073256c0a774a72793e and was superseded by #570,
+at c1c8db5, fourteen seconds later, while I was building. I built and ran aa2ca90, in a
+temporary worktree (git worktree add --detach), removed after. The two commits differ in
+one line of the implementer's evidence log, and in no code:
+$ git diff --stat aa2ca90 c1c8db5
+ evidence/h34.4/tests.log | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+$ git diff aa2ca90 c1c8db5 -- cmd internal docs
+(no output)
+$ git diff aa2ca90 c1c8db5 -- evidence | grep '^[+-]#'
+-# H34.4 round 3 tests, run by the implementer ...
++# H34.4 tests, run by the implementer ...
+Every probe ran in a new scratch git project with HANDOFF_TEST_NOTIFY set and the session
+variables unset. An Antigravity session is simulated with ANTIGRAVITY_CONVERSATION_ID and
+its Stop hook's JSON on stdin; the reason it would be given is printed, its last 250
+characters.
+
+== 1. Build, vet, format, dependencies (Run) ==
+$ go build -o handoff ./cmd/handoff && go vet ./... && gofmt -l cmd internal
+(no output)
+$ go list -deps ./... | grep -c '^net$'
+0
+$ git diff --check 76c7e0b aa2ca90
+(no output)
+
+== 2. probe.sh <dir> <binary> atterm_y.py (Run) ==
+
+## E1. Antigravity's wakes count down, on a wake for time running out and on one with work
+You are now implementer in e1.
+$ (Antigravity A, Stop hook, executionNum 5) handoff hook listen --timeout 1s
+    continue | handoff: nothing new for implementer in 1s. Just end your turn; listening starts again when it ends. / 
+$ (Antigravity A, Stop hook, executionNum 6) handoff hook listen --timeout 1s
+    continue | handoff: nothing new for implementer in 1s. Just end your turn; listening starts again when it ends. handoff can wake this session 3 more times before the operator types in it; if the operator is with you, say so. / 
+$ (Antigravity A, Stop hook, executionNum 7) handoff hook listen --timeout 1s
+    continue | handoff: nothing new for implementer in 1s. Just end your turn; listening starts again when it ends. handoff can wake this session 2 more times before the operator types in it; if the operator is with you, say so. / 
+$ (Antigravity A, Stop hook, executionNum 8) handoff hook listen --timeout 1s
+    continue | handoff: nothing new for implementer in 1s. Just end your turn; listening starts again when it ends. handoff can wake this session 1 more time before the operator types in it; if the operator is with you, say so. / 
+$ (Antigravity A, Stop hook, executionNum 9) handoff hook listen --timeout 1s
+    continue | handoff: nothing new for implementer in 1s. Just end your turn; listening starts again when it ends. This is the last time handoff can wake this session before the operator types in it; if the operator is with you, say so. / 
+$ (Antigravity A, Stop hook, executionNum 10) handoff hook listen --timeout 1s
+    (no decision) | 
+-- with a note to deliver, at executionNum 8:
+posted #1 note P1 reviewer → implementer: one
+$ (Antigravity A, Stop hook, executionNum 8) handoff hook listen --timeout 1s
+    continue | 9-19eae2ced3c2/scratchpad/wt-h344.eNTo/handoff show <id>` and act on it as your brief says. Listening starts again when your turn ends. handoff can wake this session 1 more time before the operator types in it; if the operator is with you, say so. / 
+-- a Claude Code session's wake has no count:
+You are now reviewer in e1.
+    handoff: nothing new for reviewer in 1s. Just end your turn; listening starts again when it ends.
+
+## E2. away warns of an Antigravity session, and not of the Claude Code one
+$ (the operator, at a terminal) handoff away "carry on"
+    away (#2): your go-ahead stands until you run handoff back
+    Under it, an item is approved once every reviewer it was sent to approves the same commit; one approval is enough for an item sent to one reviewer. handoff doesn't read your words: to tell the agents something without approving anything, use handoff fyi.
+    told implementer and reviewer (#3, #4)
+    implementer is an Antigravity session: handoff can wake it 10 times before you type in it.
+    handoff: told the operator: Your go-ahead is recorded (#2): carry on Until you run handoff back, items are approved without asking you.
+  binding A | role implementer | cli antigravity
+  binding R | role reviewer | cli claude
+
+## E3. A role the project doesn't have
+$ (S) handoff role reviewer-3
+    handoff role: reviewer-3 isn't a role here (the roles are implementer, reviewer). If the operator gave it to you, run `handoff roles add reviewer-3`, then `handoff role reviewer-3`
+$ (S) handoff role Reviewer_3
+    handoff role: role "Reviewer_3": use lower-case letters, digits and '-'
+$ (S) handoff role operator
+    handoff role: operator is the person who decides; give the session one of the agents' roles
+$ (S) handoff roles add reviewer-3
+    Added reviewer-3.
+    Roles: implementer, reviewer and reviewer-3; reviewer and reviewer-3 review.
+$ (S) handoff role reviewer-3
+    You are now reviewer-3 in e3.
+    
+
+## E4. Usage
+27:  settings claude|codex|antigravity [--global | --as <role>]   settings that keep a CLI's sessions
+30:  hook    listen|brief|notify   run by a CLI's hooks, as settings prints
+
+== 3. The full suite (Run) ==
+$ uptime; /usr/bin/time -p go test ./... -count=1 -race      (no -timeout; run in the worktree at aa2ca90, clean when it ended; c1c8db5 has the same code and tests)
+ 3:34  up 23 days,  7:32, 15 users, load averages: 4.74 4.88 4.98
+ok  	github.com/dre4success/handoff/cmd/handoff	249.890s
+ok  	github.com/dre4success/handoff/internal/awake	1.308s
+ok  	github.com/dre4success/handoff/internal/gitx	1.204s
+ok  	github.com/dre4success/handoff/internal/notify	1.433s
+ok  	github.com/dre4success/handoff/internal/record	4.273s
+ok  	github.com/dre4success/handoff/internal/status	1.202s
+?   	github.com/dre4success/handoff/internal/term	[no test files]
+ok  	github.com/dre4success/handoff/internal/wait	1.966s
+real 252.53
+user 70.74
+sys 52.36
+exit 0

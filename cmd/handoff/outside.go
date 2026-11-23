@@ -55,7 +55,7 @@ func (a *app) warnOutside(w io.Writer, s session, transcript string) {
 // record is another. The folder is "" when the run started in the project,
 // or when that can't be told.
 func (a *app) startedOutside(s session, transcript string) (string, string) {
-	dir, cli := runFolder(s, transcript)
+	dir, cli := runFolder(s, transcript, a.cli())
 	if !filepath.IsAbs(dir) {
 		return "", cli
 	}
@@ -82,14 +82,14 @@ func (a *app) startedOutside(s session, transcript string) (string, string) {
 //     the worker a /background moves it to (evidence/h31/background.log).
 //   - Codex writes a turn_context for each turn, naming the folder of the run;
 //     the latest is in its rollout's last lines.
-func runFolder(s session, transcript string) (string, string) {
+func runFolder(s session, transcript, cli string) (string, string) {
 	if d := os.Getenv("CLAUDE_PROJECT_DIR"); d != "" && s.PID > 0 {
 		return d, "claude"
 	}
 	if s.PID > 0 {
 		return processFolder(s.PID), "claude"
 	}
-	if sessionCLI() == "antigravity" {
+	if cli == "antigravity" {
 		// It keeps no rollout, and its hooks take the agent's folder from their
 		// input, wherever they run (row 102), so it isn't looked for (row 104).
 		return "", "antigravity"
